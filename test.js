@@ -22,17 +22,12 @@ async function main() {
   const agent = await createAgent(page);
 
   console.log("🧠 Running AI-driven test...");
-  // Adapt the call to the new agent structure
-  const result = await agent.invoke({
-    messages: [{ role: "user", content: task }],
-  }, {
-    configurable: { 
-      page: page, // Pass the page object in configurable
-      thread_id: "test-thread" // Add a thread_id
-    }
-  });
+  const result = await agent.invoke(
+    { messages: [{ role: "user", content: task }] },
+    { configurable: { thread_id: `thread-${Date.now()}`, page } }
+  );
 
-  console.log("✅ Test Result:", result.messages.at(-1)?.content);
+  console.log("✅ Test Result:", result);
 
   await browser.close();
 }
