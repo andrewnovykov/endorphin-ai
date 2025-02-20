@@ -1,0 +1,22 @@
+{
+  "name": "browser-use",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@langchain/community": "^0.3.31",
+    "@langchain/core": "^0.3.40",
+    "@langchain/langgraph": "^0.2.46",
+    "dotenv": "^16.4.7",
+    "langchain": "^0.3.19",
+    "openai": "^4.85.3",
+    "playwright": "^1.50.1"
+  }
+}
