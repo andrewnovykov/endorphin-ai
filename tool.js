@@ -13,7 +13,7 @@ const context = await browser.newContext();
 const page = await context.newPage();
 
 const url = "https://qafromla.herokuapp.com/";
-const task = `Go to ${url}`;
+const task = `Go to ${url}, click on the "Log In" button, and fill in the email field with papapin777@gmail.com"`;
 
 // 🛠️ Define Browser Actions as Tools
 const navigate = tool(async ({ location }) => {
@@ -28,7 +28,32 @@ const navigate = tool(async ({ location }) => {
   })
 });
 
-const tools = [navigate];
+// 🛠️ Define Browser Actions as Tools
+const fill = tool(async ({ selector, value }) => {
+  console.log(`📝 Filling ${selector} with ${value}`);
+  await page.fill(selector, value);
+  return `Filled ${selector} with ${value}`;
+}, {
+  name: 'fill',
+  description: 'Call to fill in input.',
+  schema: z.object({
+    location: z.string().describe("Input to fill in."),
+  })
+});
+
+const click = tool(async ({ selector }) => {
+  console.log(`🔘 Clicking: ${selector}`);
+  await page.click(selector);
+  return `Clicked: ${selector}`;
+}, {
+  name: 'click',
+  description: 'Call to click on element.',
+  schema: z.object({
+    location: z.string().describe("Selector to click on."),
+  })
+});
+
+const tools = [navigate, fill, click];
 const toolNode = new ToolNode(tools);
 
 // 🔥 Create AI Agent
