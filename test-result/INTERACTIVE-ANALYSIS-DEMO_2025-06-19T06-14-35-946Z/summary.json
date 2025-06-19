@@ -1,0 +1,13 @@
+{
+  "testName": "Interactive Website Analysis Demo",
+  "sessionId": "INTERACTIVE-ANALYSIS-DEMO",
+  "status": "SUCCESS",
+  "startTime": "2025-06-19T06:14:35.946Z",
+  "endTime": "2025-06-19T06:14:42.398Z",
+  "duration": 6452,
+  "totalSteps": 6,
+  "successfulSteps": 5,
+  "failedSteps": 1,
+  "totalScreenshots": 1,
+  "finalResult": "Test completed successfully"
+}

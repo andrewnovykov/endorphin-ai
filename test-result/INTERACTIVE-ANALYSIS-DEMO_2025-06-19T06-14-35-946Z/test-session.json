@@ -1,0 +1,137 @@
+{
+  "sessionId": "INTERACTIVE-ANALYSIS-DEMO",
+  "sessionName": "INTERACTIVE-ANALYSIS-DEMO_2025-06-19T06-14-35-946Z",
+  "testName": "Interactive Website Analysis Demo",
+  "testId": "INTERACTIVE-ANALYSIS-DEMO",
+  "startTime": "2025-06-19T06:14:35.946Z",
+  "endTime": "2025-06-19T06:14:42.398Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-ANALYSIS-DEMO_2025-06-19T06-14-35-946Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-ANALYSIS-DEMO_2025-06-19T06-14-35-946Z/screenshots",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "timestamp": "2025-06-19T06:14:35.946Z",
+      "description": "Starting test execution: Interactive Website Analysis Demo",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Test ID: INTERACTIVE-ANALYSIS-DEMO",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-1-screenshot-1.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-ANALYSIS-DEMO_2025-06-19T06-14-35-946Z/screenshots/step-1-screenshot-1.png",
+          "timestamp": "2025-06-19T06:14:37.183Z",
+          "description": "Page loaded: https://example.com",
+          "stepNumber": 1
+        }
+      ]
+    },
+    {
+      "stepNumber": 2,
+      "timestamp": "2025-06-19T06:14:37.183Z",
+      "description": "Navigate to: https://example.com",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://example.com",
+        "waitUntil": "load"
+      },
+      "result": "Successfully navigated to: https://example.com",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 3,
+      "timestamp": "2025-06-19T06:14:38.351Z",
+      "description": "Get simple page content",
+      "toolName": "getSimplePageContent",
+      "toolArgs": {},
+      "result": "Retrieved 1248 characters",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 4,
+      "timestamp": "2025-06-19T06:14:38.371Z",
+      "description": "Take screenshot: full_page_example_com",
+      "toolName": "screenshot",
+      "toolArgs": {
+        "name": "full_page_example_com",
+        "selector": "html",
+        "fullPage": true
+      },
+      "result": "locator.screenshot: path: unsupported mime type \"null\"",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 5,
+      "timestamp": "2025-06-19T06:14:38.380Z",
+      "description": "Get element info: h1",
+      "toolName": "getElementInfo",
+      "toolArgs": {
+        "selector": "h1"
+      },
+      "result": "Element info: {\n  \"tagName\": \"H1\",\n  \"id\": \"\",\n  \"className\": \"\",\n  \"textContent\": \"Example Domain\",\n  \"visible\": true\n}",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 6,
+      "timestamp": "2025-06-19T06:14:42.398Z",
+      "description": "Test execution completed successfully",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "All steps completed",
+      "status": "SUCCESS",
+      "screenshots": []
+    }
+  ],
+  "toolCalls": [
+    {
+      "stepNumber": 2,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://example.com",
+        "waitUntil": "load"
+      },
+      "result": "Successfully navigated to: https://example.com",
+      "timestamp": "2025-06-19T06:14:37.183Z",
+      "status": "SUCCESS"
+    },
+    {
+      "stepNumber": 3,
+      "toolName": "getSimplePageContent",
+      "toolArgs": {},
+      "result": "Retrieved 1248 characters",
+      "timestamp": "2025-06-19T06:14:38.351Z",
+      "status": "SUCCESS"
+    },
+    {
+      "stepNumber": 4,
+      "toolName": "screenshot",
+      "toolArgs": {
+        "name": "full_page_example_com",
+        "selector": "html",
+        "fullPage": true
+      },
+      "result": "locator.screenshot: path: unsupported mime type \"null\"",
+      "timestamp": "2025-06-19T06:14:38.371Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 5,
+      "toolName": "getElementInfo",
+      "toolArgs": {
+        "selector": "h1"
+      },
+      "result": "Element info: {\n  \"tagName\": \"H1\",\n  \"id\": \"\",\n  \"className\": \"\",\n  \"textContent\": \"Example Domain\",\n  \"visible\": true\n}",
+      "timestamp": "2025-06-19T06:14:38.380Z",
+      "status": "SUCCESS"
+    }
+  ],
+  "stepCounter": 6,
+  "screenshotCounter": 1,
+  "status": "SUCCESS",
+  "finalResult": "Test completed successfully",
+  "duration": 6452
+}

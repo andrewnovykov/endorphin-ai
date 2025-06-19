@@ -1,0 +1,13 @@
+{
+  "testName": "Basic Login Test",
+  "sessionId": "QE-001",
+  "status": "SUCCESS",
+  "startTime": "2025-06-19T06:13:45.462Z",
+  "endTime": "2025-06-19T06:16:03.129Z",
+  "duration": 137667,
+  "totalSteps": 15,
+  "successfulSteps": 12,
+  "failedSteps": 3,
+  "totalScreenshots": 6,
+  "finalResult": "Test completed successfully"
+}
