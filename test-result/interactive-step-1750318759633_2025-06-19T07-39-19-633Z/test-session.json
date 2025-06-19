@@ -1,0 +1,92 @@
+{
+  "sessionId": "interactive-step-1750318759633",
+  "sessionName": "interactive-step-1750318759633_2025-06-19T07-39-19-633Z",
+  "testName": "Interactive-Step-1750318759633",
+  "testId": "interactive-step-1750318759633",
+  "startTime": "2025-06-19T07:39:19.634Z",
+  "endTime": "2025-06-19T07:39:21.721Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/interactive-step-1750318759633_2025-06-19T07-39-19-633Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/interactive-step-1750318759633_2025-06-19T07-39-19-633Z/screenshots",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "timestamp": "2025-06-19T07:39:19.634Z",
+      "description": "Test started",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Starting task: fill in email field with papapin888@gmail.com",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-1-screenshot-1.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/interactive-step-1750318759633_2025-06-19T07-39-19-633Z/screenshots/step-1-screenshot-1.png",
+          "timestamp": "2025-06-19T07:39:19.721Z",
+          "description": "Initial page state",
+          "stepNumber": 1
+        },
+        {
+          "filename": "step-1-screenshot-2.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/interactive-step-1750318759633_2025-06-19T07-39-19-633Z/screenshots/step-1-screenshot-2.png",
+          "timestamp": "2025-06-19T07:39:20.821Z",
+          "description": "After filling input[type='email']",
+          "stepNumber": 1
+        }
+      ]
+    },
+    {
+      "stepNumber": 2,
+      "timestamp": "2025-06-19T07:39:20.823Z",
+      "description": "Fill input[type='email'] with \"papapin888@gmail.com\"",
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "input[type='email']",
+        "value": "papapin888@gmail.com",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "Successfully filled input[type='email'] with \"papapin888@gmail.com\"",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 3,
+      "timestamp": "2025-06-19T07:39:21.641Z",
+      "description": "Test completed",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "The email field has been successfully filled with \"papapin888@gmail.com\". What would you like to do next?",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-3-screenshot-3.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/interactive-step-1750318759633_2025-06-19T07-39-19-633Z/screenshots/step-3-screenshot-3.png",
+          "timestamp": "2025-06-19T07:39:21.720Z",
+          "description": "Final page state",
+          "stepNumber": 3
+        }
+      ]
+    }
+  ],
+  "toolCalls": [
+    {
+      "stepNumber": 2,
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "input[type='email']",
+        "value": "papapin888@gmail.com",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "Successfully filled input[type='email'] with \"papapin888@gmail.com\"",
+      "timestamp": "2025-06-19T07:39:20.823Z",
+      "status": "SUCCESS"
+    }
+  ],
+  "stepCounter": 3,
+  "screenshotCounter": 3,
+  "status": "SUCCESS",
+  "finalResult": "The email field has been successfully filled with \"papapin888@gmail.com\". What would you like to do next?",
+  "duration": 2087
+}

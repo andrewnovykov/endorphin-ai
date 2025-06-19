@@ -1,0 +1,54 @@
+{
+  "sessionId": "interactive-step-1750318874503",
+  "sessionName": "interactive-step-1750318874503_2025-06-19T07-41-14-503Z",
+  "testName": "Interactive-Step-1750318874503",
+  "testId": "interactive-step-1750318874503",
+  "startTime": "2025-06-19T07:41:14.504Z",
+  "endTime": "2025-06-19T07:41:15.451Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/interactive-step-1750318874503_2025-06-19T07-41-14-503Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/interactive-step-1750318874503_2025-06-19T07-41-14-503Z/screenshots",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "timestamp": "2025-06-19T07:41:14.504Z",
+      "description": "Test started",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Starting task: stop ",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-1-screenshot-1.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/interactive-step-1750318874503_2025-06-19T07-41-14-503Z/screenshots/step-1-screenshot-1.png",
+          "timestamp": "2025-06-19T07:41:14.606Z",
+          "description": "Initial page state",
+          "stepNumber": 1
+        }
+      ]
+    },
+    {
+      "stepNumber": 2,
+      "timestamp": "2025-06-19T07:41:15.363Z",
+      "description": "Test completed",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Task received as \"stop\". All operations halted.",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-2-screenshot-2.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/interactive-step-1750318874503_2025-06-19T07-41-14-503Z/screenshots/step-2-screenshot-2.png",
+          "timestamp": "2025-06-19T07:41:15.451Z",
+          "description": "Final page state",
+          "stepNumber": 2
+        }
+      ]
+    }
+  ],
+  "toolCalls": [],
+  "stepCounter": 2,
+  "screenshotCounter": 2,
+  "status": "SUCCESS",
+  "finalResult": "Task received as \"stop\". All operations halted.",
+  "duration": 947
+}
