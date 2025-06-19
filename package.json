@@ -19,7 +19,7 @@
     "enhanced:smoke": "node framework/enhanced-test-framework.js --tag smoke",
     "enhanced:high": "node framework/enhanced-test-framework.js --priority High",
     "verify-format": "node framework/testing/verify-test-format.js",
-    "interactive": "node framework/interactive/interactive-test.js",
+    "interactive": "node framework/interactive/enhanced-interactive-recorder.js",
     "interactive-demo": "node framework/demos/interactive-demo.js",
     "test-framework": "node framework/testing/test-modular-framework.js",
     "step-by-step": "node step-by-step-interactive.js"

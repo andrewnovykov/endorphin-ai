@@ -1,0 +1,13 @@
+{
+  "testName": "Interactive-Step-1750318874503",
+  "sessionId": "interactive-step-1750318874503",
+  "status": "SUCCESS",
+  "startTime": "2025-06-19T07:41:14.504Z",
+  "endTime": "2025-06-19T07:41:15.451Z",
+  "duration": 947,
+  "totalSteps": 2,
+  "successfulSteps": 2,
+  "failedSteps": 0,
+  "totalScreenshots": 2,
+  "finalResult": "Task received as \"stop\". All operations halted."
+}

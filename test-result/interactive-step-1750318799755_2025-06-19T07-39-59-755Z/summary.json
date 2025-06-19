@@ -1,0 +1,13 @@
+{
+  "testName": "Interactive-Step-1750318799755",
+  "sessionId": "interactive-step-1750318799755",
+  "status": "SUCCESS",
+  "startTime": "2025-06-19T07:39:59.756Z",
+  "endTime": "2025-06-19T07:40:07.902Z",
+  "duration": 8146,
+  "totalSteps": 7,
+  "successfulSteps": 3,
+  "failedSteps": 4,
+  "totalScreenshots": 5,
+  "finalResult": "I've successfully clicked the \"Sign in\" button using the CSS strategy. However, there were issues capturing a screenshot with the current setup. If further actions or verifications are needed, feel free to let me know!"
+}

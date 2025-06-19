@@ -58,12 +58,71 @@ export class EnhancedBrowserTestFramework {
 
   setupTools() {
     console.log("🛠️ Setting up browser automation tools...");
-    this.tools = createAllTools(this);
+    
+    // Create tools for the AI agent
+    this.toolsArray = createAllTools(this);
+    
+    // Create direct tool access object for framework use
+    this.tools = {
+      navigate: async (params) => {
+        const stepDesc = `Navigate to: ${params.url}`;
+        console.log(`🌍 ${stepDesc}`);
+        
+        try {
+          await this.page.goto(params.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await this.takeStepScreenshot(`Page loaded: ${params.url}`);
+          
+          this.logTestStep(stepDesc, 'navigate', params, `Successfully navigated to: ${params.url}`, true);
+          return `Successfully navigated to: ${params.url}`;
+        } catch (error) {
+          this.logTestStep(stepDesc, 'navigate', params, error.message, false);
+          throw error;
+        }
+      },
+      
+      click: async (params) => {
+        const stepDesc = `Click element: ${params.selector}`;
+        console.log(`👆 ${stepDesc}`);
+        
+        try {
+          await this.page.locator(params.selector).click();
+          await this.takeStepScreenshot(`Clicked: ${params.selector}`);
+          
+          this.logTestStep(stepDesc, 'click', params, `Successfully clicked: ${params.selector}`, true);
+          return `Successfully clicked: ${params.selector}`;
+        } catch (error) {
+          this.logTestStep(stepDesc, 'click', params, error.message, false);
+          throw error;
+        }
+      },
+      
+      fill: async (params) => {
+        const stepDesc = `Fill field: ${params.selector} with "${params.text}"`;
+        console.log(`✏️ ${stepDesc}`);
+        
+        try {
+          await this.page.locator(params.selector).fill(params.text);
+          await this.takeStepScreenshot(`Filled: ${params.selector}`);
+          
+          this.logTestStep(stepDesc, 'fill', params, `Successfully filled: ${params.selector}`, true);
+          return `Successfully filled: ${params.selector}`;
+        } catch (error) {
+          this.logTestStep(stepDesc, 'fill', params, error.message, false);
+          throw error;
+        }
+      },
+      
+      screenshot: async (params = {}) => {
+        const filename = params.filename || `screenshot-${Date.now()}.png`;
+        await this.takeStepScreenshot(filename);
+        return `Screenshot saved: ${filename}`;
+      }
+    };
   }
 
   async setupAgent() {
     console.log("🤖 Setting up AI agent...");
-    this.agent = await setupAgent(this.tools);
+    this.agent = await setupAgent(this.toolsArray);
   }
 
   // Directory cleanup methods
@@ -223,8 +282,36 @@ export class EnhancedBrowserTestFramework {
       this.logTestStep("Test started", null, null, `Starting task: ${taskDescription}`, true);
       await this.takeStepScreenshot("Initial page state");
       
+      // Create enhanced context message for the agent
+      const systemContext = `You are a browser automation agent with access to the following tools:
+- navigate: Navigate to any URL
+- click: Click elements using various selection strategies (CSS, text, role, etc.)
+- fill: Fill input fields with text
+- wait: Wait for elements or time delays
+- verifyElement: Check if elements exist on the page
+- getPageContent: Get page content for analysis
+- screenshot: Take screenshots
+- getElementInfo: Get information about specific elements
+
+IMPORTANT INSTRUCTIONS:
+1. You are currently controlling a browser that may already have a page loaded
+2. When asked to click a button with text like "Log In", use: click with selector="Log In" and strategy="text"
+3. For email fields, use: fill with selector="input[type='email']" or "input[name*='email']"
+4. For password fields, use: fill with selector="input[type='password']" or "input[name*='password']"
+5. Take screenshots between major actions to document the process
+6. If an element is not found with one selector, try alternative selectors
+7. Complete the task step by step without asking for additional information
+8. NEVER ask for URLs or page information - just use the tools directly
+
+EXAMPLE:
+To click "Log In" button: {"selector": "Log In", "strategy": "text"}
+To fill email: {"selector": "input[type='email']", "value": "user@example.com"}
+To fill password: {"selector": "input[type='password']", "value": "password123"}
+
+Current Task: ${taskDescription}`;
+
       const finalState = await this.agent.invoke({
-        messages: [new HumanMessage(taskDescription)],
+        messages: [new HumanMessage(systemContext)],
       }, {
         recursionLimit: AGENT_CONFIG.agent.recursionLimit,
         configurable: { thread_id: `session-${this.currentTestSession.sessionId}` }
@@ -454,4 +541,123 @@ export class EnhancedBrowserTestFramework {
   disableInteractiveMode() {
     this.isInteractiveMode = false;
   }
+
+  // Natural Language Command Execution Methods
+  async executeNaturalLanguageCommand(command) {
+    const lowerCommand = command.toLowerCase();
+    
+    // Parse common commands
+    if (lowerCommand.includes('click')) {
+      // Extract selector or button text
+      const selector = this.extractSelectorFromCommand(command);
+      const result = await this.tools.click({ selector });
+      return { toolUsed: 'click', params: { selector }, result };
+    }
+    
+    if (lowerCommand.includes('fill') || lowerCommand.includes('type')) {
+      // Extract field and value
+      const { selector, value } = this.extractFillFromCommand(command);
+      const result = await this.tools.fill({ selector, value });
+      return { toolUsed: 'fill', params: { selector, value }, result };
+    }
+    
+    if (lowerCommand.includes('navigate') || lowerCommand.includes('go to')) {
+      // Extract URL
+      const url = this.extractUrlFromCommand(command);
+      const result = await this.tools.navigate({ url });
+      return { toolUsed: 'navigate', params: { url }, result };
+    }
+    
+    if (lowerCommand.includes('wait')) {
+      // Extract time
+      const time = this.extractTimeFromCommand(command) || 2000;
+      await this.page.waitForTimeout(time);
+      return { toolUsed: 'wait', params: { time }, result: `Waited ${time}ms` };
+    }
+    
+    if (lowerCommand.includes('screenshot')) {
+      const result = await this.tools.screenshot({});
+      return { toolUsed: 'screenshot', params: {}, result };
+    }
+    
+    // Default: try to use AI agent to interpret the command
+    try {
+      const result = await this.runTask(command);
+      return { toolUsed: 'ai-agent', params: { command }, result };
+    } catch (error) {
+      throw new Error(`Could not interpret command: "${command}". ${error.message}`);
+    }
+  }
+  
+  // Helper methods for parsing commands
+  extractSelectorFromCommand(command) {
+    // Try to extract button text, link text, or selector
+    const buttonMatch = command.match(/(?:click|press)\s+(?:on\s+)?(?:the\s+)?(.+?)(?:\s+button|\s+link|$)/i);
+    if (buttonMatch) {
+      const text = buttonMatch[1].trim();
+      // Return as text selector for buttons/links
+      return text;
+    }
+    
+    // Try to extract by common UI element names
+    if (command.includes('login')) return 'login';
+    if (command.includes('submit')) return 'submit';
+    if (command.includes('sign up')) return 'sign up';
+    if (command.includes('register')) return 'register';
+    
+    // Default to a generic button selector
+    return 'button';
+  }
+  
+  extractFillFromCommand(command) {
+    // Try to extract field and value
+    const fillMatch = command.match(/(?:fill|type|enter)\s+(.+?)\s+(?:with|as)\s+(.+)/i);
+    if (fillMatch) {
+      return {
+        selector: fillMatch[1].trim(),
+        value: fillMatch[2].trim()
+      };
+    }
+    
+    // Try common field patterns
+    if (command.includes('email')) {
+      const emailMatch = command.match(/email\s+(?:with\s+)?(.+)/i);
+      return {
+        selector: 'input[type="email"], input[name*="email"], #email',
+        value: emailMatch ? emailMatch[1].trim() : ''
+      };
+    }
+    
+    if (command.includes('password')) {
+      const passMatch = command.match(/password\s+(?:with\s+)?(.+)/i);
+      return {
+        selector: 'input[type="password"], input[name*="password"], #password',
+        value: passMatch ? passMatch[1].trim() : ''
+      };
+    }
+    
+    return { selector: 'input', value: '' };
+  }
+  
+  extractUrlFromCommand(command) {
+    const urlMatch = command.match(/(https?:\/\/[^\s]+)/i);
+    if (urlMatch) return urlMatch[1];
+    
+    // Default to base URL if no URL found
+    return process.env.BASE_URL || 'https://qafromla.herokuapp.com/';
+  }
+  
+  extractTimeFromCommand(command) {
+    const timeMatch = command.match(/(\d+)\s*(?:ms|milliseconds?|seconds?|s)/i);
+    if (timeMatch) {
+      const num = parseInt(timeMatch[1]);
+      const unit = timeMatch[0].toLowerCase();
+      if (unit.includes('s') && !unit.includes('ms')) {
+        return num * 1000; // Convert seconds to milliseconds
+      }
+      return num;
+    }
+    return 2000; // Default 2 seconds
+  }
 }
+ 

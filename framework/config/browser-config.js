@@ -1,9 +1,13 @@
 // framework/config/browser-config.js
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 export const BROWSER_CONFIG = {
   // Browser launch options
   launchOptions: {
-    headless: false,
+    headless: process.env.HEADLESS === 'true' ? true : false,
     args: ['--start-maximized']
   },
   
@@ -24,7 +28,10 @@ export const BROWSER_CONFIG = {
   screenshot: {
     fullPage: false,
     type: 'png'
-  }
+  },
+  
+  // Base URL for testing
+  baseUrl: process.env.BASE_URL || 'https://qafromla.herokuapp.com/'
 };
 
 export default BROWSER_CONFIG;
