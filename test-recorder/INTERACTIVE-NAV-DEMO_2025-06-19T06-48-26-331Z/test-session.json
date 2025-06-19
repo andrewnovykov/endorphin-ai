@@ -1,0 +1,165 @@
+{
+  "sessionId": "INTERACTIVE-NAV-DEMO",
+  "sessionName": "INTERACTIVE-NAV-DEMO_2025-06-19T06-48-26-331Z",
+  "testName": "Interactive Navigation Demo",
+  "testId": "INTERACTIVE-NAV-DEMO",
+  "startTime": "2025-06-19T06:48:26.332Z",
+  "endTime": "2025-06-19T06:48:43.257Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-NAV-DEMO_2025-06-19T06-48-26-331Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-NAV-DEMO_2025-06-19T06-48-26-331Z/screenshots",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "timestamp": "2025-06-19T06:48:26.332Z",
+      "description": "Starting test execution: Interactive Navigation Demo",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Test ID: INTERACTIVE-NAV-DEMO",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 2,
+      "timestamp": "2025-06-19T06:48:29.242Z",
+      "description": "Get page content for analysis",
+      "toolName": "getPageContent",
+      "toolArgs": {
+        "includeTitle": true,
+        "maxLength": 2000
+      },
+      "result": "page.title: Execution context was destroyed, most likely because of a navigation",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 3,
+      "timestamp": "2025-06-19T06:48:29.282Z",
+      "description": "Take screenshot: httpbin_page",
+      "toolName": "screenshot",
+      "toolArgs": {
+        "name": "httpbin_page",
+        "selector": "body",
+        "fullPage": true
+      },
+      "result": "locator.screenshot: path: unsupported mime type \"null\"",
+      "status": "FAILED",
+      "screenshots": [
+        {
+          "filename": "step-3-screenshot-1.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-NAV-DEMO_2025-06-19T06-48-26-331Z/screenshots/step-3-screenshot-1.png",
+          "timestamp": "2025-06-19T06:48:34.426Z",
+          "description": "Page loaded: https://httpbin.org",
+          "stepNumber": 3
+        }
+      ]
+    },
+    {
+      "stepNumber": 4,
+      "timestamp": "2025-06-19T06:48:34.426Z",
+      "description": "Navigate to: https://httpbin.org",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org",
+        "waitUntil": "load"
+      },
+      "result": "Successfully navigated to: https://httpbin.org",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 5,
+      "timestamp": "2025-06-19T06:48:37.464Z",
+      "description": "Get simple page content",
+      "toolName": "getSimplePageContent",
+      "toolArgs": {},
+      "result": "Retrieved 16267 characters",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 6,
+      "timestamp": "2025-06-19T06:48:37.468Z",
+      "description": "Take screenshot: httpbin_page_full",
+      "toolName": "screenshot",
+      "toolArgs": {
+        "name": "httpbin_page_full",
+        "selector": "html",
+        "fullPage": true
+      },
+      "result": "locator.screenshot: path: unsupported mime type \"null\"",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 7,
+      "timestamp": "2025-06-19T06:48:43.257Z",
+      "description": "Test execution completed successfully",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "All steps completed",
+      "status": "SUCCESS",
+      "screenshots": []
+    }
+  ],
+  "toolCalls": [
+    {
+      "stepNumber": 2,
+      "toolName": "getPageContent",
+      "toolArgs": {
+        "includeTitle": true,
+        "maxLength": 2000
+      },
+      "result": "page.title: Execution context was destroyed, most likely because of a navigation",
+      "timestamp": "2025-06-19T06:48:29.242Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 3,
+      "toolName": "screenshot",
+      "toolArgs": {
+        "name": "httpbin_page",
+        "selector": "body",
+        "fullPage": true
+      },
+      "result": "locator.screenshot: path: unsupported mime type \"null\"",
+      "timestamp": "2025-06-19T06:48:29.282Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 4,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org",
+        "waitUntil": "load"
+      },
+      "result": "Successfully navigated to: https://httpbin.org",
+      "timestamp": "2025-06-19T06:48:34.426Z",
+      "status": "SUCCESS"
+    },
+    {
+      "stepNumber": 5,
+      "toolName": "getSimplePageContent",
+      "toolArgs": {},
+      "result": "Retrieved 16267 characters",
+      "timestamp": "2025-06-19T06:48:37.464Z",
+      "status": "SUCCESS"
+    },
+    {
+      "stepNumber": 6,
+      "toolName": "screenshot",
+      "toolArgs": {
+        "name": "httpbin_page_full",
+        "selector": "html",
+        "fullPage": true
+      },
+      "result": "locator.screenshot: path: unsupported mime type \"null\"",
+      "timestamp": "2025-06-19T06:48:37.468Z",
+      "status": "FAILED"
+    }
+  ],
+  "stepCounter": 7,
+  "screenshotCounter": 1,
+  "status": "SUCCESS",
+  "finalResult": "Test completed successfully",
+  "duration": 16925
+}

@@ -454,4 +454,123 @@ export class EnhancedBrowserTestFramework {
   disableInteractiveMode() {
     this.isInteractiveMode = false;
   }
+
+  // Natural Language Command Execution Methods
+  async executeNaturalLanguageCommand(command) {
+    const lowerCommand = command.toLowerCase();
+    
+    // Parse common commands
+    if (lowerCommand.includes('click')) {
+      // Extract selector or button text
+      const selector = this.extractSelectorFromCommand(command);
+      const result = await this.tools.click({ selector });
+      return { toolUsed: 'click', params: { selector }, result };
+    }
+    
+    if (lowerCommand.includes('fill') || lowerCommand.includes('type')) {
+      // Extract field and value
+      const { selector, value } = this.extractFillFromCommand(command);
+      const result = await this.tools.fill({ selector, value });
+      return { toolUsed: 'fill', params: { selector, value }, result };
+    }
+    
+    if (lowerCommand.includes('navigate') || lowerCommand.includes('go to')) {
+      // Extract URL
+      const url = this.extractUrlFromCommand(command);
+      const result = await this.tools.navigate({ url });
+      return { toolUsed: 'navigate', params: { url }, result };
+    }
+    
+    if (lowerCommand.includes('wait')) {
+      // Extract time
+      const time = this.extractTimeFromCommand(command) || 2000;
+      await this.page.waitForTimeout(time);
+      return { toolUsed: 'wait', params: { time }, result: `Waited ${time}ms` };
+    }
+    
+    if (lowerCommand.includes('screenshot')) {
+      const result = await this.tools.screenshot({});
+      return { toolUsed: 'screenshot', params: {}, result };
+    }
+    
+    // Default: try to use AI agent to interpret the command
+    try {
+      const result = await this.runTask(command);
+      return { toolUsed: 'ai-agent', params: { command }, result };
+    } catch (error) {
+      throw new Error(`Could not interpret command: "${command}". ${error.message}`);
+    }
+  }
+  
+  // Helper methods for parsing commands
+  extractSelectorFromCommand(command) {
+    // Try to extract button text, link text, or selector
+    const buttonMatch = command.match(/(?:click|press)\s+(?:on\s+)?(?:the\s+)?(.+?)(?:\s+button|\s+link|$)/i);
+    if (buttonMatch) {
+      const text = buttonMatch[1].trim();
+      // Return as text selector for buttons/links
+      return text;
+    }
+    
+    // Try to extract by common UI element names
+    if (command.includes('login')) return 'login';
+    if (command.includes('submit')) return 'submit';
+    if (command.includes('sign up')) return 'sign up';
+    if (command.includes('register')) return 'register';
+    
+    // Default to a generic button selector
+    return 'button';
+  }
+  
+  extractFillFromCommand(command) {
+    // Try to extract field and value
+    const fillMatch = command.match(/(?:fill|type|enter)\s+(.+?)\s+(?:with|as)\s+(.+)/i);
+    if (fillMatch) {
+      return {
+        selector: fillMatch[1].trim(),
+        value: fillMatch[2].trim()
+      };
+    }
+    
+    // Try common field patterns
+    if (command.includes('email')) {
+      const emailMatch = command.match(/email\s+(?:with\s+)?(.+)/i);
+      return {
+        selector: 'input[type="email"], input[name*="email"], #email',
+        value: emailMatch ? emailMatch[1].trim() : ''
+      };
+    }
+    
+    if (command.includes('password')) {
+      const passMatch = command.match(/password\s+(?:with\s+)?(.+)/i);
+      return {
+        selector: 'input[type="password"], input[name*="password"], #password',
+        value: passMatch ? passMatch[1].trim() : ''
+      };
+    }
+    
+    return { selector: 'input', value: '' };
+  }
+  
+  extractUrlFromCommand(command) {
+    const urlMatch = command.match(/(https?:\/\/[^\s]+)/i);
+    if (urlMatch) return urlMatch[1];
+    
+    // Default to base URL if no URL found
+    return process.env.BASE_URL || 'https://qafromla.herokuapp.com/';
+  }
+  
+  extractTimeFromCommand(command) {
+    const timeMatch = command.match(/(\d+)\s*(?:ms|milliseconds?|seconds?|s)/i);
+    if (timeMatch) {
+      const num = parseInt(timeMatch[1]);
+      const unit = timeMatch[0].toLowerCase();
+      if (unit.includes('s') && !unit.includes('ms')) {
+        return num * 1000; // Convert seconds to milliseconds
+      }
+      return num;
+    }
+    return 2000; // Default 2 seconds
+  }
 }
+ 

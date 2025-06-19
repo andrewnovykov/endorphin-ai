@@ -1,0 +1,13 @@
+{
+  "testName": "Interactive Form Demo",
+  "sessionId": "INTERACTIVE-FORM-DEMO",
+  "status": "SUCCESS",
+  "startTime": "2025-06-19T06:48:43.260Z",
+  "endTime": "2025-06-19T06:49:09.162Z",
+  "duration": 25902,
+  "totalSteps": 22,
+  "successfulSteps": 8,
+  "failedSteps": 14,
+  "totalScreenshots": 10,
+  "finalResult": "Test completed successfully"
+}

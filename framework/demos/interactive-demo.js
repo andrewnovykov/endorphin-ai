@@ -106,4 +106,7 @@ async function quickInteractiveDemo() {
 // Export the main function as default
 export default quickInteractiveDemo;
 
-quickInteractiveDemo().catch(console.error);
+// Run if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  quickInteractiveDemo().catch(console.error);
+}
