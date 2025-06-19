@@ -1,0 +1,257 @@
+{
+  "sessionId": "INTERACTIVE-FORM-DEMO",
+  "sessionName": "INTERACTIVE-FORM-DEMO_2025-06-19T06-27-40-613Z",
+  "testName": "Interactive Form Demo",
+  "testId": "INTERACTIVE-FORM-DEMO",
+  "startTime": "2025-06-19T06:27:40.613Z",
+  "endTime": "2025-06-19T06:27:50.771Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-FORM-DEMO_2025-06-19T06-27-40-613Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-FORM-DEMO_2025-06-19T06-27-40-613Z/screenshots",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "timestamp": "2025-06-19T06:27:40.613Z",
+      "description": "Starting test execution: Interactive Form Demo",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Test ID: INTERACTIVE-FORM-DEMO",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-1-screenshot-1.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-FORM-DEMO_2025-06-19T06-27-40-613Z/screenshots/step-1-screenshot-1.png",
+          "timestamp": "2025-06-19T06:27:41.442Z",
+          "description": "Page loaded: https://httpbin.org/forms/post",
+          "stepNumber": 1
+        }
+      ]
+    },
+    {
+      "stepNumber": 2,
+      "timestamp": "2025-06-19T06:27:41.443Z",
+      "description": "Navigate to: https://httpbin.org/forms/post",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "Successfully navigated to: https://httpbin.org/forms/post",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 3,
+      "timestamp": "2025-06-19T06:27:43.991Z",
+      "description": "Fill #custname with \"Test User\"",
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "#custname",
+        "value": "Test User",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('#custname') to be visible\u001b[22m\n",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 4,
+      "timestamp": "2025-06-19T06:27:43.991Z",
+      "description": "Fill #custtel with \"123-456-7890\"",
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "#custtel",
+        "value": "123-456-7890",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('#custtel') to be visible\u001b[22m\n",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 5,
+      "timestamp": "2025-06-19T06:27:43.991Z",
+      "description": "Fill #custemail with \"test@example.com\"",
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "#custemail",
+        "value": "test@example.com",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('#custemail') to be visible\u001b[22m\n",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 6,
+      "timestamp": "2025-06-19T06:27:45.488Z",
+      "description": "Navigate to: https://httpbin.org/forms/post",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 7,
+      "timestamp": "2025-06-19T06:27:46.412Z",
+      "description": "Navigate to: https://httpbin.org/forms/post",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 8,
+      "timestamp": "2025-06-19T06:27:47.678Z",
+      "description": "Navigate to: https://httpbin.org/forms/post",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 9,
+      "timestamp": "2025-06-19T06:27:49.303Z",
+      "description": "Navigate to: https://httpbin.org/forms/post",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 10,
+      "timestamp": "2025-06-19T06:27:50.771Z",
+      "description": "Test execution completed successfully",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "All steps completed",
+      "status": "SUCCESS",
+      "screenshots": []
+    }
+  ],
+  "toolCalls": [
+    {
+      "stepNumber": 2,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "Successfully navigated to: https://httpbin.org/forms/post",
+      "timestamp": "2025-06-19T06:27:41.443Z",
+      "status": "SUCCESS"
+    },
+    {
+      "stepNumber": 3,
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "#custname",
+        "value": "Test User",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('#custname') to be visible\u001b[22m\n",
+      "timestamp": "2025-06-19T06:27:43.991Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 4,
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "#custtel",
+        "value": "123-456-7890",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('#custtel') to be visible\u001b[22m\n",
+      "timestamp": "2025-06-19T06:27:43.991Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 5,
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "#custemail",
+        "value": "test@example.com",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('#custemail') to be visible\u001b[22m\n",
+      "timestamp": "2025-06-19T06:27:43.991Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 6,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "timestamp": "2025-06-19T06:27:45.488Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 7,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "timestamp": "2025-06-19T06:27:46.412Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 8,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "timestamp": "2025-06-19T06:27:47.678Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 9,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "timestamp": "2025-06-19T06:27:49.303Z",
+      "status": "FAILED"
+    }
+  ],
+  "stepCounter": 10,
+  "screenshotCounter": 4,
+  "status": "SUCCESS",
+  "finalResult": "Test completed successfully",
+  "duration": 10158
+}

@@ -1,0 +1,121 @@
+{
+  "sessionId": "INTERACTIVE-NAV-DEMO",
+  "sessionName": "INTERACTIVE-NAV-DEMO_2025-06-19T06-27-32-892Z",
+  "testName": "Interactive Navigation Demo",
+  "testId": "INTERACTIVE-NAV-DEMO",
+  "startTime": "2025-06-19T06:27:32.893Z",
+  "endTime": "2025-06-19T06:27:40.611Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-NAV-DEMO_2025-06-19T06-27-32-892Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-NAV-DEMO_2025-06-19T06-27-32-892Z/screenshots",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "timestamp": "2025-06-19T06:27:32.893Z",
+      "description": "Starting test execution: Interactive Navigation Demo",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Test ID: INTERACTIVE-NAV-DEMO",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-1-screenshot-1.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-NAV-DEMO_2025-06-19T06-27-32-892Z/screenshots/step-1-screenshot-1.png",
+          "timestamp": "2025-06-19T06:27:36.003Z",
+          "description": "Page loaded: https://httpbin.org",
+          "stepNumber": 1
+        }
+      ]
+    },
+    {
+      "stepNumber": 2,
+      "timestamp": "2025-06-19T06:27:36.003Z",
+      "description": "Navigate to: https://httpbin.org",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org",
+        "waitUntil": "load"
+      },
+      "result": "Successfully navigated to: https://httpbin.org",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 3,
+      "timestamp": "2025-06-19T06:27:37.286Z",
+      "description": "Get page content for analysis",
+      "toolName": "getPageContent",
+      "toolArgs": {
+        "includeTitle": true,
+        "maxLength": 3000
+      },
+      "result": "Retrieved 3079 characters",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 4,
+      "timestamp": "2025-06-19T06:27:37.293Z",
+      "description": "Take screenshot: httpbin_homepage",
+      "toolName": "screenshot",
+      "toolArgs": {
+        "name": "httpbin_homepage",
+        "selector": "body",
+        "fullPage": true
+      },
+      "result": "locator.screenshot: path: unsupported mime type \"null\"",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 5,
+      "timestamp": "2025-06-19T06:27:40.611Z",
+      "description": "Test execution completed successfully",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "All steps completed",
+      "status": "SUCCESS",
+      "screenshots": []
+    }
+  ],
+  "toolCalls": [
+    {
+      "stepNumber": 2,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org",
+        "waitUntil": "load"
+      },
+      "result": "Successfully navigated to: https://httpbin.org",
+      "timestamp": "2025-06-19T06:27:36.003Z",
+      "status": "SUCCESS"
+    },
+    {
+      "stepNumber": 3,
+      "toolName": "getPageContent",
+      "toolArgs": {
+        "includeTitle": true,
+        "maxLength": 3000
+      },
+      "result": "Retrieved 3079 characters",
+      "timestamp": "2025-06-19T06:27:37.286Z",
+      "status": "SUCCESS"
+    },
+    {
+      "stepNumber": 4,
+      "toolName": "screenshot",
+      "toolArgs": {
+        "name": "httpbin_homepage",
+        "selector": "body",
+        "fullPage": true
+      },
+      "result": "locator.screenshot: path: unsupported mime type \"null\"",
+      "timestamp": "2025-06-19T06:27:37.293Z",
+      "status": "FAILED"
+    }
+  ],
+  "stepCounter": 5,
+  "screenshotCounter": 1,
+  "status": "SUCCESS",
+  "finalResult": "Test completed successfully",
+  "duration": 7718
+}
