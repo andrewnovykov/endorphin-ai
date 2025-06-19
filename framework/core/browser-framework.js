@@ -58,12 +58,71 @@ export class EnhancedBrowserTestFramework {
 
   setupTools() {
     console.log("🛠️ Setting up browser automation tools...");
-    this.tools = createAllTools(this);
+    
+    // Create tools for the AI agent
+    this.toolsArray = createAllTools(this);
+    
+    // Create direct tool access object for framework use
+    this.tools = {
+      navigate: async (params) => {
+        const stepDesc = `Navigate to: ${params.url}`;
+        console.log(`🌍 ${stepDesc}`);
+        
+        try {
+          await this.page.goto(params.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await this.takeStepScreenshot(`Page loaded: ${params.url}`);
+          
+          this.logTestStep(stepDesc, 'navigate', params, `Successfully navigated to: ${params.url}`, true);
+          return `Successfully navigated to: ${params.url}`;
+        } catch (error) {
+          this.logTestStep(stepDesc, 'navigate', params, error.message, false);
+          throw error;
+        }
+      },
+      
+      click: async (params) => {
+        const stepDesc = `Click element: ${params.selector}`;
+        console.log(`👆 ${stepDesc}`);
+        
+        try {
+          await this.page.locator(params.selector).click();
+          await this.takeStepScreenshot(`Clicked: ${params.selector}`);
+          
+          this.logTestStep(stepDesc, 'click', params, `Successfully clicked: ${params.selector}`, true);
+          return `Successfully clicked: ${params.selector}`;
+        } catch (error) {
+          this.logTestStep(stepDesc, 'click', params, error.message, false);
+          throw error;
+        }
+      },
+      
+      fill: async (params) => {
+        const stepDesc = `Fill field: ${params.selector} with "${params.text}"`;
+        console.log(`✏️ ${stepDesc}`);
+        
+        try {
+          await this.page.locator(params.selector).fill(params.text);
+          await this.takeStepScreenshot(`Filled: ${params.selector}`);
+          
+          this.logTestStep(stepDesc, 'fill', params, `Successfully filled: ${params.selector}`, true);
+          return `Successfully filled: ${params.selector}`;
+        } catch (error) {
+          this.logTestStep(stepDesc, 'fill', params, error.message, false);
+          throw error;
+        }
+      },
+      
+      screenshot: async (params = {}) => {
+        const filename = params.filename || `screenshot-${Date.now()}.png`;
+        await this.takeStepScreenshot(filename);
+        return `Screenshot saved: ${filename}`;
+      }
+    };
   }
 
   async setupAgent() {
     console.log("🤖 Setting up AI agent...");
-    this.agent = await setupAgent(this.tools);
+    this.agent = await setupAgent(this.toolsArray);
   }
 
   // Directory cleanup methods
@@ -223,8 +282,36 @@ export class EnhancedBrowserTestFramework {
       this.logTestStep("Test started", null, null, `Starting task: ${taskDescription}`, true);
       await this.takeStepScreenshot("Initial page state");
       
+      // Create enhanced context message for the agent
+      const systemContext = `You are a browser automation agent with access to the following tools:
+- navigate: Navigate to any URL
+- click: Click elements using various selection strategies (CSS, text, role, etc.)
+- fill: Fill input fields with text
+- wait: Wait for elements or time delays
+- verifyElement: Check if elements exist on the page
+- getPageContent: Get page content for analysis
+- screenshot: Take screenshots
+- getElementInfo: Get information about specific elements
+
+IMPORTANT INSTRUCTIONS:
+1. You are currently controlling a browser that may already have a page loaded
+2. When asked to click a button with text like "Log In", use: click with selector="Log In" and strategy="text"
+3. For email fields, use: fill with selector="input[type='email']" or "input[name*='email']"
+4. For password fields, use: fill with selector="input[type='password']" or "input[name*='password']"
+5. Take screenshots between major actions to document the process
+6. If an element is not found with one selector, try alternative selectors
+7. Complete the task step by step without asking for additional information
+8. NEVER ask for URLs or page information - just use the tools directly
+
+EXAMPLE:
+To click "Log In" button: {"selector": "Log In", "strategy": "text"}
+To fill email: {"selector": "input[type='email']", "value": "user@example.com"}
+To fill password: {"selector": "input[type='password']", "value": "password123"}
+
+Current Task: ${taskDescription}`;
+
       const finalState = await this.agent.invoke({
-        messages: [new HumanMessage(taskDescription)],
+        messages: [new HumanMessage(systemContext)],
       }, {
         recursionLimit: AGENT_CONFIG.agent.recursionLimit,
         configurable: { thread_id: `session-${this.currentTestSession.sessionId}` }

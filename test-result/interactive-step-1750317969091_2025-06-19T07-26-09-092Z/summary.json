@@ -1,0 +1,13 @@
+{
+  "testName": "Interactive-Step-1750317969091",
+  "sessionId": "interactive-step-1750317969091",
+  "status": "SUCCESS",
+  "startTime": "2025-06-19T07:26:09.092Z",
+  "endTime": "2025-06-19T07:26:13.733Z",
+  "duration": 4641,
+  "totalSteps": 5,
+  "successfulSteps": 3,
+  "failedSteps": 2,
+  "totalScreenshots": 5,
+  "finalResult": "The \"Sign in\" button was successfully clicked using the CSS selector. Proceeding with the next step, if any. If you have further instructions, please let me know!"
+}

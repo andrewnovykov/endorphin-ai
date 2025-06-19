@@ -59,10 +59,10 @@ export function createClickTool(framework) {
     }
   }, {
     name: 'click',
-    description: 'Click any element with multiple selection strategies.',
+    description: 'Click any element with multiple selection strategies. For buttons with text like "Log In", "Sign In", "Submit", use strategy="text" and selector="Log In". For CSS selectors use strategy="css".',
     schema: z.object({
-      selector: z.string().describe("Element selector"),
-      strategy: z.enum(['css', 'text', 'exact-text', 'role', 'placeholder', 'label', 'title', 'alt']).optional(),
+      selector: z.string().describe("Element selector - for buttons use the button text (e.g. 'Log In', 'Sign In'), for CSS use actual selector"),
+      strategy: z.enum(['css', 'text', 'exact-text', 'role', 'placeholder', 'label', 'title', 'alt']).optional().describe("Selection strategy - use 'text' for button text, 'css' for CSS selectors"),
       timeout: z.number().optional(),
       force: z.boolean().optional(),
     })
@@ -115,9 +115,9 @@ export function createFillTool(framework) {
     }
   }, {
     name: 'fill',
-    description: 'Fill any input field with text.',
+    description: 'Fill any input field with text. Use common selectors like input[type="email"], input[name="email"], #email for email fields, input[type="password"], input[name="password"], #password for password fields.',
     schema: z.object({
-      selector: z.string().describe("CSS selector of input field"),
+      selector: z.string().describe("CSS selector of input field - use input[type='email'] for email, input[type='password'] for password"),
       value: z.string().describe("Text to enter"),
       strategy: z.enum(['fill', 'type']).optional(),
       clearFirst: z.boolean().optional(),
