@@ -4,7 +4,25 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node framework/enhanced-test-framework.js",
+    "test": "node framework/enhanced-test-framework.js --test",
+    "framework:enhanced": "node framework/enhanced-test-framework.js",
+    "enhanced:demo": "node framework/enhanced-test-framework.js",
+    "enhanced:test": "node framework/enhanced-test-framework.js --test",
+    "enhanced:interactive": "node framework/enhanced-test-framework.js --interactive",
+    "enhanced:all": "node framework/enhanced-test-framework.js --all",
+    "enhanced:list": "node framework/enhanced-test-framework.js --list",
+    "enhanced:comprehensive": "node framework/enhanced-test-framework.js --comprehensive",
+    "enhanced:QE-001": "node framework/enhanced-test-framework.js --test QE-001",
+    "enhanced:QE-002": "node framework/enhanced-test-framework.js --test QE-002",
+    "enhanced:auth": "node framework/enhanced-test-framework.js --tag authentication",
+    "enhanced:smoke": "node framework/enhanced-test-framework.js --tag smoke",
+    "enhanced:high": "node framework/enhanced-test-framework.js --priority High",
+    "verify-format": "node framework/testing/verify-test-format.js",
+    "interactive": "node framework/interactive/interactive-test.js",
+    "interactive-demo": "node framework/demos/interactive-demo.js",
+    "test-framework": "node framework/testing/test-modular-framework.js",
+    "step-by-step": "node step-by-step-interactive.js"
   },
   "keywords": [],
   "author": "",
@@ -14,9 +32,12 @@
     "@langchain/community": "^0.3.31",
     "@langchain/core": "^0.3.40",
     "@langchain/langgraph": "^0.2.46",
+    "@modelcontextprotocol/sdk": "^1.13.0",
+    "@playwright/mcp": "^0.0.29",
     "dotenv": "^16.4.7",
     "langchain": "^0.3.19",
     "openai": "^4.85.3",
-    "playwright": "^1.50.1"
+    "playwright": "^1.50.1",
+    "zod": "^3.25.67"
   }
 }

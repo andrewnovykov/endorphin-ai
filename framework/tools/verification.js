@@ -1,0 +1,69 @@
+// framework/tools/verification.js
+import { tool } from '@langchain/core/tools';
+import { z } from 'zod';
+
+export function createVerifyElementTool(framework) {
+  return tool(async ({ selector, state = 'visible', timeout = 10000 }) => {
+    const stepDesc = `Verify ${selector} is ${state}`;
+    console.log(`🔍 ${stepDesc}`);
+    
+    try {
+      await framework.page.waitForSelector(selector, { state, timeout });
+      await framework.takeStepScreenshot(`Verified ${selector} is ${state}`);
+      
+      const result = `Element ${selector} is ${state} on the page`;
+      framework.logTestStep(stepDesc, 'verifyElement', { selector, state, timeout }, result, true);
+      return `✅ ${result}`;
+    } catch (error) {
+      await framework.takeStepScreenshot(`Failed to verify ${selector}`);
+      framework.logTestStep(stepDesc, 'verifyElement', { selector, state, timeout }, error.message, false);
+      return `❌ Could not verify element ${selector} as ${state}: ${error.message}`;
+    }
+  }, {
+    name: 'verifyElement',
+    description: 'Verify element exists and is in specified state.',
+    schema: z.object({
+      selector: z.string(),
+      state: z.enum(['visible', 'hidden', 'attached', 'detached']).optional(),
+      timeout: z.number().optional(),
+    })
+  });
+}
+
+export function createGetElementInfoTool(framework) {
+  return tool(async ({ selector }) => {
+    const stepDesc = `Get element info: ${selector}`;
+    console.log(`🔍 ${stepDesc}`);
+    
+    try {
+      await framework.page.waitForSelector(selector, { timeout: 5000 });
+      
+      const elementInfo = await framework.page.locator(selector).evaluate(el => ({
+        tagName: el.tagName,
+        id: el.id,
+        className: el.className,
+        textContent: el.textContent?.trim(),
+        value: el.value,
+        placeholder: el.placeholder,
+        type: el.type,
+        disabled: el.disabled,
+        visible: el.offsetParent !== null,
+        href: el.href,
+        src: el.src
+      }));
+      
+      const result = `Element info: ${JSON.stringify(elementInfo, null, 2)}`;
+      framework.logTestStep(stepDesc, 'getElementInfo', { selector }, result, true);
+      return result;
+    } catch (error) {
+      framework.logTestStep(stepDesc, 'getElementInfo', { selector }, error.message, false);
+      return `❌ Could not get info for ${selector}: ${error.message}`;
+    }
+  }, {
+    name: 'getElementInfo',
+    description: 'Get detailed information about any element.',
+    schema: z.object({
+      selector: z.string(),
+    })
+  });
+}

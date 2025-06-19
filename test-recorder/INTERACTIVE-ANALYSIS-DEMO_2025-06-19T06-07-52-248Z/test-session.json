@@ -1,0 +1,111 @@
+{
+  "sessionId": "INTERACTIVE-ANALYSIS-DEMO",
+  "sessionName": "INTERACTIVE-ANALYSIS-DEMO_2025-06-19T06-07-52-248Z",
+  "testName": "Interactive Website Analysis Demo",
+  "testId": "INTERACTIVE-ANALYSIS-DEMO",
+  "startTime": "2025-06-19T06:07:52.249Z",
+  "endTime": "2025-06-19T06:07:54.718Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-ANALYSIS-DEMO_2025-06-19T06-07-52-248Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-ANALYSIS-DEMO_2025-06-19T06-07-52-248Z/screenshots",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "timestamp": "2025-06-19T06:07:52.249Z",
+      "description": "Starting test execution: Interactive Website Analysis Demo",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Test ID: INTERACTIVE-ANALYSIS-DEMO",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 2,
+      "timestamp": "2025-06-19T06:07:53.324Z",
+      "description": "Take screenshot: example_full_page",
+      "toolName": "screenshot",
+      "toolArgs": {
+        "name": "example_full_page",
+        "selector": "",
+        "fullPage": true
+      },
+      "result": "path: unsupported mime type \"null\"",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 3,
+      "timestamp": "2025-06-19T06:07:53.324Z",
+      "description": "Get element info: h1",
+      "toolName": "getElementInfo",
+      "toolArgs": {
+        "selector": "h1"
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 4,
+      "timestamp": "2025-06-19T06:07:53.325Z",
+      "description": "Navigate to: https://example.com",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://example.com",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 5,
+      "timestamp": "2025-06-19T06:07:54.718Z",
+      "description": "Test execution completed successfully",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "All steps completed",
+      "status": "SUCCESS",
+      "screenshots": []
+    }
+  ],
+  "toolCalls": [
+    {
+      "stepNumber": 2,
+      "toolName": "screenshot",
+      "toolArgs": {
+        "name": "example_full_page",
+        "selector": "",
+        "fullPage": true
+      },
+      "result": "path: unsupported mime type \"null\"",
+      "timestamp": "2025-06-19T06:07:53.324Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 3,
+      "toolName": "getElementInfo",
+      "toolArgs": {
+        "selector": "h1"
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed",
+      "timestamp": "2025-06-19T06:07:53.324Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 4,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://example.com",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "timestamp": "2025-06-19T06:07:53.325Z",
+      "status": "FAILED"
+    }
+  ],
+  "stepCounter": 5,
+  "screenshotCounter": 0,
+  "status": "SUCCESS",
+  "finalResult": "Test completed successfully",
+  "duration": 2469
+}

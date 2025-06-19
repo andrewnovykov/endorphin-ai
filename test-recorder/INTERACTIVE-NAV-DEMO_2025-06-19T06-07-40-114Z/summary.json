@@ -1,0 +1,13 @@
+{
+  "testName": "Interactive Navigation Demo",
+  "sessionId": "INTERACTIVE-NAV-DEMO",
+  "status": "SUCCESS",
+  "startTime": "2025-06-19T06:07:40.115Z",
+  "endTime": "2025-06-19T06:07:46.976Z",
+  "duration": 6861,
+  "totalSteps": 7,
+  "successfulSteps": 4,
+  "failedSteps": 3,
+  "totalScreenshots": 1,
+  "finalResult": "Test completed successfully"
+}

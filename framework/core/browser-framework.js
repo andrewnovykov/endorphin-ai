@@ -1,0 +1,457 @@
+// framework/core/browser-framework.js
+import { chromium } from "playwright";
+import { HumanMessage } from "@langchain/core/messages";
+import fs from 'fs';
+import path from 'path';
+import { BROWSER_CONFIG } from '../config/browser-config.js';
+import { AGENT_CONFIG } from '../config/agent-config.js';
+import { PATHS } from '../config/paths.js';
+import { createTestSession, saveTestSession } from './test-session.js';
+import { setupAgent } from './agent-setup.js';
+import { createAllTools } from '../tools/index.js';
+
+/**
+ * Enhanced Browser Test Framework - Core Framework Class
+ * Handles browser lifecycle, tool setup, and test session management
+ */
+export class EnhancedBrowserTestFramework {
+  constructor() {
+    this.browser = null;
+    this.context = null;
+    this.page = null;
+    this.tools = null;
+    this.agent = null;
+    this.testResults = [];
+    this.currentTestSession = null;
+    this.resultBaseDir = PATHS.TEST_RESULT_DIR;
+    this.recorderBaseDir = PATHS.TEST_RECORDER_DIR;
+    this.isInteractiveMode = false;
+  }
+
+  async initialize() {
+    console.log("🚀 Initializing Enhanced Browser Test Framework...");
+    
+    // Clean up directories before starting
+    await this.cleanupDirectories();
+    
+    // Ensure directories exist
+    if (!fs.existsSync(this.resultBaseDir)) {
+      fs.mkdirSync(this.resultBaseDir, { recursive: true });
+    }
+    if (!fs.existsSync(this.recorderBaseDir)) {
+      fs.mkdirSync(this.recorderBaseDir, { recursive: true });
+    }
+    
+    // Launch browser
+    this.browser = await chromium.launch(BROWSER_CONFIG.launchOptions);
+    this.context = await this.browser.newContext(BROWSER_CONFIG.contextOptions);
+    this.page = await this.context.newPage();
+
+    // Setup tools with tracking
+    this.setupTools();
+    
+    // Create AI agent
+    await this.setupAgent();
+    
+    console.log("✅ Framework initialized successfully!");
+  }
+
+  setupTools() {
+    console.log("🛠️ Setting up browser automation tools...");
+    this.tools = createAllTools(this);
+  }
+
+  async setupAgent() {
+    console.log("🤖 Setting up AI agent...");
+    this.agent = await setupAgent(this.tools);
+  }
+
+  // Directory cleanup methods
+  async cleanupDirectories() {
+    console.log("🧹 Cleaning up previous test results...");
+    
+    if (fs.existsSync(this.resultBaseDir)) {
+      const files = fs.readdirSync(this.resultBaseDir);
+      for (const file of files) {
+        const filePath = path.join(this.resultBaseDir, file);
+        if (fs.statSync(filePath).isDirectory()) {
+          fs.rmSync(filePath, { recursive: true, force: true });
+        } else {
+          fs.unlinkSync(filePath);
+        }
+      }
+      console.log("  ✅ Cleaned test-result directory");
+    }
+  }
+
+  async cleanupRecorderDirectory() {
+    if (fs.existsSync(this.recorderBaseDir)) {
+      const files = fs.readdirSync(this.recorderBaseDir);
+      for (const file of files) {
+        const filePath = path.join(this.recorderBaseDir, file);
+        if (fs.statSync(filePath).isDirectory()) {
+          fs.rmSync(filePath, { recursive: true, force: true });
+        } else {
+          fs.unlinkSync(filePath);
+        }
+      }
+      console.log("  ✅ Cleaned test-recorder directory (interactive mode)");
+    }
+  }
+
+  // Test session management
+  createTestSession(testName, testId = null) {
+    const session = createTestSession(testName, testId, this.resultBaseDir);
+    this.currentTestSession = session;
+    return session;
+  }
+
+  logTestStep(stepDescription, toolName = null, toolArgs = null, result = null, isSuccess = true) {
+    if (!this.currentTestSession) return;
+    
+    this.currentTestSession.stepCounter++;
+    const step = {
+      stepNumber: this.currentTestSession.stepCounter,
+      timestamp: new Date().toISOString(),
+      description: stepDescription,
+      toolName,
+      toolArgs,
+      result,
+      status: isSuccess ? 'SUCCESS' : 'FAILED',
+      screenshots: []
+    };
+    
+    this.currentTestSession.steps.push(step);
+    
+    if (toolName) {
+      this.currentTestSession.toolCalls.push({
+        stepNumber: this.currentTestSession.stepCounter,
+        toolName,
+        toolArgs,
+        result,
+        timestamp: new Date().toISOString(),
+        status: isSuccess ? 'SUCCESS' : 'FAILED'
+      });
+    }
+    
+    console.log(`📝 Step ${this.currentTestSession.stepCounter}: ${stepDescription} - ${isSuccess ? '✅' : '❌'}`);
+  }
+
+  async takeStepScreenshot(description = null) {
+    if (!this.currentTestSession) return;
+    
+    this.currentTestSession.screenshotCounter++;
+    const filename = `step-${this.currentTestSession.stepCounter || 0}-screenshot-${this.currentTestSession.screenshotCounter}.png`;
+    const filepath = path.join(this.currentTestSession.screenshotsDir, filename);
+    
+    try {
+      await this.page.screenshot({ 
+        path: filepath, 
+        fullPage: false,
+        quality: BROWSER_CONFIG.screenshot.quality,
+        type: BROWSER_CONFIG.screenshot.type
+      });
+      
+      const screenshot = {
+        filename,
+        filepath,
+        timestamp: new Date().toISOString(),
+        description: description || `Step ${this.currentTestSession.stepCounter} screenshot`,
+        stepNumber: this.currentTestSession.stepCounter
+      };
+      
+      // Add to current step if exists
+      if (this.currentTestSession.steps.length > 0) {
+        const currentStep = this.currentTestSession.steps[this.currentTestSession.steps.length - 1];
+        currentStep.screenshots.push(screenshot);
+      }
+      
+      console.log(`📸 Screenshot taken: ${filename}`);
+      return filepath;
+    } catch (error) {
+      console.error(`❌ Failed to take screenshot: ${error.message}`);
+      return null;
+    }
+  }
+
+  async finishTestSession(status = 'SUCCESS', finalResult = null) {
+    if (!this.currentTestSession) return;
+    
+    this.currentTestSession.endTime = new Date().toISOString();
+    this.currentTestSession.status = status;
+    this.currentTestSession.finalResult = finalResult;
+    this.currentTestSession.duration = new Date(this.currentTestSession.endTime) - new Date(this.currentTestSession.startTime);
+    
+    // Save session data
+    const summary = saveTestSession(this.currentTestSession);
+    
+    this.testResults.push(summary);
+    
+    console.log(`📊 Test session completed: ${status}`);
+    console.log(`📁 Results saved to: ${this.currentTestSession.sessionDir}`);
+    
+    // Copy all results to test-recorder folder ONLY for interactive modes
+    if (this.isInteractiveMode) {
+      await this.copyResultsToRecorder(this.currentTestSession);
+    }
+    
+    const session = this.currentTestSession;
+    this.currentTestSession = null;
+    return summary;
+  }
+
+  async cleanup() {
+    if (this.browser) {
+      await this.browser.close();
+      console.log("🧹 Browser closed successfully");
+    }
+  }
+
+  async runTask(taskDescription, testName = null) {
+    const timestamp = new Date().toISOString();
+    const name = testName || `Test-${Date.now()}`;
+    
+    console.log(`\n🎯 Running Task: ${name}`);
+    console.log(`📝 Task: ${taskDescription}`);
+    console.log(`⏰ Started at: ${timestamp}\n`);
+
+    // Create test session
+    const session = this.createTestSession(name, name.replace(/\s+/g, '-').toLowerCase());
+    
+    try {
+      // Log initial step
+      this.logTestStep("Test started", null, null, `Starting task: ${taskDescription}`, true);
+      await this.takeStepScreenshot("Initial page state");
+      
+      const finalState = await this.agent.invoke({
+        messages: [new HumanMessage(taskDescription)],
+      }, {
+        recursionLimit: AGENT_CONFIG.agent.recursionLimit,
+        configurable: { thread_id: `session-${this.currentTestSession.sessionId}` }
+      });
+
+      const result = finalState.messages[finalState.messages.length - 1].content;
+      
+      // Log final step
+      this.logTestStep("Test completed", null, null, result, true);
+      await this.takeStepScreenshot("Final page state");
+      
+      // Finish session
+      await this.finishTestSession('SUCCESS', result);
+      
+      console.log(`\n✅ Task "${name}" completed successfully!`);
+      console.log(`📊 Result: ${result}\n`);
+      
+      return {
+        testName: name,
+        task: taskDescription,
+        timestamp,
+        status: 'SUCCESS',
+        result: result,
+        duration: Date.now() - new Date(timestamp).getTime(),
+        sessionDir: session.sessionDir
+      };
+      
+    } catch (error) {
+      console.error(`\n❌ Task "${name}" failed:`);
+      console.error(`💥 Error: ${error.message}\n`);
+      
+      // Log error step
+      this.logTestStep("Test failed", null, null, error.message, false);
+      await this.takeStepScreenshot("Error state");
+      
+      // Finish session with failure
+      await this.finishTestSession('FAILED', error.message);
+      
+      return {
+        testName: name,
+        task: taskDescription,
+        timestamp,
+        status: 'FAILED',
+        error: error.message,
+        duration: Date.now() - new Date(timestamp).getTime(),
+        sessionDir: session.sessionDir
+      };
+    }
+  }
+
+  async runMultipleTasks(tasks) {
+    console.log(`\n🚀 Running ${tasks.length} tasks sequentially...\n`);
+    
+    const results = [];
+    for (let i = 0; i < tasks.length; i++) {
+      const task = tasks[i];
+      const taskName = task.name || `Task-${i + 1}`;
+      
+      const result = await this.runTask(task.description, taskName);
+      results.push(result);
+      
+      // Add delay between tasks
+      if (i < tasks.length - 1) {
+        console.log("⏱️ Waiting 2 seconds before next task...\n");
+        await new Promise(resolve => setTimeout(resolve, AGENT_CONFIG.execution.stepDelay));
+      }
+    }
+    
+    return results;
+  }
+
+  async runSingleTest(test) {
+    console.log(`\n🚀 Starting test: ${test.id} - ${test.name}`);
+    console.log(`📝 Description: ${test.description}`);
+    console.log(`🎯 Priority: ${test.priority}`);
+    console.log(`🏷️ Tags: ${test.tags.join(', ')}`);
+    
+    // Create test session with detailed tracking
+    this.createTestSession(test.name, test.id);
+    
+    try {
+      this.logTestStep(`Starting test execution: ${test.name}`, null, null, `Test ID: ${test.id}`, true);
+      
+      // Check prerequisites if any
+      if (test.prerequisites && test.prerequisites.length > 0) {
+        this.logTestStep(`Checking prerequisites: ${test.prerequisites.join(', ')}`, null, null, 'Prerequisites validated', true);
+      }
+      
+      // Execute the test task with timeout
+      const messages = [new HumanMessage(test.task)];
+      
+      // Add timeout to prevent infinite loops
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Test execution timeout (5 minutes)')), AGENT_CONFIG.agent.timeout);
+      });
+      
+      const agentPromise = this.agent.invoke({ messages }, {
+        recursionLimit: AGENT_CONFIG.agent.recursionLimit,
+        configurable: { thread_id: `session-${this.currentTestSession.sessionId}` }
+      });
+      
+      await Promise.race([agentPromise, timeoutPromise]);
+      
+      this.logTestStep('Test execution completed successfully', null, null, 'All steps completed', true);
+      
+      // Finish the test session
+      const session = await this.finishTestSession('SUCCESS', 'Test completed successfully');
+      
+      console.log(`✅ Test ${test.id} completed successfully!`);
+      return { success: true, session };
+      
+    } catch (error) {
+      console.error(`❌ Test ${test.id} failed:`, error.message);
+      
+      this.logTestStep('Test execution failed', null, null, error.message, false);
+      const session = await this.finishTestSession('FAILED', error.message);
+      
+      return { success: false, error: error.message, session };
+    }
+  }
+
+  async runMultipleTests(tests) {
+    console.log(`\n🎯 Running ${tests.length} tests with enhanced result tracking...`);
+    const results = [];
+    
+    for (const test of tests) {
+      const result = await this.runSingleTest(test);
+      results.push({
+        testId: test.id,
+        testName: test.name,
+        ...result
+      });
+      
+      // Brief pause between tests
+      await new Promise(resolve => setTimeout(resolve, AGENT_CONFIG.execution.stepDelay));
+    }
+    
+    // Generate final report
+    const report = this.generateReport();
+    
+    console.log(`\n🎉 All tests completed!`);
+    console.log(`📊 Final Results: ${results.filter(r => r.success).length}/${results.length} passed`);
+    
+    return { results, report };
+  }
+
+  async copyResultsToRecorder(session) {
+    try {
+      const recorderSessionDir = path.join(this.recorderBaseDir, session.sessionName);
+      const recorderScreenshotsDir = path.join(recorderSessionDir, 'screenshots');
+      
+      // Create recorder directories
+      fs.mkdirSync(recorderSessionDir, { recursive: true });
+      fs.mkdirSync(recorderScreenshotsDir, { recursive: true });
+      
+      // Copy all files from session directory
+      const sourceFiles = fs.readdirSync(session.sessionDir);
+      for (const file of sourceFiles) {
+        const sourcePath = path.join(session.sessionDir, file);
+        const destPath = path.join(recorderSessionDir, file);
+        
+        if (fs.statSync(sourcePath).isDirectory()) {
+          // Copy screenshots directory
+          if (file === 'screenshots') {
+            const screenshotFiles = fs.readdirSync(sourcePath);
+            for (const screenshot of screenshotFiles) {
+              const srcScreenshot = path.join(sourcePath, screenshot);
+              const destScreenshot = path.join(recorderScreenshotsDir, screenshot);
+              fs.copyFileSync(srcScreenshot, destScreenshot);
+            }
+          }
+        } else {
+          // Copy individual files
+          fs.copyFileSync(sourcePath, destPath);
+        }
+      }
+      
+      console.log(`📼 Results recorded in: ${recorderSessionDir}`);
+      
+    } catch (error) {
+      console.error(`❌ Error copying results to recorder: ${error.message}`);
+    }
+  }
+
+  generateReport() {
+    const passed = this.testResults.filter(r => r.status === 'SUCCESS').length;
+    const failed = this.testResults.filter(r => r.status === 'FAILED').length;
+    const total = this.testResults.length;
+    
+    const report = {
+      summary: {
+        total,
+        passed,
+        failed,
+        passRate: total > 0 ? (passed / total * 100).toFixed(2) + '%' : '0%',
+        generatedAt: new Date().toISOString()
+      },
+      results: this.testResults
+    };
+    
+    // Save report to main directory and test-result directory
+    const timestamp = Date.now();
+    const reportPath = `test-report-${timestamp}.json`;
+    const resultReportPath = path.join(this.resultBaseDir, `test-report-${timestamp}.json`);
+    
+    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+    fs.writeFileSync(resultReportPath, JSON.stringify(report, null, 2));
+    
+    console.log(`\n📊 TEST REPORT:`);
+    console.log(`═══════════════`);
+    console.log(`Total Tests: ${total}`);
+    console.log(`✅ Passed: ${passed}`);
+    console.log(`❌ Failed: ${failed}`);
+    console.log(`📈 Pass Rate: ${report.summary.passRate}`);
+    console.log(`📄 Report saved: ${reportPath}`);
+    console.log(`📁 Detailed results in: ${this.resultBaseDir}\n`);
+    
+    return report;
+  }
+
+  async enableInteractiveMode() {
+    this.isInteractiveMode = true;
+    console.log("📼 Interactive mode enabled - results will be recorded in test-recorder folder");
+    await this.cleanupRecorderDirectory();
+  }
+
+  disableInteractiveMode() {
+    this.isInteractiveMode = false;
+  }
+}

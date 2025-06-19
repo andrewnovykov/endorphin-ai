@@ -167,7 +167,9 @@ const workflow = new StateGraph(MessagesAnnotation)
   .addConditionalEdges("agent", shouldContinue);
 
 // Finally, we compile it into a LangChain Runnable.
-const app = workflow.compile();
+const app = workflow.compile({
+  recursionLimit: 50, // Prevent recursion issues
+});
 
 // Use the agent
 const finalState = await app.invoke({

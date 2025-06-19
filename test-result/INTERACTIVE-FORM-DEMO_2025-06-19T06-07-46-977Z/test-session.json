@@ -1,0 +1,185 @@
+{
+  "sessionId": "INTERACTIVE-FORM-DEMO",
+  "sessionName": "INTERACTIVE-FORM-DEMO_2025-06-19T06-07-46-977Z",
+  "testName": "Interactive Form Demo",
+  "testId": "INTERACTIVE-FORM-DEMO",
+  "startTime": "2025-06-19T06:07:46.977Z",
+  "endTime": "2025-06-19T06:07:52.246Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-FORM-DEMO_2025-06-19T06-07-46-977Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-FORM-DEMO_2025-06-19T06-07-46-977Z/screenshots",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "timestamp": "2025-06-19T06:07:46.977Z",
+      "description": "Starting test execution: Interactive Form Demo",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Test ID: INTERACTIVE-FORM-DEMO",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-1-screenshot-1.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/browser-use-js/test-result/INTERACTIVE-FORM-DEMO_2025-06-19T06-07-46-977Z/screenshots/step-1-screenshot-1.png",
+          "timestamp": "2025-06-19T06:07:47.741Z",
+          "description": "Page loaded: https://httpbin.org/forms/post",
+          "stepNumber": 1
+        }
+      ]
+    },
+    {
+      "stepNumber": 2,
+      "timestamp": "2025-06-19T06:07:47.741Z",
+      "description": "Navigate to: https://httpbin.org/forms/post",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "Successfully navigated to: https://httpbin.org/forms/post",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 3,
+      "timestamp": "2025-06-19T06:07:49.622Z",
+      "description": "Fill input[name='custname'] with \"Test User\"",
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "input[name='custname']",
+        "value": "Test User",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 4,
+      "timestamp": "2025-06-19T06:07:49.623Z",
+      "description": "Fill input[name='custtel'] with \"123-456-7890\"",
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "input[name='custtel']",
+        "value": "123-456-7890",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 5,
+      "timestamp": "2025-06-19T06:07:49.623Z",
+      "description": "Fill input[name='custemail'] with \"test@example.com\"",
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "input[name='custemail']",
+        "value": "test@example.com",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 6,
+      "timestamp": "2025-06-19T06:07:51.087Z",
+      "description": "Navigate to: https://httpbin.org/forms/post",
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 7,
+      "timestamp": "2025-06-19T06:07:52.245Z",
+      "description": "Test execution completed successfully",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "All steps completed",
+      "status": "SUCCESS",
+      "screenshots": []
+    }
+  ],
+  "toolCalls": [
+    {
+      "stepNumber": 2,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "Successfully navigated to: https://httpbin.org/forms/post",
+      "timestamp": "2025-06-19T06:07:47.741Z",
+      "status": "SUCCESS"
+    },
+    {
+      "stepNumber": 3,
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "input[name='custname']",
+        "value": "Test User",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed",
+      "timestamp": "2025-06-19T06:07:49.622Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 4,
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "input[name='custtel']",
+        "value": "123-456-7890",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed",
+      "timestamp": "2025-06-19T06:07:49.623Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 5,
+      "toolName": "fill",
+      "toolArgs": {
+        "selector": "input[name='custemail']",
+        "value": "test@example.com",
+        "strategy": "fill",
+        "clearFirst": true,
+        "pressEnter": false
+      },
+      "result": "page.waitForSelector: Target page, context or browser has been closed",
+      "timestamp": "2025-06-19T06:07:49.623Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 6,
+      "toolName": "navigate",
+      "toolArgs": {
+        "location": "https://httpbin.org/forms/post",
+        "waitUntil": "load"
+      },
+      "result": "page.goto: Target page, context or browser has been closed",
+      "timestamp": "2025-06-19T06:07:51.087Z",
+      "status": "FAILED"
+    }
+  ],
+  "stepCounter": 7,
+  "screenshotCounter": 4,
+  "status": "SUCCESS",
+  "finalResult": "Test completed successfully",
+  "duration": 5269
+}
