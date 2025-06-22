@@ -4,6 +4,8 @@
 import { readdir, stat } from 'fs/promises';
 import { join, resolve } from 'path';
 import { pathToFileURL } from 'url';
+import { performance } from 'perf_hooks';
+import { ConsoleReporter } from './console-reporter.js';
 
 /**
  * Check if we're running in test environment
@@ -210,23 +212,49 @@ export async function runSingleTestById(testId, config = null) {
     return { success: true, test };
   }
 
-  console.log(`🧪 Running test: ${test.id} - ${test.name}`);
+  const reporter = new ConsoleReporter();
+  reporter.startSession();
+  
+  // Set environment variable to reduce noise from browser framework
+  process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
   
   const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
   const framework = new EnhancedBrowserTestFramework(config);
   
   try {
     await framework.initialize();
-    const result = await framework.runSingleTest(test);
-    console.log(`✅ Test completed: ${result.status}`);
-    return { success: true, result };
+    
+    const startTime = performance.now();
+    reporter.startTest(test.id, test.name);
+    
+    try {
+      const result = await framework.runSingleTest(test);
+      const duration = Math.round(performance.now() - startTime);
+      const status = result.success ? 'SUCCESS' : 'FAILED';
+      
+      reporter.completeTest(test.id, test.name, status, duration, result.error);
+    } catch (error) {
+      const duration = Math.round(performance.now() - startTime);
+      reporter.completeTest(test.id, test.name, 'FAILED', duration, error.message);
+    }
+    
+    const summary = reporter.endSession();
+    return { 
+      success: summary.success, 
+      passed: summary.passedTests, 
+      failed: summary.failedTests, 
+      total: summary.totalTests 
+    };
+    
   } catch (error) {
-    console.error('❌ Test failed:', error.message);
+    console.error('❌ Test execution failed:', error.message);
     if (isTestEnvironment()) {
       return { success: false, error: error.message };
     }
     safeExit(1);
   } finally {
+    // Clean up environment variable
+    delete process.env.ENDORPHIN_CONSOLE_REPORTER;
     await framework.cleanup();
   }
 }
@@ -247,7 +275,11 @@ export async function runTestsByTag(tag, config = null) {
     return { success: true, tests };
   }
 
-  console.log(`🏷️ Running ${tests.length} test(s) with tag: ${tag}`);
+  const reporter = new ConsoleReporter();
+  reporter.startSession();
+  
+  // Set environment variable to reduce noise from browser framework
+  process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
   
   const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
   const framework = new EnhancedBrowserTestFramework(config);
@@ -255,14 +287,30 @@ export async function runTestsByTag(tag, config = null) {
   try {
     await framework.initialize();
     
-    const results = [];
     for (const test of tests) {
-      console.log(`\n🧪 Running: ${test.id} - ${test.name}`);
-      const result = await framework.runSingleTest(test);
-      console.log(`✅ Result: ${result.status}`);
-      results.push(result);
+      const startTime = performance.now();
+      reporter.startTest(test.id, test.name);
+      
+      try {
+        const result = await framework.runSingleTest(test);
+        const duration = Math.round(performance.now() - startTime);
+        const status = result.success ? 'SUCCESS' : 'FAILED';
+        
+        reporter.completeTest(test.id, test.name, status, duration, result.error);
+      } catch (error) {
+        const duration = Math.round(performance.now() - startTime);
+        reporter.completeTest(test.id, test.name, 'FAILED', duration, error.message);
+      }
     }
-    return { success: true, results };
+    
+    const summary = reporter.endSession();
+    return { 
+      success: summary.success, 
+      passed: summary.passedTests, 
+      failed: summary.failedTests, 
+      total: summary.totalTests 
+    };
+    
   } catch (error) {
     console.error('❌ Test execution failed:', error.message);
     if (isTestEnvironment()) {
@@ -270,6 +318,8 @@ export async function runTestsByTag(tag, config = null) {
     }
     safeExit(1);
   } finally {
+    // Clean up environment variable
+    delete process.env.ENDORPHIN_CONSOLE_REPORTER;
     await framework.cleanup();
   }
 }
@@ -290,7 +340,11 @@ export async function runTestsByPriority(priority, config = null) {
     return { success: true, tests };
   }
 
-  console.log(`🎯 Running ${tests.length} test(s) with priority: ${priority}`);
+  const reporter = new ConsoleReporter();
+  reporter.startSession();
+  
+  // Set environment variable to reduce noise from browser framework
+  process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
   
   const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
   const framework = new EnhancedBrowserTestFramework(config);
@@ -298,14 +352,30 @@ export async function runTestsByPriority(priority, config = null) {
   try {
     await framework.initialize();
     
-    const results = [];
     for (const test of tests) {
-      console.log(`\n🧪 Running: ${test.id} - ${test.name}`);
-      const result = await framework.runSingleTest(test);
-      console.log(`✅ Result: ${result.status}`);
-      results.push(result);
+      const startTime = performance.now();
+      reporter.startTest(test.id, test.name);
+      
+      try {
+        const result = await framework.runSingleTest(test);
+        const duration = Math.round(performance.now() - startTime);
+        const status = result.success ? 'SUCCESS' : 'FAILED';
+        
+        reporter.completeTest(test.id, test.name, status, duration, result.error);
+      } catch (error) {
+        const duration = Math.round(performance.now() - startTime);
+        reporter.completeTest(test.id, test.name, 'FAILED', duration, error.message);
+      }
     }
-    return { success: true, results };
+    
+    const summary = reporter.endSession();
+    return { 
+      success: summary.success, 
+      passed: summary.passedTests, 
+      failed: summary.failedTests, 
+      total: summary.totalTests 
+    };
+    
   } catch (error) {
     console.error('❌ Test execution failed:', error.message);
     if (isTestEnvironment()) {
@@ -313,6 +383,8 @@ export async function runTestsByPriority(priority, config = null) {
     }
     safeExit(1);
   } finally {
+    // Clean up environment variable
+    delete process.env.ENDORPHIN_CONSOLE_REPORTER;
     await framework.cleanup();
   }
 }
@@ -333,7 +405,11 @@ export async function runAllTests(config = null) {
     return { success: true, tests };
   }
 
-  console.log(`🚀 Running all ${tests.length} test(s)`);
+  const reporter = new ConsoleReporter();
+  reporter.startSession();
+  
+  // Set environment variable to reduce noise from browser framework
+  process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
   
   const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
   const framework = new EnhancedBrowserTestFramework(config);
@@ -341,23 +417,28 @@ export async function runAllTests(config = null) {
   try {
     await framework.initialize();
     
-    let passed = 0;
-    let failed = 0;
-    
     for (const test of tests) {
-      console.log(`\n🧪 Running: ${test.id} - ${test.name}`);
+      const startTime = performance.now();
+      reporter.startTest(test.id, test.name);
+      
       try {
         const result = await framework.runSingleTest(test);
-        console.log(`✅ Result: ${result.status}`);
-        passed++;
+        const duration = Math.round(performance.now() - startTime);
+        const status = result.success ? 'SUCCESS' : 'FAILED';
+        reporter.completeTest(test.id, test.name, status, duration, result.error);
       } catch (error) {
-        console.error(`❌ Failed: ${error.message}`);
-        failed++;
+        const duration = Math.round(performance.now() - startTime);
+        reporter.completeTest(test.id, test.name, 'FAILED', duration, error.message);
       }
     }
     
-    console.log(`\n📊 Test Summary: ${passed} passed, ${failed} failed`);
-    return { success: true, passed, failed, total: tests.length };
+    const summary = reporter.endSession();
+    return { 
+      success: summary.success, 
+      passed: summary.passedTests, 
+      failed: summary.failedTests, 
+      total: summary.totalTests 
+    };
     
   } catch (error) {
     console.error('❌ Test execution failed:', error.message);
@@ -366,6 +447,8 @@ export async function runAllTests(config = null) {
     }
     safeExit(1);
   } finally {
+    // Clean up environment variable
+    delete process.env.ENDORPHIN_CONSOLE_REPORTER;
     await framework.cleanup();
   }
 }

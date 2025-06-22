@@ -1,0 +1,13 @@
+{
+  "testName": "Basic Login Test",
+  "sessionId": "QE-001",
+  "status": "FAILED",
+  "startTime": "2025-06-22T22:39:35.370Z",
+  "endTime": "2025-06-22T22:39:35.383Z",
+  "duration": 13,
+  "totalSteps": 2,
+  "successfulSteps": 1,
+  "failedSteps": 1,
+  "totalScreenshots": 0,
+  "finalResult": "The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' })."
+}
