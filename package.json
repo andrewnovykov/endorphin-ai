@@ -1,6 +1,6 @@
 {
   "name": "endorphin-ai",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "E2E Testing Reinvented with AI - A powerful browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright",
   "main": "framework/index.js",
   "bin": {
