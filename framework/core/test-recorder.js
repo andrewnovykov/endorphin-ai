@@ -1,5 +1,5 @@
-// Endorphin e2e AI test framework>
-// Copyright (C)  2025 Redstudio Agency
+// Endorphin e2e AI test framework
+// Copyright (C) 2025 Redstudio Agency
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -34,31 +34,32 @@ export class TestRecorder {
     this.stepCounter = 0;
     this.recordingId = null;
     this.recordingPath = null;
-    this.screenshotsPath = null;
+    this.stepsPath = null;
     this.isRecording = false;
+    this.startTime = null;
   }
 
   /**
    * Start recording session
    */
   async startRecording() {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5) + 'Z';
-    this.recordingId = `${this.testData.id || 'INTERACTIVE-TEST'}_${timestamp}`;
+    this.startTime = new Date();
+    const timestamp = Date.now();
+    this.recordingId = `${this.testData.id || 'REC'}-${timestamp}`;
     
-    // Create recording directories
-    const rootPath = path.resolve(__dirname, '../../');
-    this.recordingPath = path.join(rootPath, 'test-recorder', this.recordingId);
-    this.screenshotsPath = path.join(this.recordingPath, 'screenshots');
+    // Create recording directories in USER project (not framework)
+    this.recordingPath = path.join(process.cwd(), 'test-recorder', this.recordingId);
+    this.stepsPath = path.join(this.recordingPath, 'steps');
     
     await fs.mkdir(this.recordingPath, { recursive: true });
-    await fs.mkdir(this.screenshotsPath, { recursive: true });
+    await fs.mkdir(this.stepsPath, { recursive: true });
     
     this.isRecording = true;
     this.stepCounter = 0;
     this.steps = [];
     
-    console.log(`🎬 Recording started: ${this.recordingId}`);
-    console.log(`📁 Recording path: ${this.recordingPath}`);
+    console.log('Recording session:', this.recordingId);
+    console.log('Artifacts will be saved to:', this.recordingPath);
     
     return this.recordingId;
   }
@@ -66,69 +67,73 @@ export class TestRecorder {
   /**
    * Record a step with tool call and screenshot
    */
-  async recordStep(prompt, toolName, toolParams, result) {
+  async recordStep(description, type, data, result) {
     if (!this.isRecording) return;
     
     this.stepCounter++;
-    const stepId = `step-${this.stepCounter}`;
+    const stepId = String(this.stepCounter).padStart(3, '0');
+    const stepFolderName = `${stepId}-${this.sanitizeFileName(description)}`;
+    const stepPath = path.join(this.stepsPath, stepFolderName);
     
-    // Take screenshot before and after action
-    const screenshotBefore = await this.takeScreenshot(`${stepId}-before`);
+    // Create step folder
+    await fs.mkdir(stepPath, { recursive: true });
     
-    const step = {
-      id: stepId,
+    // Take BEFORE screenshot
+    const beforeScreenshot = path.join(stepPath, 'before.png');
+    await this.framework.page.screenshot({ path: beforeScreenshot, fullPage: true });
+    
+    // Record step info
+    const stepInfo = {
       stepNumber: this.stepCounter,
+      description,
+      type,
       timestamp: new Date().toISOString(),
-      prompt: prompt,
-      tool: {
-        name: toolName,
-        params: toolParams
-      },
-      result: result,
-      screenshots: {
-        before: screenshotBefore
-      }
+      data,
+      result,
+      beforeScreenshot: 'before.png',
+      afterScreenshot: 'after.png'
     };
     
-    // Take screenshot after action (with small delay)
-    await this.framework.page.waitForTimeout(1000);
-    const screenshotAfter = await this.takeScreenshot(`${stepId}-after`);
-    step.screenshots.after = screenshotAfter;
+    // Take AFTER screenshot (small delay to ensure DOM updates)
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const afterScreenshot = path.join(stepPath, 'after.png');
+    await this.framework.page.screenshot({ path: afterScreenshot, fullPage: true });
     
-    this.steps.push(step);
+    // Save step info
+    await fs.writeFile(
+      path.join(stepPath, 'step-info.json'),
+      JSON.stringify(stepInfo, null, 2)
+    );
     
-    // Log to console
-    console.log(`\n📝 Step ${this.stepCounter}: ${prompt}`);
-    console.log(`🔧 Tool: ${toolName}`);
-    console.log(`📸 Screenshots: ${screenshotBefore}, ${screenshotAfter}`);
+    // Add to steps array
+    this.steps.push({
+      ...stepInfo,
+      stepFolder: stepFolderName
+    });
     
-    // Show visual feedback in browser
-    await this.showBrowserFeedback(stepId, prompt, toolName);
+    console.log(`Step ${this.stepCounter} recorded: ${description}`);
     
-    return step;
+    // Show visual feedback in browser  
+    await this.showBrowserFeedback(this.stepCounter, description, type);
+    
+    return stepInfo;
   }
 
   /**
-   * Take screenshot and save to recording folder
+   * Sanitize filename for step folders
    */
-  async takeScreenshot(filename) {
-    try {
-      const screenshotPath = path.join(this.screenshotsPath, `${filename}.png`);
-      await this.framework.page.screenshot({ 
-        path: screenshotPath,
-        fullPage: true 
-      });
-      return `${filename}.png`;
-    } catch (error) {
-      console.log(`⚠️ Screenshot failed: ${error.message}`);
-      return null;
-    }
+  sanitizeFileName(description) {
+    return description
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .substring(0, 30);
   }
 
   /**
    * Show visual feedback in browser
    */
-  async showBrowserFeedback(stepId, prompt, toolName) {
+  async showBrowserFeedback(stepId, description, type) {
     try {
       await this.framework.page.evaluate((data) => {
         // Remove previous feedback
@@ -155,9 +160,9 @@ export class TestRecorder {
         `;
         
         overlay.innerHTML = `
-          <div style="font-weight: bold; margin-bottom: 8px;">🎬 Recording Step ${data.stepId}</div>
-          <div style="margin-bottom: 5px;"><strong>Action:</strong> ${data.prompt}</div>
-          <div><strong>Tool:</strong> ${data.toolName}</div>
+          <div style="font-weight: bold; margin-bottom: 8px;">Recording Step ${data.stepId}</div>
+          <div style="margin-bottom: 5px;"><strong>Action:</strong> ${data.description}</div>
+          <div><strong>Type:</strong> ${data.type}</div>
         `;
         
         // Add animation keyframes if not exists
@@ -183,7 +188,7 @@ export class TestRecorder {
           }
         }, 3000);
         
-      }, { stepId, prompt, toolName });
+      }, { stepId, description, type });
     } catch (error) {
       // Browser feedback is optional, don't fail if it doesn't work
     }
@@ -231,9 +236,9 @@ export class TestRecorder {
     // Generate test file
     await this.generateTestFile();
     
-    console.log(`\n✅ Recording completed: ${this.recordingId}`);
-    console.log(`📁 Artifacts saved to: ${this.recordingPath}`);
-    console.log(`🧪 Test file generated in tests/ folder`);
+    console.log('Recording completed:', this.recordingId);
+    console.log('Artifacts saved to:', this.recordingPath);
+    console.log('Test file generated in tests/ folder');
     
     return {
       recordingId: this.recordingId,
@@ -249,43 +254,39 @@ export class TestRecorder {
   async generateTestFile() {
     const testId = this.testData.id || 'QE-NEW';
     const filename = `${testId.toLowerCase()}-recorded-test.js`;
-    const testPath = path.resolve(__dirname, '../../tests', filename);
+    
+    // Ensure tests directory exists
+    const testsDir = path.join(process.cwd(), 'tests');
+    await fs.mkdir(testsDir, { recursive: true });
+    
+    const testPath = path.join(testsDir, filename);
     
     // Build task from recorded steps
     const taskSteps = this.steps.map(step => {
-      const toolName = step.tool.name;
-      const params = step.tool.params;
-      
-      switch (toolName) {
-        case 'navigate':
-          return `Navigate to ${params.url}.`;
-        case 'click':
-          return `Click on "${params.selector || 'element'}".`;
-        case 'fill':
-          return `Fill "${params.selector || 'field'}" with "${params.value}".`;
-        case 'clearField':
-          return `Clear field "${params.selector}".`;
-        case 'wait':
-          return `Wait ${params.time || 1000}ms.`;
-        case 'screenshot':
-          return `Take screenshot.`;
-        default:
-          return step.prompt;
-      }
+      // For now, use generic descriptions until we implement proper task building
+      return step.description;
     }).join(' ');
+    
+    // Add "recorded" tag if not already present
+    const tags = this.testData.tags || [];
+    if (!tags.includes('recorded')) {
+      tags.push('recorded');
+    }
+    
+    const exportName = testId.replace(/-/g, '_');
     
     const testContent = `// ${testId}: ${this.testData.name}
 // Description: ${this.testData.description}
 // Priority: ${this.testData.priority || 'Medium'}
-// Tags: ${(this.testData.tags || []).join(', ')}
+// Tags: ${tags.join(', ')}
 // Generated by Test Recorder: ${this.recordingId}
 
-export const ${testId.replace(/-/g, '')} = {
+export const ${exportName} = {
   "id": "${testId}",
   "name": "${this.testData.name}",
   "description": "${this.testData.description}",
   "priority": "${this.testData.priority || 'Medium'}",
-  "tags": ${JSON.stringify(this.testData.tags || [], null, 4)},
+  "tags": ${JSON.stringify(tags, null, 4)},
   "site": "${this.testData.site}",
   "testData": ${JSON.stringify(this.testData.testData || {}, null, 4)},
   "task": "${taskSteps} STOP - test completed.",
@@ -295,7 +296,7 @@ export const ${testId.replace(/-/g, '')} = {
 `;
     
     await fs.writeFile(testPath, testContent);
-    console.log(`📝 Test file created: ${filename}`);
+    console.log('Test file created:', filename);
     
     return testPath;
   }

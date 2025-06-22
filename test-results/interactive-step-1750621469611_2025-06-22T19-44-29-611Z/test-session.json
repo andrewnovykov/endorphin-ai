@@ -1,0 +1,227 @@
+{
+  "sessionId": "interactive-step-1750621469611",
+  "sessionName": "interactive-step-1750621469611_2025-06-22T19-44-29-611Z",
+  "testName": "Interactive-Step-1750621469611",
+  "testId": "interactive-step-1750621469611",
+  "startTime": "2025-06-22T19:44:29.612Z",
+  "endTime": "2025-06-22T19:44:35.721Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/test-results/interactive-step-1750621469611_2025-06-22T19-44-29-611Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/test-results/interactive-step-1750621469611_2025-06-22T19-44-29-611Z/screenshots",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "timestamp": "2025-06-22T19:44:29.612Z",
+      "description": "Test started",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Starting task: click submit button",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-1-screenshot-1.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/test-results/interactive-step-1750621469611_2025-06-22T19-44-29-611Z/screenshots/step-1-screenshot-1.png",
+          "timestamp": "2025-06-22T19:44:29.671Z",
+          "description": "Initial page state",
+          "stepNumber": 1
+        }
+      ]
+    },
+    {
+      "stepNumber": 2,
+      "timestamp": "2025-06-22T19:44:30.932Z",
+      "description": "Click Submit using text strategy",
+      "toolName": "click",
+      "toolArgs": {
+        "selector": "Submit",
+        "strategy": "text",
+        "timeout": 5000,
+        "force": false
+      },
+      "result": "Element Submit not found on page",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 3,
+      "timestamp": "2025-06-22T19:44:31.568Z",
+      "description": "Click submit using text strategy",
+      "toolName": "click",
+      "toolArgs": {
+        "selector": "submit",
+        "strategy": "text",
+        "timeout": 5000,
+        "force": false
+      },
+      "result": "Element submit not found on page",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 4,
+      "timestamp": "2025-06-22T19:44:32.612Z",
+      "description": "Click [type='submit'] using css strategy",
+      "toolName": "click",
+      "toolArgs": {
+        "selector": "[type='submit']",
+        "strategy": "css",
+        "timeout": 5000,
+        "force": false
+      },
+      "result": "Element [type='submit'] not found on page",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 5,
+      "timestamp": "2025-06-22T19:44:33.438Z",
+      "description": "Click button[type='submit'] using css strategy",
+      "toolName": "click",
+      "toolArgs": {
+        "selector": "button[type='submit']",
+        "strategy": "css",
+        "timeout": 5000,
+        "force": false
+      },
+      "result": "Element button[type='submit'] not found on page",
+      "status": "FAILED",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 6,
+      "timestamp": "2025-06-22T19:44:34.106Z",
+      "description": "Get page content for analysis",
+      "toolName": "getPageContent",
+      "toolArgs": {
+        "includeTitle": false,
+        "maxLength": 3000
+      },
+      "result": "Retrieved 3028 characters",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-6-screenshot-2.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/test-results/interactive-step-1750621469611_2025-06-22T19-44-29-611Z/screenshots/step-6-screenshot-2.png",
+          "timestamp": "2025-06-22T19:44:35.006Z",
+          "description": "After clicking [data-cy='signin']",
+          "stepNumber": 6
+        }
+      ]
+    },
+    {
+      "stepNumber": 7,
+      "timestamp": "2025-06-22T19:44:35.006Z",
+      "description": "Click [data-cy='signin'] using css strategy",
+      "toolName": "click",
+      "toolArgs": {
+        "selector": "[data-cy='signin']",
+        "strategy": "css",
+        "timeout": 5000,
+        "force": false
+      },
+      "result": "Successfully clicked [data-cy='signin'] using css strategy",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 8,
+      "timestamp": "2025-06-22T19:44:35.657Z",
+      "description": "Test completed",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "I've successfully clicked the \"Sign in\" button. Let me know if you need further assistance!",
+      "status": "SUCCESS",
+      "screenshots": [
+        {
+          "filename": "step-8-screenshot-3.png",
+          "filepath": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/test-results/interactive-step-1750621469611_2025-06-22T19-44-29-611Z/screenshots/step-8-screenshot-3.png",
+          "timestamp": "2025-06-22T19:44:35.721Z",
+          "description": "Final page state",
+          "stepNumber": 8
+        }
+      ]
+    }
+  ],
+  "toolCalls": [
+    {
+      "stepNumber": 2,
+      "toolName": "click",
+      "toolArgs": {
+        "selector": "Submit",
+        "strategy": "text",
+        "timeout": 5000,
+        "force": false
+      },
+      "result": "Element Submit not found on page",
+      "timestamp": "2025-06-22T19:44:30.932Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 3,
+      "toolName": "click",
+      "toolArgs": {
+        "selector": "submit",
+        "strategy": "text",
+        "timeout": 5000,
+        "force": false
+      },
+      "result": "Element submit not found on page",
+      "timestamp": "2025-06-22T19:44:31.568Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 4,
+      "toolName": "click",
+      "toolArgs": {
+        "selector": "[type='submit']",
+        "strategy": "css",
+        "timeout": 5000,
+        "force": false
+      },
+      "result": "Element [type='submit'] not found on page",
+      "timestamp": "2025-06-22T19:44:32.612Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 5,
+      "toolName": "click",
+      "toolArgs": {
+        "selector": "button[type='submit']",
+        "strategy": "css",
+        "timeout": 5000,
+        "force": false
+      },
+      "result": "Element button[type='submit'] not found on page",
+      "timestamp": "2025-06-22T19:44:33.438Z",
+      "status": "FAILED"
+    },
+    {
+      "stepNumber": 6,
+      "toolName": "getPageContent",
+      "toolArgs": {
+        "includeTitle": false,
+        "maxLength": 3000
+      },
+      "result": "Retrieved 3028 characters",
+      "timestamp": "2025-06-22T19:44:34.106Z",
+      "status": "SUCCESS"
+    },
+    {
+      "stepNumber": 7,
+      "toolName": "click",
+      "toolArgs": {
+        "selector": "[data-cy='signin']",
+        "strategy": "css",
+        "timeout": 5000,
+        "force": false
+      },
+      "result": "Successfully clicked [data-cy='signin'] using css strategy",
+      "timestamp": "2025-06-22T19:44:35.006Z",
+      "status": "SUCCESS"
+    }
+  ],
+  "stepCounter": 8,
+  "screenshotCounter": 3,
+  "status": "SUCCESS",
+  "finalResult": "I've successfully clicked the \"Sign in\" button. Let me know if you need further assistance!",
+  "duration": 6109
+}
