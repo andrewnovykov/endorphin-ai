@@ -480,10 +480,15 @@ Current Task: ${taskDescription}`;
   }
 
   async runSingleTest(test) {
-    console.log(`\n🚀 Starting test: ${test.id} - ${test.name}`);
-    console.log(`📝 Description: ${test.description}`);
-    console.log(`🎯 Priority: ${test.priority}`);
-    console.log(`🏷️ Tags: ${test.tags ? test.tags.join(', ') : 'None'}`);
+    // Only show detailed logs if not using console reporter (for backwards compatibility)
+    const useDetailedLogs = !process.env.ENDORPHIN_CONSOLE_REPORTER;
+    
+    if (useDetailedLogs) {
+      console.log(`\n🚀 Starting test: ${test.id} - ${test.name}`);
+      console.log(`📝 Description: ${test.description}`);
+      console.log(`🎯 Priority: ${test.priority}`);
+      console.log(`🏷️ Tags: ${test.tags ? test.tags.join(', ') : 'None'}`);
+    }
     
     // Create test session with detailed tracking
     this.createTestSession(test.name, test.id);
@@ -516,11 +521,15 @@ Current Task: ${taskDescription}`;
       // Finish the test session
       const session = await this.finishTestSession('SUCCESS', 'Test completed successfully');
       
-      console.log(`✅ Test ${test.id} completed successfully!`);
+      if (useDetailedLogs) {
+        console.log(`✅ Test ${test.id} completed successfully!`);
+      }
       return { success: true, session };
       
     } catch (error) {
-      console.error(`❌ Test ${test.id} failed:`, error.message);
+      if (useDetailedLogs) {
+        console.error(`❌ Test ${test.id} failed:`, error.message);
+      }
       
       this.logTestStep('Test execution failed', null, null, error.message, false);
       const session = await this.finishTestSession('FAILED', error.message);

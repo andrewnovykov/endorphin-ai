@@ -1,0 +1,38 @@
+{
+  "sessionId": "QE-001",
+  "sessionName": "QE-001_2025-06-22T22-39-35-364Z",
+  "testName": "Basic Login Test",
+  "testId": "QE-001",
+  "startTime": "2025-06-22T22:39:35.370Z",
+  "endTime": "2025-06-22T22:39:35.383Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/examples/test-results/QE-001_2025-06-22T22-39-35-364Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/examples/test-results/QE-001_2025-06-22T22-39-35-364Z/screenshots",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "timestamp": "2025-06-22T22:39:35.370Z",
+      "description": "Starting test execution: Basic Login Test",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "Test ID: QE-001",
+      "status": "SUCCESS",
+      "screenshots": []
+    },
+    {
+      "stepNumber": 2,
+      "timestamp": "2025-06-22T22:39:35.383Z",
+      "description": "Test execution failed",
+      "toolName": null,
+      "toolArgs": null,
+      "result": "The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).",
+      "status": "FAILED",
+      "screenshots": []
+    }
+  ],
+  "toolCalls": [],
+  "stepCounter": 2,
+  "screenshotCounter": 0,
+  "status": "FAILED",
+  "finalResult": "The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).",
+  "duration": 13
+}
