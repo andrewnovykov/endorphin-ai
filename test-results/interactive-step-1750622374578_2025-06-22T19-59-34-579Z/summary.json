@@ -1,0 +1,13 @@
+{
+  "testName": "Interactive-Step-1750622374578",
+  "sessionId": "interactive-step-1750622374578",
+  "status": "SUCCESS",
+  "startTime": "2025-06-22T19:59:34.580Z",
+  "endTime": "2025-06-22T19:59:57.264Z",
+  "duration": 22684,
+  "totalSteps": 11,
+  "successfulSteps": 7,
+  "failedSteps": 4,
+  "totalScreenshots": 4,
+  "finalResult": "I have successfully navigated to the login page. If you need to perform additional actions, let me know!"
+}

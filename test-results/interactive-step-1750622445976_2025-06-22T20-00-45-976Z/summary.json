@@ -1,0 +1,13 @@
+{
+  "testName": "Interactive-Step-1750622445976",
+  "sessionId": "interactive-step-1750622445976",
+  "status": "SUCCESS",
+  "startTime": "2025-06-22T20:00:45.977Z",
+  "endTime": "2025-06-22T20:00:50.901Z",
+  "duration": 4924,
+  "totalSteps": 6,
+  "successfulSteps": 3,
+  "failedSteps": 3,
+  "totalScreenshots": 4,
+  "finalResult": "I successfully clicked the \"Sign In\" button using an alternative selector. However, there was an issue with taking a screenshot. If there's anything specific you'd like me to do next, please let me know!"
+}
