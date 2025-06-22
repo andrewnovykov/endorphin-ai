@@ -1,5 +1,5 @@
-// Endorphin e2e AI test framework>
-// Copyright (C)  2025 Redstudio Agency
+// Endorphin e2e AI test framework
+// Copyright (C) 2025 Redstudio Agency
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -28,7 +28,6 @@ export { AGENT_CONFIG } from './config/agent-config.js';
 export { PATHS } from './config/paths.js';
 
 // Module exports for organized components
-export * as Demos from './demos/index.js';
 export * as Interactive from './interactive/index.js';
 export * as Testing from './testing/index.js';
 

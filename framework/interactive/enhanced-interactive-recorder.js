@@ -108,7 +108,7 @@ async function collectTestData() {
   return testData;
 }
 
-async function runInteractiveRecorder() {
+async function runInteractiveRecorder(config = {}) {
   console.log('\n🎬 Interactive Test Recorder');
   console.log('═'.repeat(50));
   console.log('Record browser interactions step by step!');
@@ -126,7 +126,8 @@ async function runInteractiveRecorder() {
     return;
   }
 
-  const framework = new EnhancedBrowserTestFramework();
+  // Create framework with the config from CLI
+  const framework = new EnhancedBrowserTestFramework(config);
   const recorder = new TestRecorder(framework, testData);
   
   try {
@@ -211,7 +212,6 @@ async function runInteractiveRecorder() {
   } finally {
     await framework.cleanup();
     rl.close();
-      rl.close();
   }
 }
 

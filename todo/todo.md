@@ -4,3 +4,4 @@
 # Jira Integratipn
 # Global Setup
 # Test Quarantin
+# html reporter
