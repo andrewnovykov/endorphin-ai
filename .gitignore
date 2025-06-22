@@ -2,8 +2,16 @@ node_modules/
 .env
 # LangGraph API
 .langgraph_api
-test-result/*
+test-results/*
 test-recorder/*
 ai-instruction/*
 .DS_Store
 doc/.DS_Store
+# Temporary test files (keep scripts)
+tmp/test-endorphin/node_modules/
+tmp/test-endorphin/package-lock.json
+tmp/test-endorphin/.env
+tmp/test-endorphin/endorphin.config.js
+tmp/test-endorphin/tests/
+tmp/test-endorphin/test-recorder/
+tmp/test-endorphin/test-results/

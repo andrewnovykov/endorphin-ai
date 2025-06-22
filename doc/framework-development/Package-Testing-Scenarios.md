@@ -6,7 +6,81 @@
 
 This guide covers testing the Endorphin AI package from a user's perspective - installing it as a dependency and running tests with it. This is different from testing the framework's internal code.
 
+## 🚀 Quick Start with Automated Scripts
+
+We've created automated bash scripts in `tmp/test-endorphin/` for easy package testing:
+
+### Available Scripts
+
+```bash
+# Setup user project environment
+./tmp/test-endorphin/setup-user-project.sh
+
+# Test test-recorder location (creates files in user project, not framework)
+./tmp/test-endorphin/test-recorder-location.sh
+
+# Test CLI commands
+./tmp/test-endorphin/test-cli-commands.sh
+
+# Run user tests
+./tmp/test-endorphin/run-user-tests.sh
+
+# Clean up test environment
+./tmp/test-endorphin/cleanup.sh
+```
+
+### Example Usage
+
+```bash
+# Full test workflow
+cd /path/to/endorphin-ai
+
+# 1. Setup test environment
+./tmp/test-endorphin/setup-user-project.sh
+
+# 2. Test that recorder creates files in USER project (not framework)
+./tmp/test-endorphin/test-recorder-location.sh
+
+# 3. Test CLI functionality
+./tmp/test-endorphin/test-cli-commands.sh
+
+# 4. Cleanup when done
+./tmp/test-endorphin/cleanup.sh
+```
+
 ## 📦 Package Testing Scenarios
+
+## 🔍 Critical Test: Test Recorder File Location
+
+**Important**: Verify that test recorder creates files in the USER'S project directory, not in the framework directory.
+
+### Manual Testing
+```bash
+# Setup test environment
+./tmp/test-endorphin/setup-user-project.sh
+
+# Run test recorder (will timeout after showing it starts)
+cd tmp/test-endorphin
+timeout 10s npx endorphin run test-recorder
+
+# Check where files were created
+echo "User project test-recorder directory:"
+ls -la tmp/test-endorphin/test-recorder/ 2>/dev/null || echo "No files in user project ✅"
+
+echo "Framework test-recorder directory:"
+ls -la test-recorder/ 2>/dev/null || echo "No files in framework ✅"
+```
+
+### Automated Testing
+```bash
+# Use our automated script
+./tmp/test-endorphin/test-recorder-location.sh
+```
+
+This test ensures that:
+- ✅ Test recorder creates directories in user's project
+- ✅ No artifacts are created in framework directory
+- ✅ User project isolation is maintained
 
 ### 1. Fresh Installation Testing
 
@@ -396,13 +470,55 @@ npx endorphin --version
 
 ## 🔧 Package Testing Automation
 
-### Automated Test Script
+### Automated Test Scripts (Recommended)
 
-Create a comprehensive package test script:
+We provide ready-made bash scripts in `tmp/test-endorphin/` for comprehensive package testing:
+
+#### `setup-user-project.sh`
+- Creates isolated user project environment
+- Installs endorphin-ai from local framework
+- Creates proper configuration files
+- Uses API key from framework's `.env`
+- Sets up test directory structure
+
+#### `test-recorder-location.sh`
+- **Critical Test**: Verifies test recorder creates files in user project
+- Ensures no artifacts leak into framework directory
+- Tests proper user project isolation
+- Shows before/after directory states
+
+#### `test-cli-commands.sh`
+- Tests all CLI commands work from user project
+- Verifies package installation
+- Tests configuration loading
+- Validates test discovery
+
+#### `run-user-tests.sh`
+- Executes user project tests
+- Validates generated test files
+- Tests end-to-end functionality
+
+#### `cleanup.sh`
+- Removes generated files
+- Preserves bash scripts
+- Resets test environment
+
+### Script Features
+- **API Key Sharing**: Uses framework's `.env` file automatically
+- **Isolated Testing**: Creates separate user project environment
+- **Comprehensive Coverage**: Tests installation, CLI, recorder, execution
+- **Easy Cleanup**: One command to reset everything
+- **Gitignore Ready**: Only scripts are tracked, generated files ignored
+
+### Legacy Manual Testing
+
+### Legacy Automated Test Script
+
+For reference, here's a traditional approach (use our bash scripts instead):
 
 ```bash
 #!/bin/bash
-# package-test.sh
+# package-test.sh (LEGACY - Use tmp/test-endorphin/ scripts instead)
 
 set -e
 
@@ -520,11 +636,22 @@ jobs:
 
 ## 📋 Testing Checklist
 
-### Pre-Release Testing
-- [ ] Fresh installation in empty directory
-- [ ] All CLI commands work
+### Pre-Release Testing (Automated)
+```bash
+# Quick automated testing
+./tmp/test-endorphin/setup-user-project.sh      # ✅ Setup user environment
+./tmp/test-endorphin/test-cli-commands.sh        # ✅ CLI commands work
+./tmp/test-endorphin/test-recorder-location.sh   # ✅ Recorder file location
+./tmp/test-endorphin/run-user-tests.sh          # ✅ Test execution
+./tmp/test-endorphin/cleanup.sh                 # ✅ Clean environment
+```
+
+### Pre-Release Testing (Manual Checklist)
+- [ ] Fresh installation in empty directory (`setup-user-project.sh`)
+- [ ] All CLI commands work (`test-cli-commands.sh`)
 - [ ] Configuration loading works
 - [ ] Test discovery works
+- [ ] **Test recorder creates files in user project, not framework** (`test-recorder-location.sh`)
 - [ ] Error handling is graceful
 - [ ] Cross-platform compatibility
 - [ ] Multiple Node.js versions
@@ -538,7 +665,13 @@ jobs:
 - [ ] All functionality works as published
 - [ ] Documentation examples work
 - [ ] No missing dependencies
+- [ ] Test recorder isolation still works
+
+### Critical Tests
+- [ ] **File Location Test**: Recorder creates files in user project only
+- [ ] **API Key Inheritance**: Uses framework's `.env` automatically
+- [ ] **Package Isolation**: No cross-contamination between framework and user files
 
 ---
 
-*This guide should be run before every release to ensure package quality.*
+*This guide should be run before every release to ensure package quality. Use the automated scripts in `tmp/test-endorphin/` for efficient testing.*
