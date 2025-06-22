@@ -87,32 +87,16 @@ endorphin run test-recorder
 
 ## 🏗️ Framework Architecture
 
-### Modular Structure
-```
-framework/
-├── test-framework.js            # Main entry point
-├── index.js                     # Modular exports
-├── config/                      # Configuration files
-│   ├── agent-config.js          # AI agent settings
-│   ├── browser-config.js        # Browser configuration
-│   └── paths.js                 # Directory paths
-├── core/                        # Core components
-│   ├── browser-framework.js     # Main framework class
-│   ├── config-loader.js         # Configuration management
-│   ├── test-discovery.js        # Test discovery & execution
-│   ├── test-manager.js          # Test management
-│   ├── test-runner.js           # Test execution
-│   └── test-session.js          # Session tracking
-├── tools/                       # Browser automation tools
-│   ├── navigation.js            # Page navigation
-│   ├── interaction.js           # Clicks, form filling
-│   ├── verification.js          # Element verification
-│   ├── content.js               # Page content analysis
-│   └── utilities.js             # Screenshots, waits
-├── demos/                       # Framework demonstrations
-├── interactive/                 # Interactive testing tools
-└── testing/                     # Testing utilities
-```
+Endorphin AI is built with a modular, extensible architecture designed for reliability and maintainability. 
+
+📖 **[View detailed Framework Architecture documentation](./doc/Framework-Architecture.md)**
+
+### Key Components
+- **Core Framework**: Main test execution engine and session management
+- **Browser Tools**: Intelligent automation tools powered by AI
+- **Configuration System**: Flexible, hierarchical configuration management
+- **Test Discovery**: Automatic test file detection and loading
+- **Interactive Tools**: Real-time test creation and debugging
 
 ## ⚙️ Configuration
 
