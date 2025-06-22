@@ -108,12 +108,82 @@ If you prefer manual setup:
    }
    ```
 
+## 🔄 Updating Endorphin AI
+
+### For Existing Projects
+```bash
+# Update to the latest version
+npm update endorphin-ai
+
+# Or install a specific version
+npm install endorphin-ai@latest
+
+# Check your current version
+npx endorphin --version
+
+# Get help and see new features
+npx endorphin --help
+```
+
+### Migration Notes
+- **v0.3.0+**: Introduces `endorphin init` command for new projects
+- **v0.2.x**: Existing projects continue to work without changes
+- **Backward Compatibility**: All existing tests and configurations remain compatible
+
+## 🚀 Project Initialization
+
+### New Projects (Recommended)
+```bash
+# Quick setup for new projects
+mkdir my-test-project && cd my-test-project
+npx endorphin init
+```
+
+The `init` command creates:
+- ✅ `tests/` directory with sample test  
+- ✅ `test-results/` for test outputs
+- ✅ `test-recorder/` for recorded tests
+- ✅ `.env` file with API key placeholder
+- ✅ `endorphin.config.js` with optimized settings
+- ✅ `.gitignore` with Endorphin-specific patterns  
+- ✅ `README-ENDORPHIN.md` quick start guide
+
+### Existing Projects
+For existing Endorphin projects, the `init` command is optional and safe:
+- ✅ Never overwrites existing configuration files
+- ✅ Only creates missing directories
+- ✅ Adds helpful template files if needed
+
+```bash
+# Safe to run in existing projects
+npx endorphin init
+```
+
 ### Usage Commands
+
+#### ℹ️ Version & Help
+```bash
+# Check current version
+npx endorphin --version
+
+# Get help and see all commands
+npx endorphin --help
+
+# Update to latest version
+npm update endorphin-ai
+```
 
 #### 🎯 Initialize New Project
 ```bash
 # Create a new Endorphin AI project with all necessary files
 npx endorphin init
+
+# What gets created:
+# ├── tests/sample-test.js     # Ready-to-run example test
+# ├── .env                     # API key configuration
+# ├── endorphin.config.js      # Framework settings
+# ├── .gitignore              # Endorphin-specific ignores
+# └── README-ENDORPHIN.md     # Quick start guide
 ```
 
 #### 🧪 Run Specific Test
@@ -341,6 +411,43 @@ Intelligent AI-powered tools for navigation, interaction, verification, and util
 ✅ **Error Handling**: Robust retry mechanisms and failure recovery  
 
 The framework is production-ready and provides a solid foundation for scalable browser automation testing!
+
+## 🔄 Staying Updated
+
+### Check Your Version
+```bash
+# Check current installed version
+npx endorphin --version
+
+# Check latest available version on npm
+npm view endorphin-ai version
+
+# Check for outdated packages
+npm outdated endorphin-ai
+```
+
+### Update to Latest
+```bash
+# Update to the latest version
+npm update endorphin-ai
+
+# Or force install latest
+npm install endorphin-ai@latest
+
+# Verify the update
+npx endorphin --version
+```
+
+### Version History & Features
+- **v0.3.0**: Added `endorphin init` command for instant project setup
+- **v0.2.x**: Core framework with AI-powered testing
+- **v0.1.x**: Initial release with basic functionality
+
+### Breaking Changes
+Endorphin AI follows semantic versioning:
+- **Major versions** (1.0.0): May include breaking changes
+- **Minor versions** (0.3.0): New features, backward compatible  
+- **Patch versions** (0.2.1): Bug fixes, backward compatible
 
 ## License
 
