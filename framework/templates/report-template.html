@@ -25,6 +25,61 @@
     </nav>
 
     <div class="container-fluid mt-4">
+        <!-- Search and Filter Controls -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="test-search"
+                                        placeholder="Search tests by name or ID..." autocomplete="off">
+                                    <button class="btn btn-outline-secondary" type="button" id="clear-search"
+                                        title="Clear search">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="btn-group" role="group" aria-label="Filter options">
+                                    <button type="button" class="btn btn-outline-primary active" id="filter-all"
+                                        data-filter="all">
+                                        <i class="bi bi-list"></i> All Tests
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success" id="filter-passed"
+                                        data-filter="passed">
+                                        <i class="bi bi-check-circle"></i> Passed
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger" id="filter-failed"
+                                        data-filter="failed">
+                                        <i class="bi bi-x-circle"></i> Failed
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    <span id="search-results-info">Showing all test results</span>
+                                    <span class="float-end">
+                                        <button type="button" class="btn btn-link btn-sm p-0 text-muted"
+                                            data-bs-toggle="modal" data-bs-target="#keyboardShortcutsModal"
+                                            title="Keyboard shortcuts">
+                                            <i class="bi bi-keyboard"></i> Shortcuts
+                                        </button>
+                                    </span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Summary Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -233,6 +288,64 @@
                 <div class="modal-body text-center">
                     <img id="screenshot-viewer" src="" alt="Screenshot" class="img-fluid">
                     <div id="screenshot-info" class="mt-2 text-muted"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal fade" id="keyboardShortcutsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-keyboard"></i> Keyboard Shortcuts
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>Search & Filter</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><kbd>Ctrl/Cmd + F</kbd></td>
+                                    <td>Focus search box</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>Escape</kbd></td>
+                                    <td>Clear search</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>Ctrl/Cmd + 1</kbd></td>
+                                    <td>Show all tests</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>Ctrl/Cmd + 2</kbd></td>
+                                    <td>Show passed tests only</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>Ctrl/Cmd + 3</kbd></td>
+                                    <td>Show failed tests only</td>
+                                </tr>
+                            </table>
+
+                            <h6 class="mt-3">Actions</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><kbd>Ctrl/Cmd + E</kbd></td>
+                                    <td>Export to JSON</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>Ctrl/Cmd + P</kbd></td>
+                                    <td>Print report</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

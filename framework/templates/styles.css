@@ -232,6 +232,63 @@ body {
     color: var(--endorphin-warning);
 }
 
+/* Search and Filter Controls */
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+#test-search {
+    border-color: #dee2e6;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#test-search:focus {
+    border-color: var(--endorphin-primary);
+    box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+}
+
+#clear-search {
+    border-left: none;
+}
+
+.btn-group .btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-group .btn.active {
+    background-color: var(--endorphin-primary);
+    border-color: var(--endorphin-primary);
+    color: white;
+    transform: none;
+}
+
+.btn-outline-success.active {
+    background-color: var(--endorphin-success);
+    border-color: var(--endorphin-success);
+}
+
+.btn-outline-danger.active {
+    background-color: var(--endorphin-danger);
+    border-color: var(--endorphin-danger);
+}
+
+#search-results-info {
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s ease-in-out;
+}
+
+/* Highlight for filtered rows */
+.test-result-row.highlight {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+    border-left: 3px solid var(--endorphin-warning);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container-fluid {

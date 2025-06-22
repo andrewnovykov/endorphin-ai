@@ -56,6 +56,39 @@ class TestReportViewer {
       });
     });
 
+    // Search functionality
+    const searchInput = document.getElementById('test-search');
+    const clearSearchBtn = document.getElementById('clear-search');
+    
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.filterResults(e.target.value, this.currentFilter);
+      });
+    }
+    
+    if (clearSearchBtn) {
+      clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        this.filterResults('', this.currentFilter);
+        searchInput.focus();
+      });
+    }
+
+    // Filter buttons
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active class from all filter buttons
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+        // Add active class to clicked button
+        btn.classList.add('active');
+        
+        const filter = btn.getAttribute('data-filter');
+        this.currentFilter = filter;
+        const searchTerm = searchInput ? searchInput.value : '';
+        this.filterResults(searchTerm, filter);
+      });
+    });
+
     // Modal events
     const testDetailsModal = document.getElementById('testDetailsModal');
     if (testDetailsModal) {
@@ -65,6 +98,9 @@ class TestReportViewer {
     }
 
     // Screenshot click events will be attached dynamically
+    
+    // Initialize filter state
+    this.currentFilter = 'all';
   }
 
   /**
@@ -308,17 +344,87 @@ class TestReportViewer {
   }
 
   /**
-   * Filter table rows based on search input
+   * Filter table rows based on search input and status filter
    */
-  filterResults(searchTerm) {
+  filterResults(searchTerm = '', statusFilter = 'all') {
     const rows = document.querySelectorAll('.test-result-row');
     const lowerSearchTerm = searchTerm.toLowerCase();
+    let visibleCount = 0;
+    let totalCount = rows.length;
 
     rows.forEach(row => {
-      const text = row.textContent.toLowerCase();
-      const shouldShow = text.includes(lowerSearchTerm);
+      const testId = row.querySelector('strong').textContent.toLowerCase();
+      const testName = row.querySelector('.text-muted').textContent.toLowerCase();
+      const statusElement = row.querySelector('.badge');
+      const status = statusElement ? statusElement.textContent.trim() : '';
+      
+      // Check search term match
+      const searchMatch = !searchTerm || 
+                         testId.includes(lowerSearchTerm) || 
+                         testName.includes(lowerSearchTerm);
+      
+      // Check status filter match
+      let statusMatch = true;
+      if (statusFilter === 'passed') {
+        statusMatch = status.includes('SUCCESS');
+      } else if (statusFilter === 'failed') {
+        statusMatch = status.includes('FAILED');
+      }
+      
+      const shouldShow = searchMatch && statusMatch;
       row.style.display = shouldShow ? '' : 'none';
+      
+      // Add highlight class for search matches
+      if (shouldShow && searchTerm) {
+        row.classList.add('highlight');
+      } else {
+        row.classList.remove('highlight');
+      }
+      
+      if (shouldShow) visibleCount++;
     });
+
+    // Update search results info
+    this.updateSearchResultsInfo(visibleCount, totalCount, searchTerm, statusFilter);
+    
+    // Scroll to first visible result if searching
+    if (searchTerm && visibleCount > 0) {
+      const firstVisibleRow = document.querySelector('.test-result-row[style=""], .test-result-row:not([style*="none"])');
+      if (firstVisibleRow) {
+        firstVisibleRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }
+
+  /**
+   * Update the search results information display
+   */
+  updateSearchResultsInfo(visibleCount, totalCount, searchTerm, statusFilter) {
+    const infoElement = document.getElementById('search-results-info');
+    if (!infoElement) return;
+
+    let message = '';
+    
+    if (searchTerm && statusFilter !== 'all') {
+      message = `Showing ${visibleCount} of ${totalCount} tests matching "${searchTerm}" with status "${statusFilter}"`;
+    } else if (searchTerm) {
+      message = `Showing ${visibleCount} of ${totalCount} tests matching "${searchTerm}"`;
+    } else if (statusFilter !== 'all') {
+      message = `Showing ${visibleCount} of ${totalCount} ${statusFilter} tests`;
+    } else {
+      message = `Showing all ${totalCount} test results`;
+    }
+    
+    infoElement.textContent = message;
+    
+    // Add highlight class if filtering is active
+    if (searchTerm || statusFilter !== 'all') {
+      infoElement.classList.add('text-primary');
+      infoElement.classList.remove('text-muted');
+    } else {
+      infoElement.classList.add('text-muted');
+      infoElement.classList.remove('text-primary');
+    }
   }
 
   /**
@@ -451,6 +557,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
       e.preventDefault();
       window.reportViewer.printReport();
+    }
+    
+    // Ctrl/Cmd + F to focus search
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      e.preventDefault();
+      const searchInput = document.getElementById('test-search');
+      if (searchInput) {
+        searchInput.focus();
+        searchInput.select();
+      }
+    }
+    
+    // Escape to clear search
+    if (e.key === 'Escape') {
+      const searchInput = document.getElementById('test-search');
+      if (searchInput && searchInput.value) {
+        searchInput.value = '';
+        window.reportViewer.filterResults('', window.reportViewer.currentFilter);
+      }
+    }
+    
+    // Number keys to select filters (1=All, 2=Passed, 3=Failed)
+    if (e.key >= '1' && e.key <= '3' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      const filterButtons = document.querySelectorAll('[data-filter]');
+      const index = parseInt(e.key) - 1;
+      if (filterButtons[index]) {
+        filterButtons[index].click();
+      }
     }
   });
 });

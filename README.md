@@ -42,7 +42,13 @@ npm install endorphin-ai
    npx endorphin run test HEALTH-001
    ```
 
-That's it! Your project is ready with a sample test, configuration, and all necessary directories.
+4. Generate an interactive HTML report:
+   ```bash
+   npx endorphin generate report
+   npx endorphin open report
+   ```
+
+That's it! Your project is ready with a sample test, configuration, all necessary directories, and beautiful HTML reporting.
 
 ### Manual Setup (Alternative)
 If you prefer manual setup:
@@ -226,6 +232,70 @@ npm run test:record
 # Using npx/global
 npx endorphin run test-recorder
 ```
+
+## 📊 HTML Reports & Analytics
+
+Endorphin AI generates beautiful, interactive HTML reports that provide comprehensive insights into your test execution results.
+
+### 🚀 Quick Report Generation
+
+```bash
+# Generate a full interactive HTML report
+npx endorphin generate report
+
+# Generate a lightweight summary report
+npx endorphin generate report --summary
+
+# Open the latest report in your browser
+npx endorphin open report
+
+# Open a specific report file
+npx endorphin open report report-2025-06-22.html
+```
+
+### ✨ Report Features
+
+#### 📈 **Interactive Dashboard**
+- **Real-time Statistics**: Success rates, test counts, execution trends
+- **Visual Progress Bars**: Easy-to-understand success rate indicators
+- **Summary Cards**: Quick overview of test health
+
+#### 🔍 **Advanced Search & Filtering**
+- **Real-time Search**: Find tests by name or ID instantly
+- **Status Filtering**: Filter by passed/failed tests with one click
+- **Smart Results**: Shows "5 of 25 tests matching 'login' with status 'failed'"
+- **Keyboard Shortcuts**: `Ctrl+F` to search, `Ctrl+3` for failed tests only
+
+#### 🎯 **Detailed Test Analysis**
+- **Step-by-Step Timeline**: See exactly what happened during test execution
+- **Screenshot Galleries**: Visual debugging with click-to-zoom screenshots
+- **Interactive Modals**: Deep dive into test execution details
+- **Tool Call Tracking**: See which browser actions were performed
+
+#### ⌨️ **Productivity Features**
+- **Export to JSON**: Data-driven analysis and custom reporting
+- **Print Support**: Documentation-ready printed reports
+- **Responsive Design**: Works on desktop, tablet, and mobile
+- **Performance Optimized**: Fast loading even with large test suites
+
+### 🛠️ Report Management
+
+```bash
+# Clean up old test results (keep 10 most recent per test)
+npx endorphin cleanup results
+
+# Keep only 5 most recent results per test
+npx endorphin cleanup results 5
+
+# Clean up old report files (older than 30 days)
+npx endorphin cleanup reports
+
+# Clean up report files older than 7 days  
+npx endorphin cleanup reports 7
+```
+
+### 📖 Complete Guide
+For detailed usage instructions, advanced features, and best practices, see the **[HTML Reporter User Guide](./doc/user-guide/HTML-Reporter-Guide.md)**.
 
 ## 🏗️ Framework Architecture
 
@@ -411,6 +481,145 @@ Intelligent AI-powered tools for navigation, interaction, verification, and util
 ✅ **Error Handling**: Robust retry mechanisms and failure recovery  
 
 The framework is production-ready and provides a solid foundation for scalable browser automation testing!
+
+## 🎮 Complete CLI Reference
+
+### Core Commands
+
+#### Test Execution
+```bash
+# Run a specific test
+npx endorphin run test TEST-001
+
+# Run all tests
+npx endorphin run test all
+
+# Run tests by tag
+npx endorphin run test --tag smoke
+npx endorphin run test --tag authentication
+
+# Run tests by priority
+npx endorphin run test --priority High
+npx endorphin run test --priority Medium
+```
+
+#### Test Creation & Recording
+```bash
+# Start interactive test recorder
+npx endorphin run test-recorder
+
+# List all available tests
+npx endorphin list
+```
+
+#### Project Setup
+```bash
+# Initialize new project (recommended for new projects)
+npx endorphin init
+
+# Show help and available commands
+npx endorphin --help
+npx endorphin help
+
+# Check current version
+npx endorphin --version
+```
+
+### HTML Reports & Analytics
+
+#### Report Generation
+```bash
+# Generate full interactive HTML report
+npx endorphin generate report
+
+# Generate lightweight summary report
+npx endorphin generate report --summary
+```
+
+#### Report Management
+```bash
+# Open latest report in browser
+npx endorphin open report
+
+# Open specific report file
+npx endorphin open report report-2025-06-22.html
+npx endorphin open report summary-report.html
+```
+
+#### Cleanup Commands
+```bash
+# Clean old test results (keep 10 most recent per test)
+npx endorphin cleanup results
+
+# Keep only 5 most recent results per test
+npx endorphin cleanup results 5
+
+# Clean old report files (older than 30 days)
+npx endorphin cleanup reports
+
+# Clean report files older than 7 days
+npx endorphin cleanup reports 7
+```
+
+### Advanced Options
+
+#### Browser Configuration
+```bash
+# Use different browsers
+npx endorphin run test all --browser firefox
+npx endorphin run test all --browser webkit
+
+# Headless/headed mode
+npx endorphin run test all --no-headless
+npx endorphin run test all --headless
+
+# Custom viewport
+npx endorphin run test all --viewport 1920x1080
+npx endorphin run test all --viewport 1366x768
+```
+
+#### AI & Performance
+```bash
+# Use different AI models
+npx endorphin run test all --model gpt-4
+npx endorphin run test all --model gpt-4o-mini
+
+# Parallel execution
+npx endorphin run test all --parallel 3
+npx endorphin run test all --parallel 5
+
+# Environment selection
+npx endorphin run test all --env staging
+npx endorphin run test all --env production
+```
+
+### npm Scripts Integration
+
+Add these to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "endorphin run test all",
+    "test:smoke": "endorphin run test --tag smoke",
+    "test:auth": "endorphin run test --tag authentication", 
+    "test:single": "endorphin run test",
+    "test:record": "endorphin run test-recorder",
+    "test:report": "endorphin generate report",
+    "test:summary": "endorphin generate report --summary",
+    "test:open": "endorphin open report",
+    "test:cleanup": "endorphin cleanup results"
+  }
+}
+```
+
+Then use npm scripts:
+```bash
+npm test                # Run all tests
+npm run test:smoke      # Run smoke tests
+npm run test:report     # Generate HTML report
+npm run test:open       # Open latest report
+```
 
 ## 🔄 Staying Updated
 
