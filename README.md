@@ -1,13 +1,26 @@
-# Enhanced Browser Test Framework
+<div align="center">
+  <img src="./doc/images/endorphin.jpg" alt="Endorphin Logo" width="200" />
+  
+   <h1 style="font-size: 4rem; font-weight: bold; margin: 30px 0 10px 0; color: #8A2BE2;">ENDORPHIN</h1>
+  
+  <h2 style="font-size: 1.5rem; margin: 10px 0 30px 0;">E2E Testing Reinvented with AI</h2>
+</div>
+
+Write tests in plain English. Let AI generate, validate, and fix them automatically.
 
 A powerful, modular browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright. Provides intelligent browser automation with automatic element detection, visual validation, and comprehensive test management.
 
 ## 🚀 Quick Start
 
-### Prerequisites
-1. Install dependencies:
+### Installation
+```bash
+npm install -g endorphin-ai
+```
+
+### Setup
+1. Create your project directory:
    ```bash
-   npm install
+   mkdir my-test-project && cd my-test-project
    ```
 
 2. Set up your `.env` file with your OpenAI API key:
@@ -15,51 +28,61 @@ A powerful, modular browser automation framework using AI-powered testing with L
    OPENAI_API_KEY=your_api_key_here
    ```
 
-### Basic Usage
+3. Create tests directory:
+   ```bash
+   mkdir tests
+   ```
 
-#### 📋 List Available Tests
+4. Create your first test file `tests/login-test.js`:
+   ```javascript
+   export const QE001 = {
+     id: "QE-001",
+     name: "Basic Login Test", 
+     description: "Test the login functionality with valid credentials",
+     priority: "High",
+     tags: ["authentication", "login", "smoke"],
+     site: "https://qafromla.herokuapp.com/",
+     testData: {
+       originalEmail: "papapin888@gmail.com",
+       originalPassword: "lalalend"
+     },
+     task: `Navigate to https://qafromla.herokuapp.com/. 
+     Click on "Log In" button. Wait 2 seconds for page load. 
+     Fill email field with "papapin888@gmail.com". 
+     Fill password field with "lalalend". 
+     Click "Sign In" button. Wait 3 seconds for page load. 
+     Verify login was successful by checking page content.`
+   };
+   ```
+
+### Usage Commands
+
+#### 🧪 Run Specific Test
 ```bash
-npm run enhanced:list
-# or
-node framework/enhanced-test-framework.js --list
-```
-
-#### 🧪 Run a Specific Test
-```bash
-# Run by test ID
-npm run enhanced:QE-001    # Basic Login Test
-npm run enhanced:QE-002    # Registration Flow Test
-
-# Or use the framework directly
-node framework/enhanced-test-framework.js --test QE-001
+endorphin run test QE-001
 ```
 
 #### 🏷️ Run Tests by Category
 ```bash
 # Authentication tests
-node framework/enhanced-test-framework.js --tag authentication
+endorphin run test --tag authentication
 
-# High priority tests
-node framework/enhanced-test-framework.js --priority High
+# High priority tests  
+endorphin run test --priority High
 
 # Smoke tests
-node framework/enhanced-test-framework.js --tag smoke
+endorphin run test --tag smoke
 ```
 
 #### 🎯 Run All Tests
 ```bash
-npm run enhanced:all
-# or
-node framework/enhanced-test-framework.js --all
+endorphin run test all
 ```
 
-### Interactive Mode
+#### 🎬 Test Recorder Mode
 ```bash
 # Interactive test creation
-npm run interactive
-
-# Pre-built interactive demo
-npm run interactive-demo
+endorphin run test-recorder
 ```
 
 ## 🏗️ Framework Architecture
@@ -67,7 +90,7 @@ npm run interactive-demo
 ### Modular Structure
 ```
 framework/
-├── enhanced-test-framework.js   # Main entry point
+├── test-framework.js            # Main entry point
 ├── index.js                     # Modular exports
 ├── config/                      # Configuration files
 │   ├── agent-config.js          # AI agent settings
@@ -75,6 +98,8 @@ framework/
 │   └── paths.js                 # Directory paths
 ├── core/                        # Core components
 │   ├── browser-framework.js     # Main framework class
+│   ├── config-loader.js         # Configuration management
+│   ├── test-discovery.js        # Test discovery & execution
 │   ├── test-manager.js          # Test management
 │   ├── test-runner.js           # Test execution
 │   └── test-session.js          # Session tracking
@@ -89,70 +114,177 @@ framework/
 └── testing/                     # Testing utilities
 ```
 
-## 🎯 Available Test Cases
+## ⚙️ Configuration
 
-### 🔐 Authentication Tests
-- **QE-001**: Basic Login Test (High priority)
-- **QE-002**: Registration Flow Test (High priority) 
-- **QE-010**: Logout Functionality Test (High priority)
+### Default Configuration
+Endorphin AI works out of the box with sensible defaults, but you can customize it by creating an `endorphin.config.js` file in your project root:
 
-### 📝 Content Management
-- **QE-003**: Article Creation Test (Medium priority)
-- **QE-007**: Comment System Test (Low priority)
-
-### 🧭 Navigation & UI
-- **QE-004**: Navigation Test (Medium priority)
-- **QE-008**: Responsive Design Test (Medium priority)
-- **QE-SIMPLE**: Simple Navigation Test (High priority)
-
-### ⚙️ Functionality Tests
-- **QE-005**: Search Functionality Test (Medium priority)
-- **QE-006**: Profile Management Test (Medium priority)
-- **QE-009**: Form Validation Test (High priority)
-
-## 🛠️ Programmatic Usage
-
-### Basic Framework Usage
 ```javascript
-import { EnhancedBrowserTestFramework } from './framework/index.js';
+// endorphin.config.js
+export default {
+  // Browser configuration
+  browser: {
+    type: 'chromium',           // chromium, firefox, webkit
+    headless: true,             // Run browser in headless mode
+    viewport: {                 // Browser viewport size
+      width: 1280,
+      height: 720
+    },
+    timeout: 30000             // Default timeout in milliseconds
+  },
 
-const framework = new EnhancedBrowserTestFramework();
-await framework.initialize();
+  // AI configuration
+  ai: {
+    model: 'gpt-4o-mini',      // OpenAI model to use
+    temperature: 0.1,          // AI creativity (0-1)
+    maxRetries: 3              // Max retries for AI calls
+  },
 
-// Run a simple task
-const result = await framework.runTask(
-  "Navigate to https://example.com and take a screenshot",
-  "My Custom Test"
-);
+  // Test execution configuration
+  execution: {
+    timeout: 60000,            // Test timeout in milliseconds
+    parallel: 1,               // Number of parallel tests
+    screenshots: true,         // Take screenshots on failure
+    testsDirectory: './tests', // Directory containing test files
+    dataDirectory: './data'    // Directory containing test data
+  },
 
-console.log('Test result:', result.status);
-await framework.cleanup();
+  // Environment-specific settings
+  environments: {
+    development: {
+      baseUrl: 'http://localhost:3000'
+    },
+    staging: {
+      baseUrl: 'https://staging.example.com'
+    },
+    production: {
+      baseUrl: 'https://example.com'
+    }
+  }
+};
 ```
 
-### Advanced Usage with Individual Tools
+### CLI Options
+You can override configuration with CLI flags:
+
+```bash
+# Run with different browser
+endorphin run test all --browser firefox
+
+# Run in non-headless mode
+endorphin run test QE-001 --no-headless
+
+# Set custom viewport
+endorphin run test all --viewport 1920x1080
+
+# Run tests in parallel
+endorphin run test all --parallel 3
+
+# Use different AI model
+endorphin run test all --model gpt-4
+
+# Set environment
+endorphin run test all --env staging
+```
+
+## 📝 Test Categories
+
+You can organize your tests using tags and priorities:
+
+### Common Tags
+- `authentication` - Login, logout, registration tests
+- `smoke` - Critical path tests that must pass
+- `navigation` - Menu, links, page routing tests
+- `forms` - Form filling and validation tests
+- `checkout` - E-commerce purchase flow tests
+- `search` - Search functionality tests
+- `responsive` - Mobile/tablet/desktop tests
+
+### Priority Levels
+- `High` - Critical functionality, run on every build
+- `Medium` - Important features, run daily
+- `Low` - Nice-to-have features, run weekly
+
+### Example Test Organization
 ```javascript
-import { 
-  EnhancedBrowserTestFramework,
-  BROWSER_CONFIG,
-  AGENT_CONFIG 
-} from './framework/index.js';
-
-const framework = new EnhancedBrowserTestFramework();
-await framework.initialize();
-
-// Access configuration
-console.log('Browser timeout:', BROWSER_CONFIG.defaultTimeout);
-console.log('AI model:', AGENT_CONFIG.openai.modelName);
-
-// Run custom test with specific data
-const customTest = {
-  id: 'CUSTOM-001',
-  name: 'My Custom Test',
-  task: 'Navigate to site and verify elements',
-  testData: { uid: 'test_user_123' }
+// tests/auth-tests.js
+export const LOGIN_TEST = {
+  id: "AUTH-001",
+  tags: ["authentication", "smoke"],
+  priority: "High",
+  // ...
 };
 
-const result = await framework.runSingleTest(customTest);
+export const LOGOUT_TEST = {
+  id: "AUTH-002", 
+  tags: ["authentication"],
+  priority: "Medium",
+  // ...
+};
+```
+
+## 📁 Project Structure
+
+Your project should look like this:
+
+```
+my-test-project/
+├── .env                    # OpenAI API key
+├── tests/                  # Your test files
+│   ├── login-test.js      # Authentication tests
+│   ├── checkout-test.js   # E-commerce tests
+│   └── navigation-test.js # UI/Navigation tests
+├── endorphin.config.js    # Optional configuration
+└── package.json           # Project config
+```
+
+## 📝 Test File Format
+
+Each test file should export test objects with this structure:
+
+```javascript
+export const QE001 = {
+  id: "QE-001",                    // Unique test identifier
+  name: "Basic Login Test",        // Human readable name
+  description: "Test login functionality with valid credentials",
+  priority: "High",               // High, Medium, Low
+  tags: ["authentication", "login", "smoke"],  // Categories
+  site: "https://example.com/",   // Target website
+  testData: {                     // Test data (optional)
+    email: "test@example.com",
+    password: "password123"
+  },
+  task: `Your test instructions in plain English...`
+};
+
+// Multiple tests per file
+export const QE002 = {
+  id: "QE-002",
+  name: "Registration Test",
+  // ... more test config
+};
+```
+
+## ⚙️ Configuration
+
+### Optional: endorphin.config.js
+```javascript
+export default {
+  // Global test settings
+  defaultTimeout: 30000,
+  headless: false,
+  viewport: { width: 1280, height: 720 },
+  
+  // Default test data
+  testData: {
+    baseUrl: "https://staging.example.com",
+    adminEmail: "admin@example.com"
+  },
+  
+  // Result settings
+  screenshots: true,
+  recordVideo: false
+};
 ```
 
 ## 🔧 Configuration
@@ -244,51 +376,82 @@ The framework includes intelligent tools powered by AI:
 - **wait**: Configurable delays and timing control
 - **screenshot**: High-quality visual documentation
 
-## 📦 NPM Scripts
+## 🎮 Command Examples
 
-### Framework Operations
+### Basic Commands
 ```bash
-npm run enhanced:list          # List all tests
-npm run enhanced:all           # Run all tests  
-npm run enhanced:QE-001        # Run specific test
-npm run enhanced:auth          # Run authentication tests
-npm run enhanced:smoke         # Run smoke tests
-npm run enhanced:high          # Run high priority tests
+# Run specific test
+endorphin run test QE-001
+
+# Run all tests
+endorphin run test all
+
+# Run by priority
+endorphin run test --priority High
+endorphin run test --priority Medium
+
+# Run by tags
+endorphin run test --tag authentication
+endorphin run test --tag smoke
+endorphin run test --tag checkout
+
+# Interactive test creation
+endorphin run test-recorder
 ```
 
-### Interactive Features
+### Multiple Tag Support
 ```bash
-npm run interactive            # Interactive test creation
-npm run interactive-demo       # Pre-built demonstrations
-```
+# Run tests matching any of these tags
+endorphin run test --tag "authentication,smoke"
 
-### Testing & Validation
-```bash
-npm run test-framework         # Test framework functionality
-npm run verify-format          # Verify test file formats
+# Run high priority authentication tests
+endorphin run test --priority High --tag authentication
 ```
 
 ## 🚀 Getting Started Examples
 
 ### Quick Smoke Test
 ```bash
-npm run enhanced:QE-SIMPLE
+endorphin run test --tag smoke
 ```
 
 ### Authentication Testing
 ```bash
-npm run enhanced:auth
+endorphin run test --tag authentication
 ```
 
 ### Complete Test Suite
 ```bash
-npm run enhanced:all
+endorphin run test all
 ```
 
 ### Create Custom Test
 ```bash
-npm run interactive
+endorphin run test-recorder
 # Follow prompts to create your own test
+```
+
+### Example Test File
+Create `tests/my-first-test.js`:
+```javascript
+export const QE001 = {
+  id: "QE-001",
+  name: "Homepage Navigation Test", 
+  description: "Verify main navigation works correctly",
+  priority: "High",
+  tags: ["navigation", "smoke"],
+  site: "https://example.com/",
+  task: `Navigate to https://example.com/. 
+  Click on "About" link in navigation. 
+  Wait 2 seconds for page load. 
+  Verify page title contains "About".
+  Take a screenshot.`
+};
+```
+
+Then run it:
+```bash
+endorphin run test QE-001
 ```
 
 ## 🎉 Features

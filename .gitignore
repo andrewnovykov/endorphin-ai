@@ -4,3 +4,4 @@ node_modules/
 .langgraph_api
 test-result/*
 test-recorder/*
+ai-instruction

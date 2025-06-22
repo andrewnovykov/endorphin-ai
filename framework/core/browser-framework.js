@@ -17,9 +17,9 @@
 
 
 
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
 import { HumanMessage } from "@langchain/core/messages";
-import fs from 'fs';
+import fs, { existsSync, readdirSync, statSync, rmSync, mkdirSync } from 'fs';
 import path from 'path';
 import { BROWSER_CONFIG } from '../config/browser-config.js';
 import { AGENT_CONFIG } from '../config/agent-config.js';
@@ -33,7 +33,7 @@ import { createAllTools } from '../tools/index.js';
  * Handles browser lifecycle, tool setup, and test session management
  */
 export class EnhancedBrowserTestFramework {
-  constructor() {
+  constructor(config = {}) {
     this.browser = null;
     this.context = null;
     this.page = null;
@@ -44,6 +44,57 @@ export class EnhancedBrowserTestFramework {
     this.resultBaseDir = PATHS.TEST_RESULT_DIR;
     this.recorderBaseDir = PATHS.TEST_RECORDER_DIR;
     this.isInteractiveMode = false;
+    
+    // Initialize configuration with defaults - deep merge to prevent issues
+    const defaultConfig = {
+      browser: {
+        type: 'chromium',
+        headless: true,
+        viewport: {
+          width: 1280,
+          height: 720
+        }
+      },
+      ai: {
+        temperature: 0.1,
+        maxTokens: 8000
+      },
+      execution: {
+        timeout: 30000,
+        parallel: false,
+        retries: 0
+      }
+    };
+
+    // Deep merge: defaults first, then user config for nested objects
+    this.config = {
+      ...defaultConfig,
+      ...config,
+      browser: {
+        ...defaultConfig.browser,
+        ...(config.browser || {})
+      },
+      ai: {
+        ...defaultConfig.ai,
+        ...(config.ai || {})
+      },
+      execution: {
+        ...defaultConfig.execution,
+        ...(config.execution || {})
+      }
+    };
+  }
+
+  getBrowserType() {
+    switch (this.config.browser.type) {
+      case 'firefox':
+        return firefox;
+      case 'webkit':
+        return webkit;
+      case 'chromium':
+      default:
+        return chromium;
+    }
   }
 
   async initialize() {
@@ -60,9 +111,18 @@ export class EnhancedBrowserTestFramework {
       fs.mkdirSync(this.recorderBaseDir, { recursive: true });
     }
     
-    // Launch browser
-    this.browser = await chromium.launch(BROWSER_CONFIG.launchOptions);
-    this.context = await this.browser.newContext(BROWSER_CONFIG.contextOptions);
+    // Launch browser using config
+    const browserType = this.getBrowserType();
+    const launchOptions = {
+      headless: this.config.browser.headless,
+      args: ['--start-maximized']
+    };
+    const contextOptions = {
+      viewport: this.config.browser.viewport
+    };
+    
+    this.browser = await browserType.launch(launchOptions);
+    this.context = await this.browser.newContext(contextOptions);
     this.page = await this.context.newPage();
 
     // Setup tools with tracking
@@ -145,14 +205,20 @@ export class EnhancedBrowserTestFramework {
 
   // Directory cleanup methods
   async cleanupDirectories() {
+    // Skip cleanup in test environment
+    if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+      console.log("🧹 Skipping cleanup in test environment");
+      return;
+    }
+    
     console.log("🧹 Cleaning up previous test results...");
     
-    if (fs.existsSync(this.resultBaseDir)) {
-      const files = fs.readdirSync(this.resultBaseDir);
+    if (existsSync(this.resultBaseDir)) {
+      const files = readdirSync(this.resultBaseDir);
       for (const file of files) {
         const filePath = path.join(this.resultBaseDir, file);
-        if (fs.statSync(filePath).isDirectory()) {
-          fs.rmSync(filePath, { recursive: true, force: true });
+        if (statSync(filePath).isDirectory()) {
+          rmSync(filePath, { recursive: true, force: true });
         } else {
           fs.unlinkSync(filePath);
         }
@@ -225,8 +291,7 @@ export class EnhancedBrowserTestFramework {
       await this.page.screenshot({ 
         path: filepath, 
         fullPage: false,
-        quality: BROWSER_CONFIG.screenshot.quality,
-        type: BROWSER_CONFIG.screenshot.type
+        type: 'png'
       });
       
       const screenshot = {
@@ -280,6 +345,9 @@ export class EnhancedBrowserTestFramework {
   async cleanup() {
     if (this.browser) {
       await this.browser.close();
+      this.browser = null;
+      this.context = null;
+      this.page = null;
       console.log("🧹 Browser closed successfully");
     }
   }
@@ -405,7 +473,7 @@ Current Task: ${taskDescription}`;
     console.log(`\n🚀 Starting test: ${test.id} - ${test.name}`);
     console.log(`📝 Description: ${test.description}`);
     console.log(`🎯 Priority: ${test.priority}`);
-    console.log(`🏷️ Tags: ${test.tags.join(', ')}`);
+    console.log(`🏷️ Tags: ${test.tags ? test.tags.join(', ') : 'None'}`);
     
     // Create test session with detailed tracking
     this.createTestSession(test.name, test.id);
@@ -677,5 +745,12 @@ Current Task: ${taskDescription}`;
     }
     return 2000; // Default 2 seconds
   }
+
+  /**
+   * Set interactive mode for the framework
+   * @param {boolean} interactive - Whether to enable interactive mode
+   */
+  setInteractiveMode(interactive) {
+    this.isInteractiveMode = interactive;
+  }
 }
- 

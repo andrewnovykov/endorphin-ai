@@ -1,0 +1,31 @@
+# Development files
+node_modules/
+.env
+.env.local
+.env.example
+*.log
+.DS_Store
+.vscode/
+
+# Test results and recordings
+test-result/
+test-recorder/
+examples/
+
+# Legacy and temporary files
+legacy/
+ai-instructions/
+*.tmp
+*.temp
+
+# Development and testing
+dev-tests/
+vitest.config.js
+test-*.js
+*.test.js
+
+# Git files
+.git/
+.gitignore
+
+PUBLISHING-GUIDE.md

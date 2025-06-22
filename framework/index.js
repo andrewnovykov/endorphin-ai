@@ -15,6 +15,7 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 export { EnhancedBrowserTestFramework } from './core/browser-framework.js';
+export { TestRecorder } from './core/test-recorder.js';
 export { runTask, runTaskSequence } from './core/test-runner.js';
 export { createTestSession, generateSessionSummary, saveTestSession } from './core/test-session.js';
 export { setupAgent } from './core/agent-setup.js';
@@ -37,3 +38,7 @@ export { createGetPageContentTool, createGetSimplePageContentTool } from './tool
 export { createClickTool, createFillTool, createClearFieldTool } from './tools/interaction.js';
 export { createVerifyElementTool, createGetElementInfoTool } from './tools/verification.js';
 export { createWaitTool, createScreenshotTool } from './tools/utilities.js';
+
+// Default export for simple usage: import EndorphinAI from 'endorphin-ai'
+import { EnhancedBrowserTestFramework } from './core/browser-framework.js';
+export default EnhancedBrowserTestFramework;

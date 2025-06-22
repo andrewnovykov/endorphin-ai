@@ -1,0 +1,35 @@
+{
+    "validUser": {
+        "email": "papapin888@gmail.com",
+        "password": "lalalend",
+        "firstName": "Test",
+        "lastName": "User"
+    },
+    "testUser": {
+        "email": "test@example.com",
+        "password": "TestPassword123",
+        "firstName": "John",
+        "lastName": "Doe"
+    },
+    "invalidUser": {
+        "email": "invalid-email",
+        "password": "short"
+    },
+    "searchTerms": [
+        "testing",
+        "automation",
+        "playwright",
+        "javascript"
+    ],
+    "contactForm": {
+        "name": "Test User",
+        "email": "test@example.com",
+        "subject": "Test Subject",
+        "message": "This is a test message for form validation."
+    },
+    "productData": {
+        "name": "Test Product",
+        "price": "$29.99",
+        "description": "A sample product for testing"
+    }
+}

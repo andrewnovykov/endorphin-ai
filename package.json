@@ -1,33 +1,66 @@
 {
-  "name": "browser-use",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "endorphin-ai",
+  "version": "0.1.0",
+  "description": "E2E Testing Reinvented with AI - A powerful browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright",
+  "main": "framework/index.js",
+  "bin": {
+    "endorphin": "bin/endorphin.js"
+  },
   "type": "module",
   "scripts": {
-    "start": "node framework/enhanced-test-framework.js",
-    "test": "node framework/enhanced-test-framework.js --test",
-    "framework:enhanced": "node framework/enhanced-test-framework.js",
-    "enhanced:demo": "node framework/enhanced-test-framework.js",
-    "enhanced:test": "node framework/enhanced-test-framework.js --test",
-    "enhanced:interactive": "node framework/enhanced-test-framework.js --interactive",
-    "enhanced:all": "node framework/enhanced-test-framework.js --all",
-    "enhanced:list": "node framework/enhanced-test-framework.js --list",
-    "enhanced:comprehensive": "node framework/enhanced-test-framework.js --comprehensive",
-    "enhanced:QE-001": "node framework/enhanced-test-framework.js --test QE-001",
-    "enhanced:QE-002": "node framework/enhanced-test-framework.js --test QE-002",
-    "enhanced:auth": "node framework/enhanced-test-framework.js --tag authentication",
-    "enhanced:smoke": "node framework/enhanced-test-framework.js --tag smoke",
-    "enhanced:high": "node framework/enhanced-test-framework.js --priority High",
+    "start": "node framework/test-framework.js",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "framework:test": "node framework/test-framework.js --test",
+    "framework:demo": "node framework/test-framework.js",
+    "framework:all": "node framework/test-framework.js --all",
+    "framework:list": "node framework/test-framework.js --list",
+    "framework:comprehensive": "node framework/test-framework.js --comprehensive",
+    "framework:QE-001": "node framework/test-framework.js --test QE-001",
+    "framework:QE-002": "node framework/test-framework.js --test QE-002",
+    "framework:auth": "node framework/test-framework.js --tag authentication",
+    "framework:smoke": "node framework/test-framework.js --tag smoke",
+    "framework:high": "node framework/test-framework.js --priority High",
     "verify-format": "node framework/testing/verify-test-format.js",
-    "interactive": "node framework/interactive/enhanced-interactive-recorder.js",
-    "interactive-demo": "node framework/demos/interactive-demo.js",
-    "test-framework": "node framework/testing/test-modular-framework.js",
-    "step-by-step": "node step-by-step-interactive.js"
+    "test-recorder": "node framework/interactive/enhanced-interactive-recorder.js",
+    "test-recorder-demo": "node framework/demos/interactive-demo.js",
+    "test-framework": "node framework/testing/test-modular-framework.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "ai",
+    "testing",
+    "e2e",
+    "automation",
+    "browser",
+    "playwright",
+    "langchain",
+    "openai",
+    "gpt-4",
+    "test-framework"
+  ],
+  "author": "Andrew Novykov <iam@andrewnovykov.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrewnovykov/endorphin-ai.git"
+  },
+  "homepage": "https://github.com/andrewnovykov/endorphin-ai#readme",
+  "bugs": {
+    "url": "https://github.com/andrewnovykov/endorphin-ai/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "framework/",
+    "bin/",
+    "examples/",
+    "README.md",
+    "LICENSE.md",
+    "MIGRATION-GUIDE.md"
+  ],
+  "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@langchain/community": "^0.3.31",
     "@langchain/core": "^0.3.40",
@@ -39,5 +72,13 @@
     "openai": "^4.85.3",
     "playwright": "^1.50.1",
     "zod": "^3.25.67"
+  },
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8",
+    "@vitest/ui": "^2.1.8"
   }
 }

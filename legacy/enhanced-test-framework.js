@@ -14,17 +14,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import { EnhancedBrowserTestFramework } from './index.js';
+import { EnhancedBrowserTestFramework } from '../framework/index.js';
 
 // Re-export the framework for compatibility
 export { EnhancedBrowserTestFramework };
+
+// Export test discovery functions for CLI
+export { 
+  runSingleTestById,
+  runTestsByTag, 
+  runTestsByPriority,
+  runAllTests,
+  listAllTests
+} from '../framework/core/test-discovery.js';
 
 // Main execution function
 async function main() {
   const args = process.argv.slice(2);
   
   // Import TestManager for file-based tests
-  const { TestManager } = await import('./core/test-manager.js');
+  const { TestManager } = await import('../framework/core/test-manager.js');
   const testManager = new TestManager();
   await testManager.loadTests();
   
@@ -131,7 +140,7 @@ async function main() {
 }
 
 // Run if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1].endsWith('enhanced-test-framework.js')) {
+if (import.meta.url === `file://${process.argv[1]}` || (process.argv[1] && process.argv[1].endsWith('enhanced-test-framework.js'))) {
   main().catch((error) => {
     console.error('❌ Fatal error:', error.message);
     process.exit(1);
