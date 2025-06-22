@@ -1,18 +1,18 @@
 # Maintainers Guide - Endorphin AI
 
-*Last Updated: June 21, 2025*
+*Last Updated: June 22, 2025*
 
 ## 🎯 Overview
 
-This guide is for developers who want to contribute to, maintain, or understand the Endorphin AI natural language browser testing framework.
+This guide is for developers who want to contribute to, maintain, or understand the Endorphin AI natural language browser testing framework codebase.
 
 ## 📋 Table of Contents
 
 1. [Development Setup](#development-setup)
-2. [Testing Framework](#testing-framework)
-3. [Architecture Overview](#architecture-overview)
-4. [Development Workflow](#development-workflow)
-5. [Testing Guidelines](#testing-guidelines)
+2. [Building the Framework](#building-the-framework)
+3. [Testing the Framework](#testing-the-framework)
+4. [Architecture Overview](#architecture-overview)
+5. [Development Workflow](#development-workflow)
 6. [Debugging](#debugging)
 7. [Release Process](#release-process)
 8. [Troubleshooting](#troubleshooting)
@@ -38,9 +38,8 @@ cd endorphin-ai
 # Install dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
+# Set up environment variables (create .env file)
+echo "OPENAI_API_KEY=your_api_key_here" > .env
 
 # Verify installation
 npm test
@@ -65,12 +64,49 @@ endorphin-ai/
 ├── dev-tests/               # Framework tests (Vitest)
 ├── examples/                # User examples and templates
 ├── doc/                     # Documentation
-└── legacy/                  # Archive of old code
+└── test-recorder/           # Test recording utilities
 ```
 
 ---
 
-## 🧪 Testing Framework
+## 🏗 Building the Framework
+
+### Build Process
+
+The framework uses ES modules and doesn't require a traditional build step, but here are the preparation steps:
+
+```bash
+# Install all dependencies
+npm install
+
+# Verify the framework structure
+npm run verify-structure
+
+# Run linting (if configured)
+npm run lint
+
+# Run type checking (if using TypeScript)
+npm run type-check
+```
+
+### Preparing for Distribution
+
+```bash
+# Clean any previous build artifacts
+rm -rf dist/ build/
+
+# Run all tests to ensure quality
+npm test
+
+# Pack the package for testing
+npm pack
+
+# This creates endorphin-ai-X.X.X.tgz for local testing
+```
+
+---
+
+## 🧪 Testing the Framework
 
 ### Test Structure
 
@@ -89,13 +125,13 @@ dev-tests/
 └── test-runner.test.js            # Test execution tests
 ```
 
-### Running Tests
+### Running Framework Tests
 
 ```bash
-# Run all tests
+# Run all framework tests
 npm test
 
-# Run tests in watch mode
+# Run tests in watch mode during development
 npm run test:watch
 
 # Run specific test file
@@ -103,6 +139,9 @@ npx vitest dev-tests/config-loader.test.js
 
 # Run tests with coverage
 npm run test:coverage
+
+# Run tests in CI mode (no watch, single run)
+npm run test:ci
 
 # Generate HTML test report
 npm test && npx vite preview --outDir dev-tests/html
@@ -129,6 +168,19 @@ npm test && npx vite preview --outDir dev-tests/html
 - **Location**: `browser-framework.test.js`, `enhanced-browser-framework.test.js`
 - **Purpose**: Test browser automation and AI integration
 - **Example**: Browser launch, page management, test execution
+
+### Framework Test Results
+
+Current test status:
+- **Total Tests**: 98
+- **Passing**: 93
+- **Success Rate**: 94.9%
+
+Key test metrics to maintain:
+- All CLI commands must work
+- Configuration loading must be robust
+- Test discovery must handle various file formats
+- Browser automation must be reliable
 
 ---
 
@@ -215,11 +267,7 @@ Before committing, ensure:
 - [ ] Examples still work: Test with `examples/` directory
 - [ ] Documentation updated
 
----
-
-## ✅ Testing Guidelines
-
-### Writing Good Tests
+### Writing Good Framework Tests
 
 #### 1. Test Structure
 ```javascript
@@ -366,25 +414,39 @@ node --inspect-brk node_modules/.bin/vitest dev-tests/specific.test.js
    - Update README.md if needed
    - Update examples if needed
 
-4. **Publish**
+4. **Test Package Distribution**
+   ```bash
+   # Pack and test locally
+   npm pack
+   
+   # Test installation in temp directory
+   mkdir temp-test && cd temp-test
+   npm init -y
+   npm install ../endorphin-ai-*.tgz
+   npx endorphin --version
+   cd .. && rm -rf temp-test
+   ```
+
+5. **Publish**
    ```bash
    npm publish
    ```
 
 ### Release Checklist
 
-- [ ] All tests passing
+- [ ] All framework tests passing
 - [ ] Documentation updated
-- [ ] Examples tested
+- [ ] Examples tested with packed version
 - [ ] Version bumped
 - [ ] CHANGELOG.md updated
 - [ ] Git tags created
+- [ ] Package tested in isolation
 
 ---
 
 ## 🚨 Troubleshooting
 
-### Common Issues
+### Common Development Issues
 
 #### 1. "Module not found" errors
 ```bash
@@ -423,14 +485,15 @@ ls -la bin/endorphin.js
 # Test directly
 node bin/endorphin.js --version
 
-# Reinstall globally if needed
-npm uninstall -g endorphin-ai
-npm install -g .
+# Test in development mode
+npm link
+endorphin --version
+npm unlink
 ```
 
 #### 5. Browser automation issues
 ```bash
-# Install browsers
+# Install browsers for Playwright
 npx playwright install
 
 # Check browser availability
@@ -478,7 +541,7 @@ npx playwright --version
 1. **Read this guide completely**
 2. **Set up development environment**
 3. **Run the test suite**
-4. **Try the examples**
+4. **Try the framework with examples**
 5. **Start with small fixes/features**
 
 ### For Maintainers
@@ -491,4 +554,4 @@ npx playwright --version
 
 ---
 
-*This guide is a living document. Please keep it updated as the framework evolves.*
+*This guide focuses on framework development. For package testing from a user perspective, see `/doc/dev/test-pkg.md`.*

@@ -17,16 +17,12 @@
     "framework:demo": "node framework/test-framework.js",
     "framework:all": "node framework/test-framework.js --all",
     "framework:list": "node framework/test-framework.js --list",
-    "framework:comprehensive": "node framework/test-framework.js --comprehensive",
     "framework:QE-001": "node framework/test-framework.js --test QE-001",
     "framework:QE-002": "node framework/test-framework.js --test QE-002",
     "framework:auth": "node framework/test-framework.js --tag authentication",
     "framework:smoke": "node framework/test-framework.js --tag smoke",
     "framework:high": "node framework/test-framework.js --priority High",
-    "verify-format": "node framework/testing/verify-test-format.js",
-    "test-recorder": "node framework/interactive/enhanced-interactive-recorder.js",
-    "test-recorder-demo": "node framework/demos/interactive-demo.js",
-    "test-framework": "node framework/testing/test-modular-framework.js"
+    "test-recorder": "node framework/interactive/enhanced-interactive-recorder.js"
   },
   "keywords": [
     "ai",
