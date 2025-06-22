@@ -8,6 +8,12 @@
 
 Write tests in plain English. Let AI generate, validate, and fix them automatically.
 
+<div align="center">
+  <img src="./doc/images/playwright-logo.png" alt="Playwright" height="40" />
+  <span style="margin: 10px 15px; font-size: 24px; display: inline-block; vertical-align: middle;">+</span>
+  <img src="./doc/images/langchain-logo.png" alt="LangChain" height="40" />
+</div>
+
 A powerful, modular browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright. Provides intelligent browser automation with automatic element detection, visual validation, and comprehensive test management.
 
 ## 🚀 Quick Start
