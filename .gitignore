@@ -5,3 +5,5 @@ node_modules/
 test-result/*
 test-recorder/*
 ai-instruction/*
+.DS_Store
+doc/.DS_Store
