@@ -1,8 +1,0 @@
-# Global code owners - all files require review from you
-* @andrewnovykov
-
-# Specific protection for critical files
-/package.json @andrewnovykov
-/bin/ @andrewnovykov
-/framework/ @andrewnovykov
-/.github/ @andrewnovykov

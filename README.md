@@ -14,10 +14,6 @@ A powerful, modular browser automation framework using AI-powered testing with L
 
 ### Installation
 ```bash
-# Local installation (recommended)
-npm install endorphin-ai
-
-# Global installation (optional)
 npm install -g endorphin-ai
 ```
 
@@ -27,28 +23,17 @@ npm install -g endorphin-ai
    mkdir my-test-project && cd my-test-project
    ```
 
-2. Initialize with ES modules:
-   ```bash
-   npm init -y
-   npm pkg set type="module"
-   ```
-
-3. Install Endorphin AI:
-   ```bash
-   npm install endorphin-ai
-   ```
-
-4. Set up your `.env` file with your OpenAI API key:
+2. Set up your `.env` file with your OpenAI API key:
    ```env
    OPENAI_API_KEY=your_api_key_here
    ```
 
-5. Create tests directory:
+3. Create tests directory:
    ```bash
    mkdir tests
    ```
 
-6. Create your first test file `tests/login-test.js`:
+4. Create your first test file `tests/login-test.js`:
    ```javascript
    export const QE001 = {
      id: "QE-001",
@@ -70,74 +55,64 @@ npm install -g endorphin-ai
    };
    ```
 
-7. Add scripts to your `package.json`:
-   ```json
-   {
-     "scripts": {
-       "test": "endorphin run test all",
-       "test:smoke": "endorphin run test --tag smoke",
-       "test:auth": "endorphin run test --tag authentication",
-       "test:single": "endorphin run test",
-       "test:record": "endorphin run test-recorder"
-     }
-   }
-   ```
-
 ### Usage Commands
 
 #### 🧪 Run Specific Test
 ```bash
-# Using npm scripts (recommended)
-npm run test:single QE-001
-
-# Using npx
-npx endorphin run test QE-001
-
-# Global installation
 endorphin run test QE-001
 ```
 
 #### 🏷️ Run Tests by Category
 ```bash
-# Using npm scripts
-npm run test:smoke
-npm run test:auth
+# Authentication tests
+endorphin run test --tag authentication
 
-# Using npx/global
-npx endorphin run test --tag authentication
-npx endorphin run test --priority High
+# High priority tests  
+endorphin run test --priority High
+
+# Smoke tests
+endorphin run test --tag smoke
 ```
 
 #### 🎯 Run All Tests
 ```bash
-# Using npm scripts
-npm test
-
-# Using npx/global
-npx endorphin run test all
+endorphin run test all
 ```
 
 #### 🎬 Test Recorder Mode
 ```bash
-# Using npm scripts
-npm run test:record
-
-# Using npx/global
-npx endorphin run test-recorder
+# Interactive test creation
+endorphin run test-recorder
 ```
 
 ## 🏗️ Framework Architecture
 
-Endorphin AI is built with a modular, extensible architecture designed for reliability and maintainability. 
-
-📖 **[View detailed Framework Architecture documentation](./doc/Framework-Architecture.md)**
-
-### Key Components
-- **Core Framework**: Main test execution engine and session management
-- **Browser Tools**: Intelligent automation tools powered by AI
-- **Configuration System**: Flexible, hierarchical configuration management
-- **Test Discovery**: Automatic test file detection and loading
-- **Interactive Tools**: Real-time test creation and debugging
+### Modular Structure
+```
+framework/
+├── test-framework.js            # Main entry point
+├── index.js                     # Modular exports
+├── config/                      # Configuration files
+│   ├── agent-config.js          # AI agent settings
+│   ├── browser-config.js        # Browser configuration
+│   └── paths.js                 # Directory paths
+├── core/                        # Core components
+│   ├── browser-framework.js     # Main framework class
+│   ├── config-loader.js         # Configuration management
+│   ├── test-discovery.js        # Test discovery & execution
+│   ├── test-manager.js          # Test management
+│   ├── test-runner.js           # Test execution
+│   └── test-session.js          # Session tracking
+├── tools/                       # Browser automation tools
+│   ├── navigation.js            # Page navigation
+│   ├── interaction.js           # Clicks, form filling
+│   ├── verification.js          # Element verification
+│   ├── content.js               # Page content analysis
+│   └── utilities.js             # Screenshots, waits
+├── demos/                       # Framework demonstrations
+├── interactive/                 # Interactive testing tools
+└── testing/                     # Testing utilities
+```
 
 ## ⚙️ Configuration
 
@@ -168,17 +143,23 @@ export default {
 You can override configuration with CLI flags:
 
 ```bash
-# Using npm scripts with -- to pass flags
-npm test -- --browser firefox
-npm run test:single QE-001 -- --no-headless
+# Run with different browser
+endorphin run test all --browser firefox
 
-# Using npx/global
-npx endorphin run test all --browser firefox
-npx endorphin run test QE-001 --no-headless
-npx endorphin run test all --viewport 1920x1080
-npx endorphin run test all --parallel 3
-npx endorphin run test all --model gpt-4
-npx endorphin run test all --env staging
+# Run in non-headless mode
+endorphin run test QE-001 --no-headless
+
+# Set custom viewport
+endorphin run test all --viewport 1920x1080
+
+# Run tests in parallel
+endorphin run test all --parallel 3
+
+# Use different AI model
+endorphin run test all --model gpt-4
+
+# Set environment
+endorphin run test all --env staging
 ```
 
 ## 📝 Test Categories
@@ -261,7 +242,25 @@ export const QE002 = {
 
 
 
+## 🔧 Configuration
 
+### Browser Configuration (`framework/config/browser-config.js`)
+- Browser launch options (headless mode, viewport size)
+- Timeouts and delays
+- Screenshot settings
+- Page loading options
+
+### AI Agent Configuration (`framework/config/agent-config.js`)
+- OpenAI API settings
+- Model selection (GPT-4o)
+- Recursion limits and timeouts
+- Stop phrases for test completion
+- Execution timing settings
+
+### Path Configuration (`framework/config/paths.js`)
+- Test result directories
+- Recording locations
+- Screenshot storage
 
 ## 📊 Test Results
 
@@ -274,21 +273,26 @@ Each test execution creates:
 
 ### Example Test Output
 ```
-🎯 Running: QE-001 - Basic Login Test
+🎯 Running Task: QE-001 - Basic Login Test
+📝 Task: Test the login functionality with valid credentials
+⏰ Started at: 2025-06-19T05:36:37.705Z
+
+📁 Created test session: qe-001_2025-06-19T05-36-37-706Z
+🌍 Navigate to: https://qafromla.herokuapp.com
 📸 Screenshot taken: step-1-navigation.png
+🔍 Found login elements
+📝 Filling login form...
 ✅ Login successful - test completed!
+
 📊 Result: PASSED
+📁 Results: test-result/qe-001_2025-06-19T05-36-37-706Z
 ```
 
 ## 🎮 Interactive Features
 
 ### Custom Test Creation
 ```bash
-# Using npm scripts
-npm run test:record
-
-# Using npx/global
-npx endorphin run test-recorder  
+endorphin run test-recorder  
 ```
 Create tests on-the-fly with guided prompts:
 - Custom navigation tasks
@@ -299,9 +303,102 @@ Create tests on-the-fly with guided prompts:
 
 ## 🔍 Browser Automation Tools
 
-Intelligent AI-powered tools for navigation, interaction, verification, and utilities.
+The framework includes intelligent tools powered by AI:
 
-📖 **[View detailed tool documentation](./doc/Framework-Architecture.md#browser-automation-tools)**
+### Navigation Tools
+- **navigate**: Smart URL navigation with wait conditions
+- **getPageContent**: Intelligent HTML analysis for element detection
+
+### Interaction Tools  
+- **click**: AI-powered element clicking with automatic waiting
+- **fill**: Smart form filling with focus management
+- **clearField**: Intelligent field clearing before input
+
+### Verification Tools
+- **verifyElement**: Element visibility and interaction verification
+- **getElementInfo**: Detailed element analysis and properties
+
+### Utility Tools
+- **wait**: Configurable delays and timing control
+- **screenshot**: High-quality visual documentation
+
+## 🎮 Command Examples
+
+### Basic Commands
+```bash
+# Run specific test
+endorphin run test QE-001
+
+# Run all tests
+endorphin run test all
+
+# Run by priority
+endorphin run test --priority High
+endorphin run test --priority Medium
+
+# Run by tags
+endorphin run test --tag authentication
+endorphin run test --tag smoke
+endorphin run test --tag checkout
+
+# Interactive test creation
+endorphin run test-recorder
+```
+
+### Multiple Tag Support
+```bash
+# Run tests matching any of these tags
+endorphin run test --tag "authentication,smoke"
+
+# Run high priority authentication tests
+endorphin run test --priority High --tag authentication
+```
+
+## 🚀 Getting Started Examples
+
+### Quick Smoke Test
+```bash
+endorphin run test --tag smoke
+```
+
+### Authentication Testing
+```bash
+endorphin run test --tag authentication
+```
+
+### Complete Test Suite
+```bash
+endorphin run test all
+```
+
+### Create Custom Test
+```bash
+endorphin run test-recorder
+# Follow prompts to create your own test
+```
+
+### Example Test File
+Create `tests/my-first-test.js`:
+```javascript
+export const QE001 = {
+  id: "QE-001",
+  name: "Homepage Navigation Test", 
+  description: "Verify main navigation works correctly",
+  priority: "High",
+  tags: ["navigation", "smoke"],
+  site: "https://example.com/",
+  task: `Navigate to https://example.com/. 
+  Click on "About" link in navigation. 
+  Wait 2 seconds for page load. 
+  Verify page title contains "About".
+  Take a screenshot.`
+};
+```
+
+Then run it:
+```bash
+endorphin run test QE-001
+```
 
 ## 🎉 Features
 
