@@ -44,7 +44,54 @@ export class ConsoleReporter {
   startSession() {
     this.startTime = performance.now();
     this.results = [];
+    
     console.log(`${this.colors.cyan}${this.colors.bright}🧪 Running Endorphin AI Tests...${this.colors.reset}\n`);
+  }
+
+  /**
+   * Display ASCII art of Endorphin molecular structure
+   */
+  displayEndorphinMolecule() {
+    const purple = '\x1b[35m';
+    const brightPurple = '\x1b[95m';
+    const darkPurple = '\x1b[35m\x1b[2m';
+    const magenta = '\x1b[35m\x1b[1m';
+    
+    console.log(`${brightPurple}
+    ╔═══════════════════════════════════════════════════════════════╗
+    ║${magenta}                          ENDORPHIN                            ${brightPurple}║
+    ║${darkPurple}                      C₃₁H₃₉N₇O₉S                              ${brightPurple}║
+    ╚═══════════════════════════════════════════════════════════════╝${this.colors.reset}`);
+    
+    console.log(`${purple}
+         ${brightPurple}HO${purple}─┐     ┌─${brightPurple}NH₂${purple}                    ┌─${brightPurple}COOH${purple}
+             │     │                       │
+         ┌───${brightPurple}C${purple}═══${brightPurple}C${purple}─${brightPurple}C${purple}─${brightPurple}NH${purple}─${brightPurple}CO${purple}─${brightPurple}NH${purple}─${brightPurple}C${purple}─${brightPurple}CO${purple}─${brightPurple}NH${purple}─${brightPurple}C${purple}───${brightPurple}C${purple}─┘
+         │   ║   ║   │           │     │   │
+         │   ║   ║   │           │     │   └─${brightPurple}NH₂${purple}
+    ${brightPurple}H₂N${purple}──${brightPurple}C${purple}───┘   ║   │           │     │
+         │       ║   │           │     │
+         │   ┌───┘   │           │     │
+         │   │       │           │     │
+         └─${brightPurple}C${purple}─┘   ┌─${brightPurple}C${purple}─┘       ┌─${brightPurple}C${purple}─┘ ┌─${brightPurple}C${purple}─┘
+           ║     │           │     │
+           ║ ┌─${brightPurple}C${purple}─┘       ┌─${brightPurple}C${purple}─┘ ┌─${brightPurple}C${purple}─┘
+           ║ │           │     │
+       ┌─${brightPurple}C${purple}─┘ │       ┌─${brightPurple}C${purple}─┘ ┌─${brightPurple}C${purple}─┘
+       │     │       │     │
+   ${brightPurple}H${purple}─${brightPurple}C${purple}─┘ ┌─${brightPurple}C${purple}─┘   ${brightPurple}H${purple}─${brightPurple}C${purple}─┘ ${brightPurple}H${purple}─${brightPurple}C${purple}─┘
+     │   │         │     │
+     │   │         │     │
+    ${brightPurple}CH₃${purple}  │        ${brightPurple}CH₃${purple}   ${brightPurple}CH₃${purple}
+         │
+        ${brightPurple}CH₂${purple}
+         │
+        ${brightPurple}CH₃${this.colors.reset}`);
+        
+    console.log(`${darkPurple}
+    ${magenta}♦${darkPurple} Endorphin: Natural opioid peptide neurotransmitter
+    ${magenta}♦${darkPurple} Known for: Pain relief, pleasure, and reward pathways  
+    ${magenta}♦${darkPurple} Testing with: AI-powered natural language automation${this.colors.reset}\n`);
   }
 
   /**

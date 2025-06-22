@@ -170,6 +170,18 @@ async function main() {
       process.exit(0);
     }
 
+    // Display Endorphin molecular structure for test commands
+    const command = args[0];
+    const subcommand = args[1];
+    const target = args[2];
+    
+    if (command === 'run' && (subcommand === 'test' || subcommand === 'test-recorder')) {
+      // Import ConsoleReporter and display molecular structure
+      const { ConsoleReporter } = await import('../framework/core/console-reporter.js');
+      const reporter = new ConsoleReporter();
+      reporter.displayEndorphinMolecule();
+    }
+
     // Load configuration with CLI flag overrides
     const cliFlags = parseCliFlags(args);
     const config = await getConfig({ cwd: process.cwd(), cliFlags });
@@ -178,10 +190,6 @@ async function main() {
     if (args.includes('--debug')) {
       console.log('🔧 Loaded configuration:', JSON.stringify(config, null, 2));
     }
-
-    const command = args[0];
-    const subcommand = args[1];
-    const target = args[2];
 
     // Handle list command
     if (command === 'list') {
