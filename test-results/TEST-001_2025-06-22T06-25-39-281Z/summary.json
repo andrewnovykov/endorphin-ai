@@ -1,0 +1,13 @@
+{
+  "testName": "Sample Test",
+  "sessionId": "TEST-001",
+  "status": "SUCCESS",
+  "startTime": "2025-06-22T06:25:39.281Z",
+  "endTime": "2025-06-22T06:25:39.281Z",
+  "duration": 0,
+  "totalSteps": 2,
+  "successfulSteps": 2,
+  "failedSteps": 0,
+  "totalScreenshots": 0,
+  "finalResult": "Test completed successfully"
+}
