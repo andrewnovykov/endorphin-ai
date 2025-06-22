@@ -303,3 +303,9 @@ npm run interactive
 ✅ **Error Handling**: Robust retry mechanisms and failure recovery  
 
 The framework is production-ready and provides a solid foundation for scalable browser automation testing!
+
+## License
+
+Endorphin is licensed under the GNU Affero General Public License, Version 3 (AGPLv3). The full license text is available in the `LICENSE` file.
+
+For organizations that cannot use AGPLv3-licensed software, commercial licenses are available. Please contact us at [iam@andrewnovykov.com] for more information.
