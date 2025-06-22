@@ -114,6 +114,15 @@ npm version patch  # or minor/major
 # 2. Creates git commit with version bump
 # 3. Creates git tag (e.g., v0.1.1)
 ```
+🔧 Method 1: Direct Version Set (Recommended)
+###  Set specific version directly
+npm version 0.3.0 --no-git-tag-version
+
+# Then create the git commit and tag manually
+git add package.json
+git commit -m "0.3.0"
+git tag v0.3.0
+
 
 ### Step 4: Verify Package Contents
 ```bash
