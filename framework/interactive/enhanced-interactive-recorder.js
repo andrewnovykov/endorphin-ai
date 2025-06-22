@@ -211,7 +211,6 @@ async function runInteractiveRecorder() {
   } finally {
     await framework.cleanup();
     rl.close();
-      rl.close();
   }
 }
 
