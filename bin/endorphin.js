@@ -110,6 +110,7 @@ Usage:
   endorphin <command> [options]
 
 Commands:
+  init                   Initialize new project with examples
   run test <test-id>     Run a specific test (e.g., QE-001)
   run test all           Run all tests
   run test --tag <tag>   Run tests by tag (e.g., authentication)
@@ -128,7 +129,8 @@ Options:
   --env <environment>    Set environment (development/staging/production)
 
 Examples:
-  endorphin run test QE-001                    # Run specific test
+  endorphin init                               # Set up new project
+  endorphin run test HEALTH-001                # Run example test
   endorphin run test all --headless            # Run all tests headless
   endorphin run test --tag smoke --parallel 3  # Run smoke tests in parallel
   endorphin run test --priority High --env staging # Run high priority tests on staging
@@ -175,6 +177,14 @@ async function main() {
       console.log('📋 Available Tests:');
       const { listAllTests } = await import('../framework/core/test-discovery.js');
       await listAllTests(config);
+      process.exit(0);
+    }
+
+    // Handle init command
+    if (command === 'init') {
+      console.log('🎯 Initializing Endorphin AI project...');
+      const { initProject } = await import('../framework/core/init-command.js');
+      await initProject(process.cwd());
       process.exit(0);
     }
 

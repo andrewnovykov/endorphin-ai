@@ -20,14 +20,33 @@ A powerful, modular browser automation framework using AI-powered testing with L
 
 ### Installation
 ```bash
-# Local installation (recommended)
+# Install Endorphin AI
 npm install endorphin-ai
-
-# Global installation (optional)
-npm install -g endorphin-ai
 ```
 
-### Setup
+### Setup (New - Automated!)
+1. Create and initialize your project:
+   ```bash
+   mkdir my-test-project && cd my-test-project
+   npx endorphin init
+   ```
+
+2. Set up your OpenAI API key:
+   ```bash
+   # Edit the .env file and add your API key
+   # OPENAI_API_KEY=your_api_key_here
+   ```
+
+3. Run your first test:
+   ```bash
+   npx endorphin run test HEALTH-001
+   ```
+
+That's it! Your project is ready with a sample test, configuration, and all necessary directories.
+
+### Manual Setup (Alternative)
+If you prefer manual setup:
+
 1. Create your project directory:
    ```bash
    mkdir my-test-project && cd my-test-project
@@ -90,6 +109,12 @@ npm install -g endorphin-ai
    ```
 
 ### Usage Commands
+
+#### 🎯 Initialize New Project
+```bash
+# Create a new Endorphin AI project with all necessary files
+npx endorphin init
+```
 
 #### 🧪 Run Specific Test
 ```bash
