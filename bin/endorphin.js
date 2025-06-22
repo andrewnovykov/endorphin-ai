@@ -110,14 +110,19 @@ Usage:
   endorphin <command> [options]
 
 Commands:
-  init                   Initialize new project with examples
-  run test <test-id>     Run a specific test (e.g., QE-001)
-  run test all           Run all tests
-  run test --tag <tag>   Run tests by tag (e.g., authentication)
-  run test --priority <level>  Run tests by priority (High, Medium, Low)
-  run test-recorder      Start interactive test recorder
-  list                   List all available tests
-  help                   Show this help message
+  init                           Initialize new project with examples
+  run test <test-id>             Run a specific test (e.g., QE-001)
+  run test all                   Run all tests
+  run test --tag <tag>           Run tests by tag (e.g., authentication)
+  run test --priority <level>    Run tests by priority (High, Medium, Low)
+  run test-recorder              Start interactive test recorder
+  list                           List all available tests
+  generate report                Generate HTML test report
+  generate report --summary      Generate lightweight summary report
+  open report [file]             Open latest (or specific) test report in browser
+  cleanup results [count]        Clean up old test results (keep N per test, default: 10)
+  cleanup reports [days]         Clean up old report files (older than N days, default: 30)
+  help                           Show this help message
 
 Options:
   --headless             Run browser in headless mode
@@ -136,6 +141,12 @@ Examples:
   endorphin run test --priority High --env staging # Run high priority tests on staging
   endorphin run test-recorder                  # Start test recorder
   endorphin list                               # Show all available tests
+  endorphin generate report                    # Generate interactive HTML report
+  endorphin generate report --summary          # Generate lightweight summary report
+  endorphin generate report --file custom.html # Generate report with custom filename
+  endorphin open report                        # Open latest report in browser
+  endorphin cleanup results 5                  # Keep only 5 recent results per test
+  endorphin cleanup reports 7                  # Remove reports older than 7 days
 
 Configuration:
   Create endorphin.config.js in your project root for default settings
@@ -244,6 +255,81 @@ async function main() {
 
       console.error(`❌ Unknown run command: ${subcommand}`);
       console.log('Use "endorphin help" for usage information');
+      process.exit(1);
+    }
+
+    // Handle generate command
+    if (command === 'generate') {
+      if (subcommand === 'report') {
+        console.log('📊 Generating HTML test report...');
+        const { HTMLReporter } = await import('../framework/core/reporter.js');
+        const reporter = new HTMLReporter();
+        
+        const options = {};
+        
+        // Parse additional flags for report generation
+        if (args.includes('--summary')) {
+          const reportPath = await reporter.generateSummaryReport(options);
+          console.log(`✅ Summary report generated: ${reportPath}`);
+        } else {
+          // Check for custom filename
+          const fileIndex = args.indexOf('--file');
+          if (fileIndex !== -1 && args[fileIndex + 1]) {
+            options.filename = args[fileIndex + 1];
+          }
+          
+          const reportPath = await reporter.generateReport(options);
+          console.log(`🌐 Open report: ${reportPath}`);
+        }
+        process.exit(0);
+      }
+
+      console.error(`❌ Unknown generate command: ${subcommand}`);
+      console.log('Use "endorphin help" for usage information');
+      process.exit(1);
+    }
+
+    // Handle open command
+    if (command === 'open') {
+      if (subcommand === 'report') {
+        console.log('🌐 Opening latest test report...');
+        const { HTMLReporter } = await import('../framework/core/reporter.js');
+        const reporter = new HTMLReporter();
+        
+        // Check for specific report file
+        const reportPath = target || null;
+        await reporter.openReport(reportPath);
+        process.exit(0);
+      }
+
+      console.error(`❌ Unknown open command: ${subcommand}`);
+      console.log('Use "endorphin help" for usage information');
+      process.exit(1);
+    }
+
+    // Handle cleanup command
+    if (command === 'cleanup') {
+      const { HTMLReporter } = await import('../framework/core/reporter.js');
+      const reporter = new HTMLReporter();
+      
+      if (subcommand === 'results') {
+        console.log('🧹 Cleaning up old test results...');
+        const keepCount = parseInt(target) || 10;
+        const cleanup = await reporter.cleanupResults(keepCount);
+        console.log(`✅ Cleanup completed: ${cleanup.removedCount} directories removed`);
+        process.exit(0);
+      }
+      
+      if (subcommand === 'reports') {
+        console.log('🧹 Cleaning up old report files...');
+        const maxAge = parseInt(target) || 30;
+        const cleanup = await reporter.cleanupOldReports(maxAge);
+        console.log(`✅ Cleanup completed: ${cleanup.removedCount} report files removed`);
+        process.exit(0);
+      }
+
+      console.error(`❌ Unknown cleanup command: ${subcommand}`);
+      console.log('Available: cleanup results [count], cleanup reports [days]');
       process.exit(1);
     }
 
