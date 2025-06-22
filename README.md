@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./doc/images/endorphin.jpg" alt="Endorphin Logo" width="200" />
+  <img src="./doc/images/endorphin-ai-logo-no-bg.png" alt="Endorphin Logo" width="200" />
   
    <h1 style="font-size: 4rem; font-weight: bold; margin: 30px 0 10px 0; color: #8A2BE2;">ENDORPHIN</h1>
   
