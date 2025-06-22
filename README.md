@@ -122,45 +122,20 @@ Endorphin AI works out of the box with sensible defaults, but you can customize 
 ```javascript
 // endorphin.config.js
 export default {
-  // Browser configuration
-  browser: {
-    type: 'chromium',           // chromium, firefox, webkit
-    headless: true,             // Run browser in headless mode
-    viewport: {                 // Browser viewport size
-      width: 1280,
-      height: 720
-    },
-    timeout: 30000             // Default timeout in milliseconds
+  // Global test settings
+  defaultTimeout: 30000,
+  headless: false,
+  viewport: { width: 1280, height: 720 },
+  
+  // Default test data
+  testData: {
+    baseUrl: "https://staging.example.com",
+    adminEmail: "admin@example.com"
   },
-
-  // AI configuration
-  ai: {
-    model: 'gpt-4o-mini',      // OpenAI model to use
-    temperature: 0.1,          // AI creativity (0-1)
-    maxRetries: 3              // Max retries for AI calls
-  },
-
-  // Test execution configuration
-  execution: {
-    timeout: 60000,            // Test timeout in milliseconds
-    parallel: 1,               // Number of parallel tests
-    screenshots: true,         // Take screenshots on failure
-    testsDirectory: './tests', // Directory containing test files
-    dataDirectory: './data'    // Directory containing test data
-  },
-
-  // Environment-specific settings
-  environments: {
-    development: {
-      baseUrl: 'http://localhost:3000'
-    },
-    staging: {
-      baseUrl: 'https://staging.example.com'
-    },
-    production: {
-      baseUrl: 'https://example.com'
-    }
-  }
+  
+  // Result settings
+  screenshots: true,
+  recordVideo: false
 };
 ```
 
@@ -265,27 +240,7 @@ export const QE002 = {
 };
 ```
 
-## ⚙️ Configuration
 
-### Optional: endorphin.config.js
-```javascript
-export default {
-  // Global test settings
-  defaultTimeout: 30000,
-  headless: false,
-  viewport: { width: 1280, height: 720 },
-  
-  // Default test data
-  testData: {
-    baseUrl: "https://staging.example.com",
-    adminEmail: "admin@example.com"
-  },
-  
-  // Result settings
-  screenshots: true,
-  recordVideo: false
-};
-```
 
 ## 🔧 Configuration
 
@@ -337,7 +292,7 @@ Each test execution creates:
 
 ### Custom Test Creation
 ```bash
-npm run interactive
+endorphin run test-recorder  
 ```
 Create tests on-the-fly with guided prompts:
 - Custom navigation tasks
@@ -345,15 +300,6 @@ Create tests on-the-fly with guided prompts:
 - Login test automation
 - Content verification
 
-### Framework Demonstration
-```bash
-npm run interactive-demo
-```
-Runs pre-built demonstration tests showcasing:
-- Navigation capabilities
-- Form interaction
-- Content analysis
-- Result tracking
 
 ## 🔍 Browser Automation Tools
 

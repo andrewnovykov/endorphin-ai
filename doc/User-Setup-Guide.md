@@ -27,15 +27,23 @@ Create `endorphin.config.js`:
 ```javascript
 export default {
   browser: {
-    headless: true,
-    viewport: { width: 1280, height: 720 }
+    headless: false,  // Make sure this is false to see browser
+    viewport: { width: 1280, height: 720 },
+    timeout: 30000
   },
-  execution: {
-    timeout: 30000,
-    testsDirectory: './tests'
+  
+  // Results configuration
+  results: {
+    directory: "./test-results",
+    keepHistory: 10,
+    format: ["json", "html"],
+    screenshots: true,
+    recordVideo: false
   },
+  
   ai: {
-    model: 'gpt-4o-mini',
+    model: "gpt-4o",
+    maxRetries: 3,
     temperature: 0.1
   }
 };
