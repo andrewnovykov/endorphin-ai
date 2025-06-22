@@ -41,7 +41,8 @@ export class EnhancedBrowserTestFramework {
     this.agent = null;
     this.testResults = [];
     this.currentTestSession = null;
-    this.resultBaseDir = PATHS.TEST_RESULT_DIR;
+    // Will be set after config is processed
+    this.resultBaseDir = null;
     this.recorderBaseDir = PATHS.TEST_RECORDER_DIR;
     this.isInteractiveMode = false;
     
@@ -83,6 +84,15 @@ export class EnhancedBrowserTestFramework {
         ...(config.execution || {})
       }
     };
+
+    // Set result directory based on configuration
+    // Use configured results directory or default to 'test-results' in current working directory
+    const resultsDir = this.config.results?.directory || './test-results';
+    this.resultBaseDir = path.resolve(process.cwd(), resultsDir);
+    
+    // Debug logging
+    console.log(`🔧 Results config:`, this.config.results);
+    console.log(`📁 Resolved results directory: ${this.resultBaseDir}`);
   }
 
   getBrowserType() {

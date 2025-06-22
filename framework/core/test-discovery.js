@@ -213,7 +213,7 @@ export async function runSingleTestById(testId, config = null) {
   console.log(`🧪 Running test: ${test.id} - ${test.name}`);
   
   const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
-  const framework = new EnhancedBrowserTestFramework();
+  const framework = new EnhancedBrowserTestFramework(config);
   
   try {
     await framework.initialize();
@@ -250,7 +250,7 @@ export async function runTestsByTag(tag, config = null) {
   console.log(`🏷️ Running ${tests.length} test(s) with tag: ${tag}`);
   
   const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
-  const framework = new EnhancedBrowserTestFramework();
+  const framework = new EnhancedBrowserTestFramework(config);
   
   try {
     await framework.initialize();
@@ -293,7 +293,7 @@ export async function runTestsByPriority(priority, config = null) {
   console.log(`🎯 Running ${tests.length} test(s) with priority: ${priority}`);
   
   const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
-  const framework = new EnhancedBrowserTestFramework();
+  const framework = new EnhancedBrowserTestFramework(config);
   
   try {
     await framework.initialize();
@@ -336,7 +336,7 @@ export async function runAllTests(config = null) {
   console.log(`🚀 Running all ${tests.length} test(s)`);
   
   const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
-  const framework = new EnhancedBrowserTestFramework();
+  const framework = new EnhancedBrowserTestFramework(config);
   
   try {
     await framework.initialize();
