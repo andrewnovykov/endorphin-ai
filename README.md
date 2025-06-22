@@ -1,9 +1,9 @@
 <div align="center">
   <img src="./doc/images/endorphin-ai-logo-no-bg.png" alt="Endorphin Logo" width="200" />
   
-   <h1 style="font-size: 4rem; font-weight: bold; margin: 30px 0 10px 0; color: #8A2BE2;">ENDORPHIN</h1>
+  # 💜 ENDORPHIN
   
-  <h2 style="font-size: 1.5rem; margin: 10px 0 30px 0;">E2E Testing Reinvented with AI</h2>
+  ## E2E Testing Reinvented with AI
 </div>
 
 Write tests in plain English. Let AI generate, validate, and fix them automatically.
