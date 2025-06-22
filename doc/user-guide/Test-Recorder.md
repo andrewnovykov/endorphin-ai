@@ -1,225 +1,212 @@
-# Endorphin AI Test Recorder
+# Test Recorder - User Guide
 
-The Test Recorder allows you to create automated tests by recording your browser interactions in natural language. The AI agent performs the actions while capturing screenshots and metadata for each step.
+Create automated tests by recording your browser interactions in natural language. The AI agent performs the actions while you watch, capturing everything needed to recreate your test.
 
 ## Quick Start
 
-### For Framework Development
 ```bash
-# In the endorphin-ai repository
-node bin/endorphin.js run test-recorder
-```
-
-### For End Users
-```bash
-# In your project directory
+# In your project directory with Endorphin AI installed
 npx endorphin run test-recorder
 ```
 
 ## How It Works
 
-1. **Interactive Setup**: Answer prompts to define your test
-2. **Visual Recording**: Browser opens in headed mode, watch the AI perform actions
-3. **Natural Language Commands**: Give simple instructions like "click login button"
-4. **Automatic Screenshots**: Before/after images captured for each step
-5. **Test Generation**: Creates a runnable Endorphin test file
+1. **Setup**: Answer a few questions about your test
+2. **Record**: Give natural language commands like "click login button"  
+3. **Watch**: See the AI perform actions in a real browser
+4. **Generate**: Get a ready-to-run test file automatically
 
-## Interactive Session Example
+## Step-by-Step Example
 
+### 1. Start Recording
+```bash
+npx endorphin run test-recorder
 ```
-🎬 Interactive Test Recorder
-══════════════════════════════════════════════════
-Record browser interactions step by step!
-Commands:
-• Type natural language commands (e.g., "click login button")
-• Type "done" to stop recording and generate test
-• Each step will be recorded with screenshots
-══════════════════════════════════════════════════
 
-📋 Test Data Collection
-════════════════════════════════════════
-Test ID (e.g., QE-012): QE-LOGIN-001
-Test Name: User Login Test
-Test Description: Test user login functionality with valid credentials
-Priority (High/Medium/Low): High
-Tags (comma-separated): authentication, login, smoke
-Site URL: https://qafromla.herokuapp.com/
+### 2. Fill in Test Details
+```
+Test ID: QE-LOGIN-001
+Test Name: User Login Test  
+Description: Test login with valid credentials
+Priority: High
+Tags: authentication, login, smoke
+Site URL: https://myapp.com
+```
 
-🚀 Initializing browser...
-🌐 Navigating to: https://qafromla.herokuapp.com/
-
+### 3. Give Natural Language Commands
+```
 🎬 Next step: click the login link
-[AI performs action, screenshots captured]
-
 🎬 Next step: fill email field with test@example.com
-[AI performs action, screenshots captured]
-
 🎬 Next step: fill password field with password123
-[AI performs action, screenshots captured]
-
 🎬 Next step: click the submit button
-[AI performs action, screenshots captured]
-
-🎬 Next step: verify login success message appears
-[AI performs action, screenshots captured]
-
+🎬 Next step: verify welcome message appears
 🎬 Next step: done
 ```
 
-## Generated Artifacts
+### 4. Generated Test
+Your test is automatically saved as `tests/qe-login-001-recorded-test.js` and ready to run!
 
-### Directory Structure
+## What You Get
+
+### Organized Screenshots
+Every step creates before/after screenshots in organized folders:
 ```
 test-recorder/QE-LOGIN-001-[timestamp]/
-├── test-session.json          # Session metadata
-├── summary.json               # Recording summary
 └── steps/
-    ├── 001-navigate-to-site/
-    │   ├── step-info.json     # Step details
-    │   ├── before.png         # Screenshot before action
-    │   └── after.png          # Screenshot after action
-    ├── 002-click-the-login-link/
-    │   ├── step-info.json
+    ├── 001-click-the-login-link/
     │   ├── before.png
     │   └── after.png
-    ├── 003-fill-email-field/
-    │   ├── step-info.json
-    │   ├── before.png
-    │   └── after.png
-    └── 004-fill-password-field/
-        ├── step-info.json
-        ├── before.png
-        └── after.png
+    ├── 002-fill-email-field/
+    └── 003-fill-password-field/
 ```
 
-### Generated Test File
+### Ready-to-Run Test File
 ```javascript
 // tests/qe-login-001-recorded-test.js
 export const QE_LOGIN_001 = {
   id: "QE-LOGIN-001",
   name: "User Login Test",
-  description: "Test user login functionality with valid credentials",
-  priority: "High",
   tags: ["authentication", "login", "smoke", "recorded"],
-  site: "https://qafromla.herokuapp.com/",
-  testData: {},
+  site: "https://myapp.com",
   task: `Test the user login functionality:
-1. Navigate to https://qafromla.herokuapp.com/
-2. Click the login link
-3. Fill email field with test@example.com
-4. Fill password field with password123
-5. Click the submit button
-6. Verify login success message appears`
+1. Click the login link
+2. Fill email field with test@example.com  
+3. Fill password field with password123
+4. Click the submit button
+5. Verify welcome message appears`
 };
 ```
 
-## Running Recorded Tests
-
-Once a test is generated, you can run it using standard Endorphin commands:
+## Running Your Recorded Tests
 
 ```bash
-# Run specific recorded test
+# Run your specific test
 npx endorphin run test QE-LOGIN-001
 
-# Run all recorded tests
+# Run all recorded tests  
 npx endorphin run test --tag recorded
 
-# List all available tests
+# See all available tests
 npx endorphin list
 ```
 
-## Configuration
+## Command Examples
 
-### Environment Variables
-```bash
-# Browser settings
-HEADLESS=false                 # Keep browser visible
-ENDORPHIN_HEADLESS=false       # New config system support
+| What You Want To Do | Command To Type |
+|---------------------|-----------------|
+| Click a button | `click the submit button` |
+| Fill in text | `fill email field with test@example.com` |
+| Select from dropdown | `select "United States" from country dropdown` |
+| Check for text | `verify "Welcome back!" appears on page` |
+| Navigate | `go to the profile page` |
+| Wait | `wait for the page to load` |
+| Scroll | `scroll down to see more content` |
+| Finish recording | `done` |
 
-# AI Configuration
-OPENAI_API_KEY=your_key_here   # Required for AI agent
+## Tips for Great Tests
 
-# Base URL for testing
-BASE_URL=https://your-app.com/
-```
+### Be Specific
+❌ `click button`  
+✅ `click the blue submit button`
 
-### Config File (endorphin.config.js)
+### Include Verifications  
+❌ Just actions  
+✅ `verify login success message appears`
+
+### Use Realistic Data
+❌ `fill field with test`  
+✅ `fill email field with john.doe@company.com`
+
+### Break Down Complex Flows
+❌ One long command  
+✅ Step-by-step actions
+
+## Setup Requirements
+
+### Prerequisites
+- Node.js 16+ installed
+- Endorphin AI installed in your project
+- OpenAI API key (for AI agent)
+
+### Configuration
+Create `endorphin.config.js` in your project:
 ```javascript
 export default {
   browser: {
-    headless: false,           // Visible browser during recording
-    viewport: { width: 1280, height: 720 },
-    timeout: 30000,
-    slowMo: 500               // Slow down for better visibility
+    headless: false,  // See the browser during recording
+    viewport: { width: 1280, height: 720 }
   },
-  
-  recorder: {
-    outputDirectory: "./test-recorder",
-    screenshotFormat: "png",
-    stepDelay: 1000           // Wait between steps
-  },
-  
   ai: {
-    model: "gpt-4o",
-    temperature: 0.1
+    model: "gpt-4o"
   }
 };
 ```
 
-## Commands Reference
+Set your OpenAI API key:
+```bash
+# Add to your .env file
+OPENAI_API_KEY=your_key_here
+```
 
-| Command | Description |
-|---------|-------------|
-| `click button` | Click on a button or link |
-| `fill field with text` | Type text into input fields |
-| `select option from dropdown` | Select dropdown options |
-| `verify text appears` | Check for text presence |
-| `scroll down` | Scroll page content |
-| `wait for element` | Wait for element to appear |
-| `take screenshot` | Capture current page state |
-| `done` | Finish recording and generate test |
+## Common Issues & Solutions
 
-## Tips for Effective Recording
+### "Browser not opening"
+Make sure your config has `headless: false`:
+```javascript
+// endorphin.config.js
+export default {
+  browser: {
+    headless: false  // This makes browser visible
+  }
+};
+```
 
-1. **Be Specific**: Use descriptive commands like "click the blue submit button"
-2. **Verify Actions**: Add verification steps to check expected outcomes
-3. **Natural Language**: Write commands as you would explain to a person
-4. **Step by Step**: Break complex workflows into individual steps
-5. **Test Data**: Use realistic test data in your commands
+### "AI not responding"  
+- Check your OpenAI API key is correct
+- Verify you have API credits available
+- Check your internet connection
 
-## Troubleshooting
+### "Test not found after recording"
+- Check the `tests/` folder for your generated file
+- Run `npx endorphin list` to see if it's discovered
+- Verify the test ID matches the filename
 
-### Browser Not Opening
-- Check `HEADLESS=false` in `.env`
-- Verify `ENDORPHIN_HEADLESS=false` is set
-- Ensure Playwright is properly installed
-
-### AI Not Responding
-- Verify `OPENAI_API_KEY` is set correctly
-- Check network connectivity
-- Ensure sufficient OpenAI API credits
-
-### Generated Test Not Working
-- Verify test file is in `tests/` directory
-- Check that test ID matches filename pattern
-- Run `npx endorphin list` to confirm test is discovered
+### "Generated test won't run"
+- Make sure you're in the project directory
+- Check that Endorphin AI is properly installed
+- Verify your config file is valid
 
 ## Advanced Features
 
-### Custom Test Data
+### Using Test Data
 ```
-🎬 Next step: fill email field with {{testUser.email}}
-🎬 Next step: fill password field with {{testUser.password}}
-```
-
-### Multiple Environments
-```
-🎬 Next step: navigate to {{baseUrl}}/login
+🎬 Next step: fill email with {{user.email}}
+🎬 Next step: fill password with {{user.password}}
 ```
 
-### Error Handling
+### Environment-Specific URLs
 ```
-🎬 Next step: if login fails, take screenshot and continue
+🎬 Next step: navigate to {{baseUrl}}/dashboard
 ```
 
-The Test Recorder creates comprehensive test artifacts that can be used for debugging, test maintenance, and collaboration with your team.
+### Conditional Actions
+```
+🎬 Next step: if error message appears, take screenshot
+```
+
+## Best Practices
+
+1. **Start Simple**: Begin with basic workflows, add complexity later
+2. **Test Real Scenarios**: Use actual user journeys, not just happy paths  
+3. **Add Verifications**: Always check that actions worked as expected
+4. **Use Descriptive Names**: Make test IDs and names clear and searchable
+5. **Organize with Tags**: Use consistent tags for easy test management
+
+## Getting Help
+
+- Check the troubleshooting section above
+- Review your generated test files for clues
+- Use descriptive test names and IDs for easier debugging
+- Look at the screenshot artifacts to see what actually happened
+
+The Test Recorder makes it easy to create comprehensive automated tests without writing code. Just describe what you want to test in plain English, and let the AI do the work!
