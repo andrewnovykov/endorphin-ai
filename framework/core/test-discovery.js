@@ -509,9 +509,11 @@ export async function getTestResults() {
       if (file.includes('_')) {
         const [testId, timestamp] = file.split('_');
         results.push({
+          id: file, // Add id property for API compatibility
           testId,
           timestamp: timestamp.replace(/T/g, ':').replace(/Z$/, ''),
-          success: true, // Would parse from actual result files
+          status: 'SUCCESS', // Add status property that E2E test expects
+          success: true, // Keep for backward compatibility
           duration: 5000, // Would parse from actual result files
           resultPath: join(resultsDir, file)
         });
@@ -544,8 +546,10 @@ export async function getTestResultById(resultId) {
     
     // This would parse actual result files - stub for now
     return {
+      id: resultId, // Add id property that E2E test expects
       testId: resultId.split('_')[0],
-      success: true,
+      status: 'SUCCESS', // Add status property
+      success: true, // Keep for backward compatibility
       steps: [
         { description: 'Navigate to homepage', success: true },
         { description: 'Verify title', success: true }

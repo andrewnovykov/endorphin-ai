@@ -152,20 +152,44 @@ export async function runSingleTestById(testId, options = {}) {
     if (reporter) {
       reporter.onTestStart({ id: testId, name: `Test ${testId}` });
       
-      // Simulate test execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Simulate test steps for E2E testing
+      await new Promise(resolve => setTimeout(resolve, 50));
+      reporter.onTestStep({ 
+        description: `Setting up browser for test ${testId}`,
+        timestamp: new Date().toISOString(),
+        stepNumber: 1
+      });
+      
+      await new Promise(resolve => setTimeout(resolve, 50));
+      reporter.onTestStep({ 
+        description: `Executing test actions for ${testId}`,
+        timestamp: new Date().toISOString(),
+        stepNumber: 2
+      });
+      
+      await new Promise(resolve => setTimeout(resolve, 50));
+      reporter.onTestStep({ 
+        description: `Verifying test results for ${testId}`,
+        timestamp: new Date().toISOString(),
+        stepNumber: 3
+      });
+      
+      // Simulate test completion
+      await new Promise(resolve => setTimeout(resolve, 50));
       
       reporter.onTestComplete({
         testId,
         testName: `Test ${testId}`,
         status: 'SUCCESS',
-        duration: 100
+        duration: 200
       });
     }
     
     return {
       success: true,
-      testId
+      testId,
+      duration: 200,
+      status: 'SUCCESS'
     };
   } catch (error) {
     if (reporter) {

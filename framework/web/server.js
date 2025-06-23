@@ -14,12 +14,25 @@ const __dirname = path.dirname(__filename);
 
 export class WebUIServer {
   constructor(options = {}) {
-    this.port = options.port || 3000;
+    this.port = options.port !== undefined ? options.port : 3000;
     this.app = express();
     this.httpServer = null;
     this.wss = null;
+    this.jobs = new Map(); // Track running jobs
     this.setupMiddleware();
     this.setupRoutes();
+  }
+
+  generateJobId() {
+    return `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  getPort() {
+    return this.httpServer ? this.httpServer.address()?.port : this.port;
+  }
+
+  getAddress() {
+    return this.httpServer ? this.httpServer.address() : null;
   }
 
   setupMiddleware() {
@@ -58,16 +71,55 @@ export class WebUIServer {
     this.app.post('/api/tests/:id/run', async (req, res) => {
       try {
         const testId = req.params.id;
+        
+        // Check if test exists first
+        const { getTestById } = await import('../core/test-discovery.js');
+        const test = await getTestById(testId);
+        
+        if (!test) {
+          return res.status(404).json({ error: 'Test not found' });
+        }
+        
         const { runSingleTestById } = await import('../core/test-runner.js');
         const { WebSocketReporter } = await import('./websocket-reporter.js');
+        
+        // Generate unique job ID
+        const jobId = this.generateJobId();
+        
+        // Create job tracking entry
+        this.jobs.set(jobId, {
+          testId,
+          status: 'running',
+          startTime: new Date().toISOString(),
+          test
+        });
         
         // Create WebSocket reporter if WebSocket server exists
         const reporter = this.wss ? new WebSocketReporter(this.wss) : undefined;
         
         // Start test execution asynchronously
-        runSingleTestById(testId, { reporter }).catch(console.error);
+        runSingleTestById(testId, { reporter })
+          .then((result) => {
+            // Update job status on completion
+            const job = this.jobs.get(jobId);
+            if (job) {
+              job.status = 'completed';
+              job.endTime = new Date().toISOString();
+              job.result = result;
+            }
+          })
+          .catch((error) => {
+            // Update job status on error
+            const job = this.jobs.get(jobId);
+            if (job) {
+              job.status = 'failed';
+              job.endTime = new Date().toISOString();
+              job.error = error.message;
+            }
+            console.error('Test execution failed:', error);
+          });
         
-        res.json({ status: 'started', testId });
+        res.json({ status: 'started', testId, jobId });
       } catch (error) {
         res.status(500).json({ error: error.message });
       }
@@ -96,6 +148,19 @@ export class WebUIServer {
       } catch (error) {
         res.status(500).json({ error: error.message });
       }
+    });
+
+    // Screenshot serving endpoint
+    this.app.get('/screenshots/:filename', (req, res) => {
+      const filename = req.params.filename;
+      const screenshotPath = path.join(process.cwd(), 'test-results', filename);
+      
+      // Check if file exists and send it, otherwise 404
+      res.sendFile(screenshotPath, (err) => {
+        if (err) {
+          res.status(404).json({ error: 'Screenshot not found' });
+        }
+      });
     });
 
     // Serve React app for all other routes
@@ -180,10 +245,10 @@ export class WebUIServer {
 /**
  * Create and start a web server instance
  * @param {Object} options - Server options
- * @returns {Promise<Object>} - Server instance
+ * @returns {Promise<WebUIServer>} - Server instance
  */
 export async function createWebServer(options = {}) {
   const server = new WebUIServer(options);
   await server.start();
-  return server.httpServer;
+  return server;
 }

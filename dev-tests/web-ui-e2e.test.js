@@ -16,17 +16,15 @@ describe('Web UI End-to-End Test Execution', () => {
   
   beforeAll(async () => {
     // Start web server for testing
-    const webServer = await createWebServer({ port: 0 }); // Use random port
-    app = supertest(webServer);
-    server = webServer;
+    const webServerInstance = await createWebServer({ port: 0 }); // Use random port
+    server = webServerInstance;
+    app = supertest(webServerInstance.httpServer);
+    wsServer = webServerInstance.wss;
   });
 
   afterAll(async () => {
     if (server) {
-      server.close();
-    }
-    if (wsServer) {
-      wsServer.close();
+      await server.stop();
     }
   });
 
@@ -129,7 +127,7 @@ describe('Web UI End-to-End Test Execution', () => {
 
     beforeAll((done) => {
       // Connect to WebSocket server
-      const port = server.address().port;
+      const port = server.getPort();
       ws = new WebSocket(`ws://localhost:${port}`);
       
       ws.on('open', () => {
