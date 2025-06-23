@@ -15,6 +15,7 @@ tmp/test-endorphin/node_modules/
 tmp/test-endorphin/package-lock.json
 tmp/test-endorphin/endorphin.config.js
 tmp/test-endorphin/.env
+tmp/console-test/
 
 # NPM Publishing artifacts
 *.tgz
