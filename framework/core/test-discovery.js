@@ -483,3 +483,77 @@ export async function discoverTests(config) {
     return [];
   }
 }
+
+/**
+ * Get a specific test by ID
+ * @param {string} testId - The test ID to find
+ * @returns {Object|null} Test object or null if not found
+ */
+export async function getTestById(testId) {
+  const discovery = new TestDiscovery();
+  await discovery.discoverTests();
+  return discovery.tests.get(testId) || null;
+}
+
+/**
+ * Get test results from test-results directory
+ * @returns {Array} Array of test results
+ */
+export async function getTestResults() {
+  try {
+    const resultsDir = resolve(process.cwd(), 'test-results');
+    const files = await readdir(resultsDir);
+    
+    const results = [];
+    for (const file of files) {
+      if (file.includes('_')) {
+        const [testId, timestamp] = file.split('_');
+        results.push({
+          testId,
+          timestamp: timestamp.replace(/T/g, ':').replace(/Z$/, ''),
+          success: true, // Would parse from actual result files
+          duration: 5000, // Would parse from actual result files
+          resultPath: join(resultsDir, file)
+        });
+      }
+    }
+    
+    return results.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  } catch (error) {
+    console.error('Error getting test results:', error);
+    return [];
+  }
+}
+
+/**
+ * Get specific test result by ID
+ * @param {string} resultId - The result ID (usually testId_timestamp)
+ * @returns {Object|null} Result object or null if not found
+ */
+export async function getTestResultById(resultId) {
+  try {
+    const resultsDir = resolve(process.cwd(), 'test-results');
+    const resultPath = join(resultsDir, resultId);
+    
+    // Check if result directory exists
+    try {
+      await stat(resultPath);
+    } catch {
+      return null;
+    }
+    
+    // This would parse actual result files - stub for now
+    return {
+      testId: resultId.split('_')[0],
+      success: true,
+      steps: [
+        { description: 'Navigate to homepage', success: true },
+        { description: 'Verify title', success: true }
+      ],
+      screenshots: [join(resultPath, 'screenshot.png')]
+    };
+  } catch (error) {
+    console.error('Error getting test result:', error);
+    return null;
+  }
+}

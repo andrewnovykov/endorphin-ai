@@ -207,6 +207,40 @@ async function main() {
       process.exit(0);
     }
 
+    // Handle web UI commands (serve, ui)
+    if (command === 'serve' || command === 'ui') {
+      console.log('🌐 Starting Endorphin Web UI...');
+      const { startWebUIServer } = await import('../framework/web/cli-handler.js');
+      
+      // Parse additional options
+      const options = {};
+      if (args.includes('--port')) {
+        const portIndex = args.indexOf('--port');
+        const port = args[portIndex + 1];
+        if (port && !isNaN(port)) {
+          options.port = parseInt(port, 10);
+        }
+      }
+      if (args.includes('--no-browser')) {
+        options.openBrowser = false;
+      }
+      if (args.includes('--host')) {
+        const hostIndex = args.indexOf('--host');
+        const host = args[hostIndex + 1];
+        if (host) {
+          options.host = host;
+        }
+      }
+      
+      try {
+        await startWebUIServer(options);
+      } catch (error) {
+        console.error('❌ Failed to start web UI:', error.message);
+        process.exit(1);
+      }
+      return;
+    }
+
     // Handle run commands
     if (command === 'run') {
       if (subcommand === 'test-recorder') {

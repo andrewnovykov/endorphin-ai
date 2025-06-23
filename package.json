@@ -74,6 +74,11 @@
   },
   "devDependencies": {
     "vitest": "^2.1.8",
-    "@vitest/ui": "^2.1.8"
+    "@vitest/ui": "^2.1.8",
+    "supertest": "^7.0.0",
+    "express": "^4.18.0",
+    "socket.io": "^4.7.0",
+    "ws": "^8.18.0",
+    "cors": "^2.8.5"
   }
 }

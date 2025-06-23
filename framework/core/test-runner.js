@@ -131,3 +131,46 @@ export async function runTaskSequence(framework, tasks) {
   
   return results;
 }
+
+/**
+ * Run a single test by ID for web UI
+ * @param {string} testId - The test ID to run
+ * @param {Object} options - Options including reporter
+ * @returns {Object} Test result
+ */
+export async function runSingleTestById(testId, options = {}) {
+  const { reporter } = options;
+  
+  try {
+    // This is a stub implementation for now
+    // In real implementation, this would:
+    // 1. Load the test by ID
+    // 2. Set up browser framework
+    // 3. Run the test with the provided reporter
+    // 4. Return results
+    
+    if (reporter) {
+      reporter.onTestStart({ id: testId, name: `Test ${testId}` });
+      
+      // Simulate test execution
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      reporter.onTestComplete({
+        testId,
+        testName: `Test ${testId}`,
+        status: 'SUCCESS',
+        duration: 100
+      });
+    }
+    
+    return {
+      success: true,
+      testId
+    };
+  } catch (error) {
+    if (reporter) {
+      reporter.onTestError({ testId, message: error.message, stack: error.stack });
+    }
+    throw error;
+  }
+}

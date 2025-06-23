@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endorphin AI Test Runner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .test-step {
+            border-left: 3px solid #007bff;
+            background: #f8f9fa;
+        }
+
+        .test-step.success {
+            border-left-color: #28a745;
+        }
+
+        .test-step.error {
+            border-left-color: #dc3545;
+        }
+
+        .screenshot-container {
+            max-height: 400px;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-idle {
+            background-color: #6c757d;
+        }
+
+        .status-running {
+            background-color: #007bff;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-success {
+            background-color: #28a745;
+        }
+
+        .status-error {
+            background-color: #dc3545;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-graph-up-arrow"></i>
+                Endorphin AI Test Runner
+            </span>
+            <span class="navbar-text">
+                <span class="status-indicator" id="connectionStatus"></span>
+                <span id="connectionText">Connecting...</span>
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Test Runs Page (Main Focus) -->
+        <div id="testRunsPage">
+            <div class="row">
+                <!-- Test List Column -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list-check"></i>
+                                Available Tests
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Search -->
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="testSearch" placeholder="Search tests...">
+                            </div>
+
+                            <!-- Test List -->
+                            <div id="testList" class="list-group list-group-flush">
+                                <div class="text-center text-muted p-3">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    Loading tests...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Execution Column -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-play-circle"></i>
+                                Test Execution
+                            </h5>
+                            <button id="runTestBtn" class="btn btn-success" disabled>
+                                <i class="bi bi-play"></i>
+                                Run Test
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="noTestSelected" class="text-center text-muted p-5">
+                                <i class="bi bi-arrow-left"></i>
+                                Select a test from the list to run
+                            </div>
+
+                            <div id="testExecution" style="display: none;">
+                                <!-- Test Info -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <h6>Test Details</h6>
+                                        <div id="testInfo">
+                                            <strong id="selectedTestName">-</strong><br>
+                                            <small class="text-muted" id="selectedTestDescription">-</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Status</h6>
+                                        <div id="testStatus">
+                                            <span class="status-indicator status-idle"></span>
+                                            <span>Ready to run</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Real-time Steps -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Execution Steps</h6>
+                                        <div id="testSteps" class="border rounded p-3"
+                                            style="height: 300px; overflow-y: auto;">
+                                            <div class="text-muted">Steps will appear here during execution...</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Live Screenshot -->
+                                    <div class="col-md-6">
+                                        <h6>Live Screenshot</h6>
+                                        <div id="screenshotArea" class="border rounded p-3 text-center"
+                                            style="height: 300px;">
+                                            <div class="d-flex align-items-center justify-content-center h-100">
+                                                <div class="text-muted">
+                                                    <i class="bi bi-camera"></i><br>
+                                                    Screenshot will appear here
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let socket = null;
+        let selectedTest = null;
+        let isRunning = false;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function () {
+            connectWebSocket();
+            loadTests();
+            setupEventListeners();
+        });
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}`;
+
+            try {
+                socket = new WebSocket(wsUrl);
+
+                socket.onopen = function () {
+                    updateConnectionStatus('connected');
+                };
+
+                socket.onmessage = function (event) {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                };
+
+                socket.onclose = function () {
+                    updateConnectionStatus('disconnected');
+                    // Attempt to reconnect after 3 seconds
+                    setTimeout(connectWebSocket, 3000);
+                };
+
+                socket.onerror = function (error) {
+                    updateConnectionStatus('error');
+                    console.error('WebSocket error:', error);
+                };
+            } catch (error) {
+                updateConnectionStatus('error');
+                console.error('Failed to connect WebSocket:', error);
+            }
+        }
+
+        function updateConnectionStatus(status) {
+            const indicator = document.getElementById('connectionStatus');
+            const text = document.getElementById('connectionText');
+
+            indicator.className = 'status-indicator';
+
+            switch (status) {
+                case 'connected':
+                    indicator.classList.add('status-success');
+                    text.textContent = 'Connected';
+                    break;
+                case 'disconnected':
+                    indicator.classList.add('status-idle');
+                    text.textContent = 'Disconnected';
+                    break;
+                case 'error':
+                    indicator.classList.add('status-error');
+                    text.textContent = 'Connection Error';
+                    break;
+                default:
+                    indicator.classList.add('status-idle');
+                    text.textContent = 'Connecting...';
+            }
+        }
+
+        async function loadTests() {
+            try {
+                const response = await fetch('/api/tests');
+                const tests = await response.json();
+                displayTests(tests);
+            } catch (error) {
+                console.error('Failed to load tests:', error);
+                document.getElementById('testList').innerHTML =
+                    '<div class="text-danger p-3">Failed to load tests</div>';
+            }
+        }
+
+        function displayTests(tests) {
+            const testList = document.getElementById('testList');
+
+            if (tests.length === 0) {
+                testList.innerHTML = '<div class="text-muted p-3">No tests found</div>';
+                return;
+            }
+
+            testList.innerHTML = tests.map(test => `
+                <div class="list-group-item list-group-item-action test-item" data-test-id="${test.id}">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">${test.name || test.id}</h6>
+                        <small class="badge bg-secondary">${test.priority || 'Medium'}</small>
+                    </div>
+                    <p class="mb-1">${test.description || 'No description'}</p>
+                    <small class="text-muted">${test.tags ? test.tags.join(', ') : ''}</small>
+                </div>
+            `).join('');
+        }
+
+        function setupEventListeners() {
+            // Test selection
+            document.addEventListener('click', function (e) {
+                if (e.target.closest('.test-item')) {
+                    selectTest(e.target.closest('.test-item'));
+                }
+            });
+
+            // Run test button
+            document.getElementById('runTestBtn').addEventListener('click', runSelectedTest);
+
+            // Search functionality
+            document.getElementById('testSearch').addEventListener('input', function (e) {
+                filterTests(e.target.value);
+            });
+        }
+
+        function selectTest(testItem) {
+            // Remove previous selection
+            document.querySelectorAll('.test-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Add selection to clicked item
+            testItem.classList.add('active');
+
+            const testId = testItem.dataset.testId;
+            selectedTest = { id: testId };
+
+            // Update UI
+            document.getElementById('selectedTestName').textContent =
+                testItem.querySelector('h6').textContent;
+            document.getElementById('selectedTestDescription').textContent =
+                testItem.querySelector('p').textContent;
+
+            document.getElementById('noTestSelected').style.display = 'none';
+            document.getElementById('testExecution').style.display = 'block';
+            document.getElementById('runTestBtn').disabled = false;
+        }
+
+        async function runSelectedTest() {
+            if (!selectedTest || isRunning) return;
+
+            isRunning = true;
+            updateTestStatus('running');
+            clearTestSteps();
+            clearScreenshot();
+
+            try {
+                const response = await fetch(`/api/tests/${selectedTest.id}/run`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to start test');
+                }
+
+                document.getElementById('runTestBtn').disabled = true;
+            } catch (error) {
+                console.error('Failed to run test:', error);
+                updateTestStatus('error');
+                addTestStep('Error: Failed to start test', 'error');
+                isRunning = false;
+            }
+        }
+
+        function handleWebSocketMessage(data) {
+            switch (data.type) {
+                case 'test-start':
+                    updateTestStatus('running');
+                    addTestStep(`Test started: ${data.test.name || data.test.id}`, 'info');
+                    break;
+
+                case 'test-step':
+                    addTestStep(data.step.description || data.step, 'info');
+                    break;
+
+                case 'test-complete':
+                    updateTestStatus(data.result.status === 'success' ? 'success' : 'error');
+                    addTestStep(`Test completed: ${data.result.status}`, data.result.status);
+                    isRunning = false;
+                    document.getElementById('runTestBtn').disabled = false;
+                    break;
+
+                case 'test-error':
+                    updateTestStatus('error');
+                    addTestStep(`Error: ${data.error.message || data.error}`, 'error');
+                    isRunning = false;
+                    document.getElementById('runTestBtn').disabled = false;
+                    break;
+
+                case 'screenshot':
+                    updateScreenshot(data.path);
+                    break;
+            }
+        }
+
+        function updateTestStatus(status) {
+            const statusArea = document.getElementById('testStatus');
+            const indicator = statusArea.querySelector('.status-indicator');
+            const text = statusArea.querySelector('span:last-child');
+
+            indicator.className = `status-indicator status-${status}`;
+
+            switch (status) {
+                case 'running':
+                    text.textContent = 'Running...';
+                    break;
+                case 'success':
+                    text.textContent = 'Completed Successfully';
+                    break;
+                case 'error':
+                    text.textContent = 'Failed';
+                    break;
+                default:
+                    text.textContent = 'Ready to run';
+            }
+        }
+
+        function addTestStep(message, type = 'info') {
+            const stepsContainer = document.getElementById('testSteps');
+            const stepElement = document.createElement('div');
+            stepElement.className = `test-step p-2 mb-2 rounded ${type}`;
+            stepElement.innerHTML = `
+                <small class="text-muted">${new Date().toLocaleTimeString()}</small><br>
+                ${message}
+            `;
+
+            stepsContainer.appendChild(stepElement);
+            stepsContainer.scrollTop = stepsContainer.scrollHeight;
+        }
+
+        function clearTestSteps() {
+            document.getElementById('testSteps').innerHTML =
+                '<div class="text-muted">Test execution starting...</div>';
+        }
+
+        function updateScreenshot(imagePath) {
+            const screenshotArea = document.getElementById('screenshotArea');
+            screenshotArea.innerHTML = `
+                <img src="${imagePath}" class="img-fluid" alt="Test Screenshot" style="max-height: 280px;">
+            `;
+        }
+
+        function clearScreenshot() {
+            const screenshotArea = document.getElementById('screenshotArea');
+            screenshotArea.innerHTML = `
+                <div class="d-flex align-items-center justify-content-center h-100">
+                    <div class="text-muted">
+                        <i class="bi bi-camera"></i><br>
+                        Waiting for screenshot...
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterTests(searchTerm) {
+            const testItems = document.querySelectorAll('.test-item');
+            const term = searchTerm.toLowerCase();
+
+            testItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(term)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -34,7 +34,7 @@ afterAll(() => {
   console.log('🧹 Cleaning up test environment...');
   
   // Clean up test directories
-  const tempDir = resolve(process.cwd(), 'dev-tests/temp');
+  const tempDir = resolve(process.cwd() || '.', 'dev-tests/temp');
   if (existsSync(tempDir)) {
     rmSync(tempDir, { recursive: true, force: true });
   }
