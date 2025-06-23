@@ -21,7 +21,11 @@
     "framework:auth": "node framework/test-framework.js --tag authentication",
     "framework:smoke": "node framework/test-framework.js --tag smoke",
     "framework:high": "node framework/test-framework.js --priority High",
-    "test-recorder": "node framework/interactive/enhanced-interactive-recorder.js"
+    "test-recorder": "node framework/interactive/enhanced-interactive-recorder.js",
+    "frontend:dev": "vite --config vite.frontend.config.js",
+    "frontend:build": "vite build --config vite.frontend.config.js",
+    "frontend:preview": "vite preview --config vite.frontend.config.js",
+    "build": "npm run frontend:build"
   },
   "keywords": [
     "ai",
@@ -73,12 +77,19 @@
     "test": "tests"
   },
   "devDependencies": {
-    "vitest": "^2.1.8",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
     "@vitest/ui": "^2.1.8",
-    "supertest": "^7.0.0",
+    "cors": "^2.8.5",
     "express": "^4.18.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2",
     "socket.io": "^4.7.0",
-    "ws": "^8.18.0",
-    "cors": "^2.8.5"
+    "supertest": "^7.0.0",
+    "vite": "^5.4.19",
+    "vitest": "^2.1.8",
+    "ws": "^8.18.0"
   }
 }

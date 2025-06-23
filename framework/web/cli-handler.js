@@ -125,11 +125,15 @@ export async function startWebUIServer(options = {}) {
     console.log(`🚀 Starting Endorphin Web UI on http://${host}:${port}`);
     
     // Set up graceful shutdown
-    const cleanup = () => {
+    const cleanup = async () => {
       console.log('\\n📴 Shutting down Endorphin Web UI...');
-      server.close(() => {
+      try {
+        await server.stop();
         process.exit(0);
-      });
+      } catch (error) {
+        console.error('Error during shutdown:', error);
+        process.exit(1);
+      }
     };
 
     process.on('SIGINT', cleanup);

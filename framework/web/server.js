@@ -38,7 +38,14 @@ export class WebUIServer {
   setupMiddleware() {
     this.app.use(cors());
     this.app.use(express.json());
+    
+    // Serve static files from public directory (includes built React app)
     this.app.use(express.static(path.join(__dirname, 'public')));
+    
+    // Serve Vite dev build during development
+    if (process.env.NODE_ENV !== 'production') {
+      this.app.use('/dist', express.static(path.join(__dirname, 'public/dist')));
+    }
   }
 
   setupRoutes() {
@@ -150,10 +157,15 @@ export class WebUIServer {
       }
     });
 
-    // Screenshot serving endpoint
-    this.app.get('/screenshots/:filename', (req, res) => {
+    // Screenshot serving endpoint (with API prefix)
+    this.app.get('/api/screenshots/:filename', (req, res) => {
       const filename = req.params.filename;
       const screenshotPath = path.join(process.cwd(), 'test-results', filename);
+      
+      // Security check - ensure we're only serving from test-results directory
+      if (!screenshotPath.startsWith(path.join(process.cwd(), 'test-results'))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
       
       // Check if file exists and send it, otherwise 404
       res.sendFile(screenshotPath, (err) => {
@@ -163,9 +175,9 @@ export class WebUIServer {
       });
     });
 
-    // Serve React app for all other routes
+    // Serve React app for all other routes (SPA fallback)
     this.app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, 'public', 'index.html'));
+      res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
     });
   }
 

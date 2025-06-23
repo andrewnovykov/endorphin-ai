@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endorphin AI - Test Runner</title>
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        /* Loading screen styles */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            z-index: 9999;
+        }
+
+        .loading-logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        .loading-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-subtitle {
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .loading-spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">
+        <!-- Loading screen shown while React app loads -->
+        <div class="loading-screen">
+            <div class="loading-logo">🧬</div>
+            <h1 class="loading-title">Endorphin AI</h1>
+            <p class="loading-subtitle">Loading Test Runner...</p>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <!-- React app will be injected here by Vite -->
+    <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>
