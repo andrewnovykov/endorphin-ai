@@ -18,6 +18,14 @@ A powerful, modular browser automation framework using AI-powered testing with L
 
 ## 🚀 Quick Start
 
+<div align="center">
+  <a href="https://youtu.be/ev_71RBO6g8?si=F9xTPSJNp36Mr1wx" target="_blank">
+    <img src="https://img.shields.io/badge/🎬_WATCH_DEMO-FF0000?style=for-the-badge&logo=youtube&logoColor=white&labelColor=000000" alt="Watch Demo" />
+  </a>
+  <br />
+  <sub><i>See Endorphin AI in action - 10 minute demo</i></sub>
+</div>
+
 ### Installation
 ```bash
 # Install Endorphin AI
