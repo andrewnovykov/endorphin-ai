@@ -43,7 +43,8 @@ export class EnhancedBrowserTestFramework {
     this.currentTestSession = null;
     // Will be set after config is processed
     this.resultBaseDir = null;
-    this.recorderBaseDir = PATHS.TEST_RECORDER_DIR;
+    // Use current working directory (user project) for test-recorder, not framework root
+    this.recorderBaseDir = path.join(process.cwd(), 'test-recorder');
     this.isInteractiveMode = false;
     
     // Initialize configuration with defaults - deep merge to prevent issues

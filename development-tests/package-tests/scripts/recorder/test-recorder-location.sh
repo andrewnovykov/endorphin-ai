@@ -3,10 +3,17 @@
 # Test script to simulate test recorder interaction
 # This will test where files are created
 
+# Load centralized configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../../config/test-config.sh"
+
 echo "🧪 Testing Test Recorder File Creation"
 echo "======================================="
 
-cd /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin
+# Change to user project directory with validation
+if ! cd_user_project; then
+    exit 1
+fi
 
 echo "📁 Current working directory: $(pwd)"
 echo "📋 Initial directory contents:"
@@ -44,11 +51,10 @@ else
 fi
 
 # Check if files were created in framework directory
-FRAMEWORK_DIR="/Users/papapin777/Documents/CODE/AI/endorphin-ai"
-if [ -d "$FRAMEWORK_DIR/test-recorder" ] && [ "$(ls -A $FRAMEWORK_DIR/test-recorder)" ]; then
+if [ -d "$REPO_ROOT/test-recorder" ] && [ "$(ls -A $REPO_ROOT/test-recorder)" ]; then
   echo "❌ WARNING: Files created in FRAMEWORK test-recorder directory!"
   echo "📂 Framework test-recorder contents:"
-  ls -la "$FRAMEWORK_DIR/test-recorder/"
+  ls -la "$REPO_ROOT/test-recorder/"
 else
   echo "✅ No files created in framework test-recorder directory"
 fi

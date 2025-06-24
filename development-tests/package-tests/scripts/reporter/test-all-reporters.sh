@@ -4,28 +4,22 @@
 
 set -e
 
-echo "🚀 Comprehensive Reporter Testing Suite"
+# Load centralized configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../../config/test-config.sh"
+
+echo "� Comprehensive Reporter Testing Suite"
 echo "========================================"
 
-# Colors for output
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-
-# Source environment variables
-if [ -f "../.env" ]; then
-    source ../.env
-    echo -e "${BLUE}📁 Loaded environment from ../.env${NC}"
+# Change to user project directory with validation
+if ! cd_user_project; then
+    exit 1
 fi
 
-# Check if we're in the right directory
-if [ ! -f "package.json" ]; then
-    echo -e "${RED}❌ Error: Must be run from tmp/test-endorphin directory${NC}"
-    exit 1
+# Source environment variables
+if [ -f ".env" ]; then
+    source .env
+    print_status $BLUE "📁 Loaded environment from .env"
 fi
 
 # Function to print section headers

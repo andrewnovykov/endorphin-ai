@@ -3,10 +3,9 @@
 # Quick Commands Script
 # Convenient shortcuts for common Endorphin AI operations
 
+# Load centralized configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Ensure we're in the user project directory
-cd "$SCRIPT_DIR"
+source "$SCRIPT_DIR/../../config/test-config.sh"
 
 # Display usage if no arguments
 if [ $# -eq 0 ]; then
@@ -31,6 +30,8 @@ if [ $# -eq 0 ]; then
   echo "  ./quick-commands.sh setup"
   echo "  ./quick-commands.sh run USER-001"
   echo "  ./quick-commands.sh recorder"
+  echo ""
+  show_paths
   exit 0
 fi
 
@@ -40,86 +41,108 @@ shift
 case "$COMMAND" in
   "setup")
     echo "🚀 Setting up user project..."
-    ./setup-user-project.sh
+    "$SCRIPTS_DIR/setup/setup-user-project.sh"
     ;;
     
   "list")
     echo "📋 Listing available tests..."
-    npx endorphin list
+    if cd_user_project; then
+      npx endorphin list
+    fi
     ;;
     
   "run")
     if [ -z "$1" ]; then
       echo "❌ Error: Please specify a test ID"
       echo "💡 Usage: ./quick-commands.sh run <test-id>"
-      echo "📋 Available tests:"
-      npx endorphin list
+      if cd_user_project; then
+        echo "📋 Available tests:"
+        npx endorphin list
+      fi
       exit 1
     fi
     echo "🧪 Running test: $1"
-    ./run-test.sh "$1"
+    if cd_user_project; then
+      npx endorphin run test "$1"
+    fi
     ;;
     
   "run-all")
     echo "🧪 Running all tests..."
-    npx endorphin run test all
+    if cd_user_project; then
+      npx endorphin run test all
+    fi
     ;;
     
   "run-smoke")
     echo "🧪 Running smoke tests..."
-    npx endorphin run test --tag smoke
+    if cd_user_project; then
+      npx endorphin run test --tag smoke
+    fi
     ;;
     
   "recorder")
     echo "🎬 Starting test recorder..."
-    echo "💡 Test recorder will create files in: $(pwd)/test-recorder/"
-    npx endorphin run test-recorder
+    echo "💡 Test recorder will create files in: $USER_PROJECT_DIR/test-recorder/"
+    if cd_user_project; then
+      npx endorphin run test-recorder
+    fi
     ;;
     
   "test-location")
     echo "🔍 Testing recorder file location..."
-    ./test-recorder.sh
+    "$SCRIPTS_DIR/recorder/test-recorder-location.sh"
     ;;
     
   "clean")
     echo "🧹 Cleaning up generated files..."
-    rm -rf test-recorder/ test-results/ 2>/dev/null || true
-    echo "✅ Cleanup complete"
+    if [ -d "$USER_PROJECT_DIR" ]; then
+      cd "$USER_PROJECT_DIR"
+      rm -rf test-recorder/ test-results/ 2>/dev/null || true
+      echo "✅ Cleanup complete"
+    else
+      echo "❌ User project directory not found"
+    fi
     ;;
     
   "status")
     echo "📊 Project Status"
     echo "================="
-    echo "📍 Location: $(pwd)"
-    echo "📦 Package: $(npm list endorphin-ai --depth=0 2>/dev/null | grep endorphin-ai || echo 'Not installed')"
+    show_paths
     echo ""
-    echo "📁 Directory contents:"
-    ls -la
-    echo ""
-    echo "🧪 Available tests:"
-    npx endorphin list 2>/dev/null || echo "Unable to list tests"
-    echo ""
-    echo "📊 Generated artifacts:"
-    echo "  test-recorder/: $([ -d test-recorder ] && echo "$(ls test-recorder | wc -l) recording(s)" || echo "None")"
-    echo "  test-results/:  $([ -d test-results ] && echo "$(ls test-results | wc -l) result(s)" || echo "None")"
+    if cd_user_project; then
+      echo "📦 Package: $(npm list endorphin-ai --depth=0 2>/dev/null | grep endorphin-ai || echo 'Not installed')"
+      echo ""
+      echo "📁 Directory contents:"
+      ls -la
+      echo ""
+      echo "🧪 Available tests:"
+      npx endorphin list 2>/dev/null || echo "Unable to list tests"
+      echo ""
+      echo "📊 Generated artifacts:"
+      echo "  test-recorder/: $([ -d test-recorder ] && echo "$(ls test-recorder | wc -l) recording(s)" || echo "None")"
+      echo "  test-results/:  $([ -d test-results ] && echo "$(ls test-results | wc -l) result(s)" || echo "None")"
+    fi
     ;;
     
   "env")
     echo "🔑 Environment Configuration"
     echo "============================"
-    if [ -f ".env" ]; then
-      echo "📄 .env file found:"
-      echo "  OPENAI_API_KEY: $(grep OPENAI_API_KEY .env | cut -d= -f2 | cut -c1-20)..."
-      echo "  HEADLESS: $(grep HEADLESS .env | cut -d= -f2)"
-      echo "  BASE_URL: $(grep BASE_URL .env | cut -d= -f2)"
-    else
-      echo "❌ No .env file found"
-    fi
-    echo ""
-    if [ -f "endorphin.config.js" ]; then
-      echo "⚙️ Config file found: endorphin.config.js"
-    else
-      echo "❌ No endorphin.config.js found"
+    if cd_user_project; then
+      if [ -f ".env" ]; then
+        echo "📄 .env file found:"
+        echo "  OPENAI_API_KEY: $(grep OPENAI_API_KEY .env | cut -d= -f2 | cut -c1-20)..."
+        echo "  HEADLESS: $(grep HEADLESS .env | cut -d= -f2)"
+        echo "  BASE_URL: $(grep BASE_URL .env | cut -d= -f2)"
+      else
+        echo "❌ No .env file found"
+      fi
+      echo ""
+      if [ -f "endorphin.config.js" ]; then
+        echo "⚙️ Config file found: endorphin.config.js"
+      else
+        echo "❌ No endorphin.config.js found"
+      fi
     fi
     ;;
     

@@ -1,0 +1,9 @@
+Result,Test_Name,Duration_Seconds,Log_File
+FAIL,Environment Setup,0,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250624_030429/Environment_Setup.log
+FAIL,Test Recorder Functionality,0,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250624_030429/Test_Recorder_Functionality.log
+FAIL,Test Recorder File Location,0,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250624_030429/Test_Recorder_File_Location.log
+FAIL,Basic Test Execution,0,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250624_030429/Basic_Test_Execution.log
+FAIL,CLI Commands,0,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250624_030429/CLI_Commands.log
+FAIL,Console Reporter,0,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250624_030429/Console_Reporter.log
+FAIL,HTML Reporter,0,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250624_030429/HTML_Reporter.log
+FAIL,All Reporters,0,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250624_030429/All_Reporters.log
