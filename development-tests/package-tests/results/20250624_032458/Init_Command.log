@@ -1,0 +1,59 @@
+===========================================
+Test: Init Command
+Description: Test project initialization commands
+Script: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/scripts/init/test-init-command.sh
+Start Time: Tue Jun 24 03:25:01 PDT 2025
+===========================================
+
+🎯 Testing Init Command
+=====================
+📁 Created test directory: temp-init-test
+🚀 Running: npx endorphin init
+🎯 Initializing Endorphin AI project...
+🎯 Initializing Endorphin AI project...
+📁 Created directory: tests/
+📁 Created directory: test-results/
+📁 Created directory: test-recorder/
+📄 Created: .env
+📄 Created: endorphin.config.js
+📄 Created: tests/sample-test.js
+📄 Created: .gitignore
+📄 Created: README-ENDORPHIN.md
+✅ Endorphin AI project initialized successfully!
+
+🚀 Next steps:
+  1. Edit .env and add your OpenAI API key
+  2. Run: npx endorphin run test HEALTH-001
+  3. Try: npx endorphin run test-recorder
+
+📚 Learn more: https://github.com/andrewnovykov/endorphin-ai
+📋 Checking created files...
+✅ .env
+✅ endorphin.config.js
+✅ tests/sample-test.js
+✅ .gitignore
+✅ README-ENDORPHIN.md
+✅ tests/
+✅ test-results/
+✅ test-recorder/
+🧪 Validating example test...
+✅ Example test syntax valid
+⚙️ Validating config file...
+✅ Config file syntax valid
+🔧 Testing CLI commands...
+✅ CLI version command works
+✅ CLI list command works
+🔄 Testing second init (should not overwrite)...
+⚠️ Failed to load config from /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/temp-init-test/endorphin.config.js: Unexpected identifier 'config'
+🎯 Initializing Endorphin AI project...
+🎯 Initializing Endorphin AI project...
+⚠️  Endorphin AI already initialized in this directory
+💡 Run: npx endorphin run test HEALTH-001
+✅ Second init doesn't overwrite existing files
+🎉 Init command test PASSED
+
+===========================================
+Test Result: PASSED
+End Time: Tue Jun 24 03:25:06 PDT 2025
+Duration: 5s
+===========================================

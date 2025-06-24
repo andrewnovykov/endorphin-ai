@@ -1,0 +1,200 @@
+===========================================
+Test: HTML Reporter
+Description: Test HTML report generation
+Script: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/scripts/reporter/test-html-reporter.sh
+Start Time: Tue Jun 24 03:25:28 PDT 2025
+===========================================
+
+🧪 Testing HTML Reporter Functionality
+=======================================
+[0;34m📁 Working directory: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin[0m
+[0;34m📁 Loaded environment from .env[0m
+
+[1;33m📦 Installing Playwright browsers (if needed)...[0m
+
+[1;33m📋 Preparing test results for HTML reports...[0m
+[95m
+    ╔═══════════════════════════════════════════════════════════════╗
+    ║[35m[1m                          ENDORPHIN                            [95m║
+    ║[35m[2m                      C₃₁H₃₉N₇O₉S                              [95m║
+    ╚═══════════════════════════════════════════════════════════════╝[0m
+[35m
+         [95mHO[35m─┐     ┌─[95mNH₂[35m                    ┌─[95mCOOH[35m
+             │     │                       │
+         ┌───[95mC[35m═══[95mC[35m─[95mC[35m─[95mNH[35m─[95mCO[35m─[95mNH[35m─[95mC[35m─[95mCO[35m─[95mNH[35m─[95mC[35m───[95mC[35m─┘
+         │   ║   ║   │           │     │   │
+         │   ║   ║   │           │     │   └─[95mNH₂[35m
+    [95mH₂N[35m──[95mC[35m───┘   ║   │           │     │
+         │       ║   │           │     │
+         │   ┌───┘   │           │     │
+         │   │       │           │     │
+         └─[95mC[35m─┘   ┌─[95mC[35m─┘       ┌─[95mC[35m─┘ ┌─[95mC[35m─┘
+           ║     │           │     │
+           ║ ┌─[95mC[35m─┘       ┌─[95mC[35m─┘ ┌─[95mC[35m─┘
+           ║ │           │     │
+       ┌─[95mC[35m─┘ │       ┌─[95mC[35m─┘ ┌─[95mC[35m─┘
+       │     │       │     │
+   [95mH[35m─[95mC[35m─┘ ┌─[95mC[35m─┘   [95mH[35m─[95mC[35m─┘ [95mH[35m─[95mC[35m─┘
+     │   │         │     │
+     │   │         │     │
+    [95mCH₃[35m  │        [95mCH₃[35m   [95mCH₃[35m
+         │
+        [95mCH₂[35m
+         │
+        [95mCH₃[0m
+[35m[2m
+    [35m[1m♦[35m[2m Endorphin: Natural opioid peptide neurotransmitter
+    [35m[1m♦[35m[2m Known for: Pain relief, pleasure, and reward pathways  
+    [35m[1m♦[35m[2m Testing with: AI-powered natural language automation[0m
+
+📁 Loaded config from: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/endorphin.config.js
+🧪 Running test: USER-001
+🔍 Discovering tests in: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/tests
+📋 Found 1 test file(s):
+   📄 user-basic-test.js
+   ✓ USER-001: User Project Basic Test
+✅ Loaded 1 test(s) total
+
+[36m[1m🧪 Running Endorphin AI Tests...[0m
+
+🔧 Results config: {
+  directory: './test-results',
+  keepHistory: 10,
+  format: [ 'json', 'html' ],
+  screenshots: true,
+  recordVideo: false
+}
+📁 Resolved results directory: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results
+🚀 Initializing Enhanced Browser Test Framework...
+🧹 Cleaning up previous test results...
+  ✅ Cleaned test-result directory
+🛠️ Setting up browser automation tools...
+🤖 Setting up AI agent...
+🤖 Configuring AI agent with tools...
+✅ AI agent configured successfully
+✅ Framework initialized successfully!
+[90m● USER-001: User Project Basic Test[0m📁 Created test session: USER-001_2025-06-24T10-25-30-129Z
+📝 Step 1: Starting test execution: User Project Basic Test - ✅
+📝 Step 2: Test execution failed - ❌
+💾 Session data saved to: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/USER-001_2025-06-24T10-25-30-129Z
+📊 Test session completed: FAILED
+📁 Results saved to: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/USER-001_2025-06-24T10-25-30-129Z
+[K[31m     ✗ USER-001: User Project Basic Test[0m [90m(193ms)[0m
+[31m       401 Incorrect API key provided: sk-proj-********************************************************************************************************************************************************wTcA. You can find your API key at https://platform.openai.com/account/api-keys.
+
+Troubleshooting URL: https://js.langchain.com/docs/troubleshooting/errors/MODEL_AUTHENTICATION/
+[0m
+
+[1m Test Files  [32m1 passed[0m[1m (1)[0m
+[1m      Tests  [31m1 failed[0m[1m (1)[0m
+[90m   Start at  03:25:30[0m
+[90m   Duration  589ms[0m
+
+[41m[37m[1m FAILED [0m [31m1 test failed[0m
+
+[31m[1mFailed Tests:[0m
+
+[31m[1m1. USER-001: User Project Basic Test[0m
+[31m   401 Incorrect API key provided: sk-proj-********************************************************************************************************************************************************wTcA. You can find your API key at https://platform.openai.com/account/api-keys.
+
+Troubleshooting URL: https://js.langchain.com/docs/troubleshooting/errors/MODEL_AUTHENTICATION/
+[0m
+
+🧹 Browser closed successfully
+[0;32m✅ Test execution completed successfully[0m
+
+[1;33m🔍 Test 1: Generate Basic HTML Report[0m
+Running: npx endorphin generate report
+📁 Loaded config from: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/endorphin.config.js
+📊 Generating HTML test report...
+📊 Generating HTML test report...
+✅ Report generated: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/reports/report-2025-06-24.html
+📈 Report includes 1 test runs across 1 tests
+🎯 Success rate: 0%
+🌐 Open report: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/reports/report-2025-06-24.html
+[0;32m✅ Basic HTML report generated[0m
+
+[1;33m🔍 Test 2: Generate Summary HTML Report[0m
+Running: npx endorphin generate report --summary
+📁 Loaded config from: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/endorphin.config.js
+📊 Generating HTML test report...
+📋 Generating summary report...
+✅ Summary report generated: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/reports/summary-report.html
+✅ Summary report generated: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/reports/summary-report.html
+[0;32m✅ Summary HTML report generated[0m
+
+[1;33m🔍 Test 3: Generate Custom Filename Report[0m
+Running: npx endorphin generate report --filename test-console-html-reporter.html
+📁 Loaded config from: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/endorphin.config.js
+📊 Generating HTML test report...
+📊 Generating HTML test report...
+✅ Report generated: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/reports/report-2025-06-24.html
+📈 Report includes 1 test runs across 1 tests
+🎯 Success rate: 0%
+🌐 Open report: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/reports/report-2025-06-24.html
+[0;32m✅ Custom filename report generated[0m
+
+[1;33m🔍 Test 4: List Available Reports[0m
+Running: npx endorphin generate report --list
+📁 Loaded config from: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/endorphin.config.js
+📊 Generating HTML test report...
+📊 Generating HTML test report...
+✅ Report generated: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/reports/report-2025-06-24.html
+📈 Report includes 1 test runs across 1 tests
+🎯 Success rate: 0%
+🌐 Open report: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/reports/report-2025-06-24.html
+
+[1;33m🔍 Test 5: Verify Report Files[0m
+[0;34m📁 Reports directory contents:[0m
+total 152
+drwxr-xr-x  7 papapin777  staff    224 Jun 24 03:25 .
+drwxr-xr-x  4 papapin777  staff    128 Jun 24 03:25 ..
+-rw-r--r--  1 papapin777  staff  21021 Jun 24 03:25 report-2025-06-24.html
+drwxr-xr-x  2 papapin777  staff     64 Jun 24 03:25 screenshots
+-rw-r--r--  1 papapin777  staff  18113 Jun 24 03:25 scripts.js
+-rw-r--r--  1 papapin777  staff   7197 Jun 24 03:25 styles.css
+-rw-r--r--  1 papapin777  staff  21021 Jun 24 03:25 summary-report.html
+[0;32m📊 Found        2 HTML report files[0m
+[1;33m⚠️  Custom filename report not found[0m
+[0;34m📄 Latest report: report-2025-06-24.html[0m
+[0;34m📏 Report size:    21021 bytes[0m
+[0;32m✅ HTML content validated[0m
+[1;33m⚠️  JavaScript functionality missing[0m
+[1;33m⚠️  CSS styling missing[0m
+
+[1;33m🔍 Test 6: Test Report Opening Command[0m
+Running: npx endorphin generate report --open (dry run)
+[0;34m💡 Note: Report opening is available but not executed in test mode[0m
+
+[1;33m🔍 Test 7: Report Statistics[0m
+Running: npx endorphin generate report --cleanup
+📁 Loaded config from: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/endorphin.config.js
+📊 Generating HTML test report...
+📊 Generating HTML test report...
+✅ Report generated: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/reports/report-2025-06-24.html
+📈 Report includes 1 test runs across 1 tests
+🎯 Success rate: 0%
+🌐 Open report: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/reports/report-2025-06-24.html
+
+[0;32m✅ HTML Reporter Tests Completed[0m
+[0;34m📋 Summary:[0m
+- Basic HTML report generation
+- Summary report generation
+- Custom filename support
+- Report listing functionality
+- File validation and content checks
+- Report statistics and metadata
+
+[1;33m💡 Expected features in reports:[0m
+- Interactive dashboard with search and filters
+- Test execution details and timelines
+- Screenshot galleries (if available)
+- Export functionality
+- Responsive design for mobile/desktop
+- Bootstrap styling and JavaScript interactivity
+
+===========================================
+Test Result: PASSED
+End Time: Tue Jun 24 03:25:32 PDT 2025
+Duration: 4s
+===========================================
