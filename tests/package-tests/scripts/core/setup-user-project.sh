@@ -6,8 +6,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-USER_PROJECT_DIR="$SCRIPT_DIR/../tmp/test-endorphin"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../" && pwd)"
+USER_PROJECT_DIR="$SCRIPT_DIR/../../tmp/test-endorphin"
 
 echo "🚀 Setting up Endorphin AI User Project Test Environment"
 echo "========================================================"
@@ -28,7 +28,14 @@ npm pkg set type="module"
 
 # Install endorphin-ai from local repository
 echo "📥 Installing endorphin-ai from local repository..."
-npm install "$REPO_ROOT" > /dev/null 2>&1
+if npm install "$REPO_ROOT" > install.log 2>&1; then
+  echo "✅ Package installed successfully"
+else
+  echo "❌ Failed to install endorphin-ai package"
+  echo "📄 Install log:"
+  cat install.log
+  exit 1
+fi
 
 # Create user configuration
 echo "⚙️ Creating user configuration..."

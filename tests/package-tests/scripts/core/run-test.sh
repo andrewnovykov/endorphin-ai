@@ -5,22 +5,30 @@
 
 set -e
 
+USER_PROJECT_DIR="../../tmp/test-endorphin"
+
+# Load environment variables from the user project .env file
+set -a
+if [ -f "$USER_PROJECT_DIR/.env" ]; then
+  source "$USER_PROJECT_DIR/.env"
+fi
+set +a
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEST_ID="${1:-USER-001}"
 
+cd "$USER_PROJECT_DIR"
+
 echo "🧪 Running Endorphin AI Test from User Project"
 echo "=============================================="
-echo "📍 Project directory: $SCRIPT_DIR"
+echo "📍 Project directory: $USER_PROJECT_DIR"
 echo "🆔 Test ID: $TEST_ID"
 echo "⏰ Current time: $(date)"
-
-# Ensure we're in the user project directory
-cd "$SCRIPT_DIR"
 
 # Check if .env file exists and has API key
 if [ ! -f ".env" ]; then
   echo "❌ ERROR: .env file not found"
-  echo "💡 Run ./setup-user-project.sh first"
+  echo "💡 Run setup-user-project.sh first"
   exit 1
 fi
 
@@ -54,7 +62,7 @@ if npx endorphin run test "$TEST_ID"; then
     if [ -n "$LATEST_RESULT" ]; then
       echo ""
       echo "📄 Latest result summary:"
-      cat "$LATEST_RESULT" | jq -r '. | "Status: \(.status // "unknown")\nTest: \(.testId // "unknown")\nDuration: \(.duration // "unknown")"' 2>/dev/null || echo "Result file found but could not parse JSON"
+      cat "$LATEST_RESULT" | jq -r '. | "Status: \(.status // \"unknown\")\nTest: \(.testId // \"unknown\")\nDuration: \(.duration // \"unknown\")"' 2>/dev/null || echo "Result file found but could not parse JSON"
     fi
   fi
 else

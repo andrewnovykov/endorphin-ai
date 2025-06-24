@@ -40,7 +40,7 @@ shift
 case "$COMMAND" in
   "setup")
     echo "🚀 Setting up user project..."
-    ./setup-user-project.sh
+    ../core/setup-user-project.sh
     ;;
     
   "list")

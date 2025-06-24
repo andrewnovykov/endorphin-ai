@@ -6,7 +6,7 @@
 echo "🧪 Testing Test Recorder File Creation"
 echo "======================================="
 
-cd /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin
+cd ../../tmp/test-endorphin
 
 echo "📁 Current working directory: $(pwd)"
 echo "📋 Initial directory contents:"

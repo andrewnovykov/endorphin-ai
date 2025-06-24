@@ -184,6 +184,7 @@ log_message "HEADER" "🧪 Test Categories and Scripts:"
 # Using a different approach for macOS bash compatibility
 
 get_core_tests() {
+    # Setup must run first, then other core tests
     echo "core/setup-user-project.sh:Setup User Project
 core/run-test.sh:Run Basic Test  
 core/test-discovery-issue.sh:Test Discovery
@@ -192,8 +193,7 @@ core/test-search-api.sh:Search API Test"
 
 get_cli_tests() {
     echo "cli/test-init-command.sh:Init Command
-cli/quick-commands.sh:Quick Commands
-cli/test-issues-demo.sh:Issues Demo"
+cli/quick-commands.sh:Quick Commands"
 }
 
 get_recorder_tests() {
@@ -249,6 +249,50 @@ get_tests_for_category() {
 # Run tests by category
 categories="core cli recorder reporter web-runner utils"
 
+# Always ensure setup runs first - this is a critical dependency
+echo ""
+log_message "HEADER" "🔧 Ensuring Setup Dependencies"
+
+setup_script="$SCRIPTS_DIR/core/setup-user-project.sh"
+setup_ran=false
+
+# Check if we need to run setup
+if [ ! -d "$SCRIPTS_DIR/../tmp/test-endorphin" ]; then
+    log_message "INFO" "User project not found - setup required"
+    setup_needed=true
+elif [ "$CATEGORY_FILTER" = "core" ] || [ "$CATEGORY_FILTER" = "" ]; then
+    log_message "INFO" "Running core tests or all tests - setup will be included"
+    setup_needed=true
+else
+    log_message "INFO" "User project exists and not running core tests - checking if setup needed"
+    # Even if filtering, run setup if the project seems incomplete
+    if [ ! -f "$SCRIPTS_DIR/../tmp/test-endorphin/package.json" ]; then
+        log_message "WARNING" "User project incomplete - forcing setup"
+        setup_needed=true
+    else
+        setup_needed=false
+    fi
+fi
+
+# Run setup first if needed
+if [ "$setup_needed" = true ]; then
+    echo ""
+    log_message "HEADER" "🏗️ Running Essential Setup (Required Dependency)"
+    echo ""
+    
+    if [ "$DRY_RUN" = true ]; then
+        echo "Would run: $setup_script (Setup User Project - REQUIRED FIRST)"
+        TOTAL_TESTS=$((TOTAL_TESTS + 1))
+        setup_ran=true
+    else
+        log_message "INFO" "Running setup as prerequisite for other tests"
+        run_test_script "$setup_script" "Setup User Project" "setup"
+        setup_ran=true
+    fi
+else
+    setup_ran=false
+fi
+
 for category in $categories; do
     # Skip if category filter is set and doesn't match
     if [ "$CATEGORY_FILTER" != "" ] && [ "$CATEGORY_FILTER" != "$category" ]; then
@@ -270,6 +314,12 @@ for category in $categories; do
             
             if [ -n "$script_file" ] && [ -n "$test_name" ]; then
                 script_path="$SCRIPTS_DIR/$script_file"
+                
+                # Skip setup if we already ran it as a dependency
+                if [ "$script_file" = "core/setup-user-project.sh" ] && [ "$setup_ran" = true ]; then
+                    log_message "INFO" "Skipping setup - already ran as dependency"
+                    continue
+                fi
                 
                 if [ "$DRY_RUN" = true ]; then
                     echo "Would run: $script_path ($test_name)"

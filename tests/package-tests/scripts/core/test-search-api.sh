@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Load environment variables from the user project .env file
+set -a
+if [ -f "../../tmp/test-endorphin/.env" ]; then
+  source ../../tmp/test-endorphin/.env
+fi
+set +a
+
 # Test script for search functionality
 # Run this from tmp/test-endorphin/
 

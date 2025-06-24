@@ -1,0 +1,7 @@
+
+[0;35m=== Pre-flight Checks ===[0m
+[0;32m✅ Endorphin CLI found[0m
+[0;31m❌ endorphin.config.js not found. Please run from test project directory.[0m
+
+[0;35m=== Cleaning Up ===[0m
+[0;34m[01:17:03][0m Cleanup completed
