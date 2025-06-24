@@ -7,9 +7,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { tmpdir } from 'os';
-import { HTMLReporter } from '../framework/core/reporter.js';
-import { TestResultsParser } from '../framework/core/test-results-parser.js';
-import { ReportGenerator } from '../framework/core/report-generator.js';
+import { HTMLReporter } from '../../framework/core/reporter.js';
+import { TestResultsParser } from '../../framework/core/test-results-parser.js';
+import { ReportGenerator } from '../../framework/core/report-generator.js';
 
 describe('HTML Reporter', () => {
   let tempDir;
@@ -293,7 +293,7 @@ describe('HTML Reporter', () => {
 
 describe('CLI Integration', () => {
   it('should export HTMLReporter for CLI use', async () => {
-    const { HTMLReporter } = await import('../framework/core/reporter.js');
+    const { HTMLReporter } = await import('../../framework/core/reporter.js');
     expect(HTMLReporter).toBeDefined();
     expect(typeof HTMLReporter).toBe('function');
   });

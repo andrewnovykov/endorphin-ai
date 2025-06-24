@@ -12,7 +12,7 @@ import {
   runTestsByTag,
   runTestsByPriority,
   runAllTests 
-} from '../framework/core/test-discovery.js';
+} from '../../framework/core/test-discovery.js';
 
 // Use actual examples directory for testing
 const EXAMPLES_TESTS_DIR = join(process.cwd(), 'examples', 'tests');

@@ -74,7 +74,7 @@ export default {
     await fs.writeFile('endorphin.config.js', configContent);
 
     // Test 4: Configuration System
-    const { getConfig } = await import('../framework/core/config-loader.js');
+    const { getConfig } = await import('../../framework/core/config-loader.js');
     const config = await getConfig({ cwd: tempDir });
     
     expect(config.browser.headless).toBe(true);
@@ -96,7 +96,7 @@ export const FINAL_001 = {
 `;
     await fs.writeFile('tests/final-test.js', testContent);
 
-    const { discoverTests } = await import('../framework/core/test-discovery.js');
+    const { discoverTests } = await import('../../framework/core/test-discovery.js');
     const tests = await discoverTests(config);
     
     expect(tests).toHaveLength(1);
@@ -144,7 +144,7 @@ export const FINAL_001 = {
     // Test error handling with invalid config
     await fs.writeFile('endorphin.config.js', 'invalid javascript content');
     
-    const { loadConfig } = await import('../framework/core/config-loader.js');
+    const { loadConfig } = await import('../../framework/core/config-loader.js');
     
     // Should handle invalid config gracefully
     try {

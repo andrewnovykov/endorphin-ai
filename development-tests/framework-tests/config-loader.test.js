@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { writeFileSync, unlinkSync, existsSync } from 'fs';
 import { resolve } from 'path';
-import { ConfigLoader, getConfig, resetConfig } from '../framework/core/config-loader.js';
+import { ConfigLoader, getConfig, resetConfig } from '../../framework/core/config-loader.js';
 
 describe('ConfigLoader', () => {
   let configLoader;

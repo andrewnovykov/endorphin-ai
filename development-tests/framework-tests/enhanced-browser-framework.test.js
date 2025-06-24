@@ -24,7 +24,7 @@ vi.mock('fs', () => {
   };
 });
 
-import { EnhancedBrowserTestFramework } from '../framework/core/browser-framework.js';
+import { EnhancedBrowserTestFramework } from '../../framework/core/browser-framework.js';
 
 // Mock Playwright
 vi.mock('playwright', () => {

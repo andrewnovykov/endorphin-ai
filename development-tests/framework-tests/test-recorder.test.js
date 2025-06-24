@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest';
-import { TestRecorder } from '../framework/core/test-recorder.js';
+import { TestRecorder } from '../../framework/core/test-recorder.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { initProject } from '../framework/core/init-command.js';
+import { initProject } from '../../framework/core/init-command.js';
 
 describe('Init Command', () => {
   let testDir;

@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ConsoleReporter } from '../framework/core/console-reporter.js';
+import { ConsoleReporter } from '../../framework/core/console-reporter.js';
 
 describe('Console Reporter', () => {
   let reporter;
