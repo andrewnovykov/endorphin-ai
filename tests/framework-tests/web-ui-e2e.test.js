@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
-import { createWebServer } from '../framework/web/server.js';
+import { createWebServer } from '../../framework/web/server.js';
 import supertest from 'supertest';
 import { WebSocketServer } from 'ws';
 import WebSocket from 'ws';

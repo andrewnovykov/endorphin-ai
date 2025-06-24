@@ -2,7 +2,7 @@
 // Test that the Web UI serves the React app correctly
 
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
-import { WebUIServer } from '../framework/web/server.js';
+import { WebUIServer } from '../../framework/web/server.js';
 
 describe('React Frontend Serving', () => {
   let server;
