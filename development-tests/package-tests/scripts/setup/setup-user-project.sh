@@ -102,6 +102,7 @@ EOF
 
 # Create package.json scripts for convenience
 echo "🔧 Adding convenience scripts to package.json..."
+npm pkg set type="module"
 npm pkg set scripts.test:e2e="endorphin run test all"
 npm pkg set scripts.test:smoke="endorphin run test --tag smoke"
 npm pkg set scripts.test:list="endorphin list"

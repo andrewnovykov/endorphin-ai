@@ -465,16 +465,16 @@ main() {
     print_status $YELLOW "============================"
     
     run_test "Environment Setup" \
-        "$SCRIPT_DIR/scripts/setup/setup-user-project.sh" \
+        "$PACKAGE_TEST_DIR/scripts/setup/setup-user-project.sh" \
         "Create user project environment and install package"
     
     # Test Category 2: Init (if script exists)
-    if [ -f "$SCRIPT_DIR/scripts/init/test-init-command.sh" ]; then
+    if [ -f "$PACKAGE_TEST_DIR/scripts/init/test-init-command.sh" ]; then
         print_status $YELLOW "\n🏗️  CATEGORY 2: INIT TESTS"
         print_status $YELLOW "=========================="
         
         run_test "Init Command" \
-            "$SCRIPT_DIR/scripts/init/test-init-command.sh" \
+            "$PACKAGE_TEST_DIR/scripts/init/test-init-command.sh" \
             "Test project initialization commands"
     fi
     
@@ -483,11 +483,11 @@ main() {
     print_status $YELLOW "============================="
     
     run_test "Test Recorder Functionality" \
-        "$SCRIPT_DIR/scripts/recorder/test-recorder.sh" \
+        "$PACKAGE_TEST_DIR/scripts/recorder/test-recorder.sh" \
         "Test interactive test recorder and file generation"
     
     run_test "Test Recorder File Location" \
-        "$SCRIPT_DIR/scripts/recorder/test-recorder-location.sh" \
+        "$PACKAGE_TEST_DIR/scripts/recorder/test-recorder-location.sh" \
         "Verify recorder creates files in user project only"
     
     # Test Category 4: Runner
@@ -495,11 +495,11 @@ main() {
     print_status $YELLOW "==========================="
     
     run_test "Basic Test Execution" \
-        "$SCRIPT_DIR/scripts/runner/run-test.sh" \
+        "$PACKAGE_TEST_DIR/scripts/runner/run-test.sh" \
         "Run user tests and verify execution"
     
     run_test "CLI Commands" \
-        "$SCRIPT_DIR/scripts/runner/quick-commands.sh" \
+        "$PACKAGE_TEST_DIR/scripts/runner/quick-commands.sh" \
         "Test all CLI command functionality"
     
     # Test Category 5: Reporter
@@ -507,15 +507,15 @@ main() {
     print_status $YELLOW "=============================="
     
     run_test "Console Reporter" \
-        "$SCRIPT_DIR/scripts/reporter/test-console-reporter.sh" \
+        "$PACKAGE_TEST_DIR/scripts/reporter/test-console-reporter.sh" \
         "Test console output and formatting"
     
     run_test "HTML Reporter" \
-        "$SCRIPT_DIR/scripts/reporter/test-html-reporter.sh" \
+        "$PACKAGE_TEST_DIR/scripts/reporter/test-html-reporter.sh" \
         "Test HTML report generation"
     
     run_test "All Reporters" \
-        "$SCRIPT_DIR/scripts/reporter/test-all-reporters.sh" \
+        "$PACKAGE_TEST_DIR/scripts/reporter/test-all-reporters.sh" \
         "Test all reporting formats"
     
     # Print final summary

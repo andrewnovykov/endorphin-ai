@@ -22,6 +22,10 @@ if [ -f ".env" ]; then
     print_status $BLUE "📁 Loaded environment from .env"
 fi
 
+# Install Playwright browsers if needed
+echo -e "\n${YELLOW}📦 Installing Playwright browsers (if needed)...${NC}"
+npx playwright install chromium --quiet || echo -e "${YELLOW}⚠️ Playwright install may have had issues${NC}"
+
 # Ensure we have some test results first
 echo -e "\n${YELLOW}📋 Preparing test results for HTML reports...${NC}"
 timeout 45s npx endorphin run test USER-001 --headless || echo -e "${YELLOW}⏰ Test preparation completed${NC}"

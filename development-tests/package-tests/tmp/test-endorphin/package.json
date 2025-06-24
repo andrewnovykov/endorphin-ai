@@ -15,5 +15,6 @@
   "description": "",
   "dependencies": {
     "endorphin-ai": "file:../../../.."
-  }
+  },
+  "type": "module"
 }
