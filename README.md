@@ -629,6 +629,54 @@ npm run test:report     # Generate HTML report
 npm run test:open       # Open latest report
 ```
 
+## 🧪 Testing & Development
+
+Endorphin AI has comprehensive testing coverage to ensure reliability and quality.
+
+### Framework Testing (90% Coverage Goal)
+```bash
+# Run all framework tests with coverage
+npm run test:coverage
+
+# Run specific test categories
+npm test -- --grep "CLI"
+npm test -- --grep "Browser Framework"
+
+# Watch mode for development
+npm run test:watch
+
+# Check coverage threshold (90% goal)
+npm run test:coverage:check
+```
+
+### Package Testing (End-to-End)
+```bash
+# Quick package verification (5 minutes)
+npm run test:package
+
+# Complete package testing (15 minutes)  
+npm run test:package:full
+
+# Critical file isolation test
+npm run test:package:isolation
+```
+
+### Complete Test Suite
+```bash
+# Run everything (framework + package)
+npm run test:all
+
+# For CI/CD environments
+npm run test:ci
+```
+
+### Test Structure
+- **`tests/framework-tests/`** - Internal framework testing (Vitest)
+- **`tests/package-tests/`** - End-to-end package testing (Bash scripts)
+- **Coverage Reports** - `tests/framework-tests/coverage/`
+
+For detailed testing information, see [`tests/README.md`](tests/README.md).
+
 ## 🔄 Staying Updated
 
 ### Check Your Version

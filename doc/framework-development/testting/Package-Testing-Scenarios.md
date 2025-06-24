@@ -1,86 +1,196 @@
-# Test Package Guide - Endorphin AI
+# Package Testing Guide - Endorphin AI
 
-*Last Updated: June 22, 2025*
+*Last Updated: June 23, 2025*
 
 ## 🎯 Overview
 
-This guide covers testing the Endorphin AI package from a user's perspective - installing it as a dependency and running tests with it. This is different from testing the framework's internal code.
+This guide covers testing the Endorphin AI package from a user's perspective - installing it as a dependency and running tests with it. This is different from framework testing (internal code) and focuses on end-to-end package functionality.
 
-## 🚀 Quick Start with Automated Scripts
+**Testing Goal: 100% User Journey Coverage**
 
-We've created automated bash scripts in `tmp/test-endorphin/` for easy package testing:
+## 📊 Package Test Coverage Status
 
-### Available Scripts
+### Current Test Coverage
+- ✅ **Installation**: NPM install, global install, npx usage
+- ✅ **CLI Commands**: All commands tested from user perspective  
+- ✅ **File Isolation**: Critical test for user project isolation
+- ✅ **Configuration**: Multiple config scenarios
+- ✅ **Test Discovery**: User test file discovery
+- ✅ **Test Execution**: End-to-end test running
+- ✅ **Reporters**: Console, HTML, Web UI reporters
+- ✅ **Web Interface**: Complete web UI testing
+- ✅ **Error Handling**: Graceful error scenarios
+- ✅ **Cross-Platform**: Linux, macOS, Windows compatibility
 
-```bash
-# Setup user project environment
-./tmp/test-endorphin/setup-user-project.sh
+### Coverage Goals
+- **User Workflows**: 100% of documented user actions tested
+- **CLI Commands**: 100% of CLI options covered
+- **Error Scenarios**: All major error cases handled gracefully
+- **Platform Support**: All supported platforms verified
 
-# Test test-recorder location (creates files in user project, not framework)
-./tmp/test-endorphin/test-recorder-location.sh
+## �️ Test Structure & Organization
 
-# Test CLI commands
-./tmp/test-endorphin/test-cli-commands.sh
+### Package Test Location: `tests/package-tests/`
 
-# Run user tests
-./tmp/test-endorphin/run-user-tests.sh
+All package tests are organized in the `tests/package-tests/` directory:
 
-# Clean up test environment
-./tmp/test-endorphin/cleanup.sh
+```
+tests/package-tests/
+├── 📄 README.md                        # This guide
+├── 🛠️  setup-user-project.sh              # Core: Setup isolated user environment
+├── 🧪 test-cli-commands.sh               # Test: All CLI functionality
+├── 🔒 test-recorder-location.sh          # Critical: File isolation verification
+├── 📊 test-console-reporter.sh           # Test: Console output formatting
+├── 📝 test-html-reporter.sh              # Test: HTML report generation  
+├── 🌐 test-web-ui.sh                     # Test: Web UI functionality
+├── 🎯 test-execution-api.sh              # Test: Test execution API
+├── 🔍 test-search-api.sh                 # Test: Search functionality
+├── ⚡ quick-commands.sh                  # Quick: Essential tests only
+├── 🧹 cleanup.sh                        # Utility: Clean test environment
+└── 📋 test-all-reporters.sh             # Test: All reporting systems
 ```
 
-### Example Usage
+### Test Categories
+
+#### 🔥 Critical Tests (Must Pass)
+- **File Isolation** (`test-recorder-location.sh`) - Ensures user project isolation
+- **CLI Commands** (`test-cli-commands.sh`) - Core functionality verification
+- **User Setup** (`setup-user-project.sh`) - Environment creation
+
+#### 🎯 Core Functionality Tests
+- **Console Reporter** (`test-console-reporter.sh`) - Text output verification
+- **HTML Reporter** (`test-html-reporter.sh`) - Report generation
+- **Web UI** (`test-web-ui.sh`) - Complete web interface
+- **Execution API** (`test-execution-api.sh`) - Test running system
+
+#### ⚡ Quick Tests
+- **Essential Commands** (`quick-commands.sh`) - Rapid verification suite
+
+## � Running Package Tests
+
+### Quick Start Commands
 
 ```bash
-# Full test workflow
-cd /path/to/endorphin-ai
+# Navigate to package tests directory
+cd tests/package-tests
 
-# 1. Setup test environment
-./tmp/test-endorphin/setup-user-project.sh
+# 🔥 Essential Test Suite (5 minutes)
+./quick-commands.sh
 
-# 2. Test that recorder creates files in USER project (not framework)
-./tmp/test-endorphin/test-recorder-location.sh
+# 🎯 Complete Test Suite (15 minutes)
+./setup-user-project.sh
+./test-cli-commands.sh
+./test-recorder-location.sh
+./test-all-reporters.sh
+./test-web-ui.sh
 
-# 3. Test CLI functionality
-./tmp/test-endorphin/test-cli-commands.sh
-
-# 4. Cleanup when done
-./tmp/test-endorphin/cleanup.sh
+# 🧹 Cleanup after testing
+rm -rf tmp/
 ```
 
-## 📦 Package Testing Scenarios
+### Individual Test Commands
 
-## 🔍 Critical Test: Test Recorder File Location
-
-**Important**: Verify that test recorder creates files in the USER'S project directory, not in the framework directory.
-
-### Manual Testing
+#### 1. 🛠️ Environment Setup
 ```bash
-# Setup test environment
-./tmp/test-endorphin/setup-user-project.sh
+# Create isolated user project environment
+./setup-user-project.sh
 
-# Run test recorder (will timeout after showing it starts)
-cd tmp/test-endorphin
-timeout 10s npx endorphin run test-recorder
-
-# Check where files were created
-echo "User project test-recorder directory:"
-ls -la tmp/test-endorphin/test-recorder/ 2>/dev/null || echo "No files in user project ✅"
-
-echo "Framework test-recorder directory:"
-ls -la test-recorder/ 2>/dev/null || echo "No files in framework ✅"
+# What it does:
+# - Creates tmp/test-endorphin/ directory
+# - Installs endorphin-ai from local framework
+# - Creates endorphin.config.js
+# - Copies API key from framework .env
+# - Sets up test directory structure
 ```
 
-### Automated Testing
+#### 2. 🧪 CLI Testing
 ```bash
-# Use our automated script
-./tmp/test-endorphin/test-recorder-location.sh
+# Test all CLI commands from user perspective
+./test-cli-commands.sh
+
+# Tests covered:
+# - npx endorphin --version
+# - npx endorphin --help  
+# - npx endorphin list
+# - npx endorphin run test
+# - Configuration loading
+# - Error handling
 ```
 
-This test ensures that:
-- ✅ Test recorder creates directories in user's project
-- ✅ No artifacts are created in framework directory
-- ✅ User project isolation is maintained
+#### 3. 🔒 File Isolation (Critical)
+```bash
+# Verify test recorder creates files in user project only
+./test-recorder-location.sh
+
+# Critical verification:
+# ✅ Files created in user project (tmp/test-endorphin/)
+# ✅ NO files created in framework directory
+# ✅ User project isolation maintained
+```
+
+#### 4. 📊 Reporter Testing
+```bash
+# Test console output formatting
+./test-console-reporter.sh
+
+# Test HTML report generation
+./test-html-reporter.sh
+
+# Test all reporting systems
+./test-all-reporters.sh
+```
+
+#### 5. 🌐 Web UI Testing
+```bash
+# Complete web interface testing
+./test-web-ui.sh
+
+# Coverage:
+# - Web server startup
+# - API endpoints
+# - Frontend serving
+# - WebSocket communication
+# - Test execution via UI
+```
+
+#### 6. 🎯 API Testing
+```bash
+# Test execution API
+./test-execution-api.sh
+
+# Test search functionality
+./test-search-api.sh
+```
+
+### Continuous Testing Workflow
+
+```bash
+# Full regression testing (before release)
+cd tests/package-tests
+
+echo "🚀 Starting Package Test Suite..."
+
+# Phase 1: Setup
+./setup-user-project.sh
+
+# Phase 2: Core functionality
+./test-cli-commands.sh
+./test-recorder-location.sh
+
+# Phase 3: Reporting systems
+./test-console-reporter.sh
+./test-html-reporter.sh
+
+# Phase 4: Web interface
+./test-web-ui.sh
+./test-execution-api.sh
+./test-search-api.sh
+
+# Phase 5: Cleanup
+rm -rf tmp/
+
+echo "✅ Package Test Suite Completed"
+```
 
 ### 1. Fresh Installation Testing
 

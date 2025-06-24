@@ -108,56 +108,109 @@ npm pack
 
 ## 🧪 Testing the Framework
 
-### Test Structure
+### Test Structure (90% Coverage Goal)
 
-We use **Vitest** for all framework testing with the following test organization:
+We use **Vitest** for framework testing and **Bash scripts** for package testing:
 
 ```
-dev-tests/
-├── setup.js                 # Global test setup
-├── browser-framework.test.js      # Browser automation tests
-├── cli-commands.test.js           # CLI functionality tests
-├── config-loader.test.js          # Configuration system tests
-├── enhanced-browser-framework.test.js # Enhanced framework tests
-├── final-integration.test.js      # End-to-end integration tests
-├── installation.test.js          # Installation and setup tests
-├── test-discovery.test.js         # Test file discovery tests
-└── test-runner.test.js            # Test execution tests
+tests/
+├── framework-tests/              # Framework internal testing (Vitest)
+│   ├── *.test.js                # Unit & integration tests  
+│   ├── setup.js                 # Test environment setup
+│   ├── coverage/                # Coverage reports (90% goal)
+│   └── html/                    # Test result reports
+│
+├── package-tests/               # End-to-end package testing (Bash)
+│   ├── setup-user-project.sh   # User environment setup
+│   ├── test-cli-commands.sh    # CLI functionality
+│   ├── test-recorder-location.sh # File isolation (CRITICAL)
+│   └── quick-commands.sh        # Essential tests
+│
+└── README.md                    # Complete testing guide
 ```
 
-### Running Framework Tests
+### Quick Testing Commands
 
 ```bash
-# Run all framework tests
-npm test
+# Essential testing (5 minutes)
+npm run test:coverage        # Framework tests with 90% coverage goal
+npm run test:package         # Essential package tests
 
-# Run tests in watch mode during development
-npm run test:watch
+# Complete testing (15 minutes)  
+npm run test:verify          # Complete verification script
+npm run test:package:full    # Full package testing
 
-# Run specific test file
-npx vitest dev-tests/config-loader.test.js
+# Development testing
+npm run test:watch           # Watch mode for development
+npm run test:package:isolation # Critical file isolation test
+```
 
-# Run tests with coverage
+### Framework Tests (Vitest - 90% Coverage Goal)
+
+#### Running Framework Tests
+```bash
+# Run all framework tests with coverage
 npm run test:coverage
 
-# Run tests in CI mode (no watch, single run)
-npm run test:ci
+# Run specific test file
+npm test -- browser-framework.test.js
 
-# Generate HTML test report
-npm test && npx vite preview --outDir dev-tests/html
+# Run tests matching pattern
+npm test -- --grep "CLI"
+
+# Watch mode for development
+npm run test:watch
+
+# Check coverage threshold
+npm run test:coverage:check
 ```
+
+#### Coverage Requirements
+- **Target**: 90% across lines, functions, branches, statements
+- **Critical modules**: 95% coverage (framework/core/**)
+- **Reports**: `tests/framework-tests/coverage/`
+
+### Package Tests (End-to-End User Experience)
+
+#### Running Package Tests
+```bash
+# Navigate to package tests
+cd tests/package-tests
+
+# Essential tests (5 minutes)
+./quick-commands.sh
+
+# Complete package testing
+./setup-user-project.sh
+./test-cli-commands.sh
+./test-recorder-location.sh  # CRITICAL: File isolation
+./test-all-reporters.sh
+
+# Cleanup
+rm -rf tmp/
+```
+
+#### Critical Tests
+- **File Isolation** (`test-recorder-location.sh`) - Ensures user project isolation
+- **CLI Commands** (`test-cli-commands.sh`) - All CLI functionality
+- **Reporters** (`test-all-reporters.sh`) - Console, HTML, Web UI
 
 ### Test Categories
 
-#### 1. Unit Tests
-- **Location**: Individual test files
-- **Purpose**: Test individual functions and classes
-- **Example**: `config-loader.test.js` tests configuration loading
+#### 1. Framework Unit Tests
+- **Location**: `tests/framework-tests/*.test.js`
+- **Purpose**: Test individual modules and functions
+- **Coverage**: 90% goal across all metrics
 
-#### 2. Integration Tests
-- **Location**: `final-integration.test.js`, `installation.test.js`
-- **Purpose**: Test complete workflows
-- **Example**: Full CLI workflow from config to test execution
+#### 2. Framework Integration Tests  
+- **Location**: `tests/framework-tests/*-integration.test.js`
+- **Purpose**: Test component interactions
+- **Examples**: CLI integration, web UI end-to-end
+
+#### 3. Package End-to-End Tests
+- **Location**: `tests/package-tests/*.sh`
+- **Purpose**: Test complete user workflows
+- **Coverage**: 100% user journey coverage
 
 #### 3. CLI Tests
 - **Location**: `cli-commands.test.js`
