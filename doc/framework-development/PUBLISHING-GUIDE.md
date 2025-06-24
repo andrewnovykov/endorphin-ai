@@ -5,6 +5,7 @@
 ### **Prerequisites** ✅
 
 Your package configuration is **ready for publishing**:
+
 - ✅ Package name: `endorphin-ai`
 - ✅ Version: `0.1.0`
 - ✅ Main entry point: `framework/index.js`
@@ -79,7 +80,7 @@ mkdir tests
 cat > tests/sample-test.js << 'EOF'
 export const SAMPLE_TEST = {
   id: "SAMPLE-001",
-  name: "Sample Test", 
+  name: "Sample Test",
   description: "Test framework installation",
   priority: "High",
   tags: ["smoke"],
@@ -118,12 +119,13 @@ If the name `endorphin-ai` is taken, you can publish as a scoped package:
 ```json
 {
   "name": "@andrewnovykov/endorphin-ai",
-  "version": "0.1.0",
+  "version": "0.1.0"
   // ... rest of package.json
 }
 ```
 
 Then publish with:
+
 ```bash
 npm publish --access public
 ```
@@ -151,7 +153,7 @@ mkdir tests
 cat > tests/verify-test.js << 'EOF'
 export const VERIFY_TEST = {
   id: "VERIFY-001",
-  name: "Installation Verification", 
+  name: "Installation Verification",
   description: "Verify endorphin-ai was installed correctly",
   priority: "High",
   tags: ["smoke"],
@@ -170,12 +172,15 @@ cd .. && rm -rf test-published
 ### **Update Documentation**
 
 1. Update README.md with installation instructions:
-   ```markdown
+
+   ````markdown
    ## Installation
+
    ```bash
    npm install -g endorphin-ai
    ```
-   
+   ````
+
 2. Add npm badge to README:
    ```markdown
    ![npm version](https://badge.fury.io/js/endorphin-ai.svg)
@@ -186,24 +191,28 @@ cd .. && rm -rf test-published
 ## 🔧 Common Issues & Solutions
 
 ### **Issue: Package name taken**
+
 ```bash
 # Solution: Use scoped package
 "name": "@your-username/endorphin-ai"
 ```
 
 ### **Issue: Permission denied**
+
 ```bash
 # Solution: Login to npm
 npm login
 ```
 
 ### **Issue: Files missing in package**
+
 ```bash
 # Solution: Check .npmignore and package.json "files" field
 npm pack --dry-run
 ```
 
 ### **Issue: CLI binary not working**
+
 ```bash
 # Solution: Ensure bin/endorphin.js has executable permissions
 chmod +x bin/endorphin.js
@@ -250,9 +259,11 @@ npm version major && npm publish
 
 ## ✅ Your Package is Ready!
 
-Your `endorphin-ai` package is **production-ready** and configured correctly for npm publication. Follow the steps above to make it available to the world! 🌍
+Your `endorphin-ai` package is **production-ready** and configured correctly for
+npm publication. Follow the steps above to make it available to the world! 🌍
 
 **Package features users will get:**
+
 - ✅ `npm install -g endorphin-ai`
 - ✅ `endorphin` CLI command
 - ✅ `import EndorphinAI from 'endorphin-ai'` API

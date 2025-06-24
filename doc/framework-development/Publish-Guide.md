@@ -1,14 +1,17 @@
 # NPM Package Publish Guide - Endorphin AI
 
-*Last Updated: June 22, 2025*
+_Last Updated: June 22, 2025_
 
 ## 🎯 Overview
 
-This guide covers the complete process for publishing new versions of the Endorphin AI package to NPM. Follow these steps to ensure a smooth and reliable release process.
+This guide covers the complete process for publishing new versions of the
+Endorphin AI package to NPM. Follow these steps to ensure a smooth and reliable
+release process.
 
 ## 📋 Pre-Publication Checklist
 
 ### 1. Run Full Test Suite
+
 ```bash
 # Run all framework tests
 npm test
@@ -22,6 +25,7 @@ npm run framework:test
 ```
 
 ### 2. Test Package Installation (Critical)
+
 ```bash
 # Use our automated testing scripts
 ./tmp/test-endorphin/setup-user-project.sh
@@ -31,12 +35,14 @@ npm run framework:test
 ```
 
 ### 3. Verify Documentation
+
 - [ ] README.md is up to date
 - [ ] User guides reflect current functionality
 - [ ] Framework development docs are current
 - [ ] Examples work with current version
 
 ### 4. Check Package Configuration
+
 - [ ] `package.json` version is correct
 - [ ] `files` array includes all necessary files
 - [ ] Dependencies are up to date
@@ -45,14 +51,17 @@ npm run framework:test
 ## 🔢 Version Management
 
 ### Semantic Versioning (SemVer)
+
 Current version: `0.1.0`
 
 #### Version Increment Rules
+
 - **Patch (0.1.1)**: Bug fixes, minor improvements
 - **Minor (0.2.0)**: New features, non-breaking changes
 - **Major (1.0.0)**: Breaking changes, major releases
 
 ### Update Version
+
 ```bash
 # Patch version (0.1.0 → 0.1.1)
 npm version patch
@@ -70,6 +79,7 @@ npm version 0.1.1
 ## 🚀 Publication Process
 
 ### Step 1: Prepare for Release
+
 ```bash
 # Ensure you're on main branch
 git checkout main
@@ -83,6 +93,7 @@ npm version --no-git-tag-version
 ```
 
 ### Step 2: Run Pre-Publication Tests
+
 ```bash
 # Full test suite
 npm test
@@ -105,6 +116,7 @@ fi
 ```
 
 ### Step 3: Update Version and Create Git Tag
+
 ```bash
 # Update version (creates git tag automatically)
 npm version patch  # or minor/major
@@ -114,17 +126,19 @@ npm version patch  # or minor/major
 # 2. Creates git commit with version bump
 # 3. Creates git tag (e.g., v0.1.1)
 ```
+
 🔧 Method 1: Direct Version Set (Recommended)
-###  Set specific version directly
+
+### Set specific version directly
+
 npm version 0.3.0 --no-git-tag-version
 
 # Then create the git commit and tag manually
-git add package.json
-git commit -m "0.3.0"
-git tag v0.3.0
 
+git add package.json git commit -m "0.3.0" git tag v0.3.0
 
 ### Step 4: Verify Package Contents
+
 ```bash
 # Pack the package to see what will be published
 npm pack
@@ -142,6 +156,7 @@ rm -rf package/
 ```
 
 ### Step 5: Test Packed Package
+
 ```bash
 # Create test environment
 mkdir temp-package-test
@@ -162,6 +177,7 @@ rm -rf temp-package-test
 ```
 
 ### Step 6: Publish to NPM
+
 ```bash
 # Login to NPM (if not already logged in)
 npm login
@@ -178,6 +194,7 @@ npm publish --tag alpha
 ```
 
 ### Step 7: Push Changes to Git
+
 ```bash
 # Push the version commit and tag
 git push origin main
@@ -185,6 +202,7 @@ git push origin --tags
 ```
 
 ### Step 8: Verify Publication
+
 ```bash
 # Check on NPM registry
 npm view endorphin-ai
@@ -315,6 +333,7 @@ echo "🔗 Git: https://github.com/andrewnovykov/endorphin-ai/releases/tag/$NEW_
 ## 📊 Post-Publication Tasks
 
 ### 1. Create GitHub Release
+
 ```bash
 # Go to GitHub releases page
 open https://github.com/andrewnovykov/endorphin-ai/releases
@@ -326,12 +345,14 @@ gh release create v0.1.1 \
 ```
 
 ### 2. Update Documentation
+
 - [ ] Update README with new version examples
 - [ ] Update installation instructions if needed
 - [ ] Add changelog entry
 - [ ] Update migration guide if breaking changes
 
 ### 3. Test Installation from NPM
+
 ```bash
 # Test fresh installation
 mkdir npm-test
@@ -345,6 +366,7 @@ rm -rf npm-test
 ```
 
 ### 4. Notify Users
+
 - [ ] Update documentation with new features
 - [ ] Post release notes if significant changes
 - [ ] Update any example repositories
@@ -352,6 +374,7 @@ rm -rf npm-test
 ## 🚨 Emergency Procedures
 
 ### Unpublish a Version (24h window)
+
 ```bash
 # Only within 24 hours of publication
 npm unpublish endorphin-ai@0.1.1
@@ -361,6 +384,7 @@ npm unpublish endorphin-ai --force
 ```
 
 ### Deprecate a Version
+
 ```bash
 # Deprecate a specific version
 npm deprecate endorphin-ai@0.1.0 "Please upgrade to 0.1.1"
@@ -370,6 +394,7 @@ npm deprecate endorphin-ai@"<0.1.1" "Please upgrade to 0.1.1 or higher"
 ```
 
 ### Fix Critical Issues
+
 ```bash
 # For critical bugs, immediately publish patch
 npm version patch
@@ -384,6 +409,7 @@ git push origin main --tags
 Copy this checklist for each release:
 
 ### Pre-Release
+
 - [ ] All tests pass (`npm test`)
 - [ ] Package testing passes (`./tmp/test-endorphin/` scripts)
 - [ ] Test recorder isolation verified
@@ -393,6 +419,7 @@ Copy this checklist for each release:
 - [ ] On main branch
 
 ### Release
+
 - [ ] Version bumped (`npm version`)
 - [ ] Package contents verified (`npm pack`)
 - [ ] Packed package tested
@@ -401,6 +428,7 @@ Copy this checklist for each release:
 - [ ] NPM publication verified
 
 ### Post-Release
+
 - [ ] GitHub release created
 - [ ] Fresh NPM installation tested
 - [ ] Documentation updated with new version
@@ -409,6 +437,7 @@ Copy this checklist for each release:
 ## 🔐 Security Considerations
 
 ### NPM Authentication
+
 ```bash
 # Use npm tokens for CI/CD
 npm token create --read-only
@@ -419,10 +448,12 @@ export NPM_TOKEN="your-token-here"
 ```
 
 ### Two-Factor Authentication
+
 - Enable 2FA on your NPM account
 - Use `npm publish --otp=123456` if required
 
 ### Package Signing
+
 ```bash
 # Sign packages (optional)
 npm publish --dry-run
@@ -431,4 +462,5 @@ npm audit signatures
 
 ---
 
-*Always test thoroughly before publishing. A good release is better than a fast release.*
+_Always test thoroughly before publishing. A good release is better than a fast
+release._

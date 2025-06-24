@@ -2,9 +2,9 @@
   "name": "endorphin-ai",
   "version": "0.4.1",
   "description": "E2E Testing Reinvented with AI - A powerful browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright",
-  "main": "framework/index.js",
+  "main": "framework/index.ts",
   "bin": {
-    "endorphin": "bin/endorphin.js"
+    "endorphin": "./bin/endorphin.js"
   },
   "type": "module",
   "scripts": {
@@ -17,6 +17,7 @@
     "test:framework": "cd development-tests/framework-tests && npx vitest",
     "test:dev": "npx vitest development-tests",
     "test:all": "npm run test:framework && npm run test:dev",
+    "test:package": "cd development-tests/package-tests && ./run-all-tests.sh",
     "framework:test": "node framework/test-framework.js --test",
     "framework:demo": "node framework/test-framework.js",
     "framework:all": "node framework/test-framework.js --all",
@@ -24,7 +25,19 @@
     "framework:auth": "node framework/test-framework.js --tag authentication",
     "framework:smoke": "node framework/test-framework.js --tag smoke",
     "framework:high": "node framework/test-framework.js --priority High",
-    "test-recorder": "node framework/interactive/enhanced-interactive-recorder.js"
+    "test-recorder": "node framework/interactive/enhanced-interactive-recorder.js",
+    "lint": "eslint . --ext .js,.mjs,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.mjs,.ts,.tsx --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "quality": "npm run lint && npm run format:check",
+    "quality:fix": "npm run lint:fix && npm run format",
+    "type-check": "tsc --noEmit",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "dev": "tsx",
+    "prepare": "echo 'Husky disabled temporarily'",
+    "precommit": "echo 'Pre-commit hooks disabled temporarily'"
   },
   "keywords": [
     "ai",
@@ -76,7 +89,18 @@
     "test": "tests"
   },
   "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@types/node": "^24.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.35.0",
+    "@typescript-eslint/parser": "^8.35.0",
     "@vitest/ui": "^2.1.9",
+    "eslint": "^9.29.0",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.6.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
     "vitest": "^2.1.9"
   }
 }

@@ -350,7 +350,7 @@ class TestReportViewer {
     const rows = document.querySelectorAll('.test-result-row');
     const lowerSearchTerm = searchTerm.toLowerCase();
     let visibleCount = 0;
-    let totalCount = rows.length;
+    const totalCount = rows.length;
 
     rows.forEach(row => {
       const testId = row.querySelector('strong').textContent.toLowerCase();
@@ -494,7 +494,7 @@ class ReportUtils {
       document.body.appendChild(toastContainer);
     }
 
-    const toastId = 'toast-' + Date.now();
+    const toastId = `toast-${  Date.now()}`;
     const toast = document.createElement('div');
     toast.id = toastId;
     toast.className = `toast align-items-center text-white bg-${type} border-0`;
@@ -526,7 +526,7 @@ class ReportUtils {
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))  } ${  sizes[i]}`;
   }
 
   /**

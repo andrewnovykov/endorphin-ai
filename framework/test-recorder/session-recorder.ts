@@ -1,0 +1,329 @@
+/**
+ * Session Test Recorder
+ * Records user interactions and generates test files
+ */
+
+import type { EnhancedBrowserTestFramework } from '@core/browser-framework.js';
+import fs from 'fs/promises';
+import path from 'path';
+
+/**
+ * Test data interface for recording
+ */
+interface RecorderTestData {
+  id?: string;
+  name?: string;
+  description?: string;
+  priority?: string;
+  tags?: string[];
+  site?: string;
+  testData?: Record<string, any>;
+}
+
+/**
+ * Step information interface
+ */
+interface StepInfo {
+  stepNumber: number;
+  description: string;
+  type: string;
+  timestamp: string;
+  data: any;
+  result: string;
+  beforeScreenshot: string;
+  afterScreenshot: string;
+}
+
+/**
+ * Recording result interface
+ */
+interface RecordingResult {
+  recordingId: string;
+  recordingPath: string;
+  steps: number;
+  duration: number;
+  testFilePath: string;
+}
+
+/**
+ * Interactive Test Recorder
+ * Records user interactions and generates test files
+ */
+export class TestRecorder {
+  private framework: EnhancedBrowserTestFramework;
+  private testData: RecorderTestData;
+  private steps: StepInfo[];
+  private stepCounter: number;
+  private recordingId: string | null;
+  private recordingPath: string | null;
+  private stepsPath: string | null;
+  private isRecording: boolean;
+  private startTime: Date | null;
+
+  constructor(framework: EnhancedBrowserTestFramework, testData: RecorderTestData = {}) {
+    this.framework = framework;
+    this.testData = testData;
+    this.steps = [];
+    this.stepCounter = 0;
+    this.recordingId = null;
+    this.recordingPath = null;
+    this.stepsPath = null;
+    this.isRecording = false;
+    this.startTime = null;
+  }
+
+  /**
+   * Start recording session
+   * @returns Promise resolving to recording ID
+   */
+  async startRecording(): Promise<string> {
+    this.startTime = new Date();
+    const timestamp = Date.now();
+    this.recordingId = `${this.testData.id || 'REC'}-${timestamp}`;
+
+    // Create recording directories in USER project (not framework)
+    this.recordingPath = path.join(process.cwd(), 'test-recorder', this.recordingId);
+    this.stepsPath = path.join(this.recordingPath, 'steps');
+
+    await fs.mkdir(this.recordingPath, { recursive: true });
+    await fs.mkdir(this.stepsPath, { recursive: true });
+
+    this.isRecording = true;
+    this.stepCounter = 0;
+    this.steps = [];
+
+    console.log('Recording session:', this.recordingId);
+    console.log('Artifacts will be saved to:', this.recordingPath);
+
+    return this.recordingId;
+  }
+
+  /**
+   * Record a step with tool call and screenshot
+   * @param description - Step description
+   * @param type - Step type
+   * @param data - Step data
+   * @param result - Step result
+   */
+  async recordStep(description: string, type: string, data: any, result: string): Promise<void> {
+    if (!this.isRecording) return;
+
+    this.stepCounter++;
+    const stepId = String(this.stepCounter).padStart(3, '0');
+    const stepFolderName = `${stepId}-${this.sanitizeFileName(description)}`;
+    const stepPath = path.join(this.stepsPath!, stepFolderName);
+
+    // Create step folder
+    await fs.mkdir(stepPath, { recursive: true });
+
+    // Take BEFORE screenshot
+    const beforeScreenshot = path.join(stepPath, 'before.png');
+    await this.framework.currentPage?.screenshot({ path: beforeScreenshot, fullPage: true });
+
+    // Record step info
+    const stepInfo: StepInfo = {
+      stepNumber: this.stepCounter,
+      description,
+      type,
+      timestamp: new Date().toISOString(),
+      data,
+      result,
+      beforeScreenshot: 'before.png',
+      afterScreenshot: 'after.png',
+    };
+
+    // Take AFTER screenshot (small delay to ensure DOM updates)
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const afterScreenshot = path.join(stepPath, 'after.png');
+    await this.framework.currentPage?.screenshot({ path: afterScreenshot, fullPage: true });
+
+    // Save step data
+    const stepDataPath = path.join(stepPath, 'step-data.json');
+    await fs.writeFile(stepDataPath, JSON.stringify(stepInfo, null, 2));
+
+    this.steps.push(stepInfo);
+
+    console.log(`✅ Step ${this.stepCounter}: ${description}`);
+  }
+
+  /**
+   * Stop recording and generate final artifacts
+   * @returns Promise resolving to recording result
+   */
+  async stopRecording(): Promise<RecordingResult | undefined> {
+    if (!this.isRecording || !this.recordingId || !this.recordingPath || !this.startTime) {
+      console.warn('Recording was not active');
+      return;
+    }
+
+    this.isRecording = false;
+    const endTime = new Date();
+    const duration = endTime.getTime() - this.startTime.getTime();
+
+    // Generate session summary
+    const sessionSummary = {
+      recordingId: this.recordingId,
+      testData: this.testData,
+      startTime: this.startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      duration,
+      totalSteps: this.stepCounter,
+      steps: this.steps,
+    };
+
+    // Save session summary
+    const sessionPath = path.join(this.recordingPath, 'recording-session.json');
+    await fs.writeFile(sessionPath, JSON.stringify(sessionSummary, null, 2));
+
+    // Generate test file
+    const testFilePath = await this.generateTestFile();
+
+    // Generate HTML report
+    await this.generateHTMLReport();
+
+    return {
+      recordingId: this.recordingId,
+      recordingPath: this.recordingPath,
+      steps: this.stepCounter,
+      duration,
+      testFilePath,
+    };
+  }
+
+  /**
+   * Sanitize filename for safe usage
+   * @param name - Filename to sanitize
+   * @returns Sanitized filename
+   */
+  private sanitizeFileName(name: string): string {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .substring(0, 50);
+  }
+
+  /**
+   * Generate HTML report for the recording session
+   */
+  private async generateHTMLReport(): Promise<void> {
+    if (!this.recordingPath) return;
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Recording: ${this.testData.name || this.recordingId}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .header { border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
+        .step { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .step-header { font-weight: bold; color: #333; margin-bottom: 10px; }
+        .screenshots { display: flex; gap: 20px; margin-top: 10px; }
+        .screenshots img { max-width: 300px; border: 1px solid #ccc; }
+        .step-data { background: #f9f9f9; padding: 10px; margin-top: 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Test Recording Report</h1>
+            <p><strong>Recording ID:</strong> ${this.recordingId}</p>
+            <p><strong>Test Name:</strong> ${this.testData.name || 'N/A'}</p>
+            <p><strong>Description:</strong> ${this.testData.description || 'N/A'}</p>
+            <p><strong>Total Steps:</strong> ${this.stepCounter}</p>
+            <p><strong>Generated:</strong> ${new Date().toISOString()}</p>
+        </div>
+        
+        ${this.steps.map(step => `
+        <div class="step">
+            <div class="step-header">Step ${step.stepNumber}: ${step.description}</div>
+            <p><strong>Type:</strong> ${step.type}</p>
+            <p><strong>Result:</strong> ${step.result}</p>
+            <p><strong>Timestamp:</strong> ${step.timestamp}</p>
+            
+            <div class="screenshots">
+                <div>
+                    <h4>Before</h4>
+                    <img src="steps/${String(step.stepNumber).padStart(3, '0')}-${this.sanitizeFileName(step.description)}/before.png" alt="Before screenshot">
+                </div>
+                <div>
+                    <h4>After</h4>
+                    <img src="steps/${String(step.stepNumber).padStart(3, '0')}-${this.sanitizeFileName(step.description)}/after.png" alt="After screenshot">
+                </div>
+            </div>
+            
+            <div class="step-data">
+                <h4>Step Data</h4>
+                <pre>${JSON.stringify(step.data, null, 2)}</pre>
+            </div>
+        </div>
+        `).join('')}
+    </div>
+</body>
+</html>`;
+
+    const htmlPath = path.join(this.recordingPath, 'recording-report.html');
+    await fs.writeFile(htmlPath, htmlContent);
+    console.log('HTML report generated:', htmlPath);
+  }
+
+  /**
+   * Generate test file in tests/ folder
+   * @returns Promise resolving to test file path
+   */
+  private async generateTestFile(): Promise<string> {
+    const testId = this.testData.id || 'QE-NEW';
+    const filename = `${testId.toLowerCase()}-recorded-test.js`;
+
+    // Ensure tests directory exists
+    const testsDir = path.join(process.cwd(), 'tests');
+    await fs.mkdir(testsDir, { recursive: true });
+
+    const testPath = path.join(testsDir, filename);
+
+    // Build task from recorded steps
+    const taskSteps = this.steps
+      .map((step) => {
+        // For now, use generic descriptions until we implement proper task building
+        return step.description;
+      })
+      .join(' ');
+
+    // Add "recorded" tag if not already present
+    const tags = this.testData.tags || [];
+    if (!tags.includes('recorded')) {
+      tags.push('recorded');
+    }
+
+    const exportName = testId.replace(/-/g, '_');
+
+    const testContent = `// ${testId}: ${this.testData.name}
+// Description: ${this.testData.description}
+// Priority: ${this.testData.priority || 'Medium'}
+// Tags: ${tags.join(', ')}
+// Generated by Test Recorder: ${this.recordingId}
+
+export const ${exportName} = {
+  "id": "${testId}",
+  "name": "${this.testData.name}",
+  "description": "${this.testData.description}",
+  "priority": "${this.testData.priority || 'Medium'}",
+  "tags": ${JSON.stringify(tags, null, 4)},
+  "site": "${this.testData.site}",
+  "testData": ${JSON.stringify(this.testData.testData || {}, null, 4)},
+  "task": "${taskSteps} STOP - test completed.",
+  "recordingId": "${this.recordingId}",
+  "recordedSteps": ${this.stepCounter}
+};
+`;
+
+    await fs.writeFile(testPath, testContent);
+    console.log('Test file created:', filename);
+
+    return testPath;
+  }
+}

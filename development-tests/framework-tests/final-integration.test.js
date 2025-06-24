@@ -3,11 +3,11 @@
  * Comprehensive test to verify all components work together
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { promises as fs } from 'fs';
 import { execSync } from 'child_process';
-import { join } from 'path';
+import { promises as fs } from 'fs';
 import { tmpdir } from 'os';
+import { join } from 'path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('Final Integration Test', () => {
   let tempDir;
@@ -25,36 +25,40 @@ describe('Final Integration Test', () => {
 
   it('should perform complete end-to-end workflow', async () => {
     // Test 1: CLI Help Command
-    const helpOutput = execSync('node bin/endorphin.js --help', { 
+    const helpOutput = execSync('node bin/endorphin.js --help', {
       encoding: 'utf8',
-      cwd: process.cwd()
+      cwd: process.cwd(),
     });
     expect(helpOutput).toContain('Endorphin AI');
     expect(helpOutput).toContain('Usage:');
     expect(helpOutput).toContain('Commands:');
 
     // Test 2: Version Command
-    const versionOutput = execSync('node bin/endorphin.js --version', { 
+    const versionOutput = execSync('node bin/endorphin.js --version', {
       encoding: 'utf8',
-      cwd: process.cwd()
+      cwd: process.cwd(),
     });
     expect(versionOutput).toMatch(/Endorphin AI v\d+\.\d+\.\d+/);
 
     // Test 3: Configuration Loading
     process.chdir(tempDir);
-    
+
     // Create test project structure
     await fs.mkdir('tests');
     await fs.mkdir('data');
-    
+
     // Create package.json with ES modules support
-    const packageJsonContent = JSON.stringify({
-      "name": "test-project",
-      "version": "1.0.0",
-      "type": "module"
-    }, null, 2);
+    const packageJsonContent = JSON.stringify(
+      {
+        name: 'test-project',
+        version: '1.0.0',
+        type: 'module',
+      },
+      null,
+      2
+    );
     await fs.writeFile('package.json', packageJsonContent);
-    
+
     const configContent = `
 export default {
   browser: {
@@ -76,7 +80,7 @@ export default {
     // Test 4: Configuration System
     const { getConfig } = await import('../../framework/core/config-loader.js');
     const config = await getConfig({ cwd: tempDir });
-    
+
     expect(config.browser.headless).toBe(true);
     expect(config.browser.viewport.width).toBe(1280);
     expect(config.execution.timeout).toBe(30000);
@@ -98,7 +102,7 @@ export const FINAL_001 = {
 
     const { discoverTests } = await import('../../framework/core/test-discovery.js');
     const tests = await discoverTests(config);
-    
+
     expect(tests).toHaveLength(1);
     expect(tests[0].id).toBe('FINAL-001');
     expect(tests[0].name).toBe('Final Integration Test');
@@ -106,17 +110,17 @@ export const FINAL_001 = {
 
     // Test 6: CLI List Command
     const cliPath = join(originalCwd, 'bin', 'endorphin.js');
-    const listOutput = execSync(`node ${cliPath} list`, { 
+    const listOutput = execSync(`node ${cliPath} list`, {
       encoding: 'utf8',
-      cwd: tempDir
+      cwd: tempDir,
     });
     expect(listOutput).toContain('FINAL-001');
     expect(listOutput).toContain('Final Integration Test');
 
     // Test 7: CLI Flag Parsing
-    const debugOutput = execSync(`node ${cliPath} list --debug`, { 
+    const debugOutput = execSync(`node ${cliPath} list --debug`, {
       encoding: 'utf8',
-      cwd: tempDir
+      cwd: tempDir,
     });
     // Should include configuration debug info or run without error
     expect(debugOutput).toBeDefined();
@@ -126,12 +130,12 @@ export const FINAL_001 = {
       users: {
         testUser: {
           email: 'test@example.com',
-          password: 'testpassword'
-        }
-      }
+          password: 'testpassword',
+        },
+      },
     };
     await fs.writeFile('data/users.json', JSON.stringify(testData, null, 2));
-    
+
     const loadedData = JSON.parse(await fs.readFile('data/users.json', 'utf8'));
     expect(loadedData.users.testUser.email).toBe('test@example.com');
 
@@ -140,12 +144,12 @@ export const FINAL_001 = {
 
   it('should handle errors gracefully', async () => {
     process.chdir(tempDir);
-    
+
     // Test error handling with invalid config
     await fs.writeFile('endorphin.config.js', 'invalid javascript content');
-    
+
     const { loadConfig } = await import('../../framework/core/config-loader.js');
-    
+
     // Should handle invalid config gracefully
     try {
       const config = await loadConfig(tempDir);
@@ -165,7 +169,7 @@ export const FINAL_001 = {
       'framework/test-framework.js',
       'framework/core/config-loader.js',
       'framework/core/test-discovery.js',
-      'vitest.config.js'
+      'vitest.config.js',
     ];
 
     for (const file of requiredFiles) {
@@ -179,7 +183,7 @@ export const FINAL_001 = {
     const legacyFiles = [
       'legacy/enhanced-test-framework.js',
       'legacy/endorphin-debug.js',
-      'legacy/endorphin-old.js'
+      'legacy/endorphin-old.js',
     ];
 
     for (const file of legacyFiles) {

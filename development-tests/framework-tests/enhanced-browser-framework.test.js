@@ -3,7 +3,7 @@
  * Tests the enhanced browser framework functionality
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock fs module first - comprehensive mocking
 vi.mock('fs', () => {
@@ -15,12 +15,12 @@ vi.mock('fs', () => {
     mkdirSync: vi.fn(),
     unlinkSync: vi.fn(),
     writeFileSync: vi.fn(),
-    copyFileSync: vi.fn()
+    copyFileSync: vi.fn(),
   };
-  
+
   return {
     default: mockFs,
-    ...mockFs
+    ...mockFs,
   };
 });
 
@@ -32,29 +32,29 @@ vi.mock('playwright', () => {
     goto: vi.fn(),
     fill: vi.fn(),
     click: vi.fn(),
-    close: vi.fn()
+    close: vi.fn(),
   };
 
   const mockContext = {
     newPage: vi.fn(() => Promise.resolve(mockPage)),
-    close: vi.fn()
+    close: vi.fn(),
   };
 
   const mockBrowser = {
     newContext: vi.fn(() => Promise.resolve(mockContext)),
-    close: vi.fn()
+    close: vi.fn(),
   };
 
   return {
     chromium: {
-      launch: vi.fn(() => Promise.resolve(mockBrowser))
-    }
+      launch: vi.fn(() => Promise.resolve(mockBrowser)),
+    },
   };
 });
 
 // Mock LangChain
 vi.mock('@langchain/core/messages', () => ({
-  HumanMessage: vi.fn()
+  HumanMessage: vi.fn(),
 }));
 
 // Mock file system
@@ -62,8 +62,8 @@ vi.mock('fs', () => ({
   default: {
     existsSync: vi.fn(() => true),
     mkdirSync: vi.fn(),
-    writeFileSync: vi.fn()
-  }
+    writeFileSync: vi.fn(),
+  },
 }));
 
 describe('Enhanced Browser Framework', () => {
@@ -90,7 +90,7 @@ describe('Enhanced Browser Framework', () => {
 
     it('should initialize framework successfully', async () => {
       await framework.initialize();
-      
+
       expect(framework.browser).toBeDefined();
       expect(framework.context).toBeDefined();
       expect(framework.page).toBeDefined();
@@ -100,20 +100,20 @@ describe('Enhanced Browser Framework', () => {
   describe('Test Session Management', () => {
     it('should start a new test session', async () => {
       await framework.initialize();
-      
+
       const testId = 'TEST-001';
       framework.startTestSession(testId);
-      
+
       expect(framework.currentTestSession).toBeDefined();
       expect(framework.currentTestSession.testId).toBe(testId);
     });
 
     it('should end test session and save results', async () => {
       await framework.initialize();
-      
+
       framework.startTestSession('TEST-001');
       framework.endTestSession();
-      
+
       expect(framework.currentTestSession).toBeNull();
     });
   });
@@ -121,15 +121,15 @@ describe('Enhanced Browser Framework', () => {
   describe('Test Execution', () => {
     it('should execute test with proper setup', async () => {
       await framework.initialize();
-      
+
       const mockTest = {
         id: 'TEST-001',
         name: 'Sample Test',
-        execute: vi.fn().mockResolvedValue({ success: true })
+        execute: vi.fn().mockResolvedValue({ success: true }),
       };
 
       const result = await framework.runTest(mockTest);
-      
+
       expect(result).toBeDefined();
       expect(mockTest.execute).toHaveBeenCalled();
     });
@@ -139,7 +139,7 @@ describe('Enhanced Browser Framework', () => {
     it('should cleanup browser resources', async () => {
       await framework.initialize();
       await framework.cleanup();
-      
+
       expect(framework.browser).toBeNull();
       expect(framework.page).toBeNull();
     });
@@ -149,7 +149,7 @@ describe('Enhanced Browser Framework', () => {
     it('should support interactive mode toggle', () => {
       framework.setInteractiveMode(true);
       expect(framework.isInteractiveMode).toBe(true);
-      
+
       framework.setInteractiveMode(false);
       expect(framework.isInteractiveMode).toBe(false);
     });
@@ -158,19 +158,19 @@ describe('Enhanced Browser Framework', () => {
   describe('Result Management', () => {
     it('should store test results', async () => {
       await framework.initialize();
-      
+
       const result = { testId: 'TEST-001', success: true };
       framework.addTestResult(result);
-      
+
       expect(framework.testResults).toContain(result);
     });
 
     it('should clear test results', async () => {
       await framework.initialize();
-      
+
       framework.addTestResult({ testId: 'TEST-001', success: true });
       framework.clearTestResults();
-      
+
       expect(framework.testResults).toEqual([]);
     });
   });

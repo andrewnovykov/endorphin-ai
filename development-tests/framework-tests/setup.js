@@ -1,28 +1,28 @@
 // Test setup for Vitest
 // Global setup and configuration for framework tests
 
-import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
-import { resolve } from 'path';
 import { existsSync, mkdirSync, rmSync } from 'fs';
+import { resolve } from 'path';
+import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest';
 
 // Test environment setup
 beforeAll(() => {
   console.log('🧪 Setting up Endorphin AI framework test environment...');
-  
+
   // Set test environment variables
   process.env.NODE_ENV = 'test';
   process.env.ENDORPHIN_HEADLESS = 'true';
   process.env.ENDORPHIN_VIEWPORT_WIDTH = '1280';
   process.env.ENDORPHIN_VIEWPORT_HEIGHT = '720';
-  
+
   // Create test directories
   const testDirs = [
     resolve(process.cwd(), 'development-tests/framework-tests/temp'),
     resolve(process.cwd(), 'development-tests/framework-tests/fixtures'),
     resolve(process.cwd(), 'development-tests/framework-tests/results'),
   ];
-  
-  testDirs.forEach(dir => {
+
+  testDirs.forEach((dir) => {
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
     }
@@ -32,7 +32,7 @@ beforeAll(() => {
 // Cleanup after all tests
 afterAll(() => {
   console.log('🧹 Cleaning up framework test environment...');
-  
+
   // Clean up test directories
   const tempDir = resolve(process.cwd(), 'development-tests/framework-tests/temp');
   if (existsSync(tempDir)) {

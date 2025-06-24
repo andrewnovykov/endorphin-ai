@@ -1,0 +1,11 @@
+{
+  "*.{js,mjs}": [
+    "echo 'Linting disabled temporarily'"
+  ],
+  "*.{json,md,yml,yaml}": [
+    "echo 'Formatting disabled temporarily'"
+  ],
+  "package.json": [
+    "echo 'Package formatting disabled temporarily'"
+  ]
+}

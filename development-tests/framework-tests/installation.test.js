@@ -3,11 +3,11 @@
  * Tests the installation process, CLI functionality, and project setup
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { execSync } from 'child_process';
 import { promises as fs } from 'fs';
-import { join } from 'path';
 import { tmpdir } from 'os';
+import { join } from 'path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('Installation and CLI Tests', () => {
   let tempDir;
@@ -48,7 +48,7 @@ describe('Installation and CLI Tests', () => {
         'framework/test-framework.js',
         'framework/core/config-loader.js',
         'README.md',
-        'package.json'
+        'package.json',
       ];
 
       for (const file of requiredFiles) {
@@ -71,7 +71,7 @@ describe('Installation and CLI Tests', () => {
   describe('CLI Functionality', () => {
     it('should display help when called without arguments', () => {
       const cliPath = join(process.cwd(), 'bin', 'endorphin.js');
-      
+
       try {
         const output = execSync(`node ${cliPath}`, { encoding: 'utf8' });
         expect(output).toContain('Endorphin AI');
@@ -85,7 +85,7 @@ describe('Installation and CLI Tests', () => {
 
     it('should display version information', () => {
       const cliPath = join(process.cwd(), 'bin', 'endorphin.js');
-      
+
       try {
         const output = execSync(`node ${cliPath} --version`, { encoding: 'utf8' });
         expect(output).toMatch(/Endorphin AI v\d+\.\d+\.\d+/);
@@ -96,7 +96,7 @@ describe('Installation and CLI Tests', () => {
 
     it('should handle unknown commands gracefully', () => {
       const cliPath = join(process.cwd(), 'bin', 'endorphin.js');
-      
+
       try {
         execSync(`node ${cliPath} unknown-command`, { encoding: 'utf8' });
         expect(true).toBe(false); // Should not reach here
@@ -149,13 +149,13 @@ export default {
 
       const { getConfig, resetConfig } = await import('../../framework/core/config-loader.js');
       resetConfig(); // Reset config cache before testing CLI flags
-      
-      const options = { 
+
+      const options = {
         cwd: tempDir,
         cliFlags: {
-          headless: false,  // CLI override for headless 
-          timeout: 60000    // CLI override for timeout
-        }
+          headless: false, // CLI override for headless
+          timeout: 60000, // CLI override for timeout
+        },
       };
       const config = await getConfig(options);
 
@@ -214,7 +214,7 @@ export default {
       // Simulate project setup
       await fs.mkdir('tests');
       await fs.mkdir('data');
-      
+
       const configContent = `
 export default {
   browser: { headless: true },
@@ -230,7 +230,7 @@ export default {
       await expect(fs.access('tests')).resolves.not.toThrow();
       await expect(fs.access('data')).resolves.not.toThrow();
       await expect(fs.access('endorphin.config.js')).resolves.not.toThrow();
-      
+
       const loadedData = JSON.parse(await fs.readFile('data/users.json', 'utf8'));
       expect(loadedData.users.test).toBe('data');
     });
@@ -250,7 +250,7 @@ export default {
   }
 };
 `;
-      
+
       const invalidTest = `
 export default {
   name: 'Invalid Test'
@@ -277,7 +277,7 @@ export default {
   describe('Error Handling', () => {
     it('should handle missing configuration gracefully', async () => {
       process.chdir(tempDir);
-      
+
       const { getConfig } = await import('../../framework/core/config-loader.js');
       const config = await getConfig({ cwd: tempDir });
 
@@ -289,12 +289,12 @@ export default {
 
     it('should handle invalid configuration files', async () => {
       process.chdir(tempDir);
-      
+
       // Create invalid config
       await fs.writeFile('endorphin.config.js', 'invalid javascript content');
-      
+
       const { loadConfig } = await import('../../framework/core/config-loader.js');
-      
+
       try {
         await loadConfig(tempDir);
         // Should fall back to defaults if config is invalid
@@ -307,12 +307,12 @@ export default {
 
     it('should handle file system errors', async () => {
       const { discoverTests } = await import('../../framework/core/test-discovery.js');
-      const config = { 
-        execution: { 
-          testsDirectory: '/non-existent-directory' 
-        } 
+      const config = {
+        execution: {
+          testsDirectory: '/non-existent-directory',
+        },
       };
-      
+
       const tests = await discoverTests(config);
       expect(tests).toEqual([]);
     });
@@ -343,9 +343,7 @@ export default {
   }
 };
 `;
-        createPromises.push(
-          fs.writeFile(`tests/perf-test-${i}.js`, testContent)
-        );
+        createPromises.push(fs.writeFile(`tests/perf-test-${i}.js`, testContent));
       }
 
       await Promise.all(createPromises);

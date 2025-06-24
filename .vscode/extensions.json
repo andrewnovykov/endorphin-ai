@@ -1,0 +1,31 @@
+{
+  "recommendations": [
+    // Essential extensions
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-vscode.vscode-json",
+    // JavaScript/Node.js development
+    "ms-vscode.js-debug",
+    "ms-vscode.js-debug-nightly",
+    "bradlc.vscode-tailwindcss",
+    // Testing
+    "vitest.explorer",
+    "ms-playwright.playwright",
+    // Git integration
+    "eamodio.gitlens",
+    "github.vscode-pull-request-github",
+    // Documentation
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    // Productivity
+    "christian-kohler.path-intellisense",
+    "visualstudioexptteam.vscodeintellicode",
+    "ms-vscode.vscode-npm-script",
+    // AI development specific
+    "ms-python.python",
+    "ms-toolsai.jupyter",
+    // Code quality
+    "streetsidesoftware.code-spell-checker",
+    "ms-vscode.vscode-json"
+  ]
+}

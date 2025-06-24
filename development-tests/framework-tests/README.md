@@ -1,6 +1,7 @@
 # Framework Tests
 
-This directory contains comprehensive tests for the Endorphin AI framework using **Vitest**.
+This directory contains comprehensive tests for the Endorphin AI framework using
+**Vitest**.
 
 ## Setup
 
@@ -56,21 +57,25 @@ development-tests/framework-tests/
 ## Test Categories
 
 ### Unit Tests
+
 - **Purpose**: Test individual functions and classes
 - **Files**: `config-loader.test.js`, `test-discovery.test.js`
 - **Focus**: Core functionality, error handling, edge cases
 
-### Integration Tests  
+### Integration Tests
+
 - **Purpose**: Test component interactions
 - **Files**: `browser-framework.test.js`, `enhanced-browser-framework.test.js`
 - **Focus**: Browser automation, AI agent integration, test execution
 
 ### End-to-End Tests
+
 - **Purpose**: Test complete workflows
 - **Files**: `final-integration.test.js`, `installation.test.js`
 - **Focus**: CLI commands, configuration loading, test discovery
 
 ### CLI Tests
+
 - **Purpose**: Test command-line interface
 - **Files**: `init-command.test.js`
 - **Focus**: Help commands, version display, project initialization
@@ -99,10 +104,10 @@ describe('Feature Name', () => {
     it('should do specific thing', async () => {
       // Arrange
       const input = 'test input';
-      
+
       // Act
       const result = await testInstance.method(input);
-      
+
       // Assert
       expect(result).toBeDefined();
       expect(result.property).toBe('expected value');
@@ -114,38 +119,41 @@ describe('Feature Name', () => {
 ## Mocking Guidelines
 
 ### External Dependencies
+
 ```javascript
 // Mock Playwright
 vi.mock('playwright', () => ({
   chromium: {
-    launch: vi.fn(() => Promise.resolve(mockBrowser))
-  }
+    launch: vi.fn(() => Promise.resolve(mockBrowser)),
+  },
 }));
 
 // Mock file system
 vi.mock('fs', () => ({
   existsSync: vi.fn(() => true),
-  readFileSync: vi.fn(() => 'mock content')
+  readFileSync: vi.fn(() => 'mock content'),
 }));
 ```
 
 ### Framework Components
+
 ```javascript
 // Mock browser framework
 vi.mock('../../framework/core/browser-framework.js', () => ({
   EnhancedBrowserTestFramework: vi.fn().mockImplementation(() => ({
     initialize: vi.fn(),
     cleanup: vi.fn(),
-    runTask: vi.fn()
-  }))
+    runTask: vi.fn(),
+  })),
 }));
 ```
 
 ## Test Environment
 
 Tests run with these environment variables:
+
 - `NODE_ENV=test`
-- `VITEST=true` 
+- `VITEST=true`
 - `ENDORPHIN_HEADLESS=true`
 - `ENDORPHIN_VIEWPORT_WIDTH=1280`
 - `ENDORPHIN_VIEWPORT_HEIGHT=720`
@@ -153,8 +161,9 @@ Tests run with these environment variables:
 ## Coverage Requirements
 
 Maintain these coverage thresholds:
+
 - **Statements**: 80%
-- **Branches**: 75% 
+- **Branches**: 75%
 - **Functions**: 80%
 - **Lines**: 80%
 
@@ -174,6 +183,7 @@ npx vitest --run --no-coverage --reporter=verbose -t "should initialize framewor
 ## Test Data
 
 Use the `examples/tests/` directory for test fixtures:
+
 - `QE-001-basic-login.js` - Sample authentication test
 - `QE-002-navigation.js` - Sample navigation test
 - `QE-003-form-interaction.js` - Sample form test
@@ -181,16 +191,19 @@ Use the `examples/tests/` directory for test fixtures:
 ## Common Issues
 
 ### Browser Tests Failing
+
 - Ensure Playwright browsers are installed: `npx playwright install`
 - Check headless mode is enabled in test environment
 - Verify mock setup for browser automation
 
-### Module Import Issues  
+### Module Import Issues
+
 - Use `vi.mock()` before imports
 - Ensure proper file paths in dynamic imports
 - Check ES module compatibility
 
 ### Async Test Problems
+
 - Always `await` async operations
 - Use proper timeout values for long-running tests
 - Handle promise rejections correctly
@@ -198,6 +211,7 @@ Use the `examples/tests/` directory for test fixtures:
 ## Contributing
 
 When adding new tests:
+
 1. Follow the naming convention: `feature-name.test.js`
 2. Add comprehensive test coverage
 3. Include both success and error scenarios

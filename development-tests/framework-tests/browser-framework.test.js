@@ -3,25 +3,29 @@
  * Tests the browser automation and framework integration
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock agent setup to control failures
 vi.mock('../framework/core/agent-setup.js', () => ({
-  setupAgent: vi.fn(() => Promise.resolve({
-    invoke: vi.fn(() => Promise.resolve({
-      messages: [{ content: 'Test completed successfully' }]
-    }))
-  }))
+  setupAgent: vi.fn(() =>
+    Promise.resolve({
+      invoke: vi.fn(() =>
+        Promise.resolve({
+          messages: [{ content: 'Test completed successfully' }],
+        })
+      ),
+    })
+  ),
 }));
 
 // Mock createAllTools
 vi.mock('../framework/tools/index.js', () => ({
-  createAllTools: vi.fn(() => [])
+  createAllTools: vi.fn(() => []),
 }));
 
 // Mock LangChain
 vi.mock('@langchain/core/messages', () => ({
-  HumanMessage: vi.fn()
+  HumanMessage: vi.fn(),
 }));
 
 // Mock Playwright at the top level before imports
@@ -33,35 +37,35 @@ vi.mock('playwright', () => {
     locator: vi.fn(() => ({
       toBeVisible: vi.fn(),
       textContent: vi.fn(),
-      isVisible: vi.fn()
+      isVisible: vi.fn(),
     })),
     waitForSelector: vi.fn(),
     screenshot: vi.fn(),
     close: vi.fn(),
-    setViewportSize: vi.fn()
+    setViewportSize: vi.fn(),
   };
 
   const mockContext = {
     newPage: vi.fn(() => Promise.resolve(mockPage)),
-    close: vi.fn()
+    close: vi.fn(),
   };
 
   const mockBrowser = {
     newContext: vi.fn(() => Promise.resolve(mockContext)),
     newPage: vi.fn(() => Promise.resolve(mockPage)),
-    close: vi.fn()
+    close: vi.fn(),
   };
 
   return {
     chromium: {
-      launch: vi.fn(() => Promise.resolve(mockBrowser))
+      launch: vi.fn(() => Promise.resolve(mockBrowser)),
     },
     firefox: {
-      launch: vi.fn(() => Promise.resolve(mockBrowser))
+      launch: vi.fn(() => Promise.resolve(mockBrowser)),
     },
     webkit: {
-      launch: vi.fn(() => Promise.resolve(mockBrowser))
-    }
+      launch: vi.fn(() => Promise.resolve(mockBrowser)),
+    },
   };
 });
 
@@ -77,12 +81,12 @@ describe('Browser Framework', () => {
         type: 'chromium',
         headless: true,
         viewport: { width: 1280, height: 720 },
-        timeout: 30000
+        timeout: 30000,
       },
       execution: {
         screenshots: true,
-        screenshotDir: './screenshots'
-      }
+        screenshotDir: './screenshots',
+      },
     };
 
     framework = new EnhancedBrowserTestFramework(config);
@@ -108,8 +112,8 @@ describe('Browser Framework', () => {
       const customConfig = {
         browser: {
           type: 'firefox',
-          headless: false
-        }
+          headless: false,
+        },
       };
 
       const customFramework = new EnhancedBrowserTestFramework(customConfig);
@@ -172,7 +176,7 @@ describe('Browser Framework', () => {
 
     it('should create execution context with page and utilities', () => {
       const testData = { username: 'test', password: 'pass' };
-      
+
       expect(framework.page).toBeDefined();
       expect(framework.tools).toBeDefined();
     });
@@ -213,36 +217,38 @@ describe('Browser Framework', () => {
   describe('Test Execution', () => {
     it('should execute a test with proper context', async () => {
       await framework.initialize();
-      
+
       const mockTest = {
         id: 'TEST-001',
         name: 'Sample Test',
-        task: 'Test task description'
+        task: 'Test task description',
       };
 
       const result = await framework.runSingleTest(mockTest);
-      
+
       expect(result).toBeDefined();
       expect(typeof result.success).toBe('boolean');
     });
 
     it('should handle test execution errors', async () => {
       await framework.initialize();
-      
+
       // Mock agent to throw an error for this specific test
       const { setupAgent } = await import('../../framework/core/agent-setup.js');
-      setupAgent.mockImplementationOnce(() => Promise.resolve({
-        invoke: vi.fn(() => Promise.reject(new Error('Simulated agent failure')))
-      }));
-      
+      setupAgent.mockImplementationOnce(() =>
+        Promise.resolve({
+          invoke: vi.fn(() => Promise.reject(new Error('Simulated agent failure'))),
+        })
+      );
+
       // Reinitialize framework with failing agent
       await framework.cleanup();
       await framework.initialize();
-      
+
       const mockTest = {
         id: 'TEST-001',
         name: 'Failing Test',
-        task: 'This will fail due to agent error'
+        task: 'This will fail due to agent error',
       };
 
       const result = await framework.runSingleTest(mockTest);
@@ -251,11 +257,11 @@ describe('Browser Framework', () => {
 
     it('should cleanup page after test execution', async () => {
       await framework.initialize();
-      
+
       const mockTest = {
         id: 'TEST-001',
         name: 'Sample Test',
-        task: 'Simple test task'
+        task: 'Simple test task',
       };
 
       await framework.runSingleTest(mockTest);
@@ -283,8 +289,8 @@ describe('Browser Framework', () => {
     it('should use default browser type for invalid type', () => {
       const invalidConfig = {
         browser: {
-          type: 'invalid-browser'
-        }
+          type: 'invalid-browser',
+        },
       };
 
       const framework = new EnhancedBrowserTestFramework(invalidConfig);
@@ -295,8 +301,8 @@ describe('Browser Framework', () => {
     it('should validate viewport dimensions', () => {
       const invalidConfig = {
         browser: {
-          viewport: { width: -100, height: -100 }
-        }
+          viewport: { width: -100, height: -100 },
+        },
       };
 
       const framework = new EnhancedBrowserTestFramework(invalidConfig);
@@ -307,8 +313,8 @@ describe('Browser Framework', () => {
     it('should validate timeout values', () => {
       const invalidConfig = {
         browser: {
-          timeout: -1000
-        }
+          timeout: -1000,
+        },
       };
 
       const framework = new EnhancedBrowserTestFramework(invalidConfig);

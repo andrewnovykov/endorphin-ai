@@ -3,12 +3,12 @@
  * Tests the CLI interface and command handling
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { execFile } from 'child_process';
-import { promisify } from 'util';
 import { promises as fs } from 'fs';
-import { join } from 'path';
 import { tmpdir } from 'os';
+import { join } from 'path';
+import { promisify } from 'util';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const execFileAsync = promisify(execFile);
 
@@ -23,11 +23,11 @@ describe('CLI Commands', () => {
     // Create temporary directory for testing
     tempDir = await fs.mkdtemp(join(tmpdir(), 'endorphin-cli-test-'));
     originalCwd = process.cwd();
-    
+
     // Create a basic project structure
     const testsDir = join(tempDir, 'tests');
     await fs.mkdir(testsDir, { recursive: true });
-    
+
     // Create a sample test file
     const sampleTest = `
 export default {
@@ -43,7 +43,7 @@ export default {
 };
 `;
     await fs.writeFile(join(testsDir, 'CLI-001-sample.js'), sampleTest);
-    
+
     // Create basic config file
     const configContent = `
 export default {
@@ -130,7 +130,7 @@ export default {
     it('should list available tests', async () => {
       // Change to temp directory for this test
       process.chdir(tempDir);
-      
+
       try {
         const { stdout } = await execFileAsync('node', [CLI_PATH, 'list']);
         expect(stdout).toContain('Available Tests');
@@ -144,7 +144,7 @@ export default {
   describe('Configuration Integration', () => {
     it('should load configuration from project directory', async () => {
       process.chdir(tempDir);
-      
+
       try {
         // Run with debug flag to see loaded config
         const { stdout, stderr } = await execFileAsync('node', [CLI_PATH, 'list', '--debug']);
@@ -158,15 +158,16 @@ export default {
 
     it('should accept CLI flag overrides', async () => {
       process.chdir(tempDir);
-      
+
       try {
         // Test with various CLI flags
         const { stdout, stderr } = await execFileAsync('node', [
-          CLI_PATH, 
-          'list', 
-          '--headless', 
-          '--timeout', '5000',
-          '--debug'
+          CLI_PATH,
+          'list',
+          '--headless',
+          '--timeout',
+          '5000',
+          '--debug',
         ]);
         // Just verify the command accepts the flags without errors
         expect(true).toBe(true);
@@ -219,13 +220,14 @@ export default {
   describe('Flag Parsing', () => {
     it('should parse viewport flag correctly', async () => {
       process.chdir(tempDir);
-      
+
       try {
         const { stdout, stderr } = await execFileAsync('node', [
-          CLI_PATH, 
-          'list', 
-          '--viewport', '1920x1080',
-          '--debug'
+          CLI_PATH,
+          'list',
+          '--viewport',
+          '1920x1080',
+          '--debug',
         ]);
         // Command should accept the viewport flag
         expect(true).toBe(true);
@@ -237,13 +239,14 @@ export default {
 
     it('should parse parallel flag correctly', async () => {
       process.chdir(tempDir);
-      
+
       try {
         const { stdout, stderr } = await execFileAsync('node', [
-          CLI_PATH, 
-          'list', 
-          '--parallel', '3',
-          '--debug'
+          CLI_PATH,
+          'list',
+          '--parallel',
+          '3',
+          '--debug',
         ]);
         // Command should accept the parallel flag
         expect(true).toBe(true);
@@ -255,13 +258,14 @@ export default {
 
     it('should parse model flag correctly', async () => {
       process.chdir(tempDir);
-      
+
       try {
         const { stdout, stderr } = await execFileAsync('node', [
-          CLI_PATH, 
-          'list', 
-          '--model', 'gpt-4o-mini',
-          '--debug'
+          CLI_PATH,
+          'list',
+          '--model',
+          'gpt-4o-mini',
+          '--debug',
         ]);
         // Command should accept the model flag
         expect(true).toBe(true);
@@ -273,13 +277,14 @@ export default {
 
     it('should parse environment flag correctly', async () => {
       process.chdir(tempDir);
-      
+
       try {
         const { stdout, stderr } = await execFileAsync('node', [
-          CLI_PATH, 
-          'list', 
-          '--env', 'staging',
-          '--debug'
+          CLI_PATH,
+          'list',
+          '--env',
+          'staging',
+          '--debug',
         ]);
         // Command should accept the env flag
         expect(true).toBe(true);

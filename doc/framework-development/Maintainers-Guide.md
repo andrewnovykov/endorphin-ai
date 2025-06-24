@@ -1,10 +1,11 @@
 # Maintainers Guide - Endorphin AI
 
-*Last Updated: June 22, 2025*
+_Last Updated: June 22, 2025_
 
 ## 🎯 Overview
 
-This guide is for developers who want to contribute to, maintain, or understand the Endorphin AI natural language browser testing framework codebase.
+This guide is for developers who want to contribute to, maintain, or understand
+the Endorphin AI natural language browser testing framework codebase.
 
 ## 📋 Table of Contents
 
@@ -73,7 +74,8 @@ endorphin-ai/
 
 ### Build Process
 
-The framework uses ES modules and doesn't require a traditional build step, but here are the preparation steps:
+The framework uses ES modules and doesn't require a traditional build step, but
+here are the preparation steps:
 
 ```bash
 # Install all dependencies
@@ -110,7 +112,8 @@ npm pack
 
 ### Test Structure
 
-We use **Vitest** for all framework testing with the following test organization:
+We use **Vitest** for all framework testing with the following test
+organization:
 
 ```
 dev-tests/
@@ -150,33 +153,40 @@ npm test && npx vite preview --outDir dev-tests/html
 ### Test Categories
 
 #### 1. Unit Tests
+
 - **Location**: Individual test files
 - **Purpose**: Test individual functions and classes
 - **Example**: `config-loader.test.js` tests configuration loading
 
 #### 2. Integration Tests
+
 - **Location**: `final-integration.test.js`, `installation.test.js`
 - **Purpose**: Test complete workflows
 - **Example**: Full CLI workflow from config to test execution
 
 #### 3. CLI Tests
+
 - **Location**: `cli-commands.test.js`
 - **Purpose**: Test command-line interface functionality
 - **Example**: Help command, version display, test listing
 
 #### 4. Browser Framework Tests
-- **Location**: `browser-framework.test.js`, `enhanced-browser-framework.test.js`
+
+- **Location**: `browser-framework.test.js`,
+  `enhanced-browser-framework.test.js`
 - **Purpose**: Test browser automation and AI integration
 - **Example**: Browser launch, page management, test execution
 
 ### Framework Test Results
 
 Current test status:
+
 - **Total Tests**: 98
 - **Passing**: 93
 - **Success Rate**: 94.9%
 
 Key test metrics to maintain:
+
 - All CLI commands must work
 - Configuration loading must be robust
 - Test discovery must handle various file formats
@@ -189,21 +199,25 @@ Key test metrics to maintain:
 ### Core Components
 
 #### 1. Configuration System (`framework/core/config-loader.js`)
+
 - Handles configuration loading and merging
 - Priority: CLI flags > User config > Environment > Defaults
 - Supports environment-specific configurations
 
 #### 2. Test Discovery (`framework/core/test-discovery.js`)
+
 - Discovers and loads test files from user projects
 - Validates test object structure
 - Supports ES module imports with cache busting
 
 #### 3. Browser Framework (`framework/core/browser-framework.js`)
+
 - Manages Playwright browser instances
 - Integrates with AI agent for natural language commands
 - Handles test session management and result storage
 
 #### 4. AI Tools (`framework/tools/`)
+
 - Browser automation tools for AI agent
 - Screenshot, navigation, interaction tools
 - Error handling and retry logic
@@ -221,10 +235,11 @@ CLI Command → Config Loading → Test Discovery → Browser Framework → AI E
 ### Adding New Features
 
 1. **Write Tests First** (TDD approach)
+
    ```bash
    # Create test file
    touch dev-tests/new-feature.test.js
-   
+
    # Write failing tests
    # Implement feature
    # Verify tests pass
@@ -262,6 +277,7 @@ git push origin feature/new-feature
 ### Code Quality Checks
 
 Before committing, ensure:
+
 - [ ] All tests pass: `npm test`
 - [ ] No console errors in CLI: `node bin/endorphin.js --help`
 - [ ] Examples still work: Test with `examples/` directory
@@ -270,6 +286,7 @@ Before committing, ensure:
 ### Writing Good Framework Tests
 
 #### 1. Test Structure
+
 ```javascript
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
@@ -290,10 +307,10 @@ describe('Feature Name', () => {
     it('should do specific thing', async () => {
       // Arrange
       const input = 'test input';
-      
+
       // Act
       const result = await testInstance.method(input);
-      
+
       // Assert
       expect(result).toBeDefined();
       expect(result.property).toBe('expected value');
@@ -308,14 +325,14 @@ describe('Feature Name', () => {
 // Mock Playwright
 vi.mock('playwright', () => ({
   chromium: {
-    launch: vi.fn(() => Promise.resolve(mockBrowser))
-  }
+    launch: vi.fn(() => Promise.resolve(mockBrowser)),
+  },
 }));
 
 // Mock file system
 vi.mock('fs', () => ({
   existsSync: vi.fn(() => true),
-  readFileSync: vi.fn(() => 'mock content')
+  readFileSync: vi.fn(() => 'mock content'),
 }));
 ```
 
@@ -325,8 +342,8 @@ vi.mock('fs', () => ({
 import { execSync } from 'child_process';
 
 it('should display help', () => {
-  const output = execSync('node bin/endorphin.js --help', { 
-    encoding: 'utf8' 
+  const output = execSync('node bin/endorphin.js --help', {
+    encoding: 'utf8',
   });
   expect(output).toContain('Usage:');
 });
@@ -345,6 +362,7 @@ it('should display help', () => {
 ### Debug Mode
 
 Enable debug output in CLI:
+
 ```bash
 node bin/endorphin.js list --debug
 ```
@@ -352,6 +370,7 @@ node bin/endorphin.js list --debug
 ### Common Debug Scenarios
 
 #### 1. Test Discovery Issues
+
 ```bash
 # Add debug logging to test-discovery.js
 console.log('🔍 Found exports:', Object.keys(module));
@@ -359,6 +378,7 @@ console.log('🔎 Checking export:', exportName, typeof exportValue);
 ```
 
 #### 2. Configuration Problems
+
 ```bash
 # Debug config loading
 node bin/endorphin.js list --debug
@@ -366,12 +386,14 @@ node bin/endorphin.js list --debug
 ```
 
 #### 3. Browser Framework Issues
+
 ```bash
 # Enable Playwright debug
 DEBUG=pw:api node bin/endorphin.js run test TEST-001
 ```
 
 #### 4. AI Agent Problems
+
 ```bash
 # Check OpenAI API key
 echo $OPENAI_API_KEY
@@ -397,6 +419,7 @@ node --inspect-brk node_modules/.bin/vitest dev-tests/specific.test.js
 ### Version Management
 
 1. **Update Version**
+
    ```bash
    npm version patch  # for bug fixes
    npm version minor  # for new features
@@ -404,6 +427,7 @@ node --inspect-brk node_modules/.bin/vitest dev-tests/specific.test.js
    ```
 
 2. **Run Full Test Suite**
+
    ```bash
    npm test
    npm run test:coverage
@@ -415,10 +439,11 @@ node --inspect-brk node_modules/.bin/vitest dev-tests/specific.test.js
    - Update examples if needed
 
 4. **Test Package Distribution**
+
    ```bash
    # Pack and test locally
    npm pack
-   
+
    # Test installation in temp directory
    mkdir temp-test && cd temp-test
    npm init -y
@@ -449,6 +474,7 @@ node --inspect-brk node_modules/.bin/vitest dev-tests/specific.test.js
 ### Common Development Issues
 
 #### 1. "Module not found" errors
+
 ```bash
 # Check Node.js version
 node --version  # Should be v18+
@@ -459,6 +485,7 @@ npm install
 ```
 
 #### 2. ES Module import issues
+
 ```bash
 # Verify package.json has type: "module"
 grep '"type"' package.json
@@ -468,6 +495,7 @@ find . -name "*.mjs" # Should be empty
 ```
 
 #### 3. Test failures after changes
+
 ```bash
 # Reset test environment
 rm -rf dev-tests/results
@@ -478,6 +506,7 @@ npm test
 ```
 
 #### 4. CLI not working
+
 ```bash
 # Check bin permissions
 ls -la bin/endorphin.js
@@ -492,6 +521,7 @@ npm unlink
 ```
 
 #### 5. Browser automation issues
+
 ```bash
 # Install browsers for Playwright
 npx playwright install
@@ -521,7 +551,8 @@ npx playwright --version
 
 ### Performance Considerations
 
-- **Test discovery** - Cache busting is needed for development but impacts performance
+- **Test discovery** - Cache busting is needed for development but impacts
+  performance
 - **Browser management** - Reuse browser instances when possible
 - **AI API calls** - Implement retry logic and rate limiting
 - **File operations** - Use async operations to avoid blocking
@@ -554,4 +585,5 @@ npx playwright --version
 
 ---
 
-*This guide focuses on framework development. For package testing from a user perspective, see `/doc/dev/test-pkg.md`.*
+_This guide focuses on framework development. For package testing from a user
+perspective, see `/doc/dev/test-pkg.md`._

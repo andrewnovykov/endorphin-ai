@@ -1,0 +1,479 @@
+/**
+ * Unified HTML Reporter Module
+ * Complete solution for generating interactive HTML test reports
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+interface ReportOptions {
+  filename?: string;
+  resultDirs?: string[];
+}
+
+interface ReportSummary {
+  totalTests: number;
+  passedTests: number;
+  failedTests: number;
+  successRate: number;
+  totalDuration: number;
+  timestamp: string;
+}
+
+/**
+ * HTML Reporter for Endorphin AI test results
+ * Generates interactive HTML reports from test-results data
+ */
+export class HtmlReporter {
+  private testResultsDir: string;
+  private reportsDir: string;
+  private templatesDir: string;
+
+  constructor(testResultsDir: string = './test-results') {
+    this.testResultsDir = path.resolve(testResultsDir);
+    this.reportsDir = path.join(this.testResultsDir, 'reports');
+    this.templatesDir = path.join(__dirname, '..', 'templates');
+
+    // Ensure reports directory exists - handle errors gracefully
+    try {
+      if (!fs.existsSync(this.reportsDir)) {
+        fs.mkdirSync(this.reportsDir, { recursive: true });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`Warning: Could not create reports directory: ${message}`);
+    }
+  }
+
+  /**
+   * Generate HTML report from all test results
+   * @param options - Report generation options
+   * @returns Path to generated report
+   */
+  async generateReport(options: ReportOptions = {}): Promise<string> {
+    try {
+      console.log('📊 Generating HTML test report...');
+
+      // Parse test results
+      const reportData = this.collectTestResults(options.resultDirs);
+
+      if (reportData.testResults.length === 0) {
+        throw new Error('No test results found. Run some tests first.');
+      }
+
+      // Generate HTML report directly
+      const filename = options.filename || `report-${new Date().toISOString().split('T')[0]}.html`;
+      const reportPath = await this.generateHtmlReport(reportData, filename);
+
+      console.log(`✅ Report generated: ${reportPath}`);
+      console.log(`📈 Report includes ${reportData.testResults.length} test results`);
+      console.log(`🎯 Success rate: ${reportData.summary.successRate.toFixed(1)}%`);
+
+      return reportPath;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('❌ Error generating report:', message);
+      throw error;
+    }
+  }
+
+  /**
+   * Open the latest report in the default browser
+   * @param reportPath - Optional specific report path to open
+   * @returns Promise<void>
+   */
+  async openReport(reportPath: string | null = null): Promise<void> {
+    try {
+      let targetPath = reportPath;
+
+      if (!targetPath) {
+        // Find the most recent report
+        const reportsFiles = fs
+          .readdirSync(this.reportsDir)
+          .filter((file) => file.endsWith('.html'))
+          .map((file) => ({
+            name: file,
+            path: path.join(this.reportsDir, file),
+            mtime: fs.statSync(path.join(this.reportsDir, file)).mtime,
+          }))
+          .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
+
+        if (reportsFiles.length === 0) {
+          throw new Error('No reports found. Generate a report first with: endorphin generate report');
+        }
+
+        targetPath = reportsFiles[0].path;
+      } else {
+        // If not an absolute path, treat as filename in reports directory
+        if (!path.isAbsolute(targetPath)) {
+          targetPath = path.join(this.reportsDir, targetPath);
+        }
+      }
+
+      if (!fs.existsSync(targetPath)) {
+        const filename = path.basename(targetPath);
+        throw new Error(`Report file not found: ${filename}`);
+      }
+
+      console.log(`🌐 Opening report: ${targetPath}`);
+
+      // Open in default browser based on platform
+      const { execSync } = await import('child_process');
+      const command =
+        process.platform === 'darwin'
+          ? `open "${targetPath}"`
+          : process.platform === 'win32'
+            ? `start "${targetPath}"`
+            : `xdg-open "${targetPath}"`;
+
+      execSync(command);
+      console.log('✅ Report opened in browser');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('❌ Error opening report:', message);
+      throw error;
+    }
+  }
+
+  /**
+   * Collect and parse test results from the results directory
+   * @param resultDirs - Optional specific result directories to include
+   * @returns Aggregated report data
+   */
+  private collectTestResults(resultDirs?: string[]): {
+    summary: ReportSummary;
+    testResults: Array<{
+      testId: string;
+      testName: string;
+      status: 'SUCCESS' | 'FAILED';
+      duration: number;
+      error?: string;
+      screenshots: string[];
+      sessionDir: string;
+    }>;
+  } {
+    const testResults: any[] = [];
+    const dirsToScan = resultDirs || this.getTestResultDirectories();
+
+    for (const dir of dirsToScan) {
+      const resultPath = path.join(this.testResultsDir, dir);
+      if (fs.existsSync(resultPath)) {
+        const result = this.parseTestResult(resultPath);
+        if (result) {
+          testResults.push(result);
+        }
+      }
+    }
+
+    // Calculate summary
+    const totalTests = testResults.length;
+    const passedTests = testResults.filter(r => r.status === 'SUCCESS').length;
+    const failedTests = totalTests - passedTests;
+    const successRate = totalTests > 0 ? (passedTests / totalTests) * 100 : 0;
+    const totalDuration = testResults.reduce((sum, r) => sum + r.duration, 0);
+
+    return {
+      summary: {
+        totalTests,
+        passedTests,
+        failedTests,
+        successRate,
+        totalDuration,
+        timestamp: new Date().toISOString(),
+      },
+      testResults,
+    };
+  }
+
+  /**
+   * Get all test result directories
+   * @returns Array of directory names
+   */
+  private getTestResultDirectories(): string[] {
+    if (!fs.existsSync(this.testResultsDir)) {
+      return [];
+    }
+
+    return fs.readdirSync(this.testResultsDir)
+      .filter(item => {
+        const itemPath = path.join(this.testResultsDir, item);
+        return fs.statSync(itemPath).isDirectory() && item !== 'reports';
+      });
+  }
+
+  /**
+   * Parse a single test result directory
+   * @param resultPath - Path to the test result directory
+   * @returns Parsed test result or null
+   */
+  private parseTestResult(resultPath: string): any | null {
+    try {
+      // Look for session.json or similar metadata file
+      const sessionFile = path.join(resultPath, 'session.json');
+      if (fs.existsSync(sessionFile)) {
+        const sessionData = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
+        
+        // Get screenshots
+        const screenshotsDir = path.join(resultPath, 'screenshots');
+        const screenshots = fs.existsSync(screenshotsDir) 
+          ? fs.readdirSync(screenshotsDir)
+              .filter(f => f.endsWith('.png') || f.endsWith('.jpg'))
+              .map(f => path.join(screenshotsDir, f))
+          : [];
+
+        return {
+          testId: sessionData.testId || path.basename(resultPath),
+          testName: sessionData.testName || sessionData.sessionName,
+          status: sessionData.status || 'UNKNOWN',
+          duration: sessionData.duration || 0,
+          error: sessionData.error,
+          screenshots,
+          sessionDir: resultPath,
+        };
+      }
+    } catch (error) {
+      console.warn(`Warning: Could not parse test result from ${resultPath}`);
+    }
+    return null;
+  }
+
+  /**
+   * Generate HTML report from report data
+   * @param reportData - Aggregated report data
+   * @param filename - Output filename
+   * @returns Path to generated report
+   */
+  private async generateHtmlReport(reportData: any, filename: string): Promise<string> {
+    try {
+      // Load HTML template
+      const templatePath = path.join(this.templatesDir, 'reporter', 'report-template.html');
+      let htmlTemplate = fs.readFileSync(templatePath, 'utf8');
+
+      // Process template with report data
+      htmlTemplate = this.processTemplate(htmlTemplate, reportData);
+
+      // Write the processed HTML
+      const outputPath = path.join(this.reportsDir, filename);
+      fs.writeFileSync(outputPath, htmlTemplate, 'utf8');
+
+      // Copy static assets (CSS, JS)
+      await this.copyStaticAssets();
+
+      // Copy screenshots for included test results
+      await this.copyScreenshots(reportData);
+
+      return outputPath;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to generate HTML report: ${message}`);
+    }
+  }
+
+  /**
+   * Process the HTML template with report data
+   */
+  private processTemplate(template: string, data: any): string {
+    let processedTemplate = template;
+
+    // Replace summary data
+    processedTemplate = processedTemplate.replace(/{{TOTAL_TESTS}}/g, data.summary.totalTests.toString());
+    processedTemplate = processedTemplate.replace(/{{PASSED_TESTS}}/g, data.summary.passedTests.toString());
+    processedTemplate = processedTemplate.replace(/{{FAILED_TESTS}}/g, data.summary.failedTests.toString());
+    processedTemplate = processedTemplate.replace(/{{SUCCESS_RATE}}/g, data.summary.successRate.toFixed(1));
+    processedTemplate = processedTemplate.replace(/{{TOTAL_DURATION}}/g, this.formatDuration(data.summary.totalDuration));
+    processedTemplate = processedTemplate.replace(/{{TIMESTAMP}}/g, data.summary.timestamp);
+
+    // Generate test results HTML
+    const testResultsHtml = this.generateTestResultsHtml(data.testResults);
+    processedTemplate = processedTemplate.replace(/{{TEST_RESULTS}}/g, testResultsHtml);
+
+    // Generate JSON data for JavaScript
+    const jsonData = JSON.stringify(data, null, 2);
+    processedTemplate = processedTemplate.replace(/{{REPORT_DATA}}/g, jsonData);
+
+    return processedTemplate;
+  }
+
+  /**
+   * Generate HTML for test results section
+   */
+  private generateTestResultsHtml(testResults: any[]): string {
+    return testResults.map(result => {
+      const statusClass = result.status === 'SUCCESS' ? 'success' : 'failure';
+      const statusIcon = result.status === 'SUCCESS' ? '✅' : '❌';
+      const errorHtml = result.error ? `<div class="error-message">${this.escapeHtml(result.error)}</div>` : '';
+      
+      const screenshotsHtml = result.screenshots.map((screenshot: string) => 
+        `<img src="${screenshot}" alt="Screenshot" class="screenshot-thumb" onclick="openScreenshot('${screenshot}')">`
+      ).join('');
+
+      return `
+        <div class="test-result ${statusClass}">
+          <div class="test-header">
+            <span class="status-icon">${statusIcon}</span>
+            <span class="test-name">${this.escapeHtml(result.testName)}</span>
+            <span class="test-id">${this.escapeHtml(result.testId)}</span>
+            <span class="duration">${this.formatDuration(result.duration)}</span>
+          </div>
+          ${errorHtml}
+          <div class="screenshots">
+            ${screenshotsHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  /**
+   * Copy static assets (CSS, JS) to output directory
+   */
+  private async copyStaticAssets(): Promise<void> {
+    const assetsDir = path.join(this.reportsDir, 'assets');
+    if (!fs.existsSync(assetsDir)) {
+      fs.mkdirSync(assetsDir, { recursive: true });
+    }
+
+    // Copy CSS
+    const cssSource = path.join(this.templatesDir, 'reporter', 'styles.css');
+    const cssTarget = path.join(assetsDir, 'styles.css');
+    if (fs.existsSync(cssSource)) {
+      fs.copyFileSync(cssSource, cssTarget);
+    }
+
+    // Copy JS
+    const jsSource = path.join(this.templatesDir, 'reporter', 'scripts.js');
+    const jsTarget = path.join(assetsDir, 'scripts.js');
+    if (fs.existsSync(jsSource)) {
+      fs.copyFileSync(jsSource, jsTarget);
+    }
+  }
+
+  /**
+   * Copy screenshots for test results
+   */
+  private async copyScreenshots(reportData: any): Promise<void> {
+    const screenshotsDir = path.join(this.reportsDir, 'screenshots');
+    if (!fs.existsSync(screenshotsDir)) {
+      fs.mkdirSync(screenshotsDir, { recursive: true });
+    }
+
+    for (const result of reportData.testResults) {
+      for (const screenshot of result.screenshots) {
+        if (fs.existsSync(screenshot)) {
+          const filename = path.basename(screenshot);
+          const targetPath = path.join(screenshotsDir, filename);
+          fs.copyFileSync(screenshot, targetPath);
+        }
+      }
+    }
+  }
+
+  /**
+   * Format duration in milliseconds to human-readable string
+   */
+  private formatDuration(duration: number): string {
+    if (duration < 1000) {
+      return `${duration}ms`;
+    } else if (duration < 60000) {
+      return `${(duration / 1000).toFixed(1)}s`;
+    } else {
+      const minutes = Math.floor(duration / 60000);
+      const seconds = Math.floor((duration % 60000) / 1000);
+      return `${minutes}m ${seconds}s`;
+    }
+  }
+
+  /**
+   * Escape HTML characters to prevent XSS
+   */
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /**
+   * Clean up old test results
+   * @param keepPerTest - Number of results to keep per test (default: 10)
+   * @returns Cleanup summary
+   */
+  async cleanupResults(keepPerTest: number = 10): Promise<{
+    removedCount: number;
+    removedDirs: string[];
+    totalTestIds: number;
+    keptPerTest: number;
+  }> {
+    try {
+      console.log('🧹 Cleaning up old test results...');
+      
+      const { TestResultsParser } = await import('../results/test-results-parser.js');
+      const parser = new TestResultsParser(this.testResultsDir);
+      const cleanup = parser.cleanupOldResults(keepPerTest);
+      
+      if (cleanup.removedCount > 0) {
+        console.log(`✅ Cleaned up ${cleanup.removedCount} old test result directories`);
+        console.log(`📁 Keeping ${keepPerTest} most recent results per test`);
+      } else {
+        console.log('✨ No cleanup needed - all results are recent');
+      }
+      
+      return cleanup;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn('⚠️  Warning: Could not cleanup results:', message);
+      return { removedCount: 0, removedDirs: [], totalTestIds: 0, keptPerTest: keepPerTest };
+    }
+  }
+
+  /**
+   * Clean up old report files
+   * @param maxAge - Maximum age in days (default: 30)
+   * @returns Cleanup summary
+   */
+  async cleanupOldReports(maxAge: number = 30): Promise<{
+    removedCount: number;
+    removedFiles: string[];
+  }> {
+    try {
+      console.log('🧹 Cleaning up old report files...');
+      
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - maxAge);
+      
+      const reportFiles = fs.readdirSync(this.reportsDir).filter(file => 
+        file.endsWith('.html') && fs.statSync(path.join(this.reportsDir, file)).isFile()
+      );
+      
+      const removedFiles: string[] = [];
+      
+      for (const file of reportFiles) {
+        const filePath = path.join(this.reportsDir, file);
+        const stats = fs.statSync(filePath);
+        
+        if (stats.mtime < cutoffDate) {
+          fs.unlinkSync(filePath);
+          removedFiles.push(file);
+        }
+      }
+      
+      if (removedFiles.length > 0) {
+        console.log(`✅ Cleaned up ${removedFiles.length} old report files`);
+      } else {
+        console.log('✨ No old report files to clean up');
+      }
+      
+      return { removedCount: removedFiles.length, removedFiles };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn('⚠️  Warning: Could not cleanup old reports:', message);
+      return { removedCount: 0, removedFiles: [] };
+    }
+  }
+}

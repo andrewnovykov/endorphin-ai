@@ -1,0 +1,80 @@
+/**
+ * Test configuration and test-related types
+ */
+
+import type { ToolCall } from './agent.js';
+import type { Screenshot } from './browser.js';
+
+export interface TestConfig {
+  id: string;
+  name: string;
+  description: string;
+  priority: 'High' | 'Medium' | 'Low';
+  tags: string[];
+  site: string;
+  testData?: Record<string, any>;
+  task: string;
+}
+
+export interface TestSession {
+  sessionId: string;
+  sessionName: string;
+  sessionDir: string;
+  screenshotsDir: string;
+  testId: string;
+  testName: string;
+  startTime: string;
+  endTime?: string;
+  status: 'SUCCESS' | 'FAILED' | 'RUNNING';
+  stepCounter: number;
+  screenshotCounter: number;
+  steps: TestStep[];
+  toolCalls: ToolCall[];
+  finalResult?: string;
+  duration?: number;
+  error?: string;
+}
+
+export interface TestStep {
+  stepNumber: number;
+  timestamp: string;
+  description: string;
+  toolName?: string | null;
+  toolArgs?: any;
+  result?: string | null;
+  status: 'SUCCESS' | 'FAILED';
+  screenshots: Screenshot[];
+}
+
+export interface TestResult {
+  testId: string;
+  name: string;
+  status: 'passed' | 'failed' | 'skipped';
+  duration: number;
+  error?: string;
+  screenshots: string[];
+  logs: string[];
+  timestamp: string;
+}
+
+export interface TaskResult {
+  testName: string;
+  task: string;
+  timestamp: string;
+  status: 'SUCCESS' | 'FAILED';
+  result?: string;
+  error?: string;
+  duration: number;
+  sessionDir: string;
+}
+
+export interface DiscoveryResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+  test?: TestConfig;
+  tests?: TestConfig[];
+  passed?: number;
+  failed?: number;
+  total?: number;
+}

@@ -3,11 +3,13 @@
 ## Quick Start
 
 ### 1. Installation
+
 ```bash
 npm install -g endorphin-ai
 ```
 
 ### 2. Initialize Your Project
+
 ```bash
 mkdir my-tests
 cd my-tests
@@ -15,7 +17,9 @@ npm init -y
 ```
 
 ### 3. Configure ES Modules
+
 Add to your `package.json`:
+
 ```json
 {
   "type": "module"
@@ -23,57 +27,64 @@ Add to your `package.json`:
 ```
 
 ### 4. Create Configuration
+
 Create `endorphin.config.js`:
+
 ```javascript
 export default {
   browser: {
-    headless: false,  // Make sure this is false to see browser
+    headless: false, // Make sure this is false to see browser
     viewport: { width: 1280, height: 720 },
-    timeout: 30000
+    timeout: 30000,
   },
-  
+
   // Results configuration
   results: {
-    directory: "./test-results",
+    directory: './test-results',
     keepHistory: 10,
-    format: ["json", "html"],
+    format: ['json', 'html'],
     screenshots: true,
-    recordVideo: false
+    recordVideo: false,
   },
-  
+
   ai: {
-    model: "gpt-4o",
+    model: 'gpt-4o',
     maxRetries: 3,
-    temperature: 0.1
-  }
+    temperature: 0.1,
+  },
 };
 ```
 
 ### 5. Set Environment Variables
+
 ```bash
 export OPENAI_API_KEY="your-api-key-here"
 ```
 
 ### 6. Create Test Directory
+
 ```bash
 mkdir tests
 ```
 
 ### 7. Write Your First Test
+
 Create `tests/my-first-test.js`:
+
 ```javascript
 export const MY_FIRST_TEST = {
-  id: "TEST-001",
-  name: "My First Test",
-  description: "A simple test to verify the page loads",
-  priority: "High",
-  tags: ["smoke", "basic"],
-  site: "https://example.com",
-  task: "Navigate to https://example.com and verify that the page title contains 'Example'"
+  id: 'TEST-001',
+  name: 'My First Test',
+  description: 'A simple test to verify the page loads',
+  priority: 'High',
+  tags: ['smoke', 'basic'],
+  site: 'https://example.com',
+  task: "Navigate to https://example.com and verify that the page title contains 'Example'",
 };
 ```
 
 ### 8. Run Your Tests
+
 ```bash
 # List all tests
 endorphin list
@@ -94,30 +105,35 @@ endorphin run test all
 ## Test Writing Guidelines
 
 ### Test Object Structure
+
 Each test must export a constant with this structure:
+
 ```javascript
 export const TEST_ID = {
-  id: "TEST-001",              // Unique identifier
-  name: "Test Name",           // Human-readable name
-  description: "What it does", // Brief description
-  priority: "High|Medium|Low", // Test priority
-  tags: ["tag1", "tag2"],      // Array of tags for filtering
-  site: "https://...",         // Target website
-  testData: {                  // Optional test data
-    username: "user@example.com",
-    password: "password123"
+  id: 'TEST-001', // Unique identifier
+  name: 'Test Name', // Human-readable name
+  description: 'What it does', // Brief description
+  priority: 'High|Medium|Low', // Test priority
+  tags: ['tag1', 'tag2'], // Array of tags for filtering
+  site: 'https://...', // Target website
+  testData: {
+    // Optional test data
+    username: 'user@example.com',
+    password: 'password123',
   },
-  task: "Natural language instructions for the AI agent"
+  task: 'Natural language instructions for the AI agent',
 };
 ```
 
 ### Writing Effective Tasks
+
 - Use clear, specific instructions
 - Break complex flows into steps
 - Include verification steps
 - Reference test data when needed
 
 Example:
+
 ```javascript
 task: `
 1. Navigate to the login page at ${site}/login
@@ -126,12 +142,13 @@ task: `
 4. Click the login button
 5. Verify that the page redirects to the dashboard
 6. Verify that the user's name appears in the top navigation
-`
+`;
 ```
 
 ## Configuration Options
 
 ### Browser Settings
+
 ```javascript
 browser: {
   type: 'chromium',           // chromium, firefox, webkit
@@ -145,6 +162,7 @@ browser: {
 ```
 
 ### AI Settings
+
 ```javascript
 ai: {
   model: 'gpt-4o-mini',       // OpenAI model
@@ -154,6 +172,7 @@ ai: {
 ```
 
 ### Execution Settings
+
 ```javascript
 execution: {
   timeout: 30000,             // Test timeout in ms
@@ -166,6 +185,7 @@ execution: {
 ## CLI Commands
 
 ### Basic Commands
+
 ```bash
 endorphin --help              # Show help
 endorphin --version           # Show version
@@ -173,6 +193,7 @@ endorphin list                # List all tests
 ```
 
 ### Running Tests
+
 ```bash
 endorphin run test TEST-001           # Run specific test
 endorphin run test --tag smoke        # Run by tag
@@ -181,6 +202,7 @@ endorphin run test all                # Run all tests
 ```
 
 ### CLI Flags
+
 ```bash
 --headless true/false         # Override headless mode
 --viewport 1920x1080          # Override viewport size
@@ -192,6 +214,7 @@ endorphin run test all                # Run all tests
 ## Directory Structure
 
 Your project should look like this:
+
 ```
 my-test-project/
 ├── package.json              # Include "type": "module"
@@ -210,7 +233,9 @@ my-test-project/
 ## Troubleshooting
 
 ### ES Module Issues
+
 Ensure your `package.json` includes:
+
 ```json
 {
   "type": "module"
@@ -218,17 +243,21 @@ Ensure your `package.json` includes:
 ```
 
 ### API Key Issues
+
 Set your OpenAI API key:
+
 ```bash
 export OPENAI_API_KEY="your-api-key"
 ```
 
 ### Test Not Found
+
 - Check that test files are in the `testsDirectory`
 - Verify test objects are exported correctly
 - Ensure test IDs are unique
 
 ### Browser Issues
+
 - Install required browsers: `npx playwright install`
 - Check browser type in configuration
 - Verify system permissions for browser automation

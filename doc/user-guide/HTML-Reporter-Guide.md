@@ -1,10 +1,13 @@
 # HTML Reporter User Guide
 
-The Endorphin AI HTML Reporter provides comprehensive, interactive test reports that help you analyze test execution results, identify patterns, and debug issues effectively.
+The Endorphin AI HTML Reporter provides comprehensive, interactive test reports
+that help you analyze test execution results, identify patterns, and debug
+issues effectively.
 
 ## Overview
 
-The HTML Reporter generates beautiful, responsive web-based reports from your test execution data. These reports include:
+The HTML Reporter generates beautiful, responsive web-based reports from your
+test execution data. These reports include:
 
 - **Interactive dashboards** with test statistics and success rates
 - **Detailed test execution timelines** with step-by-step breakdowns
@@ -33,6 +36,7 @@ endorphin open report report-2025-06-22.html
 ### Report Types
 
 #### Full Report
+
 - Complete test statistics and trends
 - Detailed execution timelines for each test
 - Screenshot galleries with zoom functionality
@@ -40,6 +44,7 @@ endorphin open report report-2025-06-22.html
 - Export and print capabilities
 
 #### Summary Report
+
 - Lightweight overview of recent test results
 - Quick performance metrics
 - Ideal for CI/CD dashboards
@@ -59,18 +64,21 @@ The main dashboard provides:
 ### 🔍 Search and Filtering
 
 #### Search Functionality
+
 - **Real-time search**: Type in the search box to filter tests instantly
 - **Search by Test ID or Name**: Find specific tests quickly
 - **Highlighted results**: Matching tests are visually highlighted
 - **Auto-scroll**: Automatically scrolls to first matching result
 
 #### Status Filtering
+
 - **All Tests**: Show all test results (default)
 - **Passed Only**: Filter to show only successful tests
 - **Failed Only**: Filter to show only failed tests
 - **Combined Filtering**: Use search and status filters together
 
 #### Smart Results Display
+
 ```
 Showing 5 of 25 tests matching "login" with status "failed"
 ```
@@ -80,12 +88,14 @@ Showing 5 of 25 tests matching "login" with status "failed"
 Click on any test result to view:
 
 #### Test Information
+
 - Test ID, name, and execution status
 - Start/end times and duration
 - Total number of steps executed
 - Screenshot count
 
 #### Step-by-Step Timeline
+
 - Chronological execution flow
 - Step descriptions and results
 - Tool calls and arguments
@@ -93,6 +103,7 @@ Click on any test result to view:
 - Execution timestamps
 
 #### Screenshot Gallery
+
 - Visual record of test execution
 - Click to zoom and examine details
 - Organized by execution sequence
@@ -100,24 +111,26 @@ Click on any test result to view:
 
 ### ⌨️ Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl/Cmd + F` | Focus search box |
-| `Escape` | Clear search |
-| `Ctrl/Cmd + 1` | Show all tests |
+| Shortcut       | Action                 |
+| -------------- | ---------------------- |
+| `Ctrl/Cmd + F` | Focus search box       |
+| `Escape`       | Clear search           |
+| `Ctrl/Cmd + 1` | Show all tests         |
 | `Ctrl/Cmd + 2` | Show passed tests only |
 | `Ctrl/Cmd + 3` | Show failed tests only |
-| `Ctrl/Cmd + E` | Export to JSON |
-| `Ctrl/Cmd + P` | Print report |
+| `Ctrl/Cmd + E` | Export to JSON         |
+| `Ctrl/Cmd + P` | Print report           |
 
 ### 📤 Export and Sharing
 
 #### Export to JSON
+
 - Complete test data in structured format
 - Suitable for further analysis
 - Includes all execution details and metadata
 
 #### Print Reports
+
 - Print-optimized layout
 - Removes interactive elements
 - Perfect for documentation and archiving
@@ -143,6 +156,7 @@ endorphin cleanup reports 7
 ### Report Organization
 
 Reports are stored in:
+
 ```
 test-results/
 ├── reports/
@@ -192,6 +206,7 @@ cp test-results/reports/report-*.html ./artifacts/
 ### Common Issues
 
 #### No Reports Generated
+
 ```bash
 # Check if test results exist
 ls test-results/
@@ -201,6 +216,7 @@ endorphin generate report
 ```
 
 #### Reports Not Opening
+
 ```bash
 # Check report files exist
 ls test-results/reports/
@@ -210,11 +226,13 @@ endorphin open report report-2025-06-22.html
 ```
 
 #### Search/Filter Not Working
+
 - Ensure JavaScript is enabled in your browser
 - Clear browser cache and reload
 - Check browser console for errors
 
 #### Missing Screenshots
+
 - Verify screenshot directory exists: `test-results/reports/screenshots/`
 - Check if screenshots were captured during test execution
 - Ensure proper file permissions
@@ -233,6 +251,7 @@ For large test suites:
 ### Custom Styling
 
 Reports use Bootstrap 5 with custom CSS. You can modify:
+
 - `framework/templates/styles.css` for global styling
 - Add custom CSS classes for specific elements
 - Modify color schemes and branding
@@ -240,6 +259,7 @@ Reports use Bootstrap 5 with custom CSS. You can modify:
 ### Data Integration
 
 Export JSON format includes:
+
 ```json
 {
   "session": {
@@ -259,6 +279,7 @@ Export JSON format includes:
 ```
 
 Use this data for:
+
 - Custom dashboards
 - Trend analysis
 - Integration with other tools
@@ -267,6 +288,7 @@ Use this data for:
 ## Support
 
 For issues and questions:
+
 - Check the [main README](../../README.md) for general setup
 - Review [framework documentation](../framework-development/)
 - Create issues on the project repository
@@ -274,4 +296,4 @@ For issues and questions:
 
 ---
 
-*Happy testing with Endorphin AI! 🧪✨*
+_Happy testing with Endorphin AI! 🧪✨_

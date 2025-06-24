@@ -3,13 +3,13 @@
  * Tests the HTML report generation functionality
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
-import path from 'path';
 import { tmpdir } from 'os';
+import path from 'path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { ReportGenerator } from '../../framework/core/report-generator.js';
 import { HTMLReporter } from '../../framework/core/reporter.js';
 import { TestResultsParser } from '../../framework/core/test-results-parser.js';
-import { ReportGenerator } from '../../framework/core/report-generator.js';
 
 describe('HTML Reporter', () => {
   let tempDir;
@@ -21,7 +21,7 @@ describe('HTML Reporter', () => {
     tempDir = await fs.mkdtemp(path.join(tmpdir(), 'endorphin-reporter-test-'));
     testResultsDir = path.join(tempDir, 'test-results');
     await fs.mkdir(testResultsDir, { recursive: true });
-    
+
     reporter = new HTMLReporter(testResultsDir);
   });
 
@@ -79,7 +79,7 @@ describe('HTML Reporter', () => {
     it('should generate empty report data when no results exist', () => {
       const parser = new TestResultsParser(testResultsDir);
       const reportData = parser.generateReportData();
-      
+
       expect(reportData.totalTests).toBe(0);
       expect(reportData.totalRuns).toBe(0);
       expect(reportData.successfulRuns).toBe(0);
@@ -93,59 +93,62 @@ describe('HTML Reporter', () => {
       const resultDir = 'TEST-001_2025-06-22T20-32-05-692Z';
       const resultPath = path.join(testResultsDir, resultDir);
       await fs.mkdir(resultPath, { recursive: true });
-      
+
       const summary = {
-        testName: "Sample Test",
-        sessionId: "TEST-001",
-        status: "SUCCESS",
-        startTime: "2025-06-22T20:32:05.692Z",
-        endTime: "2025-06-22T20:32:05.693Z",
+        testName: 'Sample Test',
+        sessionId: 'TEST-001',
+        status: 'SUCCESS',
+        startTime: '2025-06-22T20:32:05.692Z',
+        endTime: '2025-06-22T20:32:05.693Z',
         duration: 1,
         totalSteps: 2,
         successfulSteps: 2,
         failedSteps: 0,
         totalScreenshots: 0,
-        finalResult: "Test completed successfully"
+        finalResult: 'Test completed successfully',
       };
-      
+
       const session = {
-        sessionId: "TEST-001",
+        sessionId: 'TEST-001',
         sessionName: resultDir,
-        testName: "Sample Test",
-        testId: "TEST-001",
-        startTime: "2025-06-22T20:32:05.692Z",
-        endTime: "2025-06-22T20:32:05.693Z",
+        testName: 'Sample Test',
+        testId: 'TEST-001',
+        startTime: '2025-06-22T20:32:05.692Z',
+        endTime: '2025-06-22T20:32:05.693Z',
         sessionDir: resultPath,
         screenshotsDir: path.join(resultPath, 'screenshots'),
         steps: [
           {
             stepNumber: 1,
-            timestamp: "2025-06-22T20:32:05.692Z",
-            description: "Starting test execution",
-            status: "SUCCESS",
-            result: "Test started",
-            screenshots: []
-          }
+            timestamp: '2025-06-22T20:32:05.692Z',
+            description: 'Starting test execution',
+            status: 'SUCCESS',
+            result: 'Test started',
+            screenshots: [],
+          },
         ],
-        status: "SUCCESS",
-        finalResult: "Test completed successfully",
-        duration: 1
+        status: 'SUCCESS',
+        finalResult: 'Test completed successfully',
+        duration: 1,
       };
-      
+
       await fs.writeFile(path.join(resultPath, 'summary.json'), JSON.stringify(summary, null, 2));
-      await fs.writeFile(path.join(resultPath, 'test-session.json'), JSON.stringify(session, null, 2));
+      await fs.writeFile(
+        path.join(resultPath, 'test-session.json'),
+        JSON.stringify(session, null, 2)
+      );
       await fs.mkdir(path.join(resultPath, 'screenshots'), { recursive: true });
-      
+
       const parser = new TestResultsParser(testResultsDir);
       const results = parser.getAllTestResults();
       expect(results).toHaveLength(1);
       expect(results[0]).toBe(resultDir);
-      
+
       const parsed = parser.parseTestResult(resultDir);
       expect(parsed).toBeDefined();
-      expect(parsed.summary.testName).toBe("Sample Test");
-      expect(parsed.session.testId).toBe("TEST-001");
-      
+      expect(parsed.summary.testName).toBe('Sample Test');
+      expect(parsed.session.testId).toBe('TEST-001');
+
       const reportData = parser.generateReportData();
       expect(reportData.totalTests).toBe(1);
       expect(reportData.totalRuns).toBe(1);
@@ -158,13 +161,13 @@ describe('HTML Reporter', () => {
     it('should initialize with templates and output directories', async () => {
       const templatesDir = path.join(tempDir, 'templates');
       const outputDir = path.join(tempDir, 'output');
-      
+
       await fs.mkdir(templatesDir, { recursive: true });
-      
+
       const generator = new ReportGenerator(templatesDir, outputDir);
       expect(generator.templatesDir).toBe(templatesDir);
       expect(generator.outputDir).toBe(outputDir);
-      
+
       // Should create output directory
       const stats = await fs.stat(outputDir);
       expect(stats.isDirectory()).toBe(true);
@@ -174,8 +177,10 @@ describe('HTML Reporter', () => {
       const templatesDir = path.join(tempDir, 'templates');
       const outputDir = path.join(tempDir, 'output');
       const generator = new ReportGenerator(templatesDir, outputDir);
-      
-      expect(generator.escapeHtml('<script>alert("xss")</script>')).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+
+      expect(generator.escapeHtml('<script>alert("xss")</script>')).toBe(
+        '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
+      );
       expect(generator.escapeHtml('Normal text')).toBe('Normal text');
       expect(generator.escapeHtml('')).toBe('');
     });
@@ -184,7 +189,7 @@ describe('HTML Reporter', () => {
       const templatesDir = path.join(tempDir, 'templates');
       const outputDir = path.join(tempDir, 'output');
       const generator = new ReportGenerator(templatesDir, outputDir);
-      
+
       const testStats = [
         {
           testId: 'TEST-001',
@@ -193,10 +198,10 @@ describe('HTML Reporter', () => {
           successfulRuns: 4,
           failedRuns: 1,
           lastRun: '2025-06-22T20:32:05.692Z',
-          averageDuration: 1500
-        }
+          averageDuration: 1500,
+        },
       ];
-      
+
       const html = generator.generateTestStatsTable(testStats);
       expect(html).toContain('TEST-001');
       expect(html).toContain('Sample Test');
@@ -209,7 +214,7 @@ describe('HTML Reporter', () => {
       const templatesDir = path.join(tempDir, 'templates');
       const outputDir = path.join(tempDir, 'output');
       const generator = new ReportGenerator(templatesDir, outputDir);
-      
+
       const results = [
         {
           session: {
@@ -218,11 +223,11 @@ describe('HTML Reporter', () => {
             status: 'SUCCESS',
             startTime: '2025-06-22T20:32:05.692Z',
             duration: 1500,
-            steps: [{ stepNumber: 1 }]
-          }
-        }
+            steps: [{ stepNumber: 1 }],
+          },
+        },
       ];
-      
+
       const html = generator.generateRecentResultsTable(results);
       expect(html).toContain('TEST-001');
       expect(html).toContain('Sample Test');
@@ -263,7 +268,7 @@ describe('HTML Reporter', () => {
       const invalidReporter = new HTMLReporter('/nonexistent/path');
       const stats = invalidReporter.getReportStats();
       expect(stats.hasResults).toBe(false);
-      
+
       // Should not throw when creating the instance
       expect(invalidReporter.testResultsDir).toBe('/nonexistent/path');
     });
@@ -279,11 +284,11 @@ describe('HTML Reporter', () => {
       const resultDir = 'TEST-001_2025-06-22T20-32-05-692Z';
       const resultPath = path.join(testResultsDir, resultDir);
       await fs.mkdir(resultPath, { recursive: true });
-      
+
       // Write invalid JSON
       await fs.writeFile(path.join(resultPath, 'summary.json'), '{ invalid json }');
       await fs.writeFile(path.join(resultPath, 'test-session.json'), '{ more invalid json }');
-      
+
       const parser = new TestResultsParser(testResultsDir);
       const result = parser.parseTestResult(resultDir);
       expect(result).toBeNull();

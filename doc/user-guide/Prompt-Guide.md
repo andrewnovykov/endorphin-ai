@@ -2,28 +2,33 @@
 
 ## Overview
 
-This guide helps you write effective natural language instructions for Endorphin AI's test framework. The AI agent uses specific tools to automate browser interactions, and using the right language patterns helps it select the correct tools and parameters.
+This guide helps you write effective natural language instructions for Endorphin
+AI's test framework. The AI agent uses specific tools to automate browser
+interactions, and using the right language patterns helps it select the correct
+tools and parameters.
 
 ## 🔧 Available Tools
 
 The framework provides these main tool categories:
 
-| Tool Category | Purpose | Key Tools |
-|---------------|---------|-----------|
-| **Navigation** | Page navigation | `navigate` |
+| Tool Category        | Purpose                 | Key Tools                                |
+| -------------------- | ----------------------- | ---------------------------------------- |
+| **Navigation**       | Page navigation         | `navigate`                               |
 | **Content Analysis** | Page content inspection | `getPageContent`, `getSimplePageContent` |
-| **Interaction** | User interactions | `click`, `fill`, `clearField` |
-| **Verification** | Element validation | `verifyElement`, `getElementInfo` |
-| **Utilities** | Support actions | `wait`, `screenshot` |
+| **Interaction**      | User interactions       | `click`, `fill`, `clearField`            |
+| **Verification**     | Element validation      | `verifyElement`, `getElementInfo`        |
+| **Utilities**        | Support actions         | `wait`, `screenshot`                     |
 
 ---
 
 ## 🌍 Navigation Prompting
 
 ### Tool: `navigate`
+
 **Purpose**: Navigate to URLs with enhanced loading options
 
 ### Effective Prompts:
+
 ```
 ✅ GOOD:
 - "Navigate to https://example.com"
@@ -38,6 +43,7 @@ The framework provides these main tool categories:
 ```
 
 ### Advanced Navigation:
+
 ```
 - "Navigate to https://example.com and wait for complete page load"
 - "Go to https://spa-app.com and wait for DOM content to load"
@@ -49,9 +55,11 @@ The framework provides these main tool categories:
 ## 🔘 Click Actions
 
 ### Tool: `click`
+
 **Purpose**: Click buttons, links, and interactive elements
 
 ### Button/Link Clicking:
+
 ```
 ✅ GOOD PATTERNS:
 - "Click on [button text]" → Uses text strategy
@@ -69,6 +77,7 @@ The framework provides these main tool categories:
 ```
 
 ### CSS Selector Clicking:
+
 ```
 ✅ FOR COMPLEX ELEMENTS:
 - "Click the element with selector #login-btn"
@@ -84,6 +93,7 @@ The framework provides these main tool categories:
 ```
 
 ### Role-Based Clicking:
+
 ```
 ✅ SEMANTIC ELEMENTS:
 - "Click the button labeled 'Login'" → Uses role strategy
@@ -96,9 +106,11 @@ The framework provides these main tool categories:
 ## 📝 Form Filling
 
 ### Tool: `fill`
+
 **Purpose**: Fill input fields with text
 
 ### Email Fields:
+
 ```
 ✅ GOOD PATTERNS:
 - "Fill email field with user@example.com"
@@ -114,6 +126,7 @@ The framework provides these main tool categories:
 ```
 
 ### Password Fields:
+
 ```
 ✅ GOOD PATTERNS:
 - "Fill password field with mypassword123"
@@ -129,6 +142,7 @@ The framework provides these main tool categories:
 ```
 
 ### Text Fields:
+
 ```
 ✅ GOOD PATTERNS:
 - "Fill username field with john_doe"
@@ -144,6 +158,7 @@ The framework provides these main tool categories:
 ```
 
 ### Advanced Form Filling:
+
 ```
 ✅ ADVANCED OPTIONS:
 - "Fill email field with user@test.com and press Enter"
@@ -157,9 +172,11 @@ The framework provides these main tool categories:
 ## 🔍 Verification & Validation
 
 ### Tool: `verifyElement`
+
 **Purpose**: Check if elements exist and are in expected states
 
 ### Element Existence:
+
 ```
 ✅ GOOD PATTERNS:
 - "Verify the login form is visible"
@@ -174,6 +191,7 @@ The framework provides these main tool categories:
 ```
 
 ### Page Content Verification:
+
 ```
 ✅ CONTENT CHECKS:
 - "Verify page contains 'Welcome back'"
@@ -183,6 +201,7 @@ The framework provides these main tool categories:
 ```
 
 ### Tool: `getElementInfo`
+
 **Purpose**: Get detailed information about elements
 
 ```
@@ -198,6 +217,7 @@ The framework provides these main tool categories:
 ## 📄 Content Analysis
 
 ### Tool: `getPageContent`
+
 **Purpose**: Analyze page content for decision making
 
 ```
@@ -219,9 +239,11 @@ The framework provides these main tool categories:
 ## ⏱️ Timing & Waits
 
 ### Tool: `wait`
+
 **Purpose**: Add delays and wait for elements
 
 ### Time-based Waits:
+
 ```
 ✅ GOOD PATTERNS:
 - "Wait 2 seconds for page to load"
@@ -237,6 +259,7 @@ The framework provides these main tool categories:
 ```
 
 ### Element-based Waits:
+
 ```
 ✅ ELEMENT WAITING:
 - "Wait for success message to appear"
@@ -256,6 +279,7 @@ The framework provides these main tool categories:
 ## 📸 Screenshots & Documentation
 
 ### Tool: `screenshot`
+
 **Purpose**: Capture visual documentation
 
 ```
@@ -280,12 +304,12 @@ Here's a well-structured test task using effective prompting:
 
 ```javascript
 export const LOGIN_TEST = {
-  id: "AUTH-001",
-  name: "Login Flow Test",
-  description: "Test complete login functionality",
-  priority: "High",
-  tags: ["authentication", "smoke"],
-  site: "https://example.com/login",
+  id: 'AUTH-001',
+  name: 'Login Flow Test',
+  description: 'Test complete login functionality',
+  priority: 'High',
+  tags: ['authentication', 'smoke'],
+  site: 'https://example.com/login',
   task: `
     Navigate to https://example.com/login.
     Wait 2 seconds for page to fully load.
@@ -302,7 +326,7 @@ export const LOGIN_TEST = {
     Take a screenshot of the logged-in state.
     
     Confirm login was successful by checking page content.
-  `
+  `,
 };
 ```
 
@@ -311,24 +335,28 @@ export const LOGIN_TEST = {
 ## 🚨 Common Pitfalls & Solutions
 
 ### ❌ Vague Instructions
+
 ```
 BAD: "Do login stuff"
 GOOD: "Fill email with user@test.com, fill password with pass123, click Sign In"
 ```
 
 ### ❌ Missing Wait Times
+
 ```
 BAD: "Click submit and verify success"
 GOOD: "Click submit button, wait 3 seconds, verify success message appears"
 ```
 
 ### ❌ Ambiguous Element References
+
 ```
 BAD: "Click the button"
 GOOD: "Click the 'Login' button" or "Click button with CSS selector #login-btn"
 ```
 
 ### ❌ No Error Handling Context
+
 ```
 BAD: "Fill form and submit"
 GOOD: "Fill email field, fill password field, click submit, verify no error messages appear"
@@ -339,6 +367,7 @@ GOOD: "Fill email field, fill password field, click submit, verify no error mess
 ## 🎭 Advanced Prompting Strategies
 
 ### Sequential Actions:
+
 ```
 "First, navigate to the login page.
 Then, fill in the credentials.
@@ -347,6 +376,7 @@ Finally, verify successful login."
 ```
 
 ### Conditional Logic:
+
 ```
 "Check if user is already logged in.
 If not logged in, perform login process.
@@ -354,6 +384,7 @@ If already logged in, verify dashboard is visible."
 ```
 
 ### Error Scenarios:
+
 ```
 "Attempt login with invalid credentials.
 Verify error message 'Invalid username or password' appears.
@@ -361,6 +392,7 @@ Confirm form fields are still visible for retry."
 ```
 
 ### Multi-step Workflows:
+
 ```
 "Navigate to registration page.
 Fill all required fields with test data.
@@ -381,4 +413,5 @@ Verify account was created successfully."
 6. **Handle Errors**: Include verification steps to catch failures
 7. **Document State**: Use screenshots to capture important moments
 
-Remember: The AI agent is intelligent but benefits from clear, specific instructions that map well to the available browser automation tools.
+Remember: The AI agent is intelligent but benefits from clear, specific
+instructions that map well to the available browser automation tools.

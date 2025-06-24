@@ -1,14 +1,17 @@
 # Test Package Guide - Endorphin AI
 
-*Last Updated: June 22, 2025*
+_Last Updated: June 22, 2025_
 
 ## 🎯 Overview
 
-This guide covers testing the Endorphin AI package from a user's perspective - installing it as a dependency and running tests with it. This is different from testing the framework's internal code.
+This guide covers testing the Endorphin AI package from a user's perspective -
+installing it as a dependency and running tests with it. This is different from
+testing the framework's internal code.
 
 ## 🚀 Quick Start with Automated Scripts
 
-We've created automated bash scripts in `tmp/test-endorphin/` for easy package testing:
+We've created automated bash scripts in `tmp/test-endorphin/` for easy package
+testing:
 
 ### Available Scripts
 
@@ -52,9 +55,11 @@ cd /path/to/endorphin-ai
 
 ## 🔍 Critical Test: Test Recorder File Location
 
-**Important**: Verify that test recorder creates files in the USER'S project directory, not in the framework directory.
+**Important**: Verify that test recorder creates files in the USER'S project
+directory, not in the framework directory.
 
 ### Manual Testing
+
 ```bash
 # Setup test environment
 ./tmp/test-endorphin/setup-user-project.sh
@@ -72,12 +77,14 @@ ls -la test-recorder/ 2>/dev/null || echo "No files in framework ✅"
 ```
 
 ### Automated Testing
+
 ```bash
 # Use our automated script
 ./tmp/test-endorphin/test-recorder-location.sh
 ```
 
 This test ensures that:
+
 - ✅ Test recorder creates directories in user's project
 - ✅ No artifacts are created in framework directory
 - ✅ User project isolation is maintained
@@ -131,6 +138,7 @@ npx endorphin run test TEST-001
 ### 2. Different Installation Methods
 
 #### Global Installation
+
 ```bash
 # Install globally
 npm install -g endorphin-ai
@@ -144,6 +152,7 @@ npm uninstall -g endorphin-ai
 ```
 
 #### NPX Usage (No Installation)
+
 ```bash
 # Test direct npx usage
 npx endorphin-ai@latest --version
@@ -152,6 +161,7 @@ npx endorphin-ai@latest run test TEST-001
 ```
 
 #### Local Development Installation
+
 ```bash
 # Install from local path (for pre-release testing)
 npm install /path/to/endorphin-ai
@@ -166,6 +176,7 @@ npm install endorphin-ai-*.tgz
 Test different configuration scenarios:
 
 #### Environment Variables
+
 ```bash
 # Test with environment variables
 export OPENAI_API_KEY="your-key-here"
@@ -176,12 +187,13 @@ npx endorphin run test TEST-001
 ```
 
 #### Multiple Environments
+
 ```bash
 # Create environment-specific configs
 cat > endorphin.config.js << 'EOF'
 export default {
   openaiApiKey: process.env.OPENAI_API_KEY,
-  
+
   environments: {
     dev: {
       browser: { headless: false, slowMo: 500 },
@@ -210,39 +222,41 @@ npx endorphin run test TEST-001 --env prod
 Create and test various test file formats:
 
 #### Valid Test File
+
 ```javascript
 export const VALID_TEST = {
-  id: "TEST-002",
-  name: "Valid Test Example",
-  description: "This test should pass validation",
-  priority: "Medium",
-  tags: ["validation", "example"],
-  site: "https://httpbin.org",
+  id: 'TEST-002',
+  name: 'Valid Test Example',
+  description: 'This test should pass validation',
+  priority: 'Medium',
+  tags: ['validation', 'example'],
+  site: 'https://httpbin.org',
   testData: {
-    username: "testuser",
-    password: "testpass"
+    username: 'testuser',
+    password: 'testpass',
   },
-  task: "Navigate to the site and check the response"
+  task: 'Navigate to the site and check the response',
 };
 ```
 
 #### Invalid Test Files (for error testing)
+
 ```javascript
 // Missing required fields
 export const INVALID_TEST_1 = {
-  name: "Missing ID Test"
+  name: 'Missing ID Test',
   // Missing id, description, priority, etc.
 };
 
 // Wrong data types
 export const INVALID_TEST_2 = {
   id: 123, // Should be string
-  name: "Wrong Type Test",
-  description: "Test with wrong data types",
-  priority: "Invalid", // Should be High/Medium/Low
-  tags: "should-be-array",
-  site: "https://example.com",
-  task: "Test with wrong types"
+  name: 'Wrong Type Test',
+  description: 'Test with wrong data types',
+  priority: 'Invalid', // Should be High/Medium/Low
+  tags: 'should-be-array',
+  site: 'https://example.com',
+  task: 'Test with wrong types',
 };
 ```
 
@@ -276,6 +290,7 @@ npx endorphin validate tests/specific-test.js
 ### 6. Integration with Different Project Types
 
 #### Next.js Project
+
 ```bash
 # Create Next.js project
 npx create-next-app@latest my-nextjs-app
@@ -297,6 +312,7 @@ npm run test:e2e
 ```
 
 #### Express.js Project
+
 ```bash
 # Create Express project
 mkdir my-express-app
@@ -322,6 +338,7 @@ EOF
 ```
 
 #### Vite Project
+
 ```bash
 # Create Vite project
 npm create vite@latest my-vite-app
@@ -340,6 +357,7 @@ npm install endorphin-ai
 Test how the package handles various error conditions:
 
 #### Missing Configuration
+
 ```bash
 # Test without config file
 rm endorphin.config.js
@@ -351,6 +369,7 @@ npx endorphin list  # Should handle syntax error gracefully
 ```
 
 #### Network Issues
+
 ```bash
 # Test with unreachable site
 cat > tests/network-error-test.js << 'EOF'
@@ -369,6 +388,7 @@ npx endorphin run test ERROR-001
 ```
 
 #### Invalid API Key
+
 ```bash
 # Test with invalid OpenAI API key
 export OPENAI_API_KEY="invalid-key"
@@ -380,6 +400,7 @@ npx endorphin run test TEST-001
 Test package performance under various conditions:
 
 #### Large Test Suite
+
 ```bash
 # Generate multiple test files
 for i in {1..20}; do
@@ -401,6 +422,7 @@ time npx endorphin run test all
 ```
 
 #### Memory Usage
+
 ```bash
 # Monitor memory usage during test execution
 # (requires additional monitoring tools)
@@ -417,6 +439,7 @@ done
 Test the package on different operating systems:
 
 #### Windows Testing
+
 ```cmd
 REM Install and test on Windows
 npm install endorphin-ai
@@ -428,6 +451,7 @@ npx endorphin run test TEST-001
 ```
 
 #### macOS Testing
+
 ```bash
 # Install and test on macOS
 npm install endorphin-ai
@@ -439,6 +463,7 @@ npx endorphin run test TEST-001
 ```
 
 #### Linux Testing
+
 ```bash
 # Install and test on Linux
 npm install endorphin-ai
@@ -472,9 +497,11 @@ npx endorphin --version
 
 ### Automated Test Scripts (Recommended)
 
-We provide ready-made bash scripts in `tmp/test-endorphin/` for comprehensive package testing:
+We provide ready-made bash scripts in `tmp/test-endorphin/` for comprehensive
+package testing:
 
 #### `setup-user-project.sh`
+
 - Creates isolated user project environment
 - Installs endorphin-ai from local framework
 - Creates proper configuration files
@@ -482,28 +509,33 @@ We provide ready-made bash scripts in `tmp/test-endorphin/` for comprehensive pa
 - Sets up test directory structure
 
 #### `test-recorder-location.sh`
+
 - **Critical Test**: Verifies test recorder creates files in user project
 - Ensures no artifacts leak into framework directory
 - Tests proper user project isolation
 - Shows before/after directory states
 
 #### `test-cli-commands.sh`
+
 - Tests all CLI commands work from user project
 - Verifies package installation
 - Tests configuration loading
 - Validates test discovery
 
 #### `run-user-tests.sh`
+
 - Executes user project tests
 - Validates generated test files
 - Tests end-to-end functionality
 
 #### `cleanup.sh`
+
 - Removes generated files
 - Preserves bash scripts
 - Resets test environment
 
 ### Script Features
+
 - **API Key Sharing**: Uses framework's `.env` file automatically
 - **Isolated Testing**: Creates separate user project environment
 - **Comprehensive Coverage**: Tests installation, CLI, recorder, execution
@@ -595,9 +627,9 @@ name: Package Testing
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   package-test:
@@ -608,35 +640,36 @@ jobs:
         node-version: [18, 20, 22]
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build package
-      run: npm run build
-      
-    - name: Pack package
-      run: npm pack
-      
-    - name: Test package installation
-      run: |
-        mkdir package-test
-        cd package-test
-        npm init -y
-        npm install ../endorphin-ai-*.tgz
-        npx endorphin --version
-        npx endorphin list || true
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build package
+        run: npm run build
+
+      - name: Pack package
+        run: npm pack
+
+      - name: Test package installation
+        run: |
+          mkdir package-test
+          cd package-test
+          npm init -y
+          npm install ../endorphin-ai-*.tgz
+          npx endorphin --version
+          npx endorphin list || true
 ```
 
 ## 📋 Testing Checklist
 
 ### Pre-Release Testing (Automated)
+
 ```bash
 # Quick automated testing
 ./tmp/test-endorphin/setup-user-project.sh      # ✅ Setup user environment
@@ -647,11 +680,13 @@ jobs:
 ```
 
 ### Pre-Release Testing (Manual Checklist)
+
 - [ ] Fresh installation in empty directory (`setup-user-project.sh`)
 - [ ] All CLI commands work (`test-cli-commands.sh`)
 - [ ] Configuration loading works
 - [ ] Test discovery works
-- [ ] **Test recorder creates files in user project, not framework** (`test-recorder-location.sh`)
+- [ ] **Test recorder creates files in user project, not framework**
+      (`test-recorder-location.sh`)
 - [ ] Error handling is graceful
 - [ ] Cross-platform compatibility
 - [ ] Multiple Node.js versions
@@ -660,6 +695,7 @@ jobs:
 - [ ] Package scripts integration works
 
 ### Post-Release Testing
+
 - [ ] Install from NPM registry
 - [ ] Version matches expected
 - [ ] All functionality works as published
@@ -668,10 +704,13 @@ jobs:
 - [ ] Test recorder isolation still works
 
 ### Critical Tests
+
 - [ ] **File Location Test**: Recorder creates files in user project only
 - [ ] **API Key Inheritance**: Uses framework's `.env` automatically
-- [ ] **Package Isolation**: No cross-contamination between framework and user files
+- [ ] **Package Isolation**: No cross-contamination between framework and user
+      files
 
 ---
 
-*This guide should be run before every release to ensure package quality. Use the automated scripts in `tmp/test-endorphin/` for efficient testing.*
+_This guide should be run before every release to ensure package quality. Use
+the automated scripts in `tmp/test-endorphin/` for efficient testing._

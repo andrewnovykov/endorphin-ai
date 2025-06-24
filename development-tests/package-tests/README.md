@@ -1,18 +1,23 @@
 # Package Tests - Endorphin AI
 
-*Last Updated: June 24, 2025*
+_Last Updated: June 24, 2025_
 
 ## 🎯 Overview
 
-This directory contains package-level tests that verify Endorphin AI from a **user's perspective** - testing the actual npm package installation, CLI commands, and user workflow. These tests are different from framework unit tests and simulate real user scenarios.
+This directory contains package-level tests that verify Endorphin AI from a
+**user's perspective** - testing the actual npm package installation, CLI
+commands, and user workflow. These tests are different from framework unit tests
+and simulate real user scenarios.
 
 ## ⚙️ Centralized Configuration
 
-All test scripts use a centralized configuration system for consistent path management and utilities:
+All test scripts use a centralized configuration system for consistent path
+management and utilities:
 
 - **Config File**: `config/test-config.sh`
 - **Key Constants**:
-  - `USER_PROJECT_DIR`: Path to `tmp/test-endorphin` (the simulated user project)
+  - `USER_PROJECT_DIR`: Path to `tmp/test-endorphin` (the simulated user
+    project)
   - `RESULTS_DIR`: Path to `results/` directory
   - `SCRIPTS_DIR`: Path to `scripts/` directory
   - `REPO_ROOT`: Path to the main Endorphin AI repository
@@ -24,7 +29,8 @@ All test scripts use a centralized configuration system for consistent path mana
   - `show_paths()`: Displays all important paths
   - `print_status()`: Consistent colored output
 
-All test scripts source this configuration to ensure they run from the correct directory context.
+All test scripts source this configuration to ensure they run from the correct
+directory context.
 
 ## 📁 Directory Structure
 
@@ -64,12 +70,14 @@ development-tests/package-tests/
 ## 🚀 Quick Start
 
 ### Run All Package Tests
+
 ```bash
 # From repository root
 ./development-tests/package-tests/run-all-tests.sh
 ```
 
 ### Run Tests by Category
+
 ```bash
 # Setup only
 ./development-tests/package-tests/run-tests-by-category.sh setup
@@ -84,6 +92,7 @@ development-tests/package-tests/
 ```
 
 ### Manual Test Execution
+
 ```bash
 # 1. Setup test environment
 ./development-tests/package-tests/scripts/setup/setup-user-project.sh
@@ -108,23 +117,26 @@ rm -rf development-tests/package-tests/tmp/test-endorphin
 All package tests depend on these key components:
 
 #### 1. Test Environment Setup
+
 - **Script**: `scripts/setup/setup-user-project.sh`
 - **Purpose**: Creates isolated user project in `tmp/test-endorphin/`
-- **Dependencies**: 
+- **Dependencies**:
   - Node.js and npm availability
   - Access to main repository for package installation
   - Write permissions for directory creation
 
 #### 2. User Project Directory
+
 - **Location**: `development-tests/package-tests/tmp/test-endorphin/`
 - **Purpose**: Simulates real user project environment
-- **Contents**: 
+- **Contents**:
   - Installed endorphin-ai package
   - User configuration files
   - Generated test files
   - Test execution results
 
 #### 3. Path Resolution
+
 - **Repository Root**: Auto-detected from script location
 - **Package Tests Dir**: `development-tests/package-tests/`
 - **User Project**: `development-tests/package-tests/tmp/test-endorphin/`
@@ -133,6 +145,7 @@ All package tests depend on these key components:
 ### Path Dependencies
 
 Most test scripts follow this pattern:
+
 ```bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE_TEST_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -143,6 +156,7 @@ USER_PROJECT_DIR="$PACKAGE_TEST_DIR/tmp/test-endorphin"
 ### Prerequisites Check
 
 Before running tests, the system verifies:
+
 - ✅ Node.js is installed and accessible
 - ✅ npm is available for package management
 - ✅ Repository structure is correct (package.json exists)
@@ -152,6 +166,7 @@ Before running tests, the system verifies:
 ### Environment Isolation
 
 Tests maintain strict isolation:
+
 - 🔒 **User Project**: Clean environment for each test run
 - 🔒 **Framework Protection**: No pollution of framework directories
 - 🔒 **Dependency Isolation**: Local package installation from repository
@@ -160,6 +175,7 @@ Tests maintain strict isolation:
 ## 🔧 Test Categories
 
 ### Setup Tests
+
 - **Purpose**: Verify environment setup and configuration
 - **Scripts**: `scripts/setup/setup-user-project.sh`
 - **Verifies**:
@@ -169,6 +185,7 @@ Tests maintain strict isolation:
   - Environment variable handling
 
 ### Init Tests
+
 - **Purpose**: Test project initialization commands
 - **Scripts**: `scripts/init/test-init-command.sh`
 - **Verifies**:
@@ -177,8 +194,9 @@ Tests maintain strict isolation:
   - Project structure creation
 
 ### Recorder Tests
+
 - **Purpose**: Test the interactive test recorder
-- **Scripts**: 
+- **Scripts**:
   - `scripts/recorder/test-recorder.sh`
   - `scripts/recorder/test-recorder-location.sh`
 - **Verifies**:
@@ -188,6 +206,7 @@ Tests maintain strict isolation:
   - Browser automation works
 
 ### Runner Tests
+
 - **Purpose**: Test test execution functionality
 - **Scripts**:
   - `scripts/runner/run-test.sh`
@@ -200,6 +219,7 @@ Tests maintain strict isolation:
   - CLI command functionality
 
 ### Reporter Tests
+
 - **Purpose**: Test result reporting functionality
 - **Scripts**:
   - `scripts/reporter/test-console-reporter.sh`
@@ -214,21 +234,25 @@ Tests maintain strict isolation:
 ## 🎯 Critical Verifications
 
 ### 1. File Location Isolation
+
 - ✅ Test recorder creates files in USER project only
 - ✅ No framework directory pollution
 - ✅ User project independence
 
 ### 2. Package Installation
+
 - ✅ Local package installation works
 - ✅ Dependencies resolve correctly
 - ✅ CLI commands are accessible via npx
 
 ### 3. Configuration System
+
 - ✅ Default config generation
 - ✅ Environment variable handling
 - ✅ Config validation
 
 ### 4. Test Execution
+
 - ✅ Test discovery works
 - ✅ Test execution completes
 - ✅ Results are generated
@@ -239,6 +263,7 @@ Tests maintain strict isolation:
 The test runner now includes comprehensive logging and reporting:
 
 ### Results Directory Structure
+
 ```
 development-tests/package-tests/
 ├── results/                           # All test session results
@@ -256,6 +281,7 @@ development-tests/package-tests/
 ### Viewing Results
 
 #### Quick Commands
+
 ```bash
 # List all test sessions
 ./development-tests/package-tests/view-results.sh
@@ -283,6 +309,7 @@ development-tests/package-tests/
 ```
 
 #### Results Viewer Features
+
 - 📋 **Session List**: Overview of all test runs with pass/fail counts
 - 📊 **Session Details**: Complete metadata and test breakdown
 - 🌐 **HTML Reports**: Interactive browser-based reports with:
@@ -295,6 +322,7 @@ development-tests/package-tests/
 ### Enhanced Test Execution
 
 The test runner now provides:
+
 - ⏱️ **Timing**: Duration tracking for each test and overall session
 - 📋 **Detailed Logs**: Complete output capture for each test
 - 🚨 **Error Preview**: Immediate feedback with last few lines of failed tests
@@ -304,6 +332,7 @@ The test runner now provides:
 ### Automated Logging
 
 Each test execution automatically:
+
 1. Creates timestamped session directory
 2. Captures complete test output to individual log files
 3. Records test metadata (start/end times, duration, result)
@@ -312,6 +341,7 @@ Each test execution automatically:
 6. Provides immediate error feedback for failed tests
 
 Test results are generated in the user project directory:
+
 ```
 tmp/test-endorphin/
 ├── test-results/           # Test execution results
@@ -325,33 +355,40 @@ tmp/test-endorphin/
 ### Main Scripts
 
 #### `run-all-tests.sh`
+
 Comprehensive automation that runs all package tests in sequence:
+
 1. Environment setup
 2. All test categories
 3. Result verification
 4. Cleanup
 
 #### `run-tests-by-category.sh`
+
 Targeted testing by specific functionality:
+
 - `setup` - Environment and configuration
-- `init` - Project initialization  
+- `init` - Project initialization
 - `recorder` - Test recording functionality
 - `runner` - Test execution
 - `reporter` - Result reporting
 - `all` - All categories
 
 ### Individual Scripts
+
 Each script in `scripts/` can be run independently for targeted testing.
 
 ## 🛠️ Development Usage
 
 ### Adding New Package Tests
+
 1. Create script in appropriate `scripts/` subdirectory
 2. Follow naming convention: `test-[functionality].sh`
 3. Include verification and cleanup
 4. Update category runner scripts
 
 ### Testing Before Release
+
 ```bash
 # Full package verification
 ./development-tests/package-tests/run-all-tests.sh
@@ -375,7 +412,8 @@ npx endorphin list
 ## 🚨 Important Notes
 
 1. **Clean Environment**: Each test run creates a fresh user project
-2. **No Framework Pollution**: Verify tests don't create files in framework directory
+2. **No Framework Pollution**: Verify tests don't create files in framework
+   directory
 3. **API Key Required**: Some tests require valid OpenAI API key
 4. **Browser Dependencies**: Recorder tests need browser capabilities
 5. **Cleanup**: Always cleanup test environment after completion
@@ -403,32 +441,38 @@ cat results/YYYYMMDD_HHMMSS/Environment_Setup.log
 ### Common Issues
 
 #### "Command not found: endorphin"
+
 - **Log Location**: Check `Environment_Setup.log` for installation errors
 - **Solution**: Ensure package is installed in test project
 - **Alternative**: Use `npx endorphin` instead of `endorphin`
 
 #### "OpenAI API key not configured"
+
 - **Log Location**: Check individual test logs for configuration errors
 - **Solution**: Check `.env` file in test project
 - **Fix**: Copy API key from main repository
 
 #### "Browser not found"
+
 - **Log Location**: Check `Test_Recorder_*.log` files
 - **Solution**: Install Playwright browsers: `npx playwright install`
 - **Alternative**: Ensure headless mode is properly configured
 
 #### Test files in wrong location
+
 - **Log Location**: Check `Test_Recorder_File_Location.log`
 - **Verification**: Verify current working directory
 - **Fix**: Check test-recorder script output and path resolution
 
 #### Path Resolution Issues
+
 - **Symptoms**: Tests can't find scripts or directories
 - **Debug**: Check session_info.txt for path information
 - **Common Cause**: Running from wrong directory
 - **Solution**: Always run from `development-tests/package-tests/`
 
 ### Debug Mode
+
 ```bash
 # Run with debug output
 ENDORPHIN_DEBUG=true ./development-tests/package-tests/run-all-tests.sh
@@ -445,24 +489,28 @@ bash -x ./development-tests/package-tests/scripts/setup/setup-user-project.sh
 Each test session provides multiple debugging resources:
 
 #### Session Information (`session_info.txt`)
+
 - Environment details (Node.js, npm versions)
 - Path resolution details
 - Test timing and summary
 - Final success/failure counts
 
 #### Individual Test Logs (`TestName.log`)
+
 - Complete test output
 - Start/end timestamps
 - Full error messages and stack traces
 - Script execution details
 
 #### CSV Results (`test_results.csv`)
+
 - Machine-readable format for automation
 - Test timing data
 - Pass/fail status
 - Log file references
 
 #### HTML Report (`test_report.html`)
+
 - Visual dashboard with metrics
 - Interactive test grid
 - Direct links to detailed logs
