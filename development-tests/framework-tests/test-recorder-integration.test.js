@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest';
-import { runInteractiveRecorder, collectTestData } from '../framework/interactive/enhanced-interactive-recorder.js';
+import { runInteractiveRecorder, collectTestData } from '../../framework/interactive/enhanced-interactive-recorder.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -199,7 +199,7 @@ describe('Enhanced Interactive Recorder Integration', () => {
   describe('CLI Integration', () => {
     test.skip('should import runInteractiveRecorder function correctly', async () => {
       // Test that the function is exported and can be imported
-      const { runInteractiveRecorder } = await import('../framework/interactive/enhanced-interactive-recorder.js');
+      const { runInteractiveRecorder } = await import('../../framework/interactive/enhanced-interactive-recorder.js');
       
       expect(runInteractiveRecorder).toBeDefined();
       expect(typeof runInteractiveRecorder).toBe('function');
@@ -207,7 +207,7 @@ describe('Enhanced Interactive Recorder Integration', () => {
 
     test.skip('should import collectTestData function correctly', async () => {
       // Test that the function is exported and can be imported
-      const { collectTestData } = await import('../framework/interactive/enhanced-interactive-recorder.js');
+      const { collectTestData } = await import('../../framework/interactive/enhanced-interactive-recorder.js');
       
       expect(collectTestData).toBeDefined();
       expect(typeof collectTestData).toBe('function');
@@ -217,7 +217,7 @@ describe('Enhanced Interactive Recorder Integration', () => {
   describe('Error Handling', () => {
     test.skip('should handle framework initialization errors', async () => {
       // Mock framework initialization failure
-      const { EnhancedBrowserTestFramework } = await import('../framework/index.js');
+      const { EnhancedBrowserTestFramework } = await import('../../framework/index.js');
       const mockFramework = new EnhancedBrowserTestFramework();
       mockFramework.initialize.mockRejectedValue(new Error('Browser initialization failed'));
 
@@ -242,8 +242,8 @@ describe('Enhanced Interactive Recorder Integration', () => {
 
   describe('File System Integration', () => {
     test.skip('should create proper directory structure during recording', async () => {
-      const { TestRecorder } = await import('../framework/core/test-recorder.js');
-      const { EnhancedBrowserTestFramework } = await import('../framework/index.js');
+      const { TestRecorder } = await import('../../framework/core/test-recorder.js');
+      const { EnhancedBrowserTestFramework } = await import('../../framework/index.js');
       
       const mockFramework = new EnhancedBrowserTestFramework();
       const testData = {
@@ -301,8 +301,8 @@ describe('Enhanced Interactive Recorder Integration', () => {
 
   describe('Generated Test File Validation', () => {
     test.skip('should generate valid test file that can be imported', async () => {
-      const { TestRecorder } = await import('../framework/core/test-recorder.js');
-      const { EnhancedBrowserTestFramework } = await import('../framework/index.js');
+      const { TestRecorder } = await import('../../framework/core/test-recorder.js');
+      const { EnhancedBrowserTestFramework } = await import('../../framework/index.js');
       
       const mockFramework = new EnhancedBrowserTestFramework();
       const testData = {

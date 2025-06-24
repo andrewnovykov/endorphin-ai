@@ -65,7 +65,7 @@ vi.mock('playwright', () => {
   };
 });
 
-import { EnhancedBrowserTestFramework } from '../framework/core/browser-framework.js';
+import { EnhancedBrowserTestFramework } from '../../framework/core/browser-framework.js';
 
 describe('Browser Framework', () => {
   let framework;
@@ -230,7 +230,7 @@ describe('Browser Framework', () => {
       await framework.initialize();
       
       // Mock agent to throw an error for this specific test
-      const { setupAgent } = await import('../framework/core/agent-setup.js');
+      const { setupAgent } = await import('../../framework/core/agent-setup.js');
       setupAgent.mockImplementationOnce(() => Promise.resolve({
         invoke: vi.fn(() => Promise.reject(new Error('Simulated agent failure')))
       }));

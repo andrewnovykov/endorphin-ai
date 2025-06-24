@@ -35,7 +35,7 @@ async function validateTestRecorderImplementation() {
   // Check core implementation
   try {
     console.log('\n📦 Validating Core Implementation...');
-    const { TestRecorder } = await import('../framework/core/test-recorder.js');
+    const { TestRecorder } = await import('../../framework/core/test-recorder.js');
     console.log('✅ TestRecorder class imports successfully');
     
     // Quick instantiation test
@@ -54,7 +54,7 @@ async function validateTestRecorderImplementation() {
   // Check interactive recorder
   try {
     console.log('\n🎬 Validating Interactive Recorder...');
-    const { runInteractiveRecorder, collectTestData } = await import('../framework/interactive/enhanced-interactive-recorder.js');
+    const { runInteractiveRecorder, collectTestData } = await import('../../framework/interactive/enhanced-interactive-recorder.js');
     console.log('✅ runInteractiveRecorder function exports successfully');
     console.log('✅ collectTestData function exports successfully');
   } catch (error) {

@@ -128,7 +128,7 @@ export default {
       await fs.writeFile('endorphin.config.js', configContent);
 
       // Import config loader
-      const { getConfig } = await import('../framework/core/config-loader.js');
+      const { getConfig } = await import('../../framework/core/config-loader.js');
       const config = await getConfig({ cwd: tempDir });
 
       expect(config.browser.headless).toBe(true);
@@ -147,7 +147,7 @@ export default {
 `;
       await fs.writeFile('endorphin.config.js', configContent);
 
-      const { getConfig, resetConfig } = await import('../framework/core/config-loader.js');
+      const { getConfig, resetConfig } = await import('../../framework/core/config-loader.js');
       resetConfig(); // Reset config cache before testing CLI flags
       
       const options = { 
@@ -187,7 +187,7 @@ export default {
 `;
       await fs.writeFile('tests/sample-test.js', testContent);
 
-      const { discoverTests } = await import('../framework/core/test-discovery.js');
+      const { discoverTests } = await import('../../framework/core/test-discovery.js');
       const config = { execution: { testsDirectory: './tests' } };
       const tests = await discoverTests(config);
 
@@ -197,7 +197,7 @@ export default {
     });
 
     it('should handle empty test directory', async () => {
-      const { discoverTests } = await import('../framework/core/test-discovery.js');
+      const { discoverTests } = await import('../../framework/core/test-discovery.js');
       const config = { execution: { testsDirectory: './tests' } };
       const tests = await discoverTests(config);
 
@@ -278,7 +278,7 @@ export default {
     it('should handle missing configuration gracefully', async () => {
       process.chdir(tempDir);
       
-      const { getConfig } = await import('../framework/core/config-loader.js');
+      const { getConfig } = await import('../../framework/core/config-loader.js');
       const config = await getConfig({ cwd: tempDir });
 
       // Should return default configuration
@@ -293,7 +293,7 @@ export default {
       // Create invalid config
       await fs.writeFile('endorphin.config.js', 'invalid javascript content');
       
-      const { loadConfig } = await import('../framework/core/config-loader.js');
+      const { loadConfig } = await import('../../framework/core/config-loader.js');
       
       try {
         await loadConfig(tempDir);
@@ -306,7 +306,7 @@ export default {
     });
 
     it('should handle file system errors', async () => {
-      const { discoverTests } = await import('../framework/core/test-discovery.js');
+      const { discoverTests } = await import('../../framework/core/test-discovery.js');
       const config = { 
         execution: { 
           testsDirectory: '/non-existent-directory' 
@@ -351,7 +351,7 @@ export default {
       await Promise.all(createPromises);
 
       const startTime = Date.now();
-      const { discoverTests } = await import('../framework/core/test-discovery.js');
+      const { discoverTests } = await import('../../framework/core/test-discovery.js');
       const config = { execution: { testsDirectory: './tests' } };
       const tests = await discoverTests(config);
       const duration = Date.now() - startTime;
