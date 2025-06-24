@@ -7,7 +7,7 @@
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync } from 'fs';
-import { getConfig } from '../framework/core/config-loader.js';
+import { getConfig } from '../packages/core/src/config/config-loader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -177,7 +177,7 @@ async function main() {
     
     if (command === 'run' && (subcommand === 'test' || subcommand === 'test-recorder')) {
       // Import ConsoleReporter and display molecular structure
-      const { ConsoleReporter } = await import('../framework/core/console-reporter.js');
+      const { ConsoleReporter } = await import('../packages/reporter/src/console-reporter.js');
       const reporter = new ConsoleReporter();
       reporter.displayEndorphinMolecule();
     }
@@ -194,7 +194,7 @@ async function main() {
     // Handle list command
     if (command === 'list') {
       console.log('📋 Available Tests:');
-      const { listAllTests } = await import('../framework/core/test-discovery.js');
+      const { listAllTests } = await import('../packages/core/src/discovery/test-discovery.js');
       await listAllTests(config);
       process.exit(0);
     }
@@ -202,7 +202,7 @@ async function main() {
     // Handle init command
     if (command === 'init') {
       console.log('🎯 Initializing Endorphin AI project...');
-      const { initProject } = await import('../framework/core/init-command.js');
+      const { initProject } = await import('../packages/cli/src/init-command.js');
       await initProject(process.cwd());
       process.exit(0);
     }
@@ -263,7 +263,7 @@ async function main() {
             process.exit(1);
           }
           console.log(`🏷️ Running tests with tag: ${tag}`);
-          const { runTestsByTag } = await import('../framework/core/test-discovery.js');
+          const { runTestsByTag } = await import('../packages/core/src/discovery/test-discovery.js');
           await runTestsByTag(tag, config);
           process.exit(0);
         }
@@ -276,7 +276,7 @@ async function main() {
             process.exit(1);
           }
           console.log(`🎯 Running tests with priority: ${priority}`);
-          const { runTestsByPriority } = await import('../framework/core/test-discovery.js');
+          const { runTestsByPriority } = await import('../packages/core/src/discovery/test-discovery.js');
           await runTestsByPriority(priority, config);
           process.exit(0);
         }
@@ -284,12 +284,12 @@ async function main() {
         // Handle specific test or "all"
         if (target === 'all') {
           console.log('🚀 Running all tests...');
-          const { runAllTests } = await import('../framework/core/test-discovery.js');
+          const { runAllTests } = await import('../packages/core/src/discovery/test-discovery.js');
           await runAllTests(config);
           process.exit(0);
         } else if (target) {
           console.log(`🧪 Running test: ${target}`);
-          const { runSingleTestById } = await import('../framework/core/test-discovery.js');
+          const { runSingleTestById } = await import('../packages/core/src/discovery/test-discovery.js');
           await runSingleTestById(target, config);
           process.exit(0);
         } else {
@@ -307,7 +307,7 @@ async function main() {
     if (command === 'generate') {
       if (subcommand === 'report') {
         console.log('📊 Generating HTML test report...');
-        const { HTMLReporter } = await import('../framework/core/reporter.js');
+        const { HTMLReporter } = await import('../packages/reporter/src/reporter.js');
         const reporter = new HTMLReporter();
         
         const options = {};
@@ -338,7 +338,7 @@ async function main() {
     if (command === 'open') {
       if (subcommand === 'report') {
         console.log('🌐 Opening latest test report...');
-        const { HTMLReporter } = await import('../framework/core/reporter.js');
+        const { HTMLReporter } = await import('../packages/reporter/src/reporter.js');
         const reporter = new HTMLReporter();
         
         // Check for specific report file
@@ -354,7 +354,7 @@ async function main() {
 
     // Handle cleanup command
     if (command === 'cleanup') {
-      const { HTMLReporter } = await import('../framework/core/reporter.js');
+      const { HTMLReporter } = await import('../packages/reporter/src/reporter.js');
       const reporter = new HTMLReporter();
       
       if (subcommand === 'results') {

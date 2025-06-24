@@ -1,4 +1,16 @@
-// Endorphin e2e AI test framework
+// Endorphin e2eimport { EnhancedBrowserTestFramework } from './index.js';
+
+// Re-export the framework for compatibility
+export { EnhancedBrowserTestFramework };
+
+// Export test discovery functions for CLI
+export { 
+  runSingleTestById,
+  runTestsByTag, 
+  runTestsByPriority,
+  runAllTests,
+  listAvailableTests
+} from '../packages/core/src/discovery/test-discovery.js';ework
 // Copyright (C)  2025 Redstudio Agency
 
 // This program is free software: you can redistribute it and/or modify

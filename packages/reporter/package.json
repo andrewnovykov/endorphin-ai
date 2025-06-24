@@ -1,0 +1,17 @@
+{
+    "name": "@endorphin-ai/reporter",
+    "version": "0.3.0",
+    "description": "Reporting and result generation for Endorphin AI",
+    "type": "module",
+    "main": "src/index.js",
+    "scripts": {
+        "test": "vitest",
+        "build": "echo 'No build step required for ES modules'"
+    },
+    "dependencies": {
+        "@endorphin-ai/core": "workspace:*"
+    },
+    "devDependencies": {
+        "vitest": "^1.0.0"
+    }
+}

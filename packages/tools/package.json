@@ -1,0 +1,33 @@
+{
+    "name": "@endorphin-ai/tools",
+    "version": "0.4.1",
+    "description": "AI tools for content, interaction, navigation and verification",
+    "main": "src/index.js",
+    "type": "module",
+    "exports": {
+        ".": "./src/index.js",
+        "./content": "./src/content/index.js",
+        "./interaction": "./src/interaction/index.js",
+        "./navigation": "./src/navigation/index.js",
+        "./verification": "./src/verification/index.js"
+    },
+    "files": [
+        "src/**/*"
+    ],
+    "keywords": [
+        "endorphin-ai",
+        "tools",
+        "ai",
+        "testing",
+        "automation"
+    ],
+    "author": "Endorphin AI Team",
+    "license": "MIT",
+    "dependencies": {
+        "@endorphin-ai/core": "workspace:*",
+        "@endorphin-ai/browser": "workspace:*"
+    },
+    "peerDependencies": {
+        "node": ">=18.0.0"
+    }
+}

@@ -14,15 +14,80 @@ This guide covers how to write effective tests for Endorphin AI framework. We ha
 ## 📝 Writing Framework Tests (Vitest)
 
 ### Test File Location
-All framework tests go in `tests/framework-tests/`:
+All framework tests are organized by functionality in `tests/framework-tests/`:
 
 ```
 tests/framework-tests/
-├── module-name.test.js      # Your test file
-├── setup.js                 # Test environment setup
-├── coverage/                # Coverage reports
-└── html/                    # Test result reports
+├── 📁 core/                     # Core framework functionality
+│   ├── test-discovery.test.js   # Test file discovery & loading
+│   ├── test-runner.test.js      # Test execution engine
+│   └── init-command.test.js     # Project initialization
+│
+├── 📁 config/                   # Configuration system
+│   └── config-loader.test.js    # Config loading & merging
+│
+├── 📁 cli/                      # Command line interface
+│   ├── cli-commands.test.js     # CLI command parsing
+│   ├── cli-integration.test.js  # End-to-end CLI testing
+│   └── cli-graceful-shutdown.test.js # Process termination
+│
+├── 📁 browser/                  # Browser automation & recording
+│   ├── browser-framework.test.js      # Core browser operations
+│   ├── enhanced-browser-framework.test.js # Advanced features
+│   ├── test-recorder.test.js           # Test recorder core
+│   ├── test-recorder-integration.test.js # Recorder integration
+│   └── validate-test-recorder.js       # Recorder validation
+│
+├── 📁 web/                      # Web UI & server
+│   ├── web-server.test.js       # Web server functionality
+│   ├── web-ui-e2e.test.js      # End-to-end web UI tests
+│   ├── web-ui-execution.test.js # Web UI test execution
+│   ├── web-ui-search.test.js    # Search functionality
+│   ├── web-ui-react-serving.test.js # React serving
+│   └── react-frontend-integration.test.js # React UI integration
+│
+├── 📁 reporters/                # Reporting systems
+│   ├── console-reporter.test.js # Console output formatting
+│   ├── html-reporter.test.js    # HTML report generation
+│   └── websocket-reporter.test.js # WebSocket reporting
+│
+├── 📁 integration/              # Integration & end-to-end
+│   ├── final-integration.test.js # Complete workflow testing
+│   └── installation.test.js     # Package installation
+│
+├── 📄 setup.js                  # Test environment setup
+├── 📁 coverage/                 # Coverage reports (90% goal)
+└── 📁 html/                     # Test result reports
 ```
+
+### Choosing the Right Test Folder
+
+When writing new tests, place them in the appropriate folder based on functionality:
+
+| **Folder** | **Use For** | **Examples** |
+|------------|-------------|--------------|
+| **`core/`** | Core framework functionality, test discovery, execution engine | `test-discovery.test.js`, `test-runner.test.js` |
+| **`config/`** | Configuration loading, merging, validation | `config-loader.test.js`, `environment-config.test.js` |
+| **`cli/`** | Command line interface, argument parsing | `cli-commands.test.js`, `cli-integration.test.js` |
+| **`browser/`** | Browser automation, Playwright integration, test recording | `browser-framework.test.js`, `test-recorder.test.js` |
+| **`web/`** | Web UI, server functionality, React frontend | `web-server.test.js`, `web-ui-execution.test.js` |
+| **`reporters/`** | Output formatting, report generation | `console-reporter.test.js`, `html-reporter.test.js` |
+| **`integration/`** | End-to-end workflows, full system tests | `final-integration.test.js`, `installation.test.js` |
+
+### Test File Naming Convention
+
+Follow this naming pattern for consistency:
+
+```
+[module-name].test.js        # Unit tests for a specific module
+[feature-name]-integration.test.js # Integration tests
+[component-name]-e2e.test.js # End-to-end tests
+```
+
+**Examples:**
+- `config/config-loader.test.js` - Tests the ConfigLoader class
+- `cli/cli-integration.test.js` - Tests complete CLI workflows  
+- `web/web-ui-e2e.test.js` - Tests entire web UI user journeys
 
 ### Basic Test Structure
 

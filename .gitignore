@@ -17,6 +17,9 @@ tmp/test-endorphin/endorphin.config.js
 tmp/test-endorphin/.env
 tmp/console-test/
 
+# Package test logs (keep structure)
+tests/package-tests/results/logs/*.log
+
 # NPM Publishing artifacts
 *.tgz
 package/
@@ -34,5 +37,14 @@ yarn-error.log*
 dist/
 build/
 coverage/
-dev-tests/html
-dev-tests/results
+# Test artifacts
+tests/framework-tests/html
+tests/framework-tests/results
+tests/framework-tests/coverage
+tests/package-tests/tmp
+tests/package-tests/test-log
+
+# IMPORTANT: These folders should NEVER exist in repo root
+# They should only exist in tests/tmp/test-endorphin/ (user project)
+test-recorder/
+test-results/

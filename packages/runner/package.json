@@ -1,0 +1,20 @@
+{
+    "name": "@endorphin-ai/runner",
+    "version": "0.3.0",
+    "description": "Test runner and execution engine for Endorphin AI",
+    "type": "module",
+    "main": "src/index.js",
+    "scripts": {
+        "test": "vitest",
+        "build": "echo 'No build step required for ES modules'"
+    },
+    "dependencies": {
+        "@langchain/core": "^0.1.0",
+        "@endorphin-ai/core": "workspace:*",
+        "@endorphin-ai/browser": "workspace:*",
+        "@endorphin-ai/reporter": "workspace:*"
+    },
+    "devDependencies": {
+        "vitest": "^1.0.0"
+    }
+}

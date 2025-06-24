@@ -1,0 +1,31 @@
+{
+    "name": "@endorphin-ai/core",
+    "version": "0.4.1",
+    "description": "Core configuration and utilities for Endorphin AI",
+    "main": "src/index.js",
+    "type": "module",
+    "exports": {
+        ".": "./src/index.js",
+        "./config": "./src/config/index.js",
+        "./discovery": "./src/discovery/index.js",
+        "./types": "./src/types/index.js"
+    },
+    "files": [
+        "src/**/*"
+    ],
+    "keywords": [
+        "endorphin-ai",
+        "core",
+        "configuration",
+        "testing",
+        "ai"
+    ],
+    "author": "Endorphin AI Team",
+    "license": "MIT",
+    "dependencies": {
+        "fs-extra": "^11.2.0"
+    },
+    "peerDependencies": {
+        "node": ">=18.0.0"
+    }
+}

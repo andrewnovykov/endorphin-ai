@@ -14,30 +14,30 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-export { EnhancedBrowserTestFramework } from './core/browser-framework.js';
-export { TestRecorder } from './core/test-recorder.js';
-export { runTask, runTaskSequence } from './core/test-runner.js';
-export { createTestSession, generateSessionSummary, saveTestSession } from './core/test-session.js';
-export { setupAgent } from './core/agent-setup.js';
-export { createAllTools } from './tools/index.js';
-export { TestManager } from './core/test-manager.js';
+export { EnhancedBrowserTestFramework } from '../packages/browser/src/automation/browser-framework.js';
+export { TestRecorder } from '../packages/cli/src/test-recorder.js';
+export { runTask, runTaskSequence } from '../packages/runner/src/test-runner.js';
+export { createTestSession, generateSessionSummary, saveTestSession } from '../packages/browser/src/session/test-session.js';
+export { setupAgent } from '../packages/browser/src/agents/agent-setup.js';
+export { createAllTools } from '../packages/tools/src/index.js';
+export { TestManager } from '../packages/runner/src/test-manager.js';
 
 // Configuration exports
-export { BROWSER_CONFIG } from './config/browser-config.js';
-export { AGENT_CONFIG } from './config/agent-config.js';
-export { PATHS } from './config/paths.js';
+export { BROWSER_CONFIG } from '../packages/core/src/config/browser-config.js';
+export { AGENT_CONFIG } from '../packages/core/src/config/agent-config.js';
+export { PATHS } from '../packages/core/src/config/paths.js';
 
 // Module exports for organized components
 export * as Interactive from './interactive/index.js';
 export * as Testing from './testing/index.js';
 
 // Individual tool creators for custom setups
-export { createNavigationTool } from './tools/navigation.js';
-export { createGetPageContentTool, createGetSimplePageContentTool } from './tools/content.js';
-export { createClickTool, createFillTool, createClearFieldTool } from './tools/interaction.js';
-export { createVerifyElementTool, createGetElementInfoTool } from './tools/verification.js';
-export { createWaitTool, createScreenshotTool } from './tools/utilities.js';
+export { createNavigationTool } from '../packages/tools/src/navigation.js';
+export { createGetPageContentTool, createGetSimplePageContentTool } from '../packages/tools/src/content.js';
+export { createClickTool, createFillTool, createClearFieldTool } from '../packages/tools/src/interaction.js';
+export { createVerifyElementTool, createGetElementInfoTool } from '../packages/tools/src/verification.js';
+export { createWaitTool, createScreenshotTool } from '../packages/tools/src/utilities.js';
 
 // Default export for simple usage: import EndorphinAI from 'endorphin-ai'
-import { EnhancedBrowserTestFramework } from './core/browser-framework.js';
+import { EnhancedBrowserTestFramework } from '../packages/browser/src/automation/browser-framework.js';
 export default EnhancedBrowserTestFramework;

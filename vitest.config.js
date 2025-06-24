@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
 
 export default defineConfig({
   test: {
@@ -7,18 +8,24 @@ export default defineConfig({
     
     // Test files pattern - Include framework tests from tests/ directory
     include: [
-      'tests/framework-tests/**/*.{test,spec}.{js,mjs}',
-      'dev-tests/**/*.{test,spec}.{js,mjs}'
+      'tests/framework-tests/**/*.{test,spec}.{js,mjs}'
     ],
     exclude: [
-      'dev-tests/test-improved-ai.js', // Exclude old test files
-      'tests/package-tests/**', // Package tests are bash scripts
+      'tests/package-tests/**', // Package tests have their own config
       'tests/debug-test.js', // Exclude debug files
-      'tests/qe-new-recorded-test.js' // Exclude user test files
+      'tests/qe-new-recorded-test.js', // Exclude user test files
+      // Exclude empty directories after moving tests
+      'tests/framework-tests/integration/**', // Moved to package-tests
     ],
     
     // Global setup
     globals: true,
+    
+    // Alias for easier imports
+    alias: {
+      '@framework': resolve(__dirname, './framework'),
+      '@tests': resolve(__dirname, './tests'),
+    },
     
     // Coverage configuration - 90% GOAL
     coverage: {
@@ -26,14 +33,12 @@ export default defineConfig({
       reporter: ['text', 'html', 'json', 'text-summary'],
       reportsDirectory: './tests/framework-tests/coverage',
       include: [
-        'framework/**/*.js',
+        'packages/**/*.js',
         'bin/**/*.js'
       ],
       exclude: [
-        'framework/**/index.js',
-        'framework/demos/**',
-        'framework/interactive/**',
-        'framework/templates/**',
+        'packages/**/index.js',
+        'packages/**/package.json',
         'legacy/**',
         'examples/**',
         '**/*.config.js'
@@ -45,12 +50,24 @@ export default defineConfig({
           lines: 90,       // 90% goal
           statements: 90,  // 90% goal
         },
-        // Per-file thresholds for critical modules
-        'framework/core/**': {
+        // Per-package thresholds for critical modules
+        'packages/core/**': {
           branches: 95,
           functions: 95,
           lines: 95,
           statements: 95,
+        },
+        'packages/runner/**': {
+          branches: 95,
+          functions: 95,
+          lines: 95,
+          statements: 95,
+        },
+        'packages/browser/**': {
+          branches: 90,
+          functions: 90,
+          lines: 90,
+          statements: 90,
         },
         'bin/**': {
           branches: 85,
@@ -77,13 +94,11 @@ export default defineConfig({
     // Watch mode settings
     watch: false,
     
-    // Pool options for better performance
-    pool: 'threads',
+    // Pool options for better performance and Node.js compatibility
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        singleThread: false,
-        maxThreads: 4,
-        minThreads: 1
+      forks: {
+        singleFork: true
       }
     },
     

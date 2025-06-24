@@ -1,0 +1,225 @@
+import fs from 'fs';
+import path from 'path';
+
+/**
+ * TestResultsParser - Parses test result data from the test-results directory
+ * Handles aggregation and processing of test execution data for reporting
+ */
+export class TestResultsParser {
+  /**
+   * Create a new TestResultsParser instance
+   * @param {string} testResultsDir - Path to the test-results directory
+   */
+  constructor(testResultsDir) {
+    this.testResultsDir = testResultsDir;
+  }
+
+  /**
+   * Get all test result directories sorted by timestamp (newest first)
+   * @returns {Array<string>} Array of directory names
+   */
+  getAllTestResults() {
+    if (!fs.existsSync(this.testResultsDir)) {
+      return [];
+    }
+
+    const dirs = fs.readdirSync(this.testResultsDir)
+      .filter(item => {
+        const fullPath = path.join(this.testResultsDir, item);
+        return fs.statSync(fullPath).isDirectory() && item.includes('_');
+      })
+      .sort((a, b) => {
+        // Extract timestamp from directory name and sort newest first
+        const timestampA = a.split('_')[1];
+        const timestampB = b.split('_')[1];
+        return new Date(timestampB) - new Date(timestampA);
+      });
+
+    return dirs;
+  }
+
+  /**
+   * Get test results filtered by test ID
+   * @param {string} testId - The test ID to filter by
+   * @returns {Array<string>} Array of directory names for the specific test
+   */
+  getTestResultsByTestId(testId) {
+    return this.getAllTestResults().filter(dir => dir.startsWith(`${testId}_`));
+  }
+
+  /**
+   * Parse a single test result directory
+   * @param {string} resultDir - Directory name of the test result
+   * @returns {Object|null} Parsed test result data or null if parsing fails
+   */
+  parseTestResult(resultDir) {
+    try {
+      const resultPath = path.join(this.testResultsDir, resultDir);
+      
+      // Check if directory exists
+      if (!fs.existsSync(resultPath)) {
+        return null;
+      }
+
+      // Read summary.json
+      const summaryPath = path.join(resultPath, 'summary.json');
+      const sessionPath = path.join(resultPath, 'test-session.json');
+      const screenshotsPath = path.join(resultPath, 'screenshots');
+
+      if (!fs.existsSync(summaryPath) || !fs.existsSync(sessionPath)) {
+        return null;
+      }
+
+      const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+      const session = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+
+      // Get screenshot files
+      const screenshots = fs.existsSync(screenshotsPath) 
+        ? fs.readdirSync(screenshotsPath).filter(file => 
+            file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg')
+          )
+        : [];
+
+      return {
+        resultDir,
+        resultPath,
+        summary,
+        session,
+        screenshots,
+        screenshotsPath
+      };
+    } catch (error) {
+      console.error(`Error parsing test result ${resultDir}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Generate aggregated report data for multiple test results
+   * @param {Array<string>} resultDirs - Array of result directory names to include
+   * @returns {Object} Aggregated report data
+   */
+  generateReportData(resultDirs = null) {
+    const dirs = resultDirs || this.getAllTestResults();
+    const results = [];
+    const testStats = new Map();
+
+    for (const dir of dirs) {
+      const result = this.parseTestResult(dir);
+      if (result) {
+        results.push(result);
+
+        // Update test statistics
+        const testId = result.session.testId;
+        if (!testStats.has(testId)) {
+          testStats.set(testId, {
+            testId,
+            testName: result.session.testName,
+            totalRuns: 0,
+            successfulRuns: 0,
+            failedRuns: 0,
+            lastRun: null,
+            averageDuration: 0,
+            totalDuration: 0
+          });
+        }
+
+        const stats = testStats.get(testId);
+        stats.totalRuns++;
+        stats.totalDuration += result.session.duration || 0;
+        stats.averageDuration = Math.round(stats.totalDuration / stats.totalRuns);
+
+        if (result.session.status === 'SUCCESS') {
+          stats.successfulRuns++;
+        } else {
+          stats.failedRuns++;
+        }
+
+        // Update last run (results are sorted newest first)
+        if (!stats.lastRun || new Date(result.session.startTime) > new Date(stats.lastRun)) {
+          stats.lastRun = result.session.startTime;
+        }
+      }
+    }
+
+    // Calculate overall statistics
+    const totalTests = testStats.size;
+    const totalRuns = results.length;
+    const successfulRuns = results.filter(r => r.session.status === 'SUCCESS').length;
+    const failedRuns = totalRuns - successfulRuns;
+    const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 0;
+
+    return {
+      generatedAt: new Date().toISOString(),
+      totalTests,
+      totalRuns,
+      successfulRuns,
+      failedRuns,
+      successRate,
+      testStats: Array.from(testStats.values()),
+      results: results.slice(0, 50), // Limit to 50 most recent results for performance
+      hasMoreResults: results.length > 50
+    };
+  }
+
+  /**
+   * Get the most recent test result for a specific test ID
+   * @param {string} testId - The test ID to get the latest result for
+   * @returns {Object|null} Latest test result or null if not found
+   */
+  getLatestTestResult(testId) {
+    const results = this.getTestResultsByTestId(testId);
+    if (results.length === 0) {
+      return null;
+    }
+
+    return this.parseTestResult(results[0]);
+  }
+
+  /**
+   * Clean up old test results, keeping only the specified number of recent results per test
+   * @param {number} keepPerTest - Number of recent results to keep per test (default: 10)
+   * @returns {Object} Cleanup summary with counts of removed directories
+   */
+  cleanupOldResults(keepPerTest = 10) {
+    const allResults = this.getAllTestResults();
+    const testGroups = new Map();
+    
+    // Group results by test ID
+    for (const dir of allResults) {
+      const testId = dir.split('_')[0];
+      if (!testGroups.has(testId)) {
+        testGroups.set(testId, []);
+      }
+      testGroups.get(testId).push(dir);
+    }
+
+    let removedCount = 0;
+    const removedDirs = [];
+
+    // For each test, keep only the most recent results
+    for (const [testId, dirs] of testGroups) {
+      if (dirs.length > keepPerTest) {
+        const toRemove = dirs.slice(keepPerTest);
+        
+        for (const dir of toRemove) {
+          try {
+            const dirPath = path.join(this.testResultsDir, dir);
+            fs.rmSync(dirPath, { recursive: true, force: true });
+            removedCount++;
+            removedDirs.push(dir);
+          } catch (error) {
+            console.error(`Failed to remove directory ${dir}:`, error);
+          }
+        }
+      }
+    }
+
+    return {
+      removedCount,
+      removedDirs,
+      totalTestIds: testGroups.size,
+      keptPerTest: keepPerTest
+    };
+  }
+}
