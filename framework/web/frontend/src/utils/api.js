@@ -41,6 +41,7 @@ async function apiRequest(endpoint, options = {}) {
   }
 }
 
+// Tests API
 export async function fetchTests() {
   return apiRequest('/tests');
 }
@@ -55,10 +56,22 @@ export async function runTest(testId) {
   });
 }
 
+// Results API
 export async function fetchResults() {
   return apiRequest('/results');
 }
 
-export async function fetchResultById(resultId) {
-  return apiRequest(`/results/${resultId}`);
+export async function getJobResult(jobId) {
+  return apiRequest(`/results/${jobId}`);
 }
+
+// Convenience object export for easier imports
+export const api = {
+  fetchTests,
+  fetchTestById,
+  runTest,
+  fetchResults,
+  getJobResult,
+  // Utility function to get screenshot URL
+  getScreenshotUrl: (filename) => `${API_BASE_URL}/screenshots/${filename}`,
+};

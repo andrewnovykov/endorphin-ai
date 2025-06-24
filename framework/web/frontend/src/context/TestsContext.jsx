@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { fetchTests, fetchTestById, runTest, fetchResults, fetchResultById } from '../utils/api';
+import { fetchTests, fetchTestById, runTest, fetchResults, getJobResult } from '../utils/api';
 
 const TestsContext = createContext();
 

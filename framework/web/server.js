@@ -42,6 +42,9 @@ export class WebUIServer {
     // Serve static files from public directory (includes built React app)
     this.app.use(express.static(path.join(__dirname, 'public')));
     
+    // Serve Vite build assets specifically (for production build)
+    this.app.use('/assets', express.static(path.join(__dirname, 'public/dist/assets')));
+    
     // Serve Vite dev build during development
     if (process.env.NODE_ENV !== 'production') {
       this.app.use('/dist', express.static(path.join(__dirname, 'public/dist')));
@@ -177,7 +180,7 @@ export class WebUIServer {
 
     // Serve React app for all other routes (SPA fallback)
     this.app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+      res.sendFile(path.join(__dirname, 'public', 'dist', 'index.html'));
     });
   }
 
