@@ -1,16 +1,16 @@
 {
   "sessionId": "TEST-001",
-  "sessionName": "TEST-001_2025-06-24T09-08-44-625Z",
+  "sessionName": "TEST-001_2025-06-24T09-15-44-801Z",
   "testName": "Sample Test",
   "testId": "TEST-001",
-  "startTime": "2025-06-24T09:08:44.625Z",
-  "endTime": "2025-06-24T09:08:44.627Z",
-  "sessionDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/framework-tests/temp-test-recorder/test-results/TEST-001_2025-06-24T09-08-44-625Z",
-  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/framework-tests/temp-test-recorder/test-results/TEST-001_2025-06-24T09-08-44-625Z/screenshots",
+  "startTime": "2025-06-24T09:15:44.801Z",
+  "endTime": "2025-06-24T09:15:44.803Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/framework-tests/temp-test-recorder/test-results/TEST-001_2025-06-24T09-15-44-801Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/framework-tests/temp-test-recorder/test-results/TEST-001_2025-06-24T09-15-44-801Z/screenshots",
   "steps": [
     {
       "stepNumber": 1,
-      "timestamp": "2025-06-24T09:08:44.625Z",
+      "timestamp": "2025-06-24T09:15:44.801Z",
       "description": "Starting test execution: Sample Test",
       "toolName": null,
       "toolArgs": null,
@@ -20,7 +20,7 @@
     },
     {
       "stepNumber": 2,
-      "timestamp": "2025-06-24T09:08:44.627Z",
+      "timestamp": "2025-06-24T09:15:44.803Z",
       "description": "Test execution failed",
       "toolName": null,
       "toolArgs": null,
