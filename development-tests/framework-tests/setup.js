@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, rmSync } from 'fs';
 
 // Test environment setup
 beforeAll(() => {
-  console.log('🧪 Setting up Endorphin AI test environment...');
+  console.log('🧪 Setting up Endorphin AI framework test environment...');
   
   // Set test environment variables
   process.env.NODE_ENV = 'test';
@@ -17,9 +17,9 @@ beforeAll(() => {
   
   // Create test directories
   const testDirs = [
-    resolve(process.cwd(), 'dev-tests/temp'),
-    resolve(process.cwd(), 'dev-tests/fixtures'),
-    resolve(process.cwd(), 'dev-tests/results'),
+    resolve(process.cwd(), 'development-tests/framework-tests/temp'),
+    resolve(process.cwd(), 'development-tests/framework-tests/fixtures'),
+    resolve(process.cwd(), 'development-tests/framework-tests/results'),
   ];
   
   testDirs.forEach(dir => {
@@ -31,10 +31,10 @@ beforeAll(() => {
 
 // Cleanup after all tests
 afterAll(() => {
-  console.log('🧹 Cleaning up test environment...');
+  console.log('🧹 Cleaning up framework test environment...');
   
   // Clean up test directories
-  const tempDir = resolve(process.cwd(), 'dev-tests/temp');
+  const tempDir = resolve(process.cwd(), 'development-tests/framework-tests/temp');
   if (existsSync(tempDir)) {
     rmSync(tempDir, { recursive: true, force: true });
   }

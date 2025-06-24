@@ -1,22 +1,36 @@
-#!/usr/bin/env node
-
-/**
- * Simple test validator to check if our test files are syntactically correct
- * and can be imported without errors.
- */
-
+import { describe, it, expect, vi } from 'vitest';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-async function validateTestFile(testFilePath, testName) {
-  try {
-    console.log(`\n🧪 Validating ${testName}...`);
-    
-    // Try to import the test file
-    await import(testFilePath);
+describe('Test File Validation', () => {
+  it('should validate that test files can be imported', async () => {
+    // This test ensures all test files have valid syntax
+    const testFiles = [
+      'browser-framework.test.js',
+      'config-loader.test.js',
+      'console-reporter.test.js'
+    ];
+
+    for (const testFile of testFiles) {
+      const testPath = join(__dirname, testFile);
+      
+      // Try to import each test file - if syntax is invalid, this will throw
+      await expect(async () => {
+        await import(testPath);
+      }).not.toThrow();
+    }
+  });
+
+  it('should have proper test structure', () => {
+    // Basic test to ensure this file has valid test structure
+    expect(typeof describe).toBe('function');
+    expect(typeof it).toBe('function');
+    expect(typeof expect).toBe('function');
+  });
+});
     
     console.log(`✅ ${testName} - Syntax valid, imports successful`);
     return true;

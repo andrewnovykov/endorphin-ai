@@ -1,0 +1,13 @@
+{
+  "testName": "Sample Test",
+  "sessionId": "TEST-001",
+  "status": "FAILED",
+  "startTime": "2025-06-24T09:08:44.625Z",
+  "endTime": "2025-06-24T09:08:44.627Z",
+  "duration": 2,
+  "totalSteps": 2,
+  "successfulSteps": 1,
+  "failedSteps": 1,
+  "totalScreenshots": 0,
+  "finalResult": "Unable to coerce message from array: only human, AI, system, developer, or tool message coercion is currently supported.\n\nReceived: {}\n\nTroubleshooting URL: https://js.langchain.com/docs/troubleshooting/errors/MESSAGE_COERCION_FAILURE/\n"
+}
