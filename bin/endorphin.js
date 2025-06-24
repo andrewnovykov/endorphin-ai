@@ -213,7 +213,10 @@ async function main() {
       const { startWebUIServer } = await import('../framework/web/cli-handler.js');
       
       // Parse additional options
-      const options = {};
+      const options = {
+        projectRoot: process.cwd(), // Pass the user project directory
+        config: config // Pass the loaded config
+      };
       if (args.includes('--port')) {
         const portIndex = args.indexOf('--port');
         const port = args[portIndex + 1];

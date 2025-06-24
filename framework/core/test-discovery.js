@@ -26,9 +26,11 @@ function safeExit(code) {
 }
 
 export class TestDiscovery {
-  constructor() {
+  constructor(options = {}) {
     this.tests = new Map();
-    this.testsDirectory = resolve(process.cwd(), 'tests');
+    this.projectRoot = options.projectRoot || process.cwd();
+    this.testsDirectory = resolve(this.projectRoot, 'tests');
+    this.config = options.config || null;
   }
 
   /**
@@ -184,11 +186,11 @@ export class TestDiscovery {
 // Standalone functions for CLI usage
 let discoveryInstance = null;
 
-async function ensureDiscovery(config = null) {
-  if (!discoveryInstance || config) {
-    discoveryInstance = new TestDiscovery();
+async function ensureDiscovery(config = null, projectRoot = null) {
+  if (!discoveryInstance || config || projectRoot) {
+    discoveryInstance = new TestDiscovery({ projectRoot: projectRoot || process.cwd(), config });
     if (config?.execution?.testsDirectory) {
-      discoveryInstance.testsDirectory = resolve(process.cwd(), config.execution.testsDirectory);
+      discoveryInstance.testsDirectory = resolve(projectRoot || process.cwd(), config.execution.testsDirectory);
     }
     await discoveryInstance.discoverTests();
   }
@@ -466,13 +468,16 @@ export async function listAllTests(config = null) {
 
 /**
  * Discover tests and return them as an array
- * @param {Object} config - Configuration object
+ * @param {Object} options - Options object with config and projectRoot
  * @returns {Array} Array of discovered tests
  */
-export async function discoverTests(config) {
-  const discovery = new TestDiscovery();
+export async function discoverTests(options = {}) {
+  const { config, projectRoot } = options;
+  const discovery = new TestDiscovery({ projectRoot, config });
+  
+  // Override tests directory if specified in config
   if (config?.execution?.testsDirectory) {
-    discovery.testsDirectory = resolve(process.cwd(), config.execution.testsDirectory);
+    discovery.testsDirectory = resolve(projectRoot || process.cwd(), config.execution.testsDirectory);
   }
   
   try {
@@ -487,10 +492,18 @@ export async function discoverTests(config) {
 /**
  * Get a specific test by ID
  * @param {string} testId - The test ID to find
+ * @param {Object} options - Options object with config and projectRoot
  * @returns {Object|null} Test object or null if not found
  */
-export async function getTestById(testId) {
-  const discovery = new TestDiscovery();
+export async function getTestById(testId, options = {}) {
+  const { config, projectRoot } = options;
+  const discovery = new TestDiscovery({ projectRoot, config });
+  
+  // Override tests directory if specified in config
+  if (config?.execution?.testsDirectory) {
+    discovery.testsDirectory = resolve(projectRoot || process.cwd(), config.execution.testsDirectory);
+  }
+  
   await discovery.discoverTests();
   return discovery.tests.get(testId) || null;
 }

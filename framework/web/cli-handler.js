@@ -107,37 +107,64 @@ export async function startWebUIServer(options = {}) {
     host = 'localhost',
     openBrowser = true,
     env = 'development',
-    debug = false
+    debug = false,
+    projectRoot = process.cwd(),
+    config = null
   } = options;
 
   try {
     // Import the server module dynamically
     const { createWebServer } = await import('./server.js');
     
-    // Create and start the server
+    // Create and start the server with project context
     const server = await createWebServer({
       port,
       host,
       env,
-      debug
+      debug,
+      projectRoot,
+      config
     });
 
     console.log(`🚀 Starting Endorphin Web UI on http://${host}:${port}`);
+    console.log(`📁 Project root: ${projectRoot}`);
     
     // Set up graceful shutdown
-    const cleanup = async () => {
-      console.log('\\n📴 Shutting down Endorphin Web UI...');
+    let isShuttingDown = false;
+    const cleanup = async (signal) => {
+      if (isShuttingDown) {
+        console.log('⚠️  Force shutdown...');
+        process.exit(1);
+      }
+      
+      isShuttingDown = true;
+      console.log(`\n📴 Received ${signal}, shutting down Endorphin Web UI gracefully...`);
+      
       try {
         await server.stop();
+        console.log('✅ Server shutdown complete');
         process.exit(0);
       } catch (error) {
-        console.error('Error during shutdown:', error);
+        console.error('❌ Error during shutdown:', error);
         process.exit(1);
       }
     };
 
-    process.on('SIGINT', cleanup);
-    process.on('SIGTERM', cleanup);
+    // Improve signal handling
+    process.on('SIGINT', () => cleanup('SIGINT'));
+    process.on('SIGTERM', () => cleanup('SIGTERM'));
+    process.on('SIGQUIT', () => cleanup('SIGQUIT'));
+    
+    // Handle uncaught exceptions and rejections
+    process.on('uncaughtException', (error) => {
+      console.error('❌ Uncaught exception:', error);
+      cleanup('uncaughtException');
+    });
+    
+    process.on('unhandledRejection', (reason, promise) => {
+      console.error('❌ Unhandled rejection at:', promise, 'reason:', reason);
+      cleanup('unhandledRejection');
+    });
 
     // Open browser if requested
     if (openBrowser) {

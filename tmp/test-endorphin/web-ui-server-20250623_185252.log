@@ -1,0 +1,42 @@
+📁 Loaded config from: /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin/endorphin.config.js
+🌐 Starting Endorphin Web UI...
+Endorphin Web UI running at http://localhost:3001
+🚀 Starting Endorphin Web UI on http://localhost:3001
+🔍 Discovering tests in: /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin/tests
+📋 Found 1 test file(s):
+   📄 user-basic-test.js
+   ✓ USER-001: User Project Test
+✅ Loaded 1 test(s) total
+
+🔍 Discovering tests in: /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin/tests
+📋 Found 1 test file(s):
+   📄 user-basic-test.js
+   ✓ USER-001: User Project Test
+✅ Loaded 1 test(s) total
+
+[90m● USER-001: Test USER-001[0m[K[32m     ✓ USER-001: Test USER-001[0m [90m(200ms)[0m
+🔍 Discovering tests in: /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin/tests
+📋 Found 1 test file(s):
+   📄 user-basic-test.js
+   ✓ USER-001: User Project Test
+✅ Loaded 1 test(s) total
+
+SyntaxError: Unexpected token 'i', "invalid json" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at createStrictSyntaxError (/Users/papapin777/Documents/CODE/AI/endorphin-ai/node_modules/body-parser/lib/types/json.js:169:10)
+    at parse (/Users/papapin777/Documents/CODE/AI/endorphin-ai/node_modules/body-parser/lib/types/json.js:86:15)
+    at /Users/papapin777/Documents/CODE/AI/endorphin-ai/node_modules/body-parser/lib/read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    at invokeCallback (/Users/papapin777/Documents/CODE/AI/endorphin-ai/node_modules/body-parser/node_modules/raw-body/index.js:238:16)
+    at done (/Users/papapin777/Documents/CODE/AI/endorphin-ai/node_modules/body-parser/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/Users/papapin777/Documents/CODE/AI/endorphin-ai/node_modules/body-parser/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:519:28)
+    at endReadableNT (node:internal/streams/readable:1696:12)
+🔍 Discovering tests in: /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin/tests
+📋 Found 1 test file(s):
+   📄 user-basic-test.js
+   ✓ USER-001: User Project Test
+✅ Loaded 1 test(s) total
+
+\n📴 Shutting down Endorphin Web UI...
+Endorphin Web UI server stopped

@@ -15,6 +15,8 @@ const __dirname = path.dirname(__filename);
 export class WebUIServer {
   constructor(options = {}) {
     this.port = options.port !== undefined ? options.port : 3000;
+    this.projectRoot = options.projectRoot || process.cwd();
+    this.config = options.config || null;
     this.app = express();
     this.httpServer = null;
     this.wss = null;
@@ -56,7 +58,8 @@ export class WebUIServer {
     this.app.get('/api/tests', async (req, res) => {
       try {
         const { discoverTests } = await import('../core/test-discovery.js');
-        const tests = await discoverTests();
+        // Pass project root to discovery function
+        const tests = await discoverTests({ projectRoot: this.projectRoot, config: this.config });
         res.json(tests);
       } catch (error) {
         res.status(500).json({ error: error.message });
@@ -66,7 +69,8 @@ export class WebUIServer {
     this.app.get('/api/tests/:id', async (req, res) => {
       try {
         const { getTestById } = await import('../core/test-discovery.js');
-        const test = await getTestById(req.params.id);
+        // Pass project root to discovery function
+        const test = await getTestById(req.params.id, { projectRoot: this.projectRoot, config: this.config });
         
         if (!test) {
           return res.status(404).json({ error: 'Test not found' });
@@ -84,7 +88,7 @@ export class WebUIServer {
         
         // Check if test exists first
         const { getTestById } = await import('../core/test-discovery.js');
-        const test = await getTestById(testId);
+        const test = await getTestById(testId, { projectRoot: this.projectRoot, config: this.config });
         
         if (!test) {
           return res.status(404).json({ error: 'Test not found' });
