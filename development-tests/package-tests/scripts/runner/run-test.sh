@@ -5,17 +5,21 @@
 
 set -e
 
+# Load centralized configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../../config/test-config.sh"
+
 TEST_ID="${1:-USER-001}"
 
 echo "🧪 Running Endorphin AI Test from User Project"
 echo "=============================================="
-echo "📍 Project directory: $SCRIPT_DIR"
 echo "🆔 Test ID: $TEST_ID"
 echo "⏰ Current time: $(date)"
 
-# Ensure we're in the user project directory
-cd "$SCRIPT_DIR"
+# Change to user project directory with validation
+if ! cd_user_project; then
+    exit 1
+fi
 
 # Check if .env file exists and has API key
 if [ ! -f ".env" ]; then

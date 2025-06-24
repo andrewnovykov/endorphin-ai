@@ -5,13 +5,14 @@
 
 set -e
 
+# Load centralized configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-USER_PROJECT_DIR="$REPO_ROOT/tmp/test-endorphin"
+source "$SCRIPT_DIR/../../config/test-config.sh"
 
 echo "🚀 Setting up Endorphin AI User Project Test Environment"
 echo "========================================================"
 echo "📍 Repository root: $REPO_ROOT"
+echo "📁 Package tests dir: $PACKAGE_TEST_DIR"
 echo "📁 User project: $USER_PROJECT_DIR"
 
 # Create user project directory
