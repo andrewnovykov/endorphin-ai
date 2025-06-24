@@ -482,6 +482,11 @@ main() {
     print_status $YELLOW "\n🎬 CATEGORY 3: RECORDER TESTS"
     print_status $YELLOW "============================="
     
+    # Install Playwright browsers before running recorder tests
+    run_test "Install Playwright Browsers" \
+        "$PACKAGE_TEST_DIR/scripts/setup/install-playwright.sh" \
+        "Install Playwright browsers required for test recorder"
+    
     run_test "Test Recorder Functionality" \
         "$PACKAGE_TEST_DIR/scripts/recorder/test-recorder.sh" \
         "Test interactive test recorder and file generation"

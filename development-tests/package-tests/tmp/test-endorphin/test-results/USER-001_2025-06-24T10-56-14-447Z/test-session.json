@@ -1,16 +1,16 @@
 {
   "sessionId": "USER-001",
-  "sessionName": "USER-001_2025-06-24T10-25-40-920Z",
+  "sessionName": "USER-001_2025-06-24T10-56-14-447Z",
   "testName": "User Project Basic Test",
   "testId": "USER-001",
-  "startTime": "2025-06-24T10:25:40.921Z",
-  "endTime": "2025-06-24T10:25:41.081Z",
-  "sessionDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/USER-001_2025-06-24T10-25-40-920Z",
-  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/USER-001_2025-06-24T10-25-40-920Z/screenshots",
+  "startTime": "2025-06-24T10:56:14.448Z",
+  "endTime": "2025-06-24T10:56:14.581Z",
+  "sessionDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/USER-001_2025-06-24T10-56-14-447Z",
+  "screenshotsDir": "/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin/test-results/USER-001_2025-06-24T10-56-14-447Z/screenshots",
   "steps": [
     {
       "stepNumber": 1,
-      "timestamp": "2025-06-24T10:25:40.921Z",
+      "timestamp": "2025-06-24T10:56:14.448Z",
       "description": "Starting test execution: User Project Basic Test",
       "toolName": null,
       "toolArgs": null,
@@ -20,7 +20,7 @@
     },
     {
       "stepNumber": 2,
-      "timestamp": "2025-06-24T10:25:41.080Z",
+      "timestamp": "2025-06-24T10:56:14.581Z",
       "description": "Test execution failed",
       "toolName": null,
       "toolArgs": null,
@@ -34,5 +34,5 @@
   "screenshotCounter": 0,
   "status": "FAILED",
   "finalResult": "401 Incorrect API key provided: sk-proj-********************************************************************************************************************************************************wTcA. You can find your API key at https://platform.openai.com/account/api-keys.\n\nTroubleshooting URL: https://js.langchain.com/docs/troubleshooting/errors/MODEL_AUTHENTICATION/\n",
-  "duration": 160
+  "duration": 133
 }
