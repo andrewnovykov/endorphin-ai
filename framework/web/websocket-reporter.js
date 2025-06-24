@@ -52,6 +52,7 @@ export class WebSocketReporter extends ConsoleReporter {
     // Broadcast to WebSocket clients
     this.broadcast({
       type: 'test-start',
+      testId: testId,
       test: { id: testId, name: testName },
       timestamp: new Date().toISOString()
     });

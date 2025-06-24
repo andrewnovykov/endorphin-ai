@@ -4,13 +4,20 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "endorphin run test all",
+    "test:smoke": "endorphin run test --tag smoke",
+    "test:list": "endorphin list",
+    "test:recorder": "endorphin run test-recorder"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "This directory simulates a real user project to test the Endorphin AI package from the user's perspective.",
   "dependencies": {
     "endorphin-ai": "file:../.."
+  },
+  "directories": {
+    "test": "tests"
   }
 }

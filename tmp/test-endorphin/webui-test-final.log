@@ -1,0 +1,21 @@
+📁 Loaded config from: /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin/endorphin.config.js
+🌐 Starting Endorphin Web UI...
+Endorphin Web UI running at http://localhost:3005
+🚀 Starting Endorphin Web UI on http://localhost:3005
+📁 Project root: /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin
+🔍 Discovering tests in: /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin/tests
+📋 Found 1 test file(s):
+   📄 user-basic-test.js
+   ✓ USER-001: User Project Test
+✅ Loaded 1 test(s) total
+
+🔍 Discovering tests in: /Users/papapin777/Documents/CODE/AI/endorphin-ai/tmp/test-endorphin/tests
+📋 Found 1 test file(s):
+   📄 user-basic-test.js
+   ✓ USER-001: User Project Test
+✅ Loaded 1 test(s) total
+
+
+📴 Received SIGTERM, shutting down Endorphin Web UI gracefully...
+Endorphin Web UI server stopped
+✅ Server shutdown complete

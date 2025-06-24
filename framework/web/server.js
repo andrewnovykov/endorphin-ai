@@ -29,27 +29,72 @@ export class WebUIServer {
     return `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  getPort() {
-    return this.httpServer ? this.httpServer.address()?.port : this.port;
-  }
-
-  getAddress() {
-    return this.httpServer ? this.httpServer.address() : null;
+  /**
+   * Filter tests based on search parameters
+   * @param {Array} tests - Array of test objects
+   * @param {Object} query - Query parameters from request
+   * @returns {Array} Filtered array of tests
+   */
+  filterTests(tests, query) {
+    if (!tests || tests.length === 0) {
+      return [];
+    }
+    
+    let filteredTests = [...tests];
+    
+    // Text search (case-insensitive, searches name, description, task, and tags)
+    if (query.search && query.search.trim()) {
+      const searchTerm = query.search.toLowerCase().trim();
+      filteredTests = filteredTests.filter(test => {
+        const searchFields = [
+          test.name || '',
+          test.description || '',
+          test.task || '',
+          test.id || '',
+          (test.tags || []).join(' ')
+        ].join(' ').toLowerCase();
+        
+        return searchFields.includes(searchTerm);
+      });
+    }
+    
+    // Filter by priority
+    if (query.priority) {
+      const validPriorities = ['High', 'Medium', 'Low'];
+      if (!validPriorities.includes(query.priority)) {
+        throw new Error(`Invalid priority: ${query.priority}. Valid values are: ${validPriorities.join(', ')}`);
+      }
+      filteredTests = filteredTests.filter(test => test.priority === query.priority);
+    }
+    
+    // Filter by tags (supports comma-separated list)
+    if (query.tags) {
+      const searchTags = query.tags.split(',').map(tag => tag.trim().toLowerCase());
+      filteredTests = filteredTests.filter(test => {
+        if (!test.tags || !Array.isArray(test.tags)) {
+          return false;
+        }
+        const testTags = test.tags.map(tag => tag.toLowerCase());
+        return searchTags.some(searchTag => testTags.includes(searchTag));
+      });
+    }
+    
+    return filteredTests;
   }
 
   setupMiddleware() {
     this.app.use(cors());
     this.app.use(express.json());
     
-    // Serve static files from public directory (includes built React app)
-    this.app.use(express.static(path.join(__dirname, 'public')));
+    // Serve React app from dist directory (production build)
+    this.app.use(express.static(path.join(__dirname, 'public/dist')));
     
-    // Serve Vite build assets specifically (for production build)
+    // Serve additional static assets
     this.app.use('/assets', express.static(path.join(__dirname, 'public/dist/assets')));
     
-    // Serve Vite dev build during development
+    // Fallback for old static files (development)
     if (process.env.NODE_ENV !== 'production') {
-      this.app.use('/dist', express.static(path.join(__dirname, 'public/dist')));
+      this.app.use('/old', express.static(path.join(__dirname, 'public')));
     }
   }
 
@@ -60,9 +105,18 @@ export class WebUIServer {
         const { discoverTests } = await import('../core/test-discovery.js');
         // Pass project root to discovery function
         const tests = await discoverTests({ projectRoot: this.projectRoot, config: this.config });
-        res.json(tests);
+        
+        // Apply search and filtering
+        const filteredTests = this.filterTests(tests, req.query);
+        
+        res.json({ success: true, tests: filteredTests });
       } catch (error) {
-        res.status(500).json({ error: error.message });
+        // Handle validation errors vs server errors
+        if (error.message.includes('Invalid priority')) {
+          res.status(400).json({ success: false, error: error.message });
+        } else {
+          res.status(500).json({ success: false, error: error.message });
+        }
       }
     });
 
@@ -180,6 +234,22 @@ export class WebUIServer {
           res.status(404).json({ error: 'Screenshot not found' });
         }
       });
+    });
+
+    // Job status endpoint
+    this.app.get('/api/jobs/:id', async (req, res) => {
+      try {
+        const jobId = req.params.id;
+        const job = this.jobs.get(jobId);
+        
+        if (!job) {
+          return res.status(404).json({ success: false, error: 'Job not found' });
+        }
+        
+        res.json({ success: true, job: { jobId, ...job } });
+      } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+      }
     });
 
     // Serve React app for all other routes (SPA fallback)
