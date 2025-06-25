@@ -9,7 +9,7 @@
     "ms-vscode.js-debug-nightly",
     "bradlc.vscode-tailwindcss",
     // Testing
-    "vitest.explorer",
+    "orta.vscode-jest",
     "ms-playwright.playwright",
     // Git integration
     "eamodio.gitlens",

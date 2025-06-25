@@ -1,31 +1,23 @@
-/**
- * Test Discovery Module
- * Discovers and loads tests from user's tests/ directory
- */
+// Test Discovery Module
+// Discovers and loads tests from user's tests/ directory
 
 import { readdir, stat } from 'fs/promises';
 import { join, resolve } from 'path';
 import { performance } from 'perf_hooks';
 import { pathToFileURL } from 'url';
-
-import { ConsoleReporter } from '@reporters/console-reporter.js';
-import type {
-    DiscoveryResult,
-    FrameworkConfig,
-    TestConfig
-} from '../types/index.js';
+import { ConsoleReporter } from './console-reporter.js';
 
 /**
  * Check if we're running in test environment
  */
-function isTestEnvironment(): boolean {
+function isTestEnvironment() {
   return process.env.NODE_ENV === 'test';
 }
 
 /**
  * Safe exit that doesn't break tests
  */
-function safeExit(code: number): never {
+function safeExit(code) {
   if (isTestEnvironment()) {
     throw new Error(`process.exit called with code ${code}`);
   } else {
@@ -33,29 +25,16 @@ function safeExit(code: number): never {
   }
 }
 
-/**
- * Extended test object with discovery metadata
- */
-interface DiscoveredTest extends TestConfig {
-  sourceFile: string;
-  exportName: string;
-}
-
-/**
- * Test Discovery class for finding and loading test files
- */
 export class TestDiscovery {
-  private tests: Map<string, DiscoveredTest> = new Map();
-  public testsDirectory: string;
-
   constructor() {
+    this.tests = new Map();
     this.testsDirectory = resolve(process.cwd(), 'tests');
   }
 
   /**
    * Discover and load all test files from tests/ directory
    */
-  async discoverTests(): Promise<void> {
+  async discoverTests() {
     try {
       // Check if tests directory exists
       try {
@@ -67,9 +46,11 @@ export class TestDiscovery {
       }
 
       console.log(`🔍 Discovering tests in: ${this.testsDirectory}`);
-
+      
       const files = await readdir(this.testsDirectory);
-      const testFiles = files.filter((file) => file.endsWith('.js') || file.endsWith('.mjs'));
+      const testFiles = files.filter(file => 
+        file.endsWith('.js') || file.endsWith('.mjs')
+      );
 
       if (testFiles.length === 0) {
         console.log('📝 No test files found in tests/ directory');
@@ -78,95 +59,97 @@ export class TestDiscovery {
       }
 
       console.log(`📋 Found ${testFiles.length} test file(s):`);
-
+      
       for (const file of testFiles) {
         console.log(`   📄 ${file}`);
         await this.loadTestFile(file);
       }
 
       console.log(`✅ Loaded ${this.tests.size} test(s) total\n`);
+      
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error('❌ Error discovering tests:', message);
+      console.error('❌ Error discovering tests:', error.message);
     }
   }
 
   /**
    * Load a specific test file and extract test objects
    */
-  async loadTestFile(filename: string): Promise<void> {
+  async loadTestFile(filename) {
     try {
       const filePath = join(this.testsDirectory, filename);
       const fileUrl = pathToFileURL(filePath).href;
-
+      
       // Dynamic import with cache busting
       const module = await import(`${fileUrl}?t=${Date.now()}`);
-
+      
       // Extract all exported test objects
       for (const [exportName, exportValue] of Object.entries(module)) {
         if (this.isValidTest(exportValue)) {
-          const test = exportValue as TestConfig;
-          this.tests.set(test.id, {
-            ...test,
+          this.tests.set(exportValue.id, {
+            ...exportValue,
             sourceFile: filename,
-            exportName,
+            exportName
           });
-          console.log(`   ✓ ${test.id}: ${test.name}`);
+          console.log(`   ✓ ${exportValue.id}: ${exportValue.name}`);
         }
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(`❌ Error loading ${filename}:`, message);
+      console.error(`❌ Error loading ${filename}:`, error.message);
     }
   }
 
   /**
    * Validate if an object is a valid test
    */
-  private isValidTest(obj: unknown): obj is TestConfig {
+  isValidTest(obj) {
     return (
-      obj !== null &&
+      obj && 
       typeof obj === 'object' &&
-      typeof (obj as any).id === 'string' &&
-      typeof (obj as any).name === 'string' &&
-      (typeof (obj as any).task === 'string' || typeof (obj as any).execute === 'function')
+      typeof obj.id === 'string' &&
+      typeof obj.name === 'string' &&
+      (typeof obj.task === 'string' || typeof obj.execute === 'function')
     );
   }
 
   /**
    * Get test by ID
    */
-  getTest(id: string): DiscoveredTest | undefined {
+  getTest(id) {
     return this.tests.get(id);
   }
 
   /**
    * Get all tests
    */
-  getAllTests(): DiscoveredTest[] {
+  getAllTests() {
     return Array.from(this.tests.values());
   }
 
   /**
    * Get tests by tag
    */
-  getTestsByTag(tag: string): DiscoveredTest[] {
-    return this.getAllTests().filter((test) => test.tags && test.tags.includes(tag));
+  getTestsByTag(tag) {
+    return this.getAllTests().filter(test => 
+      test.tags && test.tags.includes(tag)
+    );
   }
 
   /**
    * Get tests by priority
    */
-  getTestsByPriority(priority: string): DiscoveredTest[] {
-    return this.getAllTests().filter((test) => test.priority === priority);
+  getTestsByPriority(priority) {
+    return this.getAllTests().filter(test => 
+      test.priority === priority
+    );
   }
 
   /**
    * List all available tests
    */
-  listTests(): void {
+  listTests() {
     const tests = this.getAllTests();
-
+    
     if (tests.length === 0) {
       console.log('📝 No tests found');
       console.log('💡 Create test files in the tests/ directory');
@@ -175,9 +158,9 @@ export class TestDiscovery {
 
     console.log('\n📋 Available Tests:');
     console.log('══════════════════════════════════════');
-
-    const grouped: Record<string, DiscoveredTest[]> = {};
-    tests.forEach((test) => {
+    
+    const grouped = {};
+    tests.forEach(test => {
       const priority = test.priority || 'Unknown';
       if (!grouped[priority]) grouped[priority] = [];
       grouped[priority].push(test);
@@ -185,7 +168,7 @@ export class TestDiscovery {
 
     for (const [priority, priorityTests] of Object.entries(grouped)) {
       console.log(`\n🎯 ${priority} Priority:`);
-      priorityTests.forEach((test) => {
+      priorityTests.forEach(test => {
         const tags = test.tags ? `[${test.tags.join(', ')}]` : '';
         console.log(`  ${test.id}: ${test.name} ${tags}`);
         console.log(`    📄 File: ${test.sourceFile}`);
@@ -199,23 +182,23 @@ export class TestDiscovery {
 }
 
 // Standalone functions for CLI usage
-let discoveryInstance: TestDiscovery | null = null;
+let discoveryInstance = null;
 
-async function ensureDiscovery(config: FrameworkConfig | null = null): Promise<TestDiscovery> {
+async function ensureDiscovery(config = null) {
   if (!discoveryInstance || config) {
     discoveryInstance = new TestDiscovery();
-    if (config?.testsDirectory) {
-      discoveryInstance.testsDirectory = resolve(process.cwd(), config.testsDirectory);
+    if (config?.execution?.testsDirectory) {
+      discoveryInstance.testsDirectory = resolve(process.cwd(), config.execution.testsDirectory);
     }
     await discoveryInstance.discoverTests();
   }
   return discoveryInstance;
 }
 
-export async function runSingleTestById(testId: string, config: FrameworkConfig | null = null): Promise<DiscoveryResult> {
+export async function runSingleTestById(testId, config = null) {
   const discovery = await ensureDiscovery(config);
   const test = discovery.getTest(testId);
-
+  
   if (!test) {
     console.error(`❌ Test not found: ${testId}`);
     console.log('💡 Use "endorphin list" to see available tests');
@@ -224,50 +207,49 @@ export async function runSingleTestById(testId: string, config: FrameworkConfig 
     }
     safeExit(1);
   }
-
+  
   if (isTestEnvironment()) {
     return { success: true, test };
   }
 
   const reporter = new ConsoleReporter();
   reporter.startSession();
-
+  
   // Set environment variable to reduce noise from browser framework
   process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
-
-  const { EnhancedBrowserTestFramework } = await import('@core/browser-framework.js');
-  const framework = new EnhancedBrowserTestFramework(config || undefined);
-
+  
+  const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
+  const framework = new EnhancedBrowserTestFramework(config);
+  
   try {
     await framework.initialize();
-
+    
     const startTime = performance.now();
     reporter.startTest(test.id, test.name);
-
+    
     try {
       const result = await framework.runSingleTest(test);
       const duration = Math.round(performance.now() - startTime);
       const status = result.success ? 'SUCCESS' : 'FAILED';
-
+      
       reporter.completeTest(test.id, test.name, status, duration, result.error);
     } catch (error) {
       const duration = Math.round(performance.now() - startTime);
-      const message = error instanceof Error ? error.message : String(error);
-      reporter.completeTest(test.id, test.name, 'FAILED', duration, message);
+      reporter.completeTest(test.id, test.name, 'FAILED', duration, error.message);
     }
-
+    
     const summary = reporter.endSession();
-    return {
-      success: summary.success,
-      passed: summary.passedTests,
-      failed: summary.failedTests,
-      total: summary.totalTests,
+    return { 
+      success: summary.success, 
+      passed: summary.passedTests, 
+      failed: summary.failedTests, 
+      total: summary.totalTests 
     };
+    
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('❌ Test execution failed:', message);
+    console.error('❌ Test execution failed:', error.message);
     if (isTestEnvironment()) {
-      return { success: false, error: message };
+      return { success: false, error: error.message };
     }
     safeExit(1);
   } finally {
@@ -277,10 +259,10 @@ export async function runSingleTestById(testId: string, config: FrameworkConfig 
   }
 }
 
-export async function runTestsByTag(tag: string, config: FrameworkConfig | null = null): Promise<DiscoveryResult> {
+export async function runTestsByTag(tag, config = null) {
   const discovery = await ensureDiscovery(config);
   const tests = discovery.getTestsByTag(tag);
-
+  
   if (tests.length === 0) {
     console.error(`❌ No tests found with tag: ${tag}`);
     if (isTestEnvironment()) {
@@ -288,52 +270,51 @@ export async function runTestsByTag(tag: string, config: FrameworkConfig | null 
     }
     safeExit(1);
   }
-
+  
   if (isTestEnvironment()) {
     return { success: true, tests };
   }
 
   const reporter = new ConsoleReporter();
   reporter.startSession();
-
+  
   // Set environment variable to reduce noise from browser framework
   process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
-
-  const { EnhancedBrowserTestFramework } = await import('@core/browser-framework.js');
-  const framework = new EnhancedBrowserTestFramework(config || undefined);
-
+  
+  const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
+  const framework = new EnhancedBrowserTestFramework(config);
+  
   try {
     await framework.initialize();
-
+    
     for (const test of tests) {
       const startTime = performance.now();
       reporter.startTest(test.id, test.name);
-
+      
       try {
         const result = await framework.runSingleTest(test);
         const duration = Math.round(performance.now() - startTime);
         const status = result.success ? 'SUCCESS' : 'FAILED';
-
+        
         reporter.completeTest(test.id, test.name, status, duration, result.error);
       } catch (error) {
         const duration = Math.round(performance.now() - startTime);
-        const message = error instanceof Error ? error.message : String(error);
-        reporter.completeTest(test.id, test.name, 'FAILED', duration, message);
+        reporter.completeTest(test.id, test.name, 'FAILED', duration, error.message);
       }
     }
-
+    
     const summary = reporter.endSession();
-    return {
-      success: summary.success,
-      passed: summary.passedTests,
-      failed: summary.failedTests,
-      total: summary.totalTests,
+    return { 
+      success: summary.success, 
+      passed: summary.passedTests, 
+      failed: summary.failedTests, 
+      total: summary.totalTests 
     };
+    
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('❌ Test execution failed:', message);
+    console.error('❌ Test execution failed:', error.message);
     if (isTestEnvironment()) {
-      return { success: false, error: message };
+      return { success: false, error: error.message };
     }
     safeExit(1);
   } finally {
@@ -343,10 +324,10 @@ export async function runTestsByTag(tag: string, config: FrameworkConfig | null 
   }
 }
 
-export async function runTestsByPriority(priority: string, config: FrameworkConfig | null = null): Promise<DiscoveryResult> {
+export async function runTestsByPriority(priority, config = null) {
   const discovery = await ensureDiscovery(config);
   const tests = discovery.getTestsByPriority(priority);
-
+  
   if (tests.length === 0) {
     console.error(`❌ No tests found with priority: ${priority}`);
     if (isTestEnvironment()) {
@@ -354,52 +335,51 @@ export async function runTestsByPriority(priority: string, config: FrameworkConf
     }
     safeExit(1);
   }
-
+  
   if (isTestEnvironment()) {
     return { success: true, tests };
   }
 
   const reporter = new ConsoleReporter();
   reporter.startSession();
-
+  
   // Set environment variable to reduce noise from browser framework
   process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
-
-  const { EnhancedBrowserTestFramework } = await import('@core/browser-framework.js');
-  const framework = new EnhancedBrowserTestFramework(config || undefined);
-
+  
+  const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
+  const framework = new EnhancedBrowserTestFramework(config);
+  
   try {
     await framework.initialize();
-
+    
     for (const test of tests) {
       const startTime = performance.now();
       reporter.startTest(test.id, test.name);
-
+      
       try {
         const result = await framework.runSingleTest(test);
         const duration = Math.round(performance.now() - startTime);
         const status = result.success ? 'SUCCESS' : 'FAILED';
-
+        
         reporter.completeTest(test.id, test.name, status, duration, result.error);
       } catch (error) {
         const duration = Math.round(performance.now() - startTime);
-        const message = error instanceof Error ? error.message : String(error);
-        reporter.completeTest(test.id, test.name, 'FAILED', duration, message);
+        reporter.completeTest(test.id, test.name, 'FAILED', duration, error.message);
       }
     }
-
+    
     const summary = reporter.endSession();
-    return {
-      success: summary.success,
-      passed: summary.passedTests,
-      failed: summary.failedTests,
-      total: summary.totalTests,
+    return { 
+      success: summary.success, 
+      passed: summary.passedTests, 
+      failed: summary.failedTests, 
+      total: summary.totalTests 
     };
+    
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('❌ Test execution failed:', message);
+    console.error('❌ Test execution failed:', error.message);
     if (isTestEnvironment()) {
-      return { success: false, error: message };
+      return { success: false, error: error.message };
     }
     safeExit(1);
   } finally {
@@ -409,10 +389,10 @@ export async function runTestsByPriority(priority: string, config: FrameworkConf
   }
 }
 
-export async function runAllTests(config: FrameworkConfig | null = null): Promise<DiscoveryResult> {
+export async function runAllTests(config = null) {
   const discovery = await ensureDiscovery(config);
   const tests = discovery.getAllTests();
-
+  
   if (tests.length === 0) {
     console.error('❌ No tests found');
     if (isTestEnvironment()) {
@@ -420,27 +400,27 @@ export async function runAllTests(config: FrameworkConfig | null = null): Promis
     }
     safeExit(1);
   }
-
+  
   if (isTestEnvironment()) {
     return { success: true, tests };
   }
 
   const reporter = new ConsoleReporter();
   reporter.startSession();
-
+  
   // Set environment variable to reduce noise from browser framework
   process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
-
-  const { EnhancedBrowserTestFramework } = await import('@core/browser-framework.js');
-  const framework = new EnhancedBrowserTestFramework(config || undefined);
-
+  
+  const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
+  const framework = new EnhancedBrowserTestFramework(config);
+  
   try {
     await framework.initialize();
-
+    
     for (const test of tests) {
       const startTime = performance.now();
       reporter.startTest(test.id, test.name);
-
+      
       try {
         const result = await framework.runSingleTest(test);
         const duration = Math.round(performance.now() - startTime);
@@ -448,23 +428,22 @@ export async function runAllTests(config: FrameworkConfig | null = null): Promis
         reporter.completeTest(test.id, test.name, status, duration, result.error);
       } catch (error) {
         const duration = Math.round(performance.now() - startTime);
-        const message = error instanceof Error ? error.message : String(error);
-        reporter.completeTest(test.id, test.name, 'FAILED', duration, message);
+        reporter.completeTest(test.id, test.name, 'FAILED', duration, error.message);
       }
     }
-
+    
     const summary = reporter.endSession();
-    return {
-      success: summary.success,
-      passed: summary.passedTests,
-      failed: summary.failedTests,
-      total: summary.totalTests,
+    return { 
+      success: summary.success, 
+      passed: summary.passedTests, 
+      failed: summary.failedTests, 
+      total: summary.totalTests 
     };
+    
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('❌ Test execution failed:', message);
+    console.error('❌ Test execution failed:', error.message);
     if (isTestEnvironment()) {
-      return { success: false, error: message };
+      return { success: false, error: error.message };
     }
     safeExit(1);
   } finally {
@@ -474,35 +453,33 @@ export async function runAllTests(config: FrameworkConfig | null = null): Promis
   }
 }
 
-export async function listAllTests(config: FrameworkConfig | null = null): Promise<DiscoveryResult> {
+export async function listAllTests(config = null) {
   const discovery = await ensureDiscovery(config);
   const tests = discovery.getAllTests();
-
+  
   if (isTestEnvironment()) {
     return { success: true, tests };
   }
-
+  
   discovery.listTests();
-  return { success: true, tests };
 }
 
 /**
  * Discover tests and return them as an array
- * @param config - Configuration object
- * @returns Array of discovered tests
+ * @param {Object} config - Configuration object
+ * @returns {Array} Array of discovered tests
  */
-export async function discoverTests(config: FrameworkConfig): Promise<TestConfig[]> {
+export async function discoverTests(config) {
   const discovery = new TestDiscovery();
-  if (config?.testsDirectory) {
-    discovery.testsDirectory = resolve(process.cwd(), config.testsDirectory);
+  if (config?.execution?.testsDirectory) {
+    discovery.testsDirectory = resolve(process.cwd(), config.execution.testsDirectory);
   }
-
+  
   try {
     await discovery.discoverTests();
-    return Array.from(discovery.getAllTests());
+    return Array.from(discovery.tests.values());
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('❌ Error discovering tests:', message);
+    console.error('❌ Error discovering tests:', error.message);
     return [];
   }
 }

@@ -33,6 +33,6 @@ yarn-error.log*
 # Build artifacts
 dist/
 build/
-coverage/
+tests/development/coverage/
 dev-tests/html
 dev-tests/results

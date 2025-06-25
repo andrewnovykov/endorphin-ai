@@ -64,8 +64,8 @@
   "git.confirmSync": false,
   "git.enableSmartCommit": true,
   // Testing
-  "vitest.enable": true,
-  "vitest.commandLine": "npx vitest",
+  "jest.jestCommandLine": "npm test",
+  "jest.autoRun": "off",
   // Playwright
   "playwright.showTrace": true,
   "playwright.reuseBrowser": true,

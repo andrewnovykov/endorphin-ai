@@ -30,7 +30,8 @@ with **TypeScript** for type safety and better developer experience.
 - `framework/config/` - Configuration system (TypeScript)
 - `framework/results/` - Result management (TypeScript)
 - `examples/` - User examples and templates
-- `development-tests/` - Vitest test files
+- `development-tests/` - Package integration tests
+- `tests/development/` - Jest test files (unit & integration)
 - `roadmap/` - Project documentation and progress tracking
 
 ## Path Aliases (Use These!)
@@ -54,7 +55,7 @@ Always use these TypeScript path aliases in framework code:
 
 ## Testing & Running
 
-- **Framework Tests**: `npm run test` (Vitest in `development-tests/framework-tests/`)
+- **Framework Tests**: `npm run test` (Jest in `tests/development/`)
 - **Package Tests**: `npm run test:package` (Integration tests)
 - **Type Checking**: `npm run type-check` (TypeScript compilation check)
 - **Build**: `npm run build` (Compile TypeScript to JavaScript)
@@ -103,7 +104,7 @@ export const TEST_ID = {
 
 - **Core**: Playwright for browser automation (TypeScript support)
 - **AI**: OpenAI API with LangChain (TypeScript)
-- **Testing**: Vitest for framework tests
+- **Testing**: Jest for framework tests
 - **Build**: TypeScript compiler, tsx for development
 - **Config**: Custom config loader in `@core/config-loader.ts`
 
@@ -125,7 +126,7 @@ Key interfaces and types are modularized in `framework/types/`:
 - Complex programmatic test writing (users write simple objects)
 - Importing framework code in user tests
 - Creating test files in framework directory
-- Using Jest (we use Vitest)
+- Using Vitest (we use Jest)
 - Adding dependencies without discussion
 - **Creating markdown files in root** (use `roadmap/in-progress/` instead)
 - Relative imports (use path aliases: `@core/`, `@tools/`, etc.)

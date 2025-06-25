@@ -1,0 +1,66 @@
+===========================================
+Test: Init Command
+Description: Test project initialization commands
+Script: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/scripts/init/test-init-command.sh
+Start Time: Tue Jun 24 18:30:21 PDT 2025
+===========================================
+
+🎯 Testing Init Command
+=====================
+📁 Created test directory: temp-init-test
+🚀 Running: npx endorphin init
+node:internal/modules/esm/get_format:160
+  throw new ERR_UNKNOWN_FILE_EXTENSION(ext, filepath);
+        ^
+
+TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /Users/papapin777/Documents/CODE/AI/endorphin-ai/bin/endorphin.ts
+    at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:160:9)
+    at defaultGetFormat (node:internal/modules/esm/get_format:203:36)
+    at defaultLoad (node:internal/modules/esm/load:143:22)
+    at async ModuleLoader.load (node:internal/modules/esm/loader:553:7)
+    at async ModuleLoader.moduleProvider (node:internal/modules/esm/loader:434:45)
+    at async link (node:internal/modules/esm/module_job:87:21) {
+  code: 'ERR_UNKNOWN_FILE_EXTENSION'
+}
+
+Node.js v20.17.0
+📋 Checking created files...
+❌ Missing: .env
+❌ Missing: endorphin.config.js
+❌ Missing: tests/sample-test.js
+❌ Missing: .gitignore
+❌ Missing: README-ENDORPHIN.md
+❌ Missing directory: tests/
+❌ Missing directory: test-results/
+❌ Missing directory: test-recorder/
+🧪 Validating example test...
+❌ Example test has syntax errors
+⚙️ Validating config file...
+❌ Config file has syntax errors
+🔧 Testing CLI commands...
+❌ CLI version command failed
+❌ CLI list command failed
+🔄 Testing second init (should not overwrite)...
+node:internal/modules/esm/get_format:160
+  throw new ERR_UNKNOWN_FILE_EXTENSION(ext, filepath);
+        ^
+
+TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /Users/papapin777/Documents/CODE/AI/endorphin-ai/bin/endorphin.ts
+    at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:160:9)
+    at defaultGetFormat (node:internal/modules/esm/get_format:203:36)
+    at defaultLoad (node:internal/modules/esm/load:143:22)
+    at async ModuleLoader.load (node:internal/modules/esm/loader:553:7)
+    at async ModuleLoader.moduleProvider (node:internal/modules/esm/loader:434:45)
+    at async link (node:internal/modules/esm/module_job:87:21) {
+  code: 'ERR_UNKNOWN_FILE_EXTENSION'
+}
+
+Node.js v20.17.0
+✅ Second init doesn't overwrite existing files
+💥 Init command test FAILED
+
+===========================================
+Test Result: FAILED
+End Time: Tue Jun 24 18:30:25 PDT 2025
+Duration: 5s
+===========================================

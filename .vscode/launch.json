@@ -6,39 +6,54 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/bin/endorphin.js",
-      "args": ["run", "test", "QE-001"],
+      "args": [
+        "run",
+        "test",
+        "QE-001"
+      ],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}/examples",
       "env": {
         "NODE_ENV": "development"
       },
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     },
     {
       "name": "Debug Test Recorder",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/bin/endorphin.js",
-      "args": ["run", "test-recorder"],
+      "args": [
+        "run",
+        "test-recorder"
+      ],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}/examples",
       "env": {
         "NODE_ENV": "development"
       },
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     },
     {
       "name": "Debug Framework Tests",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/.bin/vitest",
-      "args": ["run"],
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": [
+        "--runInBand"
+      ],
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}/development-tests/framework-tests",
+      "cwd": "${workspaceFolder}",
       "env": {
         "NODE_ENV": "test"
       },
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     },
     {
       "name": "Debug Package Tests",
@@ -56,13 +71,18 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/framework/test-framework.js",
-      "args": ["--test", "${input:testId}"],
+      "args": [
+        "--test",
+        "${input:testId}"
+      ],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
       "env": {
         "NODE_ENV": "development"
       },
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     },
     {
       "name": "Debug Browser Framework",
@@ -74,7 +94,9 @@
       "env": {
         "NODE_ENV": "development"
       },
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     }
   ],
   "inputs": [

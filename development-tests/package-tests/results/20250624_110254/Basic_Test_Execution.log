@@ -1,0 +1,35 @@
+===========================================
+Test: Basic Test Execution
+Description: Run user tests and verify execution
+Script: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/scripts/runner/run-test.sh
+Start Time: Tue Jun 24 11:03:34 PDT 2025
+===========================================
+
+🧪 Running Endorphin AI Test from User Project
+==============================================
+🆔 Test ID: USER-001
+⏰ Current time: Tue Jun 24 11:03:34 PDT 2025
+[0;34m📁 Working directory: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin[0m
+
+📋 Available tests:
+node:internal/modules/esm/get_format:160
+  throw new ERR_UNKNOWN_FILE_EXTENSION(ext, filepath);
+        ^
+
+TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /Users/papapin777/Documents/CODE/AI/endorphin-ai/bin/endorphin.ts
+    at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:160:9)
+    at defaultGetFormat (node:internal/modules/esm/get_format:203:36)
+    at defaultLoad (node:internal/modules/esm/load:143:22)
+    at async ModuleLoader.load (node:internal/modules/esm/loader:553:7)
+    at async ModuleLoader.moduleProvider (node:internal/modules/esm/loader:434:45)
+    at async link (node:internal/modules/esm/module_job:87:21) {
+  code: 'ERR_UNKNOWN_FILE_EXTENSION'
+}
+
+Node.js v20.17.0
+
+===========================================
+Test Result: FAILED
+End Time: Tue Jun 24 11:03:35 PDT 2025
+Duration: 1s
+===========================================
