@@ -94,6 +94,13 @@ describe('TaskExecutor', () => {
               duration: 150
             };
           }
+          // Default mock return for other action types
+          return {
+            success: false,
+            action: action,
+            result: 'Unsupported action type',
+            duration: 0
+          };
         })
       };
 
@@ -121,6 +128,13 @@ describe('TaskExecutor', () => {
               duration: 200
             };
           }
+          // Default mock return for other action types
+          return {
+            success: false,
+            action: action,
+            result: 'Unsupported action type',
+            duration: 0
+          };
         })
       };
 
@@ -148,6 +162,13 @@ describe('TaskExecutor', () => {
               duration: action.timeout || 1000
             };
           }
+          // Default mock return for other action types
+          return {
+            success: false,
+            action: action,
+            result: 'Unsupported action type',
+            duration: 0
+          };
         })
       };
 
@@ -222,13 +243,29 @@ describe('TaskExecutor', () => {
             wait: ['type']
           };
 
-          const required = requiredFields[action.type] || [];
-          const missing = required.filter(field => !action[field]);
+          type ActionType = keyof typeof requiredFields;
+
+          interface Action {
+            type: ActionType;
+            selector?: string;
+            value?: string;
+            url?: string;
+            [key: string]: any;
+          }
+
+          const required = requiredFields[(action.type as ActionType)] || [];
+
+            const missing: string[] = required.filter((field: string) => !action[field]);
+
+          interface ValidationResult {
+            valid: boolean;
+            errors: string[];
+          }
 
           return {
             valid: missing.length === 0,
-            errors: missing.map(field => `Missing required field: ${field}`)
-          };
+            errors: missing.map((field: string) => `Missing required field: ${field}`)
+          } as ValidationResult;
         })
       };
 

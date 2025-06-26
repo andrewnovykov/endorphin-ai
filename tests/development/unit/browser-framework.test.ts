@@ -3,9 +3,42 @@
  */
 
 describe('BrowserFramework', () => {
-  let mockBrowser;
-  let mockPage;
-  let mockContext;
+  let mockBrowser: MockBrowser;
+
+  interface MockLocator {
+    click: jest.Mock<Promise<boolean>, []>;
+    fill: jest.Mock<Promise<boolean>, [string?]>;
+    textContent: jest.Mock<Promise<string>, []>;
+    isVisible: jest.Mock<Promise<boolean>, []>;
+    getAttribute: jest.Mock<Promise<string>, [string?]>;
+  }
+
+  interface MockPage {
+    goto: jest.Mock<Promise<boolean>, [string]>;
+    close: jest.Mock<Promise<boolean>, []>;
+    screenshot: jest.Mock<Promise<Buffer>, [object?]>;
+    evaluate: jest.Mock<Promise<object>, [any?, ...any[]]>;
+    click: jest.Mock<Promise<boolean>, [string]>;
+    fill: jest.Mock<Promise<boolean>, [string, string]>;
+    waitForSelector: jest.Mock<Promise<object>, [string, object?]>;
+    waitForLoadState: jest.Mock<Promise<boolean>, [string?]>;
+    setViewportSize: jest.Mock<Promise<boolean>, [object]>;
+    locator: jest.Mock<MockLocator, [string]>;
+    url: jest.Mock<string, []>;
+  }
+
+  interface MockContext {
+    newPage: jest.Mock<Promise<MockPage>, []>;
+    close: jest.Mock<Promise<boolean>, []>;
+    setExtraHTTPHeaders: jest.Mock<Promise<boolean>, [object]>;
+  }
+
+  interface MockBrowser {
+    newContext: jest.Mock<Promise<MockContext>, [object?]>;
+    close: jest.Mock<Promise<boolean>, []>;
+  }
+  let mockPage: MockPage;
+  let mockContext: MockContext;
 
   beforeEach(() => {
     // Mock Playwright browser objects
@@ -45,8 +78,18 @@ describe('BrowserFramework', () => {
 
   describe('Browser Initialization', () => {
     test('should initialize browser with default config', async () => {
-      const mockFramework = {
-        initializeBrowser: jest.fn().mockResolvedValue({
+      interface MockFrameworkInitializeBrowserResult {
+        browser: MockBrowser;
+        context: MockContext;
+        page: MockPage;
+      }
+
+      interface MockFramework {
+        initializeBrowser: jest.Mock<Promise<MockFrameworkInitializeBrowserResult>, [object]>;
+      }
+
+      const mockFramework: MockFramework = {
+        initializeBrowser: jest.fn<Promise<MockFrameworkInitializeBrowserResult>, [object]>().mockResolvedValue({
           browser: mockBrowser,
           context: mockContext,
           page: mockPage

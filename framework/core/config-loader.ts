@@ -222,7 +222,7 @@ export class ConfigLoader {
   /**
    * Validate configuration
    */
-  validateConfig(config: FrameworkConfig): void {
+  validateConfig(config: FrameworkConfig, validateAI: boolean = true): void {
     // Validate browser viewport
     if (!config.browser.viewport.width || !config.browser.viewport.height) {
       throw new Error('Invalid viewport configuration: width and height must be positive numbers');
@@ -243,8 +243,8 @@ export class ConfigLoader {
       throw new Error('Invalid parallel setting: must be positive number');
     }
 
-    // Validate OpenAI API key
-    if (!config.ai.openai.apiKey) {
+    // Validate OpenAI API key only if AI validation is required
+    if (validateAI && !config.ai.openai.apiKey) {
       throw new Error('OpenAI API key is required. Set OPENAI_API_KEY environment variable or provide in config.');
     }
   }
@@ -281,8 +281,9 @@ export async function getConfig(options: {
   cwd?: string;
   configPath?: string;
   cliFlags?: CLIFlags;
+  validateAI?: boolean;
 } = {}): Promise<FrameworkConfig> {
-  const { cwd = process.cwd(), configPath, cliFlags = {} } = options;
+  const { cwd = process.cwd(), configPath, cliFlags = {}, validateAI = true } = options;
 
   // Change to specified directory temporarily
   const originalCwd = process.cwd();
@@ -302,7 +303,7 @@ export async function getConfig(options: {
       cliFlags
     );
 
-    configLoader.validateConfig(mergedConfig);
+    configLoader.validateConfig(mergedConfig, validateAI);
 
     globalConfig = mergedConfig;
     return mergedConfig;

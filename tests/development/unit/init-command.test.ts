@@ -87,7 +87,12 @@ describe('Init Command', () => {
       mockFs.access.mockRejectedValue(new Error('File not found')); // Config doesn't exist
       mockFs.mkdir.mockRejectedValue(error); // Fail on directory creation
 
-      await initProject(mockTargetDir);
+      try {
+        await initProject(mockTargetDir);
+      } catch (exitError) {
+        // Expected to throw due to process.exit mock
+        expect(exitError).toEqual(new Error('process.exit called'));
+      }
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Failed to initialize project:', error.message);
       expect(processExitSpy).toHaveBeenCalledWith(1);
@@ -120,7 +125,7 @@ describe('Init Command', () => {
 
     it('should process .env file with helpful comments', async () => {
       const mockEnvContent = 'OPENAI_API_KEY=your_openai_api_key_here';
-      mockFs.readFile.mockImplementation(((filePath) => {
+      mockFs.readFile.mockImplementation(((filePath: string) => {
         if (filePath.toString().includes('.env.example')) {
           return Promise.resolve(mockEnvContent);
         }
@@ -189,16 +194,20 @@ ${mockConfigContent}
     });
 
     it('should handle file copy errors gracefully', async () => {
-      mockFs.readFile.mockRejectedValue(new Error('File not found'));
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      // Mock examples directory not found
+      mockFs.access.mockRejectedValue(new Error('Examples directory not found'));
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
       await initProject(mockTargetDir);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/⚠️  Could not create .* File not found/)
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/⚠️  Examples directory not found at:/)
+      );
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '⚠️  Creating basic configuration files instead...'
       );
       
-      consoleSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
     });
 
     it('should create all expected files', async () => {

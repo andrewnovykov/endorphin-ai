@@ -1,4 +1,4 @@
-import type { Mock } from 'jest-mock';
+// No import needed; use jest.Mock type directly
 
 /**
  * Unit Tests for CLI Init Command - Project Initialization
@@ -9,19 +9,19 @@ import type { Mock } from 'jest-mock';
  * Interface for mock file system methods
  */
 interface MockFs {
-  existsSync: Mock<any, any>;
-  mkdirSync: Mock<any, any>;
-  writeFileSync: Mock<any, any>;
-  readFileSync: Mock<any, any>;
-  copyFileSync: Mock<any, any>;
+  existsSync: jest.Mock<any, any>;
+  mkdirSync: jest.Mock<any, any>;
+  writeFileSync: jest.Mock<any, any>;
+  readFileSync: jest.Mock<any, any>;
+  copyFileSync: jest.Mock<any, any>;
 }
 
 /**
  * Interface for mock path methods
  */
 interface MockPath {
-  join: Mock<any, any>;
-  resolve: Mock<any, any>;
+  join: jest.Mock<any, any>;
+  resolve: jest.Mock<any, any>;
 }
 
 /**
@@ -125,8 +125,8 @@ interface ValidateProjectNameResult {
 }
 
 describe('CLI Init Command', () => {
-  let mockFs;
-  let mockPath;
+  let mockFs: MockFs;
+  let mockPath: MockPath;
 
   beforeEach(() => {
     // Mock file system operations
@@ -188,9 +188,13 @@ describe('CLI Init Command', () => {
           };
         }),
 
-        generateFileContent: jest.fn().mockImplementation((fileName, variables) => {
-          const templates = {
-            'endorphin.config.js': `
+        generateFileContent: jest.fn().mockImplementation(
+          (
+            fileName: 'endorphin.config.js' | 'package.json' | '.gitignore' | 'README.md',
+            variables: { projectName: string }
+          ) => {
+            const templates = {
+              'endorphin.config.js': `
 export default {
   browser: {
     headless: false,
@@ -207,24 +211,25 @@ export default {
   testsDirectory: 'tests',
   resultsDirectory: 'test-results'
 };`,
-            'package.json': JSON.stringify({
-              name: variables.projectName,
-              version: '1.0.0',
-              type: 'module',
-              scripts: {
-                test: 'endorphin run test all',
-                'test:smoke': 'endorphin run test --tag smoke'
-              },
-              devDependencies: {
-                'endorphin-ai': '^0.4.0'
-              }
-            }, null, 2),
-            '.gitignore': 'node_modules/\ntest-results/\n.env',
-            'README.md': `# ${variables.projectName}\n\nEndorphin AI Test Project`
-          };
+              'package.json': JSON.stringify({
+                name: variables.projectName,
+                version: '1.0.0',
+                type: 'module',
+                scripts: {
+                  test: 'endorphin run test all',
+                  'test:smoke': 'endorphin run test --tag smoke'
+                },
+                devDependencies: {
+                  'endorphin-ai': '^0.4.0'
+                }
+              }, null, 2),
+              '.gitignore': 'node_modules/\ntest-results/\n.env',
+              'README.md': `# ${variables.projectName}\n\nEndorphin AI Test Project`
+            };
 
-          return templates[fileName] || `// ${fileName} content`;
-        })
+            return templates[fileName] || `// ${fileName} content`;
+          }
+        )
       };
 
       const result = await mockInitCommand.initProject('/path/to/project', { name: 'my-test-project' });
@@ -438,7 +443,7 @@ export default {
           }
         ]),
 
-        initFromTemplate: jest.fn().mockImplementation(async (templateName, projectPath) => {
+        initFromTemplate: jest.fn().mockImplementation(async (templateName: 'basic' | 'advanced' | 'enterprise', projectPath: string) => {
           const templates = {
             basic: {
               directories: ['tests', 'test-results'],
@@ -543,7 +548,7 @@ export default {
           };
         }),
 
-        promptUser: jest.fn().mockImplementation(async (questions) => {
+        promptUser: jest.fn().mockImplementation(async (questions: Array<{ name: string; prompt: string; default: any }>) => {
           const mockAnswers = {
             'Project name': 'my-test-project',
             'Test site URL': 'https://example.com',
@@ -553,9 +558,9 @@ export default {
             'Create sample tests': true
           };
 
-          const answers = {};
+          const answers: Record<string, any> = {};
           for (const question of questions) {
-            answers[question.name] = mockAnswers[question.prompt] || question.default;
+            answers[question.name] = (mockAnswers as Record<string, any>)[String(question.prompt)] ?? question.default;
           }
 
           return answers;
@@ -593,10 +598,15 @@ export default {
         initProject: jest.fn().mockImplementation(async (projectPath) => {
           try {
             mockFs.mkdirSync(projectPath);
+            return {
+              success: true,
+              error: undefined,
+              suggestion: undefined
+            };
           } catch (error) {
             return {
               success: false,
-              error: error.message,
+              error: error instanceof Error ? error.message : String(error),
               suggestion: 'Check directory permissions or run with elevated privileges'
             };
           }

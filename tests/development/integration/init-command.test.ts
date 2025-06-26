@@ -9,8 +9,8 @@ import path from 'path';
 import { initProject } from '../../../framework/cli/init-command';
 
 describe('Init Command Integration', () => {
-  let testDir;
-  let consoleLogSpy;
+  let testDir: string;
+  let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
 
   beforeEach(async () => {
     // Create a temporary test directory

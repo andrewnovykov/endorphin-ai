@@ -8,7 +8,7 @@ import { join, resolve } from 'path';
 import { performance } from 'perf_hooks';
 import { pathToFileURL } from 'url';
 
-import { ConsoleReporter } from '@reporters/console-reporter';
+import { ConsoleReporter } from '../reporters/console-reporter.js';
 import type {
   DiscoveryResult,
   FrameworkConfig,

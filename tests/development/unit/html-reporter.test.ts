@@ -11,18 +11,41 @@ describe('HTMLReporter', () => {
     test('should generate HTML report with test results', () => {
       const mockReporter = {
         generateReport: jest.fn().mockImplementation((testResults, options = {}) => {
-          const report = {
+            interface TestResult {
+            testId: string;
+            testName: string;
+            status: 'SUCCESS' | 'FAILED' | 'SKIPPED' | string;
+            duration: number;
+            error: string | null;
+            }
+
+            interface ReportSummary {
+            total: number;
+            passed: number;
+            failed: number;
+            skipped: number;
+            }
+
+            interface HtmlReport {
+            title: string;
+            timestamp: string;
+            summary: ReportSummary;
+            results: TestResult[];
+            html: string;
+            }
+
+            const report: HtmlReport = {
             title: options.title || 'Endorphin AI Test Report',
             timestamp: new Date().toISOString(),
             summary: {
-              total: testResults.length,
-              passed: testResults.filter(r => r.status === 'SUCCESS').length,
-              failed: testResults.filter(r => r.status === 'FAILED').length,
-              skipped: testResults.filter(r => r.status === 'SKIPPED').length
+              total: (testResults as TestResult[]).length,
+              passed: (testResults as TestResult[]).filter((r: TestResult) => r.status === 'SUCCESS').length,
+              failed: (testResults as TestResult[]).filter((r: TestResult) => r.status === 'FAILED').length,
+              skipped: (testResults as TestResult[]).filter((r: TestResult) => r.status === 'SKIPPED').length
             },
-            results: testResults,
+            results: testResults as TestResult[],
             html: '<html><body>Generated HTML Report</body></html>'
-          };
+            };
           return report;
         })
       };
@@ -143,7 +166,15 @@ describe('HTMLReporter', () => {
     test('should include test results table', () => {
       const mockReporter = {
         generateTestResultsTable: jest.fn().mockImplementation((results) => {
-          const rows = results.map(result => `
+          interface TestResult {
+            testId: string;
+            testName: string;
+            status: 'SUCCESS' | 'FAILED' | 'SKIPPED' | string;
+            duration: number;
+            error: string | null;
+          }
+
+          const rows: string = (results as TestResult[]).map((result: TestResult) => `
             <tr class="${result.status.toLowerCase()}">
               <td>${result.testId}</td>
               <td>${result.testName}</td>
@@ -287,8 +318,12 @@ describe('HTMLReporter', () => {
     test('should generate duration chart data', () => {
       const mockReporter = {
         generateDurationChart: jest.fn().mockImplementation((results) => {
-          const testNames = results.map(r => r.testName);
-          const durations = results.map(r => r.duration);
+            interface DurationChartResult {
+            testName: string;
+            duration: number;
+            }
+            const testNames: string[] = (results as DurationChartResult[]).map((r: DurationChartResult) => r.testName);
+            const durations: number[] = (results as DurationChartResult[]).map((r: DurationChartResult) => r.duration);
 
           return {
             type: 'bar',
@@ -321,8 +356,8 @@ describe('HTMLReporter', () => {
   describe('Report Customization', () => {
     test('should allow custom CSS themes', () => {
       const mockReporter = {
-        applyTheme: jest.fn().mockImplementation((html, theme) => {
-          const themes = {
+        applyTheme: jest.fn().mockImplementation((html: string, theme: 'dark' | 'light' | 'blue') => {
+          const themes: Record<'dark' | 'light' | 'blue', string> = {
             dark: 'body { background: #333; color: #fff; }',
             light: 'body { background: #fff; color: #333; }',
             blue: 'body { background: #e3f2fd; color: #1565c0; }'

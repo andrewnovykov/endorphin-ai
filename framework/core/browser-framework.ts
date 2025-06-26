@@ -3,6 +3,15 @@
  * Handles browser lifecycle, tool setup, and test session management
  */
 
+import { HumanMessage } from '@langchain/core/messages';
+import * as fs from 'fs';
+import { existsSync, readdirSync, rmSync, statSync } from 'fs';
+import * as path from 'path';
+import { Browser, BrowserContext, chromium, firefox, Page, webkit } from 'playwright';
+import { AGENT_CONFIG } from '../config/agent-config.js';
+import { HtmlReporter } from '../reporters/html-reporter.js';
+import { TestResultsManager } from '../results/test-results-manager.js';
+import { createAllTools } from '../tools/index.js';
 import type {
   BrowserConfig,
   BrowserTools,
@@ -19,17 +28,9 @@ import type {
   TestSession,
   TestStep,
   ToolCall
-} from '@/types/index';
-import { AGENT_CONFIG } from '@config/agent-config';
-import { setupAgent } from '@core/agent-setup';
-import { createTestSession, saveTestSession } from '@core/test-session';
-import { HumanMessage } from '@langchain/core/messages';
-import { HtmlReporter } from '@reporters/html-reporter';
-import { TestResultsManager } from '@results/test-results-manager';
-import { createAllTools } from '@tools/index.js';
-import fs, { existsSync, readdirSync, rmSync, statSync } from 'fs';
-import path from 'path';
-import { Browser, BrowserContext, chromium, firefox, Page, webkit } from 'playwright';
+} from '../types/index.js';
+import { setupAgent } from './agent-setup.js';
+import { createTestSession, saveTestSession } from './test-session.js';
 
 /**
  * Enhanced Browser Test Framework - Core Framework Class

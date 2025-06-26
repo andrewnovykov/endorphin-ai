@@ -231,6 +231,12 @@ export async function main(): Promise<void> {
     const subcommand = args[1];
     const target = args[2];
 
+    // Handle init command early (before config loading)
+    if (command === 'init') {
+      await handleInitCommand();
+      return;
+    }
+
     // Display molecular structure for test commands
     if (command === 'run' && (subcommand === 'test' || subcommand === 'test-recorder')) {
       const { ConsoleReporter } = await import('../framework/reporters/console-reporter.js');
@@ -238,27 +244,26 @@ export async function main(): Promise<void> {
       reporter.displayEndorphinMolecule();
     }
 
-    // Load configuration
+    // Parse CLI flags
     const cliFlags = parseCliFlags(args);
-    const config = await getConfig({ cwd: process.cwd(), cliFlags });
-
-    if (args.includes('--debug')) {
-      console.log('🔧 Loaded configuration:', JSON.stringify(config, null, 2));
-    }
 
     // Route commands
     switch (command) {
       case 'list':
-        await handleListCommand(config);
-        break;
-      case 'init':
-        await handleInitCommand();
+        // List command doesn't need AI validation
+        const listConfig = await getConfig({ cwd: process.cwd(), cliFlags, validateAI: false });
+        await handleListCommand(listConfig);
         break;
       case 'run':
+        // Run commands need full AI validation
+        const runConfig = await getConfig({ cwd: process.cwd(), cliFlags });
+        if (args.includes('--debug')) {
+          console.log('🔧 Loaded configuration:', JSON.stringify(runConfig, null, 2));
+        }
         if (subcommand === 'test-recorder') {
-          await handleTestRecorderCommand(config);
+          await handleTestRecorderCommand(runConfig);
         } else if (subcommand === 'test') {
-          await handleTestCommand(args, target, config);
+          await handleTestCommand(args, target, runConfig);
         } else {
           console.error(`❌ Unknown run command: ${subcommand}`);
           console.log('Use "endorphin help" for usage information');

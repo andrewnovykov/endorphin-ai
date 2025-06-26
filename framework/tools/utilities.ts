@@ -5,7 +5,7 @@
 
 import type { EnhancedBrowserTestFramework } from '@core/browser-framework';
 import { tool } from '@langchain/core/tools';
-import path from 'path';
+import * as path from 'path';
 import { z } from 'zod';
 
 /**

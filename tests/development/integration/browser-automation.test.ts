@@ -3,7 +3,76 @@
  */
 
 describe('Browser Automation Integration', () => {
-  let mockBrowser;
+  interface MockKeyboard {
+    press: jest.Mock<Promise<boolean>, [string]>;
+    type: jest.Mock<Promise<boolean>, [string]>;
+  }
+
+  interface MockMouse {
+    click: jest.Mock<Promise<boolean>, [string]>;
+    move: jest.Mock<Promise<boolean>, [number, number]>;
+  }
+
+  interface MockLocator {
+    click: jest.Mock<Promise<boolean>, []>;
+    fill: jest.Mock<Promise<boolean>, [string]>;
+    textContent: jest.Mock<Promise<string>, []>;
+    isVisible: jest.Mock<Promise<boolean>, []>;
+    getAttribute: jest.Mock<Promise<string>, [string]>;
+    count: jest.Mock<Promise<number>, []>;
+    nth: jest.Mock<MockLocator, [number]>;
+    waitFor: jest.Mock<Promise<boolean>, []>;
+  }
+
+  interface MockPage {
+    goto: jest.Mock<Promise<boolean>, [string]>;
+    close: jest.Mock<Promise<boolean>, []>;
+    screenshot: jest.Mock<Promise<Buffer>, [object?]>;
+    evaluate: jest.Mock<Promise<{ result: string }>, [any]>;
+    click: jest.Mock<Promise<boolean>, [string]>;
+    fill: jest.Mock<Promise<boolean>, [string, string]>;
+    selectOption: jest.Mock<Promise<string[]>, [string, string]>;
+    check: jest.Mock<Promise<boolean>, [string]>;
+    uncheck: jest.Mock<Promise<boolean>, [string]>;
+    waitForSelector: jest.Mock<Promise<any>, [string, object?]>;
+    waitForLoadState: jest.Mock<Promise<boolean>, [string?]>;
+    setViewportSize: jest.Mock<Promise<boolean>, [object]>;
+    url: jest.Mock<string, []>;
+    title: jest.Mock<Promise<string>, []>;
+    content: jest.Mock<Promise<string>, []>;
+    locator: jest.Mock<MockLocator, [string]>;
+    keyboard: MockKeyboard;
+    mouse: MockMouse;
+    setInputFiles?: jest.Mock<Promise<boolean>, [string, string[]]>;
+  }
+
+  interface MockContext {
+    newPage: jest.Mock<Promise<MockPage>, []>;
+    close: jest.Mock<Promise<boolean>, []>;
+    setExtraHTTPHeaders: jest.Mock<Promise<boolean>, [object]>;
+    pages: jest.Mock<MockPage[], []>;
+  }
+
+  interface MockBrowser {
+    newContext: jest.Mock<Promise<MockContext>, [object?]>;
+    close: jest.Mock<Promise<boolean>, []>;
+    contexts: jest.Mock<MockContext[], []>;
+  }
+
+  interface MockConfigLoader {
+    loadConfig: jest.Mock<Promise<any>, []>;
+  }
+
+  interface MockTaskExecutor {
+    executeTask: jest.Mock<Promise<{
+      success: boolean;
+      actions: any[];
+      duration: number;
+      aiTokensUsed: number;
+    }>, [string, string]>;
+  }
+
+  let mockBrowser: MockBrowser;
   let mockPage;
   let mockContext;
   let mockConfigLoader;

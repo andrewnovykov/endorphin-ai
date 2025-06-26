@@ -3,10 +3,71 @@
  */
 
 describe('CLI Integration Tests', () => {
-  let mockConfigLoader;
-  let mockTestDiscovery;
-  let mockBrowserFramework;
-  let mockReporter;
+  let mockConfigLoader: MockConfigLoader;
+  interface MockConfigLoader {
+    loadConfig: jest.Mock<Promise<{
+      browser: { headless: boolean; timeout: number };
+      ai: { openai: { apiKey: string; modelName: string } };
+      testsDirectory: string;
+      resultsDirectory: string;
+    }>>;
+  }
+
+  interface MockTestDiscovery {
+    discoverTests: jest.Mock<Promise<{
+      tests: Array<{
+        id: string;
+        name: string;
+        description: string;
+        priority: string;
+        tags: string[];
+        site: string;
+        task: string;
+      }>;
+      totalFound: number;
+      errors: any[];
+    }>, [string]>;
+    findTestById: jest.Mock<{
+      id: string;
+      name: string;
+      site: string;
+      task: string;
+    } | null, [string]>;
+    findTestsByTag: jest.Mock<Array<{
+      id: string;
+      name: string;
+      tags: string[];
+      site: string;
+      task: string;
+    }>, [string]>;
+  }
+
+  interface MockBrowserFramework {
+    initializeBrowser: jest.Mock<Promise<{
+      browser: object;
+      context: object;
+      page: object;
+    }>, [object]>;
+    executeBrowserTasks: jest.Mock<Promise<{
+      success: boolean;
+      actions?: string[];
+      duration: number;
+      error?: string;
+    }>, [string, string]>;
+    closeBrowser: jest.Mock<Promise<boolean>, []>;
+  }
+
+  interface MockReporter {
+    reportSessionStart: jest.Mock<void, [number]>;
+    reportTestStart: jest.Mock<void, [string]>;
+    reportTestResult: jest.Mock<void, [object]>;
+    generateSessionSummary: jest.Mock<void, []>;
+    reportSessionEnd: jest.Mock<void, []>;
+  }
+
+  let mockTestDiscovery: MockTestDiscovery;
+  let mockBrowserFramework: MockBrowserFramework;
+  let mockReporter: MockReporter;
 
   beforeEach(() => {
     // Mock all major components
@@ -42,7 +103,13 @@ describe('CLI Integration Tests', () => {
         task: 'Navigate to login page and authenticate user'
       }),
       findTestsByTag: jest.fn().mockReturnValue([
-        { id: 'TEST-001', name: 'Login Test', tags: ['auth'] }
+        {
+          id: 'TEST-001',
+          name: 'Login Test',
+          tags: ['auth', 'critical'],
+          site: 'https://example.com',
+          task: 'Navigate to login page and authenticate user'
+        }
       ])
     };
 
@@ -210,7 +277,7 @@ describe('CLI Integration Tests', () => {
               testName: 'Unknown Test',
               status: 'FAILED',
               duration: 0,
-              error: error.message
+              error: error instanceof Error ? error.message : String(error)
             });
             throw error;
           }
@@ -239,6 +306,10 @@ describe('CLI Integration Tests', () => {
           const config = await mockConfigLoader.loadConfig();
           const test = mockTestDiscovery.findTestById(testId);
           await mockBrowserFramework.initializeBrowser(config.browser);
+
+          if (!test) {
+            throw new Error(`Test ${testId} not found`);
+          }
           
           const result = await mockBrowserFramework.executeBrowserTasks(test.task, test.site);
           
@@ -292,6 +363,10 @@ describe('CLI Integration Tests', () => {
             const config = await mockConfigLoader.loadConfig();
             const test = mockTestDiscovery.findTestById(testId);
             browser = await mockBrowserFramework.initializeBrowser(config.browser);
+
+            if (!test) {
+              throw new Error(`Test ${testId} not found`);
+            }
             
             await mockBrowserFramework.executeBrowserTasks(test.task, test.site);
           } catch (error) {
@@ -316,13 +391,21 @@ describe('CLI Integration Tests', () => {
           const config = await mockConfigLoader.loadConfig();
           const test = mockTestDiscovery.findTestById(testId);
           await mockBrowserFramework.initializeBrowser(config.browser);
+
+          if (!test) {
+            throw new Error(`Test ${testId} not found`);
+          }
           
           const result = await mockBrowserFramework.executeBrowserTasks(test.task, test.site);
           
           try {
             await mockBrowserFramework.closeBrowser();
           } catch (error) {
-            console.error('Failed to close browser:', error.message);
+            if (error instanceof Error) {
+              console.error('Failed to close browser:', error.message);
+            } else {
+              console.error('Failed to close browser:', String(error));
+            }
           }
           
           return result;
@@ -351,6 +434,10 @@ describe('CLI Integration Tests', () => {
           const config = await mockConfigLoader.loadConfig();
           const test = mockTestDiscovery.findTestById(testId);
           await mockBrowserFramework.initializeBrowser(config.browser);
+
+          if (!test) {
+            throw new Error(`Test ${testId} not found`);
+          }
           
           const result = await mockBrowserFramework.executeBrowserTasks(test.task, test.site);
           

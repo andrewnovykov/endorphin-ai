@@ -3,7 +3,54 @@
  */
 
 describe('End-to-End Testing Workflow', () => {
-  let mockComponents;
+  /**
+   * Interfaces for mock components used in the test suite
+   */
+
+  interface MockConfigLoader {
+    loadConfig: jest.Mock<Promise<any>, any>;
+  }
+
+  interface MockTestDiscovery {
+    discoverTests: jest.Mock<Promise<any>, any>;
+    findTestById: jest.Mock<any, [string]>;
+    findTestsByTag: jest.Mock<any[], [string]>;
+  }
+
+  interface MockBrowserFramework {
+    initializeBrowser: jest.Mock<Promise<any>, any>;
+    closeBrowser: jest.Mock<Promise<boolean>, any>;
+    executeTask: jest.Mock<Promise<any>, [string, string]>;
+  }
+
+  interface MockConsoleReporter {
+    reportSessionStart: jest.Mock<void, [number]>;
+    reportTestStart: jest.Mock<void, [string]>;
+    reportTestResult: jest.Mock<void, [any]>;
+    reportSessionEnd: jest.Mock<void, []>;
+    generateSessionSummary: jest.Mock<void, [any]>;
+  }
+
+  interface MockHtmlReporter {
+    generateReport: jest.Mock<any, [any[], any?]>;
+    saveReport: jest.Mock<Promise<any>, [string, string]>;
+  }
+
+  interface MockResultManager {
+    saveTestResult: jest.Mock<Promise<any>, [any]>;
+    getTestHistory: jest.Mock<Promise<any[]>, [string]>;
+  }
+
+  interface MockComponents {
+    configLoader: MockConfigLoader;
+    testDiscovery: MockTestDiscovery;
+    browserFramework: MockBrowserFramework;
+    consoleReporter: MockConsoleReporter;
+    htmlReporter: MockHtmlReporter;
+    resultManager: MockResultManager;
+  }
+
+  let mockComponents: MockComponents;
 
   beforeEach(() => {
     // Setup comprehensive mock ecosystem

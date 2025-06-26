@@ -2,6 +2,31 @@
  * Jest Setup File for Endorphin AI Framework Tests
  */
 
+export { }; // Ensure this file is treated as a module for global augmentation
+
+// Extend NodeJS global type to include mockBrowser, mockFs, and originalConsole
+
+declare global {
+  // Minimal type for the mocked browser
+  // You can expand these types as needed for your tests
+  var mockBrowser: {
+    newContext: jest.Mock;
+    close: jest.Mock;
+  };
+  var mockFs: {
+    existsSync: jest.Mock;
+    readFileSync: jest.Mock;
+    writeFileSync: jest.Mock;
+    mkdirSync: jest.Mock;
+  };
+  var originalConsole: {
+    log: typeof console.log;
+    error: typeof console.error;
+    warn: typeof console.warn;
+    info: typeof console.info;
+  };
+}
+
 // Mock environment variables
 process.env.NODE_ENV = 'test';
 process.env.OPENAI_API_KEY = 'test-api-key';

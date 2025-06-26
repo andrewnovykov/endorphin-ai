@@ -17,6 +17,24 @@ describe('Interactive CLI Features', () => {
     await fs.rm(testProjectDir, { recursive: true, force: true }).catch(() => {});
     await fs.mkdir(testProjectDir, { recursive: true });
     
+    // Copy .env from main repo or create a test one
+    const mainRepoRoot = path.join(__dirname, '..', '..');
+    const mainEnvPath = path.join(mainRepoRoot, '.env');
+    const testEnvPath = path.join(testProjectDir, '.env');
+    
+    try {
+      const envContent = await fs.readFile(mainEnvPath, 'utf8');
+      await fs.writeFile(testEnvPath, envContent);
+    } catch (error) {
+      // Create a basic .env file for testing
+      const testEnvContent = `OPENAI_API_KEY=test-key-for-testing
+BASE_URL=https://qafromla.herokuapp.com/
+HEADLESS=false
+ENDORPHIN_HEADLESS=false
+`;
+      await fs.writeFile(testEnvPath, testEnvContent);
+    }
+    
     // Initialize project
     process.chdir(testProjectDir);
     await runInitCommand();
@@ -35,7 +53,7 @@ describe('Interactive CLI Features', () => {
         const child = spawn('npx', ['endorphin', 'run', 'test-recorder'], {
           cwd: testProjectDir,
           stdio: ['pipe', 'pipe', 'pipe'],
-          env: { ...process.env, OPENAI_API_KEY: 'test-key' }
+          env: { ...process.env, OPENAI_API_KEY: 'test-key', NODE_ENV: 'test' }
         });
 
         let output = '';
@@ -74,7 +92,7 @@ describe('Interactive CLI Features', () => {
         const child = spawn('npx', ['endorphin', 'run', 'test-recorder'], {
           cwd: testProjectDir,
           stdio: ['pipe', 'pipe', 'pipe'],
-          env: { ...process.env, OPENAI_API_KEY: 'test-key' }
+          env: { ...process.env, OPENAI_API_KEY: 'test-key', NODE_ENV: 'test' }
         });
 
         let output = '';
@@ -115,7 +133,8 @@ describe('Interactive CLI Features', () => {
       try {
         const child = spawn('npx', ['endorphin', 'init'], {
           cwd: freshDir,
-          stdio: ['pipe', 'pipe', 'pipe']
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env: { ...process.env, OPENAI_API_KEY: 'test-key', NODE_ENV: 'test' }
         });
 
         let output = '';
@@ -135,7 +154,7 @@ describe('Interactive CLI Features', () => {
         expect(result.stdout).toContain('initialized');
 
         // Verify files were created
-        const configExists = await fs.access(path.join(freshDir, 'endorphin.config.js'))
+        const configExists = await fs.access(path.join(freshDir, 'endorphin.config.ts'))
           .then(() => true).catch(() => false);
         expect(configExists).toBe(true);
         
@@ -149,7 +168,8 @@ describe('Interactive CLI Features', () => {
   describe('CLI Menu Navigation', () => {
     it('should handle main menu navigation', async () => {
       const child = spawn('npx', ['endorphin'], {
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env, OPENAI_API_KEY: 'test-key', NODE_ENV: 'test' }
       });
 
       let output = '';
@@ -170,7 +190,8 @@ describe('Interactive CLI Features', () => {
 
     it('should handle invalid menu selections gracefully', async () => {
       const child = spawn('npx', ['endorphin', 'invalid-command'], {
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env, OPENAI_API_KEY: 'test-key', NODE_ENV: 'test' }
       });
 
       const result = await waitForProcess(child, 10000);
@@ -216,7 +237,8 @@ describe('Interactive CLI Features', () => {
 
         const child = spawn('npx', ['endorphin', 'list'], {
           cwd: testProjectDir,
-          stdio: ['pipe', 'pipe', 'pipe']
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env: { ...process.env, OPENAI_API_KEY: 'test-key-for-progress', NODE_ENV: 'test' }
         });
 
         let output = '';
@@ -241,14 +263,32 @@ describe('Interactive CLI Features', () => {
 async function runInitCommand(): Promise<void> {
   return new Promise((resolve, reject) => {
     const child = spawn('npx', ['endorphin', 'init'], {
-      stdio: ['pipe', 'pipe', 'pipe']
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { 
+        ...process.env, 
+        OPENAI_API_KEY: 'test-key-for-testing',
+        NODE_ENV: 'test'
+      }
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout?.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    child.stderr?.on('data', (data) => {
+      stderr += data.toString();
     });
 
     child.on('close', (code) => {
       if (code === 0) {
         resolve();
       } else {
-        reject(new Error(`Init command failed with code ${code}`));
+        console.error('Init command stdout:', stdout);
+        console.error('Init command stderr:', stderr);
+        reject(new Error(`Init command failed with code ${code}. Stderr: ${stderr}`));
       }
     });
 
