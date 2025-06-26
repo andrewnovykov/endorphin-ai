@@ -8,7 +8,7 @@ import type {
   BrowserConfig,
   CLIFlags,
   FrameworkConfig
-} from '@/types/index.js';
+} from '@/types/index';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { pathToFileURL } from 'url';

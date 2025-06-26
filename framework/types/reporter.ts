@@ -2,7 +2,7 @@
  * Reporting and test summary types
  */
 
-import type { TestResult } from './test.js';
+import type { TestResult } from './test';
 
 export interface TestSummary {
   totalTests: number;

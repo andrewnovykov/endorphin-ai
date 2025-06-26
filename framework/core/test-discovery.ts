@@ -8,11 +8,11 @@ import { join, resolve } from 'path';
 import { performance } from 'perf_hooks';
 import { pathToFileURL } from 'url';
 
-import { ConsoleReporter } from '@reporters/console-reporter.js';
+import { ConsoleReporter } from '@reporters/console-reporter';
 import type {
-    DiscoveryResult,
-    FrameworkConfig,
-    TestConfig
+  DiscoveryResult,
+  FrameworkConfig,
+  TestConfig
 } from '../types/index.js';
 
 /**

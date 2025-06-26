@@ -3,7 +3,7 @@
  * Provides LangChain tools for utilities (wait, screenshot)
  */
 
-import { EnhancedBrowserTestFramework } from '@core/browser-framework.js';
+import { EnhancedBrowserTestFramework } from '@core/browser-framework';
 import { tool } from '@langchain/core/tools';
 import path from 'path';
 import { z } from 'zod';

@@ -3,11 +3,11 @@
  * Executes AI-driven test tasks and manages test execution lifecycle
  */
 
-import { AGENT_CONFIG } from '@config/agent-config.js';
+import { AGENT_CONFIG } from '@config/agent-config';
 import { HumanMessage } from '@langchain/core/messages';
 import type {
-    TaskResult,
-    TestSession
+  TaskResult,
+  TestSession
 } from '../types/index.js';
 
 // Define interfaces for better type safety

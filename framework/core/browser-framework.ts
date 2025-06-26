@@ -4,28 +4,28 @@
  */
 
 import type {
-    BrowserConfig,
-    BrowserTools,
-    ClickParams,
-    ExecutionConfig,
-    FillParams,
-    FrameworkConfig,
-    NaturalLanguageResult,
-    NavigateParams,
-    ScreenshotParams,
-    TaskResult,
-    TestConfig,
-    TestReport,
-    TestSession,
-    TestStep,
-    ToolCall
-} from '@/types/index.js';
-import { AGENT_CONFIG } from '@config/agent-config.js';
-import { setupAgent } from '@core/agent-setup.js';
-import { createTestSession, saveTestSession } from '@core/test-session.js';
+  BrowserConfig,
+  BrowserTools,
+  ClickParams,
+  ExecutionConfig,
+  FillParams,
+  FrameworkConfig,
+  NaturalLanguageResult,
+  NavigateParams,
+  ScreenshotParams,
+  TaskResult,
+  TestConfig,
+  TestReport,
+  TestSession,
+  TestStep,
+  ToolCall
+} from '@/types/index';
+import { AGENT_CONFIG } from '@config/agent-config';
+import { setupAgent } from '@core/agent-setup';
+import { createTestSession, saveTestSession } from '@core/test-session';
 import { HumanMessage } from '@langchain/core/messages';
-import { HtmlReporter } from '@reporters/html-reporter.js';
-import { TestResultsManager } from '@results/test-results-manager.js';
+import { HtmlReporter } from '@reporters/html-reporter';
+import { TestResultsManager } from '@results/test-results-manager';
 import { createAllTools } from '@tools/index.js';
 import fs, { existsSync, readdirSync, rmSync, statSync } from 'fs';
 import path from 'path';

@@ -1,38 +1,16 @@
-node_modules/
+# Endorphin AI
+test-results/
+test-recorder/
 .env
-# LangGraph API
-.langgraph_api
-test-results/*
-test-recorder/*
-ai-instruction/*
-.DS_Store
-doc/.DS_Store
-# Temporary test files (keep scripts)
-tmp/test-endorphin/test-results/
-tmp/test-endorphin/test-recorder/
-tmp/test-endorphin/tests/
-tmp/test-endorphin/node_modules/
-tmp/test-endorphin/package-lock.json
-tmp/test-endorphin/endorphin.config.js
-tmp/test-endorphin/.env
-tmp/console-test/
 
-# NPM Publishing artifacts
-*.tgz
-package/
-temp-package-test/
-npm-test/
-test-npm-install/
+# Dependencies
+node_modules/
+package-lock.json
 
-# Version control
+# Logs
+*.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.npm
 
-# Build artifacts
-dist/
-build/
-tests/development/coverage/
-dev-tests/html
-dev-tests/results
+# OS
+.DS_Store
+Thumbs.db

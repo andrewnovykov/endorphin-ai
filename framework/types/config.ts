@@ -2,8 +2,8 @@
  * Framework configuration types
  */
 
-import type { AIConfig } from './agent.js';
-import type { BrowserConfig } from './browser.js';
+import type { AIConfig } from './agent';
+import type { BrowserConfig } from './browser';
 
 export interface FrameworkConfig {
   browser: BrowserConfig;

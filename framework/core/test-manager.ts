@@ -3,7 +3,7 @@
  * Manages individual test files in the tests/ folder
  */
 
-import type { TaskResult, TestConfig } from '@/types/index.js';
+import type { TaskResult, TestConfig } from '@/types/index';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';

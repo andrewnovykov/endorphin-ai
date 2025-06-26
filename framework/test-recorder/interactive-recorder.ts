@@ -7,7 +7,7 @@ import { EnhancedBrowserTestFramework } from '@/index.js';
 import type { FrameworkConfig } from '@/types/index.js';
 import dotenv from 'dotenv';
 import readline from 'readline';
-import { TestRecorder } from './session-recorder.js';
+import { TestRecorder } from './session-recorder';
 
 // Load environment variables
 dotenv.config();

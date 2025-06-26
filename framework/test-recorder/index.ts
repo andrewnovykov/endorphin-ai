@@ -3,6 +3,6 @@
  * Provides interactive and session recording capabilities
  */
 
-export { runInteractiveRecorder } from './interactive-recorder.js';
-export { TestRecorder } from './session-recorder.js';
+export { runInteractiveRecorder } from './interactive-recorder';
+export { TestRecorder } from './session-recorder';
 

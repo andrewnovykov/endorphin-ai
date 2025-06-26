@@ -3,7 +3,7 @@
  * Provides LangChain tools for element verification and information
  */
 
-import { EnhancedBrowserTestFramework } from '@core/browser-framework.js';
+import { EnhancedBrowserTestFramework } from '@core/browser-framework';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 

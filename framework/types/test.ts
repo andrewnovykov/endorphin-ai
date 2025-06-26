@@ -2,8 +2,8 @@
  * Test configuration and test-related types
  */
 
-import type { ToolCall } from './agent.js';
-import type { Screenshot } from './browser.js';
+import type { ToolCall } from './agent';
+import type { Screenshot } from './browser';
 
 export interface TestConfig {
   id: string;

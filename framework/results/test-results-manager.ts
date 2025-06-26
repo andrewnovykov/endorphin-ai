@@ -3,7 +3,7 @@
  * Handles test result collection, storage, and processing
  */
 
-import type { TestReport, TestSession } from '@/types/index.js';
+import type { TestReport, TestSession } from '@/types/index';
 import fs from 'fs';
 import path from 'path';
 

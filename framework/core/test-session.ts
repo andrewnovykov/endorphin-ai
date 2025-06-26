@@ -3,7 +3,7 @@
  * Handles creation, tracking, and saving of test session data
  */
 
-import type { TestSession } from '@/types/index.js';
+import type { TestSession } from '@/types/index';
 import fs from 'fs';
 import path from 'path';
 

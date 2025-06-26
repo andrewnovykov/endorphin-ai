@@ -1,11 +1,15 @@
 import js from '@eslint/js';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsparser from '@typescript-eslint/parser';
 
 export default [
   js.configs.recommended,
   {
+    files: ['**/*.{js,ts}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
+      parser: tsparser,
       globals: {
         process: 'readonly',
         Buffer: 'readonly',
@@ -13,7 +17,11 @@ export default [
         __filename: 'readonly',
         console: 'readonly',
         global: 'readonly',
+        NodeJS: 'readonly',
       },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
     },
     ignores: [
       'node_modules/',
@@ -27,11 +35,11 @@ export default [
       'development-tests/package-tests/tmp/',
       'development-tests/package-tests/results/',
       '*.min.js',
+      'framework/templates/**/*.js', // Template files remain JS
     ],
     rules: {
-      // Code Quality
-      'no-console': 'off', // Allow console for CLI tool
-      'no-unused-vars': [
+      // TypeScript specific rules
+      '@typescript-eslint/no-unused-vars': [
         'error',
         {
           argsIgnorePattern: '^_',
@@ -39,11 +47,24 @@ export default [
           ignoreRestSiblings: true,
         },
       ],
-      'no-undef': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/prefer-const': 'error',
+      '@typescript-eslint/no-inferrable-types': 'error',
+      '@typescript-eslint/explicit-function-return-type': 'off', // Allow inference
+      '@typescript-eslint/explicit-module-boundary-types': 'off', // Allow inference
+      '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/prefer-optional-chain': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': 'error',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+      
+      // Code Quality
+      'no-console': 'off', // Allow console for CLI tool
+      'no-unused-vars': 'off', // Use TypeScript version instead
+      'no-undef': 'off', // TypeScript handles this
       'no-unreachable': 'error',
 
       // Best Practices
-      'prefer-const': 'error',
+      'prefer-const': 'off', // Use TypeScript version
       'no-var': 'error',
       'object-shorthand': 'error',
       'prefer-template': 'error',
@@ -79,7 +100,7 @@ export default [
 
   // Test files
   {
-    files: ['**/*.test.js', '**/*.spec.js', '**/tests/**/*.js', '**/development-tests/**/*.js'],
+    files: ['**/*.test.{js,ts}', '**/*.spec.{js,ts}', '**/tests/**/*.{js,ts}', '**/development-tests/**/*.{js,ts}'],
     languageOptions: {
       globals: {
         test: 'readonly',
@@ -90,12 +111,14 @@ export default [
         afterEach: 'readonly',
         beforeAll: 'readonly',
         afterAll: 'readonly',
+        jest: 'readonly',
         vi: 'readonly',
       },
     },
     rules: {
       'no-unused-expressions': 'off',
       'max-len': 'off',
+      '@typescript-eslint/no-explicit-any': 'off', // Allow any in tests
     },
   },
 
@@ -109,7 +132,7 @@ export default [
 
   // CLI files
   {
-    files: ['bin/**/*.js', 'cli/**/*.js'],
+    files: ['bin/**/*.{js,ts}', 'cli/**/*.{js,ts}'],
     rules: {
       'no-process-exit': 'off',
       'no-console': 'off',
@@ -118,7 +141,7 @@ export default [
 
   // Framework core files
   {
-    files: ['framework/**/*.js'],
+    files: ['framework/**/*.{js,ts}'],
     rules: {
       complexity: ['warn', 20], // Framework can be more complex
       'max-depth': ['warn', 5],

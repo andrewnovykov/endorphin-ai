@@ -7,7 +7,7 @@
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { getConfig } from '../framework/core/config-loader.js';
+import { getConfig } from '../framework/core/config-loader';
 import {
   handleGenerateCommand,
   handleHelpAndVersion,

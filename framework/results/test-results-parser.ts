@@ -4,7 +4,7 @@
  * Handles aggregation and processing of test execution data for reporting
  */
 
-import type { TestSession, TestSummary } from '@/types/index.js';
+import type { TestSession, TestSummary } from '@/types/index';
 import fs from 'fs';
 import path from 'path';
 

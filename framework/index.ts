@@ -9,40 +9,40 @@
  */
 
 // Core framework exports
-export { setupAgent } from './core/agent-setup.js';
-export { EnhancedBrowserTestFramework } from './core/browser-framework.js';
-export { TestManager } from './core/test-manager.js';
-export { createTestSession, generateSessionSummary, saveTestSession } from './core/test-session.js';
-export { runTask, runTaskSequence } from './runner/task-executor.js';
-export { createAllTools } from './tools/index.js';
+export { setupAgent } from './core/agent-setup';
+export { EnhancedBrowserTestFramework } from './core/browser-framework';
+export { TestManager } from './core/test-manager';
+export { createTestSession, generateSessionSummary, saveTestSession } from './core/test-session';
+export { runTask, runTaskSequence } from './runner/task-executor';
+export { createAllTools } from './tools/index';
 
 // Configuration exports
-export { AGENT_CONFIG } from './config/agent-config.js';
-export { BROWSER_CONFIG } from './config/browser-config.js';
-export { PATHS } from './config/paths.js';
+export { AGENT_CONFIG } from './config/agent-config';
+export { BROWSER_CONFIG } from './config/browser-config';
+export { PATHS } from './config/paths';
 
 // Reporters and Results
-export { ConsoleReporter } from './reporters/console-reporter.js';
-export { HtmlReporter } from './reporters/html-reporter.js';
-export { TestResultsManager } from './results/test-results-manager.js';
-export { TestResultsParser } from './results/test-results-parser.js';
+export { ConsoleReporter } from './reporters/console-reporter';
+export { HtmlReporter } from './reporters/html-reporter';
+export { TestResultsManager } from './results/test-results-manager';
+export { TestResultsParser } from './results/test-results-parser';
 
 // Test Recorder
-export { runInteractiveRecorder, TestRecorder } from './test-recorder/index.js';
+export { runInteractiveRecorder, TestRecorder } from './test-recorder/index';
 
 // CLI
 export { initProject } from './cli/init-command.js';
 
 // Individual tool creators for custom setups
-export { createGetPageContentTool, createGetSimplePageContentTool } from './tools/content.js';
-export { createClearFieldTool, createClickTool, createFillTool } from './tools/interaction.js';
-export { createNavigationTool } from './tools/navigation.js';
-export { createScreenshotTool, createWaitTool } from './tools/utilities.js';
-export { createGetElementInfoTool, createVerifyElementTool } from './tools/verification.js';
+export { createGetPageContentTool, createGetSimplePageContentTool } from './tools/content';
+export { createClearFieldTool, createClickTool, createFillTool } from './tools/interaction';
+export { createNavigationTool } from './tools/navigation';
+export { createScreenshotTool, createWaitTool } from './tools/utilities';
+export { createGetElementInfoTool, createVerifyElementTool } from './tools/verification';
 
 // Type exports
-export type * from './types/index.js';
+export type * from './types/index';
 
 // Default export for simple usage: import EndorphinAI from 'endorphin-ai'
-import { EnhancedBrowserTestFramework } from './core/browser-framework.js';
+import { EnhancedBrowserTestFramework } from './core/browser-framework';
 export default EnhancedBrowserTestFramework;

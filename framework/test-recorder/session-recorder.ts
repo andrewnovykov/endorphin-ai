@@ -3,7 +3,7 @@
  * Records user interactions and generates test files
  */
 
-import type { EnhancedBrowserTestFramework } from '@core/browser-framework.js';
+import type { EnhancedBrowserTestFramework } from '@core/browser-framework';
 import fs from 'fs/promises';
 import path from 'path';
 

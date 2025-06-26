@@ -3,7 +3,7 @@
  * Separated command handlers to reduce complexity in main CLI file
  */
 
-import type { FrameworkConfig } from '../framework/types/config.js';
+import type { FrameworkConfig } from '../framework/types/config';
 
 /**
  * Handle help and version commands

@@ -2,7 +2,7 @@
  * CLI-related types
  */
 
-import type { ViewportSize } from './browser.js';
+import type { ViewportSize } from './browser';
 
 export interface CLIFlags {
   headless?: boolean;

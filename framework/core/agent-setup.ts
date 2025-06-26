@@ -5,7 +5,7 @@
  * AI Agent Setup - TypeScript Migration
  */
 
-import { AGENT_CONFIG } from '@config/agent-config.js';
+import { AGENT_CONFIG } from '@config/agent-config';
 import { MessagesAnnotation, StateGraph } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
