@@ -92,7 +92,7 @@
     "**/node_modules/**",
     "**/*.min.js",
     "**/templates/scripts.js",
-    "development-tests/package-tests/tmp/**"
+    "tests/package-tests/tmp/**"
   ],
   "ts-node": {
     "esm": true,

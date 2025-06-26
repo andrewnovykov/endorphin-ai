@@ -87,7 +87,7 @@ mkdir -p tests
 
 # Create a basic test file
 echo "📄 Creating basic test file..."
-cat > tests/user-basic-test.js << 'EOF'
+cat > tests/user-basic-test.ts << 'EOF'
 export const USER_BASIC_TEST = {
   id: "USER-001",
   name: "User Project Basic Test",

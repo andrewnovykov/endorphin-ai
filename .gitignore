@@ -15,4 +15,7 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 tests/development/coverage/*
-development-tests/package-tests/results/*
+tests/package-tests/results/*
+tests/post-install/tmp/*
+tests/package-tests/tmp/test-endorphin/*
+tests/package-tests/results/*
