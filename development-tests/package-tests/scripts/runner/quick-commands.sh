@@ -138,10 +138,10 @@ case "$COMMAND" in
         echo "❌ No .env file found"
       fi
       echo ""
-      if [ -f "endorphin.config.js" ]; then
-        echo "⚙️ Config file found: endorphin.config.js"
+      if [ -f "endorphin.config.ts" ]; then
+        echo "⚙️ Config file found: endorphin.config.ts"
       else
-        echo "❌ No endorphin.config.js found"
+        echo "❌ No endorphin.config.ts found"
       fi
     fi
     ;;

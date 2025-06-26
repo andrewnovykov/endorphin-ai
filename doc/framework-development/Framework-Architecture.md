@@ -200,7 +200,7 @@ graph TD
 
 1. **Default Configuration** (built-in)
 2. **Environment Variables** (`.env` file)
-3. **User Config File** (`endorphin.config.js`)
+3. **User Config File** (`endorphin.config.ts`)
 4. **CLI Flags** (command-line overrides)
 
 ### Configuration Merging

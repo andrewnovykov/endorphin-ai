@@ -184,7 +184,7 @@ Examples:
   endorphin cleanup reports 7                  # Remove reports older than 7 days
 
 Configuration:
-  Create endorphin.config.js in your project root for default settings
+  Create endorphin.config.ts in your project root for default settings
   CLI flags override configuration file settings
   Set OPENAI_API_KEY in your .env file or environment variables
 

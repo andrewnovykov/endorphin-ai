@@ -38,7 +38,7 @@ timeout 3 npx endorphin run test-recorder || echo "  (Expected timeout)"
 echo ""
 echo "🎬 Debug: Step 3 - Check if config is loaded correctly"
 echo "Config file contents:"
-cat endorphin.config.js | grep -A 5 -B 5 "recorder"
+cat endorphin.config.ts | grep -A 5 -B 5 "recorder"
 
 echo ""
 echo "🎬 Debug: Step 4 - Test with minimal manual input"

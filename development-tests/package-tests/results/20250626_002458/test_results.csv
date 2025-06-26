@@ -1,0 +1,11 @@
+Result,Test_Name,Duration_Seconds,Log_File
+PASS,Environment Setup,3,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250626_002458/Environment_Setup.log
+FAIL,Init Command,7,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250626_002458/Init_Command.log
+PASS,Install Playwright Browsers,2,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250626_002458/Install_Playwright_Browsers.log
+PASS,Test Recorder Functionality,25,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250626_002458/Test_Recorder_Functionality.log
+PASS,Test Recorder File Location,5,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250626_002458/Test_Recorder_File_Location.log
+PASS,Basic Test Execution,2,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250626_002458/Basic_Test_Execution.log
+PASS,CLI Commands,0,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250626_002458/CLI_Commands.log
+PASS,Console Reporter,4,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250626_002458/Console_Reporter.log
+PASS,HTML Reporter,5,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250626_002458/HTML_Reporter.log
+PASS,All Reporters,9,/Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/results/20250626_002458/All_Reporters.log

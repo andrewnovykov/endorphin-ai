@@ -14,3 +14,5 @@ npm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+tests/development/coverage/*
+development-tests/package-tests/results/*

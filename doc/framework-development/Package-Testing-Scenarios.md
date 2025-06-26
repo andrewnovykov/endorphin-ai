@@ -105,7 +105,7 @@ npm init -y
 npm install endorphin-ai
 
 # Create basic config
-cat > endorphin.config.js << 'EOF'
+cat > endorphin.config.ts << 'EOF'
 export default {
   openaiApiKey: process.env.OPENAI_API_KEY,
   browser: {
@@ -190,7 +190,7 @@ npx endorphin run test TEST-001
 
 ```bash
 # Create environment-specific configs
-cat > endorphin.config.js << 'EOF'
+cat > endorphin.config.ts << 'EOF'
 export default {
   openaiApiKey: process.env.OPENAI_API_KEY,
 
@@ -360,11 +360,11 @@ Test how the package handles various error conditions:
 
 ```bash
 # Test without config file
-rm endorphin.config.js
+rm endorphin.config.ts
 npx endorphin list  # Should show appropriate error
 
 # Test with invalid config
-echo "invalid javascript" > endorphin.config.js
+echo "invalid javascript" > endorphin.config.ts
 npx endorphin list  # Should handle syntax error gracefully
 ```
 
@@ -571,7 +571,7 @@ npm install endorphin-ai > /dev/null 2>&1
 
 # Create config
 echo "⚙️ Creating configuration..."
-cat > endorphin.config.js << 'EOF'
+cat > endorphin.config.ts << 'EOF'
 export default {
   openaiApiKey: process.env.OPENAI_API_KEY,
   browser: { headless: true },

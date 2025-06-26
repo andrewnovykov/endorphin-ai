@@ -180,7 +180,7 @@ export function createDatabaseQueryTool(framework) {
 
 ### Step 3: Configure Custom Tools
 
-Update your `endorphin.config.js`:
+Update your `endorphin.config.ts`:
 
 ```javascript
 export default {
@@ -320,12 +320,12 @@ Directory structure:
 ```
 your-project/
 ├── tools/
-│   ├── api-tools.js      # API-related tools
-│   ├── database-tools.js # Database tools
+│   ├── api-tools.ts      # API-related tools
+│   ├── database-tools.ts # Database tools
 │   └── file-tools.js     # File manipulation tools
 ├── custom-tools/
 │   └── special-tools.js  # Project-specific tools
-└── endorphin.config.js
+└── endorphin.config.ts
 ```
 
 ### Method 2: Individual File Loading
@@ -1028,7 +1028,7 @@ ls -la tools/your-tool.js
 grep "export function create" tools/your-tool.js
 
 # Check configuration
-node -e "console.log(JSON.stringify(require('./endorphin.config.js').default.customTools, null, 2))"
+node -e "console.log(JSON.stringify(require('./endorphin.config.ts').default.customTools, null, 2))"
 ```
 
 #### 2. Import Errors

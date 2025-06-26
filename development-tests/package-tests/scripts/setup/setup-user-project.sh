@@ -30,7 +30,7 @@ npm install "$REPO_ROOT" > /dev/null 2>&1
 
 # Create user configuration
 echo "⚙️ Creating user configuration..."
-cat > endorphin.config.js << 'EOF'
+cat > endorphin.config.ts << 'EOF'
 export default {
   browser: {
     headless: false,  // Keep browser visible during recording

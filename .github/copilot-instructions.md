@@ -21,7 +21,8 @@ with **TypeScript** for type safety and better developer experience.
 - `bin/endorphin.ts` - Main CLI entry point (TypeScript)
 - `bin/cli-handlers.ts` - CLI command handlers (TypeScript)
 - `framework/index.ts` - Main framework entry point (TypeScript)
-- `framework/core/` - Core utilities (config, discovery, etc.) - **All TypeScript**
+- `framework/core/` - Core utilities (config, discovery, etc.) - **All
+  TypeScript**
 - `framework/types/` - TypeScript type definitions (modular)
 - `framework/reporters/` - Test reporting system (TypeScript)
 - `framework/runner/` - Test execution (TypeScript)
@@ -37,6 +38,7 @@ with **TypeScript** for type safety and better developer experience.
 ## Path Aliases (Use These!)
 
 Always use these TypeScript path aliases in framework code:
+
 - `@/` - Points to `./framework/*`
 - `@core/` - Points to `./framework/core/*`
 - `@tools/` - Points to `./framework/tools/*`
@@ -64,8 +66,8 @@ Always use these TypeScript path aliases in framework code:
 
 ## Configuration System
 
-- Uses `endorphin.config.js` in user project root
-- Config structure follows the pattern in `examples/endorphin.config.js`
+- Uses `endorphin.config.ts` in user project root
+- Config structure follows the pattern in `examples/endorphin.config.ts`
 - CLI flags override config file settings
 - Support for multiple environments (dev, staging, prod)
 - Configuration loading handled by `@core/config-loader.ts`
@@ -111,6 +113,7 @@ export const TEST_ID = {
 ## TypeScript Types
 
 Key interfaces and types are modularized in `framework/types/`:
+
 - `agent.ts` - AI/LangChain types
 - `browser.ts` - Browser automation types
 - `cli.ts` - CLI command types

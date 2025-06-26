@@ -163,7 +163,7 @@ else
   echo ""
   echo "🔧 Possible solutions:"
   echo "  1. Install Playwright browsers: npx playwright install"
-  echo "  2. Check browser config in endorphin.config.js"
+  echo "  2. Check browser config in endorphin.config.ts"
   echo "  3. Increase timeout or use headless mode"
 fi
 

@@ -21,7 +21,7 @@ npx endorphin init
 # Verify files were created
 echo "📋 Checking created files..."
 
-FILES=(".env" "endorphin.config.js" "tests/sample-test.js" ".gitignore" "README-ENDORPHIN.md")
+FILES=(".env" "endorphin.config.ts" "tests/sample-test.ts" ".gitignore" "README-ENDORPHIN.md")
 ALL_GOOD=true
 
 for file in "${FILES[@]}"; do
@@ -46,7 +46,7 @@ done
 
 # Test if example test is valid
 echo "🧪 Validating example test..."
-if node -e "import('./tests/sample-test.js')" 2>/dev/null; then
+if node -e "import('./tests/sample-test.ts')" 2>/dev/null; then
   echo "✅ Example test syntax valid"
 else
   echo "❌ Example test has syntax errors"
@@ -55,7 +55,7 @@ fi
 
 # Test if config is valid
 echo "⚙️ Validating config file..."
-if node -e "import('./endorphin.config.js')" 2>/dev/null; then
+if node -e "import('./endorphin.config.ts')" 2>/dev/null; then
   echo "✅ Config file syntax valid"
 else
   echo "❌ Config file has syntax errors"
@@ -80,9 +80,9 @@ fi
 
 # Test second init (should not overwrite)
 echo "🔄 Testing second init (should not overwrite)..."
-echo "existing config" > endorphin.config.js
+echo "existing config" > endorphin.config.ts
 npx endorphin init
-if grep -q "existing config" endorphin.config.js; then
+if grep -q "existing config" endorphin.config.ts; then
   echo "✅ Second init doesn't overwrite existing files"
 else
   echo "❌ Second init overwrote existing files"
