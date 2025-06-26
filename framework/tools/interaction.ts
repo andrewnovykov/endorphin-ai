@@ -3,7 +3,7 @@
  * Provides LangChain tools for element interaction (click, fill, clear)
  */
 
-import { EnhancedBrowserTestFramework } from '@core/browser-framework';
+import type { EnhancedBrowserTestFramework } from '@core/browser-framework';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -14,17 +14,17 @@ import { z } from 'zod';
  */
 export function createClickTool(framework: EnhancedBrowserTestFramework) {
   return tool(
-    async ({ 
-      selector, 
-      strategy = 'css', 
-      timeout = 10000, 
-      force = false 
-    }: { 
+    async (params: { 
       selector: string; 
-      strategy?: 'css' | 'text' | 'exact-text' | 'role' | 'placeholder' | 'label' | 'title' | 'alt'; 
-      timeout?: number; 
-      force?: boolean; 
+      strategy?: 'css' | 'text' | 'exact-text' | 'role' | 'placeholder' | 'label' | 'title' | 'alt' | undefined; 
+      timeout?: number | undefined; 
+      force?: boolean | undefined; 
     }) => {
+      const selector = params.selector;
+      const strategy = params.strategy ?? 'css';
+      const timeout = params.timeout ?? 10000;
+      const force = params.force ?? false;
+      
       const stepDesc = `Click ${selector} using ${strategy} strategy`;
       console.log(`🔘 ${stepDesc}`);
 
@@ -126,19 +126,19 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
  */
 export function createFillTool(framework: EnhancedBrowserTestFramework) {
   return tool(
-    async ({ 
-      selector, 
-      value, 
-      strategy = 'fill', 
-      clearFirst = true, 
-      pressEnter = false 
-    }: { 
+    async (params: { 
       selector: string; 
       value: string; 
-      strategy?: 'fill' | 'type'; 
-      clearFirst?: boolean; 
-      pressEnter?: boolean; 
+      strategy?: 'fill' | 'type' | undefined; 
+      clearFirst?: boolean | undefined; 
+      pressEnter?: boolean | undefined; 
     }) => {
+      const selector = params.selector;
+      const value = params.value;
+      const strategy = params.strategy ?? 'fill';
+      const clearFirst = params.clearFirst ?? true;
+      const pressEnter = params.pressEnter ?? false;
+      
       const stepDesc = `Fill ${selector} with "${value}"`;
       console.log(`📝 ${stepDesc}`);
 

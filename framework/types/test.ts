@@ -19,21 +19,22 @@ export interface TestConfig {
 export interface TestSession {
   sessionId: string;
   sessionName: string;
-  sessionDir: string;
-  screenshotsDir: string;
   testId: string;
   testName: string;
   startTime: string;
   endTime?: string;
-  status: 'SUCCESS' | 'FAILED' | 'RUNNING';
-  stepCounter: number;
-  screenshotCounter: number;
+  sessionDir: string;
+  screenshotsDir: string;
   steps: TestStep[];
   toolCalls: ToolCall[];
+  stepCounter: number;
+  screenshotCounter: number;
+  status: 'RUNNING' | 'SUCCESS' | 'FAILED';
   finalResult?: string;
   duration?: number;
-  error?: string;
 }
+
+
 
 export interface TestStep {
   stepNumber: number;

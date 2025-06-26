@@ -3,9 +3,9 @@
  * Handles creation, tracking, and saving of test session data
  */
 
-import type { TestSession } from '@/types/index';
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
+import type { TestSession } from '../types/test.js';
 
 interface SessionSummary {
   testName: string;
@@ -49,7 +49,6 @@ export function createTestSession(
     testId: testId || sessionId,
     testName,
     startTime: new Date().toISOString(),
-    endTime: undefined,
     sessionDir,
     screenshotsDir,
     steps: [],
@@ -57,8 +56,6 @@ export function createTestSession(
     stepCounter: 0,
     screenshotCounter: 0,
     status: 'RUNNING',
-    finalResult: undefined,
-    duration: undefined,
   };
 
   console.log(`📁 Created test session: ${sessionName}`);
@@ -71,19 +68,29 @@ export function createTestSession(
  * @returns Session summary
  */
 export function generateSessionSummary(session: TestSession): SessionSummary {
-  return {
+  const summary: SessionSummary = {
     testName: session.sessionName,
     sessionId: session.sessionId,
     status: session.status,
     startTime: session.startTime,
-    endTime: session.endTime,
-    duration: session.duration,
     totalSteps: session.steps.length,
     successfulSteps: session.steps.filter((s) => s.status === 'SUCCESS').length,
     failedSteps: session.steps.filter((s) => s.status === 'FAILED').length,
     totalScreenshots: session.screenshotCounter,
-    finalResult: session.finalResult,
   };
+
+  // Only assign optional properties if they have values
+  if (session.endTime) {
+    summary.endTime = session.endTime;
+  }
+  if (session.duration !== undefined) {
+    summary.duration = session.duration;
+  }
+  if (session.finalResult) {
+    summary.finalResult = session.finalResult;
+  }
+
+  return summary;
 }
 
 /**

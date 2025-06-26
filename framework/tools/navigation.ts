@@ -3,9 +3,9 @@
  * Provides LangChain tools for page navigation
  */
 
-import { EnhancedBrowserTestFramework } from '@core/browser-framework';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { EnhancedBrowserTestFramework } from '../core/browser-framework.js';
 
 /**
  * Creates a navigation tool for the framework
@@ -14,7 +14,10 @@ import { z } from 'zod';
  */
 export function createNavigationTool(framework: EnhancedBrowserTestFramework) {
   return tool(
-    async ({ location, waitUntil = 'domcontentloaded' }: { location: string; waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' }) => {
+    async (params: { location: string; waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | undefined }) => {
+      const location = params.location;
+      const waitUntil = params.waitUntil ?? 'domcontentloaded';
+      
       const stepDesc = `Navigate to: ${location}`;
       console.log(`🌍 ${stepDesc}`);
 

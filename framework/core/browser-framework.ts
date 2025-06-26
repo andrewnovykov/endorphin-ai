@@ -398,7 +398,9 @@ export class EnhancedBrowserTestFramework {
 
     this.currentTestSession.endTime = new Date().toISOString();
     this.currentTestSession.status = status;
-    this.currentTestSession.finalResult = finalResult || undefined;
+    if (finalResult !== null) {
+      this.currentTestSession.finalResult = finalResult;
+    }
     this.currentTestSession.duration =
       new Date(this.currentTestSession.endTime).getTime() - new Date(this.currentTestSession.startTime).getTime();
 
@@ -656,7 +658,7 @@ Current Task: ${taskDescription}`;
         name: result.testName,
         status: result.success ? 'passed' : 'failed',
         duration: result.session?.duration || 0,
-        error: result.error,
+        error: result.error ?? '',
         screenshots: result.session?.steps?.flatMap((step: any) => step.screenshots?.map((s: any) => s.filename) || []) || [],
         logs: result.session?.steps?.map((step: any) => step.description) || [],
         timestamp: result.session?.startTime || new Date().toISOString(),

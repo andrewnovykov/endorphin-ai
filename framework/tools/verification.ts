@@ -3,9 +3,9 @@
  * Provides LangChain tools for element verification and information
  */
 
-import { EnhancedBrowserTestFramework } from '@core/browser-framework';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { EnhancedBrowserTestFramework } from '../core/browser-framework.js';
 
 /**
  * Creates a verify element tool for the framework
@@ -14,15 +14,14 @@ import { z } from 'zod';
  */
 export function createVerifyElementTool(framework: EnhancedBrowserTestFramework) {
   return tool(
-    async ({ 
-      selector, 
-      state = 'visible', 
-      timeout = 10000 
-    }: { 
+    async (params: { 
       selector: string; 
-      state?: 'visible' | 'hidden' | 'attached' | 'detached'; 
-      timeout?: number; 
+      state?: 'visible' | 'hidden' | 'attached' | 'detached' | undefined; 
+      timeout?: number | undefined; 
     }) => {
+      const selector = params.selector;
+      const state = params.state ?? 'visible';
+      const timeout = params.timeout ?? 10000;
       const stepDesc = `Verify ${selector} is ${state}`;
       console.log(`🔍 ${stepDesc}`);
 

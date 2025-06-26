@@ -37,6 +37,9 @@ export async function setupAgent(tools: any[]): Promise<AgentWorkflow> {
 
   const toolNode = new ToolNode(tools);
 
+  if (!AGENT_CONFIG.openai.apiKey) {
+    throw new Error('OpenAI API key is missing in AGENT_CONFIG.openai.apiKey');
+  }
   const model = new ChatOpenAI({
     openAIApiKey: AGENT_CONFIG.openai.apiKey,
     modelName: AGENT_CONFIG.openai.modelName,

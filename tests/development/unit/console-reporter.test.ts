@@ -3,7 +3,39 @@
  */
 
 describe('ConsoleReporter', () => {
-  let originalConsole;
+  let originalConsole: {
+    log: typeof console.log;
+    error: typeof console.error;
+    warn: typeof console.warn;
+    info: typeof console.info;
+  };
+
+  interface TestResult {
+    testId: string;
+    testName?: string;
+    status?: 'SUCCESS' | 'FAILED' | 'SKIPPED' | 'RUNNING' | string;
+    duration?: number;
+    error?: string | null;
+  }
+
+  interface SessionSummary {
+    totalTests: number;
+    passedTests: number;
+    failedTests: number;
+    skippedTests: number;
+    duration: number;
+    success: boolean;
+  }
+
+  interface ConsoleReporter {
+    reportTestResult?: (result: TestResult | null | undefined) => void;
+    generateSessionSummary?: (summary: SessionSummary) => void;
+    reportTestStart?: (testName: string) => void;
+    reportSessionStart?: (totalTests: number) => void;
+    reportSessionEnd?: () => void;
+    formatDuration?: (ms: number) => string;
+    formatStatus?: (status: string) => string;
+  }
 
   beforeEach(() => {
     // Mock console methods
@@ -213,8 +245,8 @@ describe('ConsoleReporter', () => {
 
     test('should format status with colors', () => {
       const mockReporter = {
-        formatStatus: jest.fn().mockImplementation((status) => {
-          const icons = {
+        formatStatus: jest.fn().mockImplementation((status: string) => {
+          const icons: Record<string, string> = {
             SUCCESS: '✅',
             FAILED: '❌',
             SKIPPED: '⏭️',

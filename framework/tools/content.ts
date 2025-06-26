@@ -3,7 +3,7 @@
  * Provides LangChain tools for page content analysis
  */
 
-import { EnhancedBrowserTestFramework } from '@core/browser-framework';
+import type { EnhancedBrowserTestFramework } from '@core/browser-framework';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -14,13 +14,13 @@ import { z } from 'zod';
  */
 export function createGetPageContentTool(framework: EnhancedBrowserTestFramework) {
   return tool(
-    async ({ 
-      includeTitle = true, 
-      maxLength = 8000 
-    }: { 
-      includeTitle?: boolean; 
-      maxLength?: number; 
+    async (params: { 
+      includeTitle?: boolean | undefined; 
+      maxLength?: number | undefined; 
     }) => {
+      const includeTitle = params.includeTitle ?? true;
+      const maxLength = params.maxLength ?? 8000;
+      
       const stepDesc = 'Get page content for analysis';
       console.log(`📄 ${stepDesc}`);
 

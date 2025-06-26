@@ -50,7 +50,7 @@ export class ConfigLoader {
       environment: 'development' as const,
       parallel: 1,
       maxRetries: 3,
-      baseUrl: undefined,
+      baseUrl: '',
     };
   }
 
