@@ -62,6 +62,11 @@ export class HtmlReporter {
       const reportData = this.collectTestResults(options.resultDirs);
 
       if (reportData.testResults.length === 0) {
+        console.log('📁 Looking for test results in:', this.testResultsDir);
+        console.log('💡 To generate a report, you need to run some tests first:');
+        console.log('   1. Run: npx endorphin run test HEALTH-001');
+        console.log('   2. Or run: npx endorphin run test all');
+        console.log('   3. Then try: npx endorphin generate report');
         throw new Error('No test results found. Run some tests first.');
       }
 
@@ -103,7 +108,9 @@ export class HtmlReporter {
           .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
 
         if (reportsFiles.length === 0) {
-          throw new Error('No reports found. Generate a report first with: endorphin generate report');
+          throw new Error(
+            'No reports found. Generate a report first with: endorphin generate report'
+          );
         }
 
         targetPath = reportsFiles[0].path;
@@ -171,7 +178,7 @@ export class HtmlReporter {
 
     // Calculate summary
     const totalTests = testResults.length;
-    const passedTests = testResults.filter(r => r.status === 'SUCCESS').length;
+    const passedTests = testResults.filter((r) => r.status === 'SUCCESS').length;
     const failedTests = totalTests - passedTests;
     const successRate = totalTests > 0 ? (passedTests / totalTests) * 100 : 0;
     const totalDuration = testResults.reduce((sum, r) => sum + r.duration, 0);
@@ -198,11 +205,10 @@ export class HtmlReporter {
       return [];
     }
 
-    return fs.readdirSync(this.testResultsDir)
-      .filter(item => {
-        const itemPath = path.join(this.testResultsDir, item);
-        return fs.statSync(itemPath).isDirectory() && item !== 'reports';
-      });
+    return fs.readdirSync(this.testResultsDir).filter((item) => {
+      const itemPath = path.join(this.testResultsDir, item);
+      return fs.statSync(itemPath).isDirectory() && item !== 'reports';
+    });
   }
 
   /**
@@ -212,25 +218,33 @@ export class HtmlReporter {
    */
   private parseTestResult(resultPath: string): any | null {
     try {
-      // Look for session.json or similar metadata file
-      const sessionFile = path.join(resultPath, 'session.json');
+      // Look for session.json, test-session.json, or summary.json
+      let sessionFile = path.join(resultPath, 'test-session.json');
+      if (!fs.existsSync(sessionFile)) {
+        sessionFile = path.join(resultPath, 'test-session.json');
+      }
+      if (!fs.existsSync(sessionFile)) {
+        sessionFile = path.join(resultPath, 'summary.json');
+      }
+
       if (fs.existsSync(sessionFile)) {
         const sessionData = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
-        
+
         // Get screenshots
         const screenshotsDir = path.join(resultPath, 'screenshots');
-        const screenshots = fs.existsSync(screenshotsDir) 
-          ? fs.readdirSync(screenshotsDir)
-              .filter(f => f.endsWith('.png') || f.endsWith('.jpg'))
-              .map(f => path.join(screenshotsDir, f))
+        const screenshots = fs.existsSync(screenshotsDir)
+          ? fs
+              .readdirSync(screenshotsDir)
+              .filter((f) => f.endsWith('.png') || f.endsWith('.jpg'))
+              .map((f) => path.join(screenshotsDir, f))
           : [];
 
         return {
-          testId: sessionData.testId || path.basename(resultPath),
-          testName: sessionData.testName || sessionData.sessionName,
-          status: sessionData.status || 'UNKNOWN',
+          testId: sessionData.testId || sessionData.sessionId || path.basename(resultPath),
+          testName: sessionData.testName || sessionData.sessionName || sessionData.testName,
+          status: sessionData.status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
           duration: sessionData.duration || 0,
-          error: sessionData.error,
+          error: sessionData.error || sessionData.finalResult,
           screenshots,
           sessionDir: resultPath,
         };
@@ -279,21 +293,40 @@ export class HtmlReporter {
   private processTemplate(template: string, data: any): string {
     let processedTemplate = template;
 
-    // Replace summary data
-    processedTemplate = processedTemplate.replace(/{{TOTAL_TESTS}}/g, data.summary.totalTests.toString());
-    processedTemplate = processedTemplate.replace(/{{PASSED_TESTS}}/g, data.summary.passedTests.toString());
-    processedTemplate = processedTemplate.replace(/{{FAILED_TESTS}}/g, data.summary.failedTests.toString());
-    processedTemplate = processedTemplate.replace(/{{SUCCESS_RATE}}/g, data.summary.successRate.toFixed(1));
-    processedTemplate = processedTemplate.replace(/{{TOTAL_DURATION}}/g, this.formatDuration(data.summary.totalDuration));
-    processedTemplate = processedTemplate.replace(/{{TIMESTAMP}}/g, data.summary.timestamp);
+    // Replace summary data - match the actual template placeholders
+    processedTemplate = processedTemplate.replace(
+      /{{totalTests}}/g,
+      data.summary.totalTests.toString()
+    );
+    processedTemplate = processedTemplate.replace(
+      /{{totalRuns}}/g,
+      data.summary.totalTests.toString()
+    );
+    processedTemplate = processedTemplate.replace(
+      /{{successfulRuns}}/g,
+      data.summary.passedTests.toString()
+    );
+    processedTemplate = processedTemplate.replace(
+      /{{failedRuns}}/g,
+      data.summary.failedTests.toString()
+    );
+    processedTemplate = processedTemplate.replace(
+      /{{successRate}}/g,
+      data.summary.successRate.toFixed(1)
+    );
+    processedTemplate = processedTemplate.replace(/{{generatedAt}}/g, new Date().toLocaleString());
 
-    // Generate test results HTML
-    const testResultsHtml = this.generateTestResultsHtml(data.testResults);
-    processedTemplate = processedTemplate.replace(/{{TEST_RESULTS}}/g, testResultsHtml);
+    // Generate test statistics table
+    const testStatsTable = this.generateTestStatsTable(data.testResults);
+    processedTemplate = processedTemplate.replace(/{{testStatsTable}}/g, testStatsTable);
+
+    // Generate recent results table
+    const recentResultsTable = this.generateRecentResultsTable(data.testResults);
+    processedTemplate = processedTemplate.replace(/{{recentResultsTable}}/g, recentResultsTable);
 
     // Generate JSON data for JavaScript
     const jsonData = JSON.stringify(data, null, 2);
-    processedTemplate = processedTemplate.replace(/{{REPORT_DATA}}/g, jsonData);
+    processedTemplate = processedTemplate.replace(/{{testDataJson}}/g, jsonData);
 
     return processedTemplate;
   }
@@ -302,16 +335,22 @@ export class HtmlReporter {
    * Generate HTML for test results section
    */
   private generateTestResultsHtml(testResults: any[]): string {
-    return testResults.map(result => {
-      const statusClass = result.status === 'SUCCESS' ? 'success' : 'failure';
-      const statusIcon = result.status === 'SUCCESS' ? '✅' : '❌';
-      const errorHtml = result.error ? `<div class="error-message">${this.escapeHtml(result.error)}</div>` : '';
-      
-      const screenshotsHtml = result.screenshots.map((screenshot: string) => 
-        `<img src="${screenshot}" alt="Screenshot" class="screenshot-thumb" onclick="openScreenshot('${screenshot}')">`
-      ).join('');
+    return testResults
+      .map((result) => {
+        const statusClass = result.status === 'SUCCESS' ? 'success' : 'failure';
+        const statusIcon = result.status === 'SUCCESS' ? '✅' : '❌';
+        const errorHtml = result.error
+          ? `<div class="error-message">${this.escapeHtml(result.error)}</div>`
+          : '';
 
-      return `
+        const screenshotsHtml = result.screenshots
+          .map(
+            (screenshot: string) =>
+              `<img src="${screenshot}" alt="Screenshot" class="screenshot-thumb" onclick="openScreenshot('${screenshot}')">`
+          )
+          .join('');
+
+        return `
         <div class="test-result ${statusClass}">
           <div class="test-header">
             <span class="status-icon">${statusIcon}</span>
@@ -325,7 +364,71 @@ export class HtmlReporter {
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
+  }
+
+  /**
+   * Generate test statistics table HTML
+   */
+  private generateTestStatsTable(testResults: any[]): string {
+    if (testResults.length === 0) {
+      return '<tr><td colspan="4" class="text-center">No test results available</td></tr>';
+    }
+
+    return testResults
+      .map((result) => {
+        const statusBadge =
+          result.status === 'SUCCESS'
+            ? '<span class="badge bg-success">✅ Passed</span>'
+            : '<span class="badge bg-danger">❌ Failed</span>';
+
+        return `
+          <tr>
+            <td>${this.escapeHtml(result.testId)}</td>
+            <td>${this.escapeHtml(result.testName)}</td>
+            <td>${statusBadge}</td>
+            <td>${this.formatDuration(result.duration)}</td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  /**
+   * Generate recent results table HTML
+   */
+  private generateRecentResultsTable(testResults: any[]): string {
+    if (testResults.length === 0) {
+      return '<tr><td colspan="5" class="text-center">No recent test results available</td></tr>';
+    }
+
+    // Sort by most recent first and take top 10
+    const recentResults = testResults
+      .sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime())
+      .slice(0, 10);
+
+    return recentResults
+      .map((result) => {
+        const statusBadge =
+          result.status === 'SUCCESS'
+            ? '<span class="badge bg-success">✅ Passed</span>'
+            : '<span class="badge bg-danger">❌ Failed</span>';
+
+        const screenshotCount = result.screenshots ? result.screenshots.length : 0;
+        const timestamp = result.timestamp ? new Date(result.timestamp).toLocaleString() : 'N/A';
+
+        return `
+          <tr>
+            <td>${this.escapeHtml(result.testId)}</td>
+            <td>${this.escapeHtml(result.testName)}</td>
+            <td>${statusBadge}</td>
+            <td>${this.formatDuration(result.duration)}</td>
+            <td>${screenshotCount} screenshots</td>
+          </tr>
+        `;
+      })
+      .join('');
   }
 
   /**
@@ -412,18 +515,18 @@ export class HtmlReporter {
   }> {
     try {
       console.log('🧹 Cleaning up old test results...');
-      
+
       const { TestResultsParser } = await import('../results/test-results-parser.js');
       const parser = new TestResultsParser(this.testResultsDir);
       const cleanup = parser.cleanupOldResults(keepPerTest);
-      
+
       if (cleanup.removedCount > 0) {
         console.log(`✅ Cleaned up ${cleanup.removedCount} old test result directories`);
         console.log(`📁 Keeping ${keepPerTest} most recent results per test`);
       } else {
         console.log('✨ No cleanup needed - all results are recent');
       }
-      
+
       return cleanup;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -443,32 +546,34 @@ export class HtmlReporter {
   }> {
     try {
       console.log('🧹 Cleaning up old report files...');
-      
+
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - maxAge);
-      
-      const reportFiles = fs.readdirSync(this.reportsDir).filter(file => 
-        file.endsWith('.html') && fs.statSync(path.join(this.reportsDir, file)).isFile()
-      );
-      
+
+      const reportFiles = fs
+        .readdirSync(this.reportsDir)
+        .filter(
+          (file) => file.endsWith('.html') && fs.statSync(path.join(this.reportsDir, file)).isFile()
+        );
+
       const removedFiles: string[] = [];
-      
+
       for (const file of reportFiles) {
         const filePath = path.join(this.reportsDir, file);
         const stats = fs.statSync(filePath);
-        
+
         if (stats.mtime < cutoffDate) {
           fs.unlinkSync(filePath);
           removedFiles.push(file);
         }
       }
-      
+
       if (removedFiles.length > 0) {
         console.log(`✅ Cleaned up ${removedFiles.length} old report files`);
       } else {
         console.log('✨ No old report files to clean up');
       }
-      
+
       return { removedCount: removedFiles.length, removedFiles };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

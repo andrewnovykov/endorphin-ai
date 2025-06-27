@@ -1,53 +1,59 @@
 # HTML Reporter User Guide
 
+_Last Updated: June 27, 2025 - v0.4.1+_
+
 The Endorphin AI HTML Reporter provides comprehensive, interactive test reports
 that help you analyze test execution results, identify patterns, and debug
 issues effectively.
 
-## Overview
+## 🎯 Overview
 
 The HTML Reporter generates beautiful, responsive web-based reports from your
 test execution data. These reports include:
 
-- **Interactive dashboards** with test statistics and success rates
-- **Detailed test execution timelines** with step-by-step breakdowns
-- **Screenshot galleries** for visual debugging
-- **Search and filtering capabilities** for large test suites
-- **Export functionality** for data analysis and sharing
+- **📊 Interactive dashboards** with test statistics and success rates
+- **📋 Detailed test execution summaries** with step-by-step breakdowns
+- **📸 Screenshot galleries** for visual debugging
+- **🔍 Search and filtering capabilities** for large test suites
+- **📤 Export functionality** for data analysis and sharing
+- **📱 Responsive design** that works on all devices
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Generating Reports
 
 ```bash
-# Generate a full interactive HTML report
+# Generate HTML report from test results
 endorphin generate report
 
-# Generate a lightweight summary report
-endorphin generate report --summary
+# Generate report with custom filename
+endorphin generate report --filename my-test-report.html
 
 # Open the latest report in your browser
 endorphin open report
 
 # Open a specific report file
-endorphin open report report-2025-06-22.html
+endorphin open report my-test-report.html
 ```
 
-### Report Types
+### Prerequisites
 
-#### Full Report
+You need test results to generate reports. Run some tests first:
 
-- Complete test statistics and trends
-- Detailed execution timelines for each test
-- Screenshot galleries with zoom functionality
-- Interactive modals with step-by-step analysis
-- Export and print capabilities
+```bash
+# Run a health check test
+endorphin run test HEALTH-001
 
-#### Summary Report
+# Run all tests
+endorphin run test all
 
-- Lightweight overview of recent test results
-- Quick performance metrics
-- Ideal for CI/CD dashboards
+# Run smoke tests
+endorphin run test --tag smoke
+
+# Then generate the report
+endorphin generate report
+```
+
 - Faster loading for large test suites
 
 ## Report Features

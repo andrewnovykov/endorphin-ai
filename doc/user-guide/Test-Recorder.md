@@ -1,51 +1,86 @@
 # Test Recorder - User Guide
 
+_Last Updated: June 27, 2025 - v0.4.1+_
+
 Create automated tests by recording your browser interactions in natural
 language. The AI agent performs the actions while you watch, capturing
 everything needed to recreate your test.
 
-## Quick Start
+## 🎯 Overview
+
+The Test Recorder is an **interactive tool** that helps you create tests by:
+
+- 🗣️ **Natural Language Commands** - Tell the AI what to do in plain English
+- 👀 **Visual Feedback** - Watch the AI perform actions in a real browser
+- 📝 **Automatic Generation** - Get a ready-to-run test file created for you
+- 🎯 **No Technical Skills Required** - Write tests without coding
+
+## 🚀 Quick Start
 
 ```bash
-# In your project directory with Endorphin AI installed
-npx endorphin run test-recorder
+# Start the interactive test recorder in your project directory
+endorphin run test-recorder
 ```
 
-## How It Works
+**Requirements:**
 
-1. **Setup**: Answer a few questions about your test
-2. **Record**: Give natural language commands like "click login button"
-3. **Watch**: See the AI perform actions in a real browser
-4. **Generate**: Get a ready-to-run test file automatically
+- Endorphin AI installed in your project
+- OpenAI API key configured
+- Target website accessible
 
-## Step-by-Step Example
+## 🎬 How It Works
+
+1. **📋 Setup**: Answer questions about your test (ID, name, website)
+2. **🗣️ Record**: Give natural language commands like "click the login button"
+3. **👀 Watch**: See the AI perform actions in a real browser window
+4. **📝 Generate**: Get a ready-to-run test file automatically created
+5. **✅ Run**: Execute your recorded test anytime with
+   `endorphin run test TEST-ID`
+
+## 📝 Step-by-Step Example
 
 ### 1. Start Recording
 
 ```bash
-npx endorphin run test-recorder
+cd your-project-directory
+endorphin run test-recorder
 ```
 
 ### 2. Fill in Test Details
 
+The recorder will prompt you for:
+
 ```
-Test ID: QE-LOGIN-001
-Test Name: User Login Test
-Description: Test login with valid credentials
-Priority: High
-Tags: authentication, login, smoke
-Site URL: https://myapp.com
+? Test ID: LOGIN-001
+? Test Name: User Login Test
+? Description: Test user login with valid credentials
+? Priority: High
+? Tags (comma-separated): authentication, login, smoke
+? Site URL: https://your-app.com
 ```
 
 ### 3. Give Natural Language Commands
 
 ```
-🎬 Next step: click the login link
-🎬 Next step: fill email field with test@example.com
-🎬 Next step: fill password field with password123
-🎬 Next step: click the submit button
-🎬 Next step: verify welcome message appears
-🎬 Next step: done
+🎬 Recording session started. Type your commands:
+
+> click the login button
+✅ AI: Clicked the login button
+
+> fill the email field with test@example.com
+✅ AI: Filled email field with "test@example.com"
+
+> fill the password field with password123
+✅ AI: Filled password field with "password123"
+
+> click the submit button
+✅ AI: Clicked the submit button
+
+> verify the welcome message appears
+✅ AI: Verified welcome message is visible
+
+> done
+✅ Recording complete! Test file saved to tests/LOGIN-001.ts
 ```
 
 ### 4. Generated Test
@@ -145,7 +180,7 @@ npx endorphin list
 
 ### Configuration
 
-Create `endorphin.config.js` in your project:
+Create `endorphin.config.ts` in your project:
 
 ```javascript
 export default {
@@ -172,8 +207,8 @@ OPENAI_API_KEY=your_key_here
 
 Make sure your config has `headless: false`:
 
-```javascript
-// endorphin.config.js
+```typescript
+// endorphin.config.ts
 export default {
   browser: {
     headless: false, // This makes browser visible

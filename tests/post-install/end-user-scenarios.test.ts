@@ -1,18 +1,27 @@
 /**
  * End-User Post-Install Tests
- * Tests the package as an end user would use it after npm install
+ * Tests the package as an end user would use it after npm inst        expect(result.stdout).toContain('already initialized');
+        expect(result.stdout).toContain(`Run: npx endorphin-ai@${testVersion} run test`);l
  */
 
 import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
 import { ChildProcess, spawn } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
+import { createVersionedCommand, getTestVersion, verifyVersionExists } from './version-helper';
 
 describe('Post-Install End-User Scenarios', () => {
   const testProjectDir = path.join(__dirname, 'tmp', 'test-endorphin');
   const originalCwd = process.cwd();
+  let testVersion: string;
 
   beforeAll(async () => {
+    // Load the test version from .env
+    testVersion = await getTestVersion();
+
+    // Verify the specific version exists on npm registry
+    await verifyVersionExists(testVersion);
+
     // Clean up any existing test directory
     try {
       await fs.rm(testProjectDir, { recursive: true, force: true });
@@ -89,7 +98,7 @@ describe('Post-Install End-User Scenarios', () => {
         });
 
         expect(result.stdout).toContain('already initialized');
-        expect(result.stdout).toContain('Run: npx endorphin run test');
+        expect(result.stdout).toContain(`Run: npx endorphin@${testVersion} run test`);
       } finally {
         process.chdir(originalCwd);
       }
@@ -288,7 +297,7 @@ export default {
 });
 
 /**
- * Helper function to run endorphin CLI commands
+ * Helper function to run endorphin CLI commands with specific version
  */
 async function runEndorphinCommand(
   args: string[],
@@ -300,8 +309,11 @@ async function runEndorphinCommand(
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   const { cwd = process.cwd(), timeout = 30000, env = process.env } = options;
 
+  // Load test version from module scope
+  const testVersion = await getTestVersion();
+
   return new Promise((resolve, reject) => {
-    const child = spawn('npx', ['endorphin', ...args], {
+    const child = spawn('npx', createVersionedCommand(testVersion, args), {
       cwd,
       env,
       stdio: ['pipe', 'pipe', 'pipe'],

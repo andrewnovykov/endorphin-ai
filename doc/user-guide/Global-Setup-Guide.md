@@ -1,6 +1,6 @@
 # Global Setup & Teardown Guide - Endorphin AI
 
-_Last Updated: June 22, 2025_
+_Last Updated: June 27, 2025 - v0.4.1+_
 
 ## 🎯 Overview
 
@@ -52,7 +52,7 @@ Create these files in your project root:
 your-project/
 ├── global.setup.js        # Setup operations before all tests
 ├── global.teardown.js     # Teardown operations after all tests
-├── endorphin.config.js    # Configuration
+├── endorphin.config.ts    # Configuration
 ├── tests/                 # Your test files
 └── package.json
 ```
@@ -61,7 +61,7 @@ your-project/
 
 ## ⚙️ Setup Configuration
 
-Configure global setup/teardown in your `endorphin.config.js`:
+Configure global setup/teardown in your `endorphin.config.ts`:
 
 ```javascript
 export default {

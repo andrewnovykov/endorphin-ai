@@ -3,12 +3,8 @@
  * Handles loading and merging of configuration from multiple sources
  */
 
-import type {
-  AIConfig,
-  BrowserConfig,
-  CLIFlags,
-  FrameworkConfig
-} from '@/types/index';
+import type { AIConfig, BrowserConfig, CLIFlags, FrameworkConfig } from '@/types/index';
+import { config as loadDotenv } from 'dotenv';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { pathToFileURL } from 'url';
@@ -245,7 +241,9 @@ export class ConfigLoader {
 
     // Validate OpenAI API key only if AI validation is required
     if (validateAI && !config.ai.openai.apiKey) {
-      throw new Error('OpenAI API key is required. Set OPENAI_API_KEY environment variable or provide in config.');
+      throw new Error(
+        'OpenAI API key is required. Set OPENAI_API_KEY environment variable or provide in config.'
+      );
     }
   }
 
@@ -277,12 +275,14 @@ const configLoader = new ConfigLoader();
 /**
  * Get configuration with optional overrides
  */
-export async function getConfig(options: {
-  cwd?: string;
-  configPath?: string;
-  cliFlags?: CLIFlags;
-  validateAI?: boolean;
-} = {}): Promise<FrameworkConfig> {
+export async function getConfig(
+  options: {
+    cwd?: string;
+    configPath?: string;
+    cliFlags?: CLIFlags;
+    validateAI?: boolean;
+  } = {}
+): Promise<FrameworkConfig> {
   const { cwd = process.cwd(), configPath, cliFlags = {}, validateAI = true } = options;
 
   // Change to specified directory temporarily
@@ -292,16 +292,17 @@ export async function getConfig(options: {
   }
 
   try {
+    // Load .env file if it exists
+    const envPath = resolve(process.cwd(), '.env');
+    if (existsSync(envPath)) {
+      loadDotenv({ path: envPath });
+    }
+
     const defaultConfig = configLoader.getDefaultConfig();
     const envConfig = configLoader.loadEnvConfig();
     const userConfig = await configLoader.loadUserConfig(configPath);
 
-    const mergedConfig = configLoader.mergeConfigs(
-      defaultConfig,
-      envConfig,
-      userConfig,
-      cliFlags
-    );
+    const mergedConfig = configLoader.mergeConfigs(defaultConfig, envConfig, userConfig, cliFlags);
 
     configLoader.validateConfig(mergedConfig, validateAI);
 

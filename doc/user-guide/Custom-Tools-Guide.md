@@ -1,6 +1,6 @@
 # Custom Tools Guide - Endorphin AI
 
-_Last Updated: June 22, 2025_
+_Last Updated: June 27, 2025 - v0.4.1+_
 
 ## 🎯 Overview
 
@@ -302,8 +302,8 @@ schema: z.object({
 
 ### Method 1: Directory-based Loading (Recommended)
 
-```javascript
-// endorphin.config.js
+```typescript
+// endorphin.config.ts
 export default {
   // ... other config
 
@@ -330,14 +330,14 @@ your-project/
 
 ### Method 2: Individual File Loading
 
-```javascript
-// endorphin.config.js
+```typescript
+// endorphin.config.ts
 export default {
   // ... other config
 
   customTools: [
-    './tools/api-tools.js',
-    './tools/database-tools.js',
+    './tools/api-tools.ts',
+    './tools/database-tools.ts',
     './integrations/slack-tools.js',
   ],
 };
@@ -345,14 +345,14 @@ export default {
 
 ### Method 3: Mixed Configuration
 
-```javascript
-// endorphin.config.js
+```typescript
+// endorphin.config.ts
 export default {
   // ... other config
 
   customTools: [
     './tools', // Load entire directory
-    './special/custom-tool.js', // Load specific file
+    './special/custom-tool.ts', // Load specific file
     './integrations', // Load another directory
   ],
 };

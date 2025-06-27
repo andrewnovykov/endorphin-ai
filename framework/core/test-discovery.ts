@@ -9,11 +9,7 @@ import { performance } from 'perf_hooks';
 import { pathToFileURL } from 'url';
 
 import { ConsoleReporter } from '../reporters/console-reporter.js';
-import type {
-  DiscoveryResult,
-  FrameworkConfig,
-  TestConfig
-} from '../types/index.js';
+import type { DiscoveryResult, FrameworkConfig, TestConfig } from '../types/index.js';
 
 /**
  * Check if we're running in test environment
@@ -69,11 +65,13 @@ export class TestDiscovery {
       console.log(`🔍 Discovering tests in: ${this.testsDirectory}`);
 
       const files = await readdir(this.testsDirectory);
-      const testFiles = files.filter((file) => file.endsWith('.js') || file.endsWith('.mjs'));
+      const testFiles = files.filter(
+        (file) => file.endsWith('.js') || file.endsWith('.mjs') || file.endsWith('.ts')
+      );
 
       if (testFiles.length === 0) {
         console.log('📝 No test files found in tests/ directory');
-        console.log('💡 Add .js or .mjs files with exported test objects');
+        console.log('💡 Add .js, .mjs, or .ts files with exported test objects');
         return;
       }
 
@@ -212,7 +210,10 @@ async function ensureDiscovery(config: FrameworkConfig | null = null): Promise<T
   return discoveryInstance;
 }
 
-export async function runSingleTestById(testId: string, config: FrameworkConfig | null = null): Promise<DiscoveryResult> {
+export async function runSingleTestById(
+  testId: string,
+  config: FrameworkConfig | null = null
+): Promise<DiscoveryResult> {
   const discovery = await ensureDiscovery(config);
   const test = discovery.getTest(testId);
 
@@ -277,7 +278,10 @@ export async function runSingleTestById(testId: string, config: FrameworkConfig 
   }
 }
 
-export async function runTestsByTag(tag: string, config: FrameworkConfig | null = null): Promise<DiscoveryResult> {
+export async function runTestsByTag(
+  tag: string,
+  config: FrameworkConfig | null = null
+): Promise<DiscoveryResult> {
   const discovery = await ensureDiscovery(config);
   const tests = discovery.getTestsByTag(tag);
 
@@ -343,7 +347,10 @@ export async function runTestsByTag(tag: string, config: FrameworkConfig | null 
   }
 }
 
-export async function runTestsByPriority(priority: string, config: FrameworkConfig | null = null): Promise<DiscoveryResult> {
+export async function runTestsByPriority(
+  priority: string,
+  config: FrameworkConfig | null = null
+): Promise<DiscoveryResult> {
   const discovery = await ensureDiscovery(config);
   const tests = discovery.getTestsByPriority(priority);
 
@@ -474,7 +481,9 @@ export async function runAllTests(config: FrameworkConfig | null = null): Promis
   }
 }
 
-export async function listAllTests(config: FrameworkConfig | null = null): Promise<DiscoveryResult> {
+export async function listAllTests(
+  config: FrameworkConfig | null = null
+): Promise<DiscoveryResult> {
   const discovery = await ensureDiscovery(config);
   const tests = discovery.getAllTests();
 

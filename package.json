@@ -2,9 +2,9 @@
   "name": "endorphin-ai",
   "version": "0.4.1",
   "description": "E2E Testing Reinvented with AI - A powerful TypeScript browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright",
-  "main": "framework/index.ts",
+  "main": "dist/framework/index.js",
   "bin": {
-    "endorphin": "./bin/endorphin.js"
+    "endorphin": "./dist/bin/endorphin.js"
   },
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
     "test:unit": "jest --selectProjects='Development Tests' tests/development/unit",
     "test:integration": "jest --selectProjects='Development Tests' tests/development/integration",
     "test:dev": "jest --selectProjects='Development Tests'",
+    "test:pre-release": "jest --selectProjects='Pre-Release Tests'",
     "test:post-install": "jest --selectProjects='Post-Install Tests'",
     "test:e2e": "jest --selectProjects='Post-Install Tests' --testTimeout=180000",
     "test:all": "jest --selectProjects='Development Tests' 'Post-Install Tests'",
@@ -68,6 +69,7 @@
     "node": ">=16.0.0"
   },
   "files": [
+    "dist/",
     "framework/",
     "bin/",
     "examples/",

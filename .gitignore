@@ -17,5 +17,6 @@ Thumbs.db
 tests/development/coverage/*
 tests/package-tests/results/*
 tests/post-install/tmp/*
+tests/pre-release/tmp/*
 tests/package-tests/tmp/test-endorphin/*
 tests/package-tests/results/*

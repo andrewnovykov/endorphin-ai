@@ -1,11 +1,20 @@
 # 🎯 AI Agent Prompting Guide
 
-## Overview
+_Last Updated: June 27, 2025 - v0.4.1+_
+
+## 📝 Overview
 
 This guide helps you write effective natural language instructions for Endorphin
 AI's test framework. The AI agent uses specific tools to automate browser
 interactions, and using the right language patterns helps it select the correct
 tools and parameters.
+
+**Key Benefits:**
+
+- 🤖 **Natural Language** - Write tests in plain English
+- 🎯 **Smart Tool Selection** - AI chooses the right browser automation tools
+- ✅ **Reliable Execution** - Consistent, repeatable test automation
+- 🔍 **Visual Verification** - Screenshots and element validation included
 
 ## 🔧 Available Tools
 
