@@ -184,15 +184,36 @@ export class HtmlReporter {
                     ? fs
                         .readdirSync(screenshotsDir)
                         .filter((f) => f.endsWith('.png') || f.endsWith('.jpg'))
-                        .map((f) => path.join(screenshotsDir, f))
+                        .map((f) => f) // Just filenames, not full paths
                     : [];
+                // Structure the data as expected by the JavaScript
                 return {
+                    session: {
+                        testId: sessionData.testId || sessionData.sessionId || path.basename(resultPath),
+                        testName: sessionData.testName || sessionData.sessionName || sessionData.testName,
+                        status: sessionData.status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
+                        duration: sessionData.duration || 0,
+                        startTime: sessionData.startTime,
+                        endTime: sessionData.endTime,
+                        steps: sessionData.steps || [],
+                        sessionId: sessionData.sessionId || path.basename(resultPath),
+                        sessionName: sessionData.sessionName || sessionData.testName,
+                        sessionDir: path.basename(resultPath),
+                        finalResult: sessionData.finalResult || sessionData.error
+                    },
+                    summary: {
+                        status: sessionData.status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
+                        duration: sessionData.duration || 0,
+                        error: sessionData.error || sessionData.finalResult
+                    },
+                    screenshots,
+                    resultDir: path.basename(resultPath),
+                    // Keep these for backward compatibility with table generation
                     testId: sessionData.testId || sessionData.sessionId || path.basename(resultPath),
                     testName: sessionData.testName || sessionData.sessionName || sessionData.testName,
                     status: sessionData.status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
                     duration: sessionData.duration || 0,
                     error: sessionData.error || sessionData.finalResult,
-                    screenshots,
                     sessionDir: resultPath,
                 };
             }

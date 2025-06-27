@@ -18,7 +18,7 @@
     "test:dev": "jest --selectProjects='Development Tests'",
     "test:all": "jest --selectProjects='Development Tests'",
     "test:package": "cd development-tests/package-tests && ./run-all-tests.sh",
-    "build": "tsc && node scripts/fix-imports.js && cp framework/templates/reporter/*.html framework/templates/reporter/*.css dist/framework/templates/reporter/ && chmod +x dist/bin/endorphin.js",
+    "build": "tsc && node scripts/fix-imports.js && cp framework/templates/reporter/*.html framework/templates/reporter/*.css framework/templates/reporter/*.js dist/framework/templates/reporter/ && chmod +x dist/bin/endorphin.js",
     "build:watch": "tsc --watch",
     "pack:local": "npm run build && npm pack --pack-destination dist",
     "test:local": "npm run pack:local && ./tests/package-tests/run-all-tests.sh",
