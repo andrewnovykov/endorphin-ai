@@ -8,9 +8,8 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { PROJECT_ROOT, getPackageVersion, setupTestProject } from './test-utils';
 
-// Jest-compatible path resolution
-const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const TEST_DIR = path.join(__dirname, 'tmp', 'local-install-test');
 
 describe('Pre-Release Local Installation', () => {
@@ -24,14 +23,9 @@ describe('Pre-Release Local Installation', () => {
       fs.rmSync(testProjectPath, { recursive: true, force: true });
     }
 
-    fs.mkdirSync(testProjectPath, { recursive: true });
-
-    // Initialize a new npm project
-    execSync('npm init -y', {
-      cwd: testProjectPath,
-      stdio: 'pipe',
-    });
-  }, 30000);
+    // Setup test project with endorphin-ai installed from tarball
+    setupTestProject(testProjectPath);
+  }, 60000);
 
   afterAll(async () => {
     // Clean up test directory
@@ -46,14 +40,6 @@ describe('Pre-Release Local Installation', () => {
 
   describe('Local Package Installation', () => {
     it('should install the framework from local path', async () => {
-      expect(() => {
-        // Install from local development path
-        execSync(`npm install "${PROJECT_ROOT}"`, {
-          cwd: testProjectPath,
-          stdio: 'pipe',
-        });
-      }).not.toThrow();
-
       // Verify package.json was updated
       const packageJson = JSON.parse(
         fs.readFileSync(path.join(testProjectPath, 'package.json'), 'utf8')
@@ -61,7 +47,7 @@ describe('Pre-Release Local Installation', () => {
 
       expect(packageJson.dependencies).toBeDefined();
       expect(packageJson.dependencies['endorphin-ai']).toBeDefined();
-    }, 60000);
+    });
 
     it('should have all required files in node_modules', async () => {
       const nodeModulesPath = path.join(testProjectPath, 'node_modules', 'endorphin-ai');
@@ -71,10 +57,10 @@ describe('Pre-Release Local Installation', () => {
       // Check for essential files
       const requiredFiles = [
         'package.json',
-        'bin/endorphin.js',
-        'framework/index.js',
-        'framework/core/config-loader.js',
-        'framework/reporters/html-reporter.js',
+        'dist/bin/endorphin.js',
+        'dist/framework/index.js',
+        'dist/framework/core/config-loader.js',
+        'dist/framework/reporters/html-reporter.js',
       ];
 
       for (const file of requiredFiles) {
@@ -84,10 +70,11 @@ describe('Pre-Release Local Installation', () => {
     });
 
     it('should have executable CLI command', async () => {
-      // Test that the CLI command is available
-      const result = execSync('npx endorphin --help', {
+      // Test that the CLI command is available (use direct node execution)
+      const result = execSync('node node_modules/endorphin-ai/dist/bin/endorphin.js --help', {
         cwd: testProjectPath,
         encoding: 'utf8',
+        timeout: 30000,
       });
 
       expect(result).toContain('Endorphin AI');
@@ -99,9 +86,9 @@ describe('Pre-Release Local Installation', () => {
 
       // Check for TypeScript declaration files
       const declarationFiles = [
-        'framework/index.d.ts',
-        'framework/core/config-loader.d.ts',
-        'framework/reporters/html-reporter.d.ts',
+        'dist/framework/index.d.ts',
+        'dist/framework/core/config-loader.d.ts',
+        'dist/framework/reporters/html-reporter.d.ts',
       ];
 
       for (const file of declarationFiles) {
@@ -116,7 +103,7 @@ describe('Pre-Release Local Installation', () => {
       const nodeModulesPath = path.join(testProjectPath, 'node_modules');
 
       // Key dependencies that should be installed
-      const requiredDeps = ['playwright', 'langchain', '@langchain/openai', 'dotenv'];
+      const requiredDeps = ['playwright', 'langchain', '@langchain/core', 'dotenv', 'openai'];
 
       for (const dep of requiredDeps) {
         const depPath = path.join(nodeModulesPath, dep);
@@ -139,17 +126,15 @@ describe('Pre-Release Local Installation', () => {
 
   describe('Version Validation', () => {
     it('should report correct version', async () => {
-      const result = execSync('npx endorphin --version', {
+      const result = execSync('node node_modules/endorphin-ai/dist/bin/endorphin.js --version', {
         cwd: testProjectPath,
         encoding: 'utf8',
+        timeout: 30000,
       });
 
-      // Read version from source package.json
-      const sourcePackageJson = JSON.parse(
-        fs.readFileSync(path.join(PROJECT_ROOT, 'package.json'), 'utf8')
-      );
-
-      expect(result.trim()).toBe(sourcePackageJson.version);
+      // Check version matches current package version
+      const currentVersion = getPackageVersion();
+      expect(result.trim()).toBe(`Endorphin AI v${currentVersion}`);
     });
 
     it('should have matching package.json version', async () => {
@@ -171,7 +156,7 @@ describe('Pre-Release Local Installation', () => {
 
   describe('File Integrity', () => {
     it('should have all framework modules', async () => {
-      const frameworkPath = path.join(testProjectPath, 'node_modules', 'endorphin-ai', 'framework');
+      const frameworkPath = path.join(testProjectPath, 'node_modules', 'endorphin-ai', 'dist', 'framework');
 
       const requiredModules = ['core', 'reporters', 'tools', 'types', 'runner', 'config'];
 
@@ -187,6 +172,7 @@ describe('Pre-Release Local Installation', () => {
         testProjectPath,
         'node_modules',
         'endorphin-ai',
+        'dist',
         'framework',
         'templates'
       );

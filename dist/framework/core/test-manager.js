@@ -59,7 +59,7 @@ export class TestManager {
                     testCase = testModule[qeExport];
                 }
             }
-            if (testCase && testCase.id) {
+            if (testCase?.id) {
                 this.loadedTests.set(testCase.id, {
                     ...testCase,
                     filename,

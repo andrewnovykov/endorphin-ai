@@ -9,27 +9,17 @@ import path from 'path';
 const getFrameworkRoot = () => {
     // Try multiple potential paths to find the examples directory
     const possibleRoots = [
-        // If running from project root
+        // When installed as package: look in node_modules/endorphin-ai
+        path.resolve(process.cwd(), 'node_modules/endorphin-ai'),
+        // If running from project root (development)
         process.cwd(),
         // If __dirname is available (compiled JS), go up from framework/cli
         typeof __dirname !== 'undefined' ? path.resolve(__dirname, '../../') : null,
         // Alternative path resolution
         path.resolve(process.cwd(), '../..'),
     ].filter(Boolean);
-    // Check which path has the examples directory
-    for (const root of possibleRoots) {
-        const examplesPath = path.resolve(root, 'examples');
-        try {
-            // We can't use async here, so we'll return the first valid path
-            // The actual existence check will happen in copyExampleFiles
-            return root;
-        }
-        catch {
-            continue;
-        }
-    }
-    // Fallback to current working directory
-    return process.cwd();
+    // Return the first path that exists - actual existence check happens in copyExampleFiles
+    return possibleRoots[0];
 };
 /**
  * Initialize Endorphin AI project in current directory
@@ -39,7 +29,8 @@ export async function initProject(targetDir = process.cwd()) {
     console.log('🎯 Initializing Endorphin AI project...');
     try {
         // Check if already initialized
-        const configExists = await fileExists(path.join(targetDir, 'endorphin.config.ts'));
+        const configExists = await fileExists(path.join(targetDir, 'endorphin.config.js')) ||
+            await fileExists(path.join(targetDir, 'endorphin.config.ts'));
         if (configExists) {
             console.log('⚠️  Endorphin AI already initialized in this directory');
             console.log('💡 Run: npx endorphin run test HEALTH-001');
@@ -79,7 +70,7 @@ async function copyExampleFiles(targetDir) {
     try {
         await fs.access(examplesDir);
     }
-    catch (error) {
+    catch {
         console.warn(`⚠️  Examples directory not found at: ${examplesDir}`);
         console.warn('⚠️  Creating basic configuration files instead...');
         await createBasicFiles(targetDir);
@@ -202,7 +193,10 @@ export default {
     await fs.writeFile(path.join(targetDir, 'endorphin.config.ts'), configContent);
     console.log('📄 Created: endorphin.config.ts');
     // Create basic sample test
-    const testContent = `export const HEALTH_001 = {
+    const testContent = `// Example Endorphin AI Test
+// This is a sample test to help you get started
+
+export const HEALTH_001 = {
   id: 'HEALTH-001',
   name: 'Health Check Test',
   description: 'Basic health check to verify the testing framework is working',

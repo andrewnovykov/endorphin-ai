@@ -5,7 +5,7 @@
 /**
  * Handle help and version commands
  */
-export async function handleHelpAndVersion(args, packageInfo, showHelp) {
+export function handleHelpAndVersion(args, packageInfo, showHelp) {
     if (args.length === 0 ||
         args.includes('--help') ||
         args.includes('-h') ||
@@ -134,7 +134,7 @@ export async function handleOpenCommand(subcommand, target) {
         console.log('🌐 Opening latest test report...');
         const { HtmlReporter } = await import('../framework/reporters/html-reporter.js');
         const reporter = new HtmlReporter();
-        const reportPath = target || null;
+        const reportPath = target ?? null;
         await reporter.openReport(reportPath);
         process.exit(0);
     }

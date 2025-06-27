@@ -1,0 +1,2 @@
+# This directory is used for temporary test projects during pre-release testing
+# The directory itself should be kept in git, but its contents should be ignored

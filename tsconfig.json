@@ -77,9 +77,7 @@
   "include": [
     "framework/**/*",
     "bin/**/*",
-    "development-tests/**/*",
-    "examples/**/*",
-    "tests/**/*"
+    "examples/**/*"
   ],
   "exclude": [
     "node_modules",

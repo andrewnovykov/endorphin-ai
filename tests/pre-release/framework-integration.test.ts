@@ -8,9 +8,8 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { PROJECT_ROOT, setupTestProject } from './test-utils';
 
-// Jest-compatible path resolution
-const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const TEST_DIR = path.join(__dirname, 'tmp', 'framework-test');
 
 describe('Pre-Release Framework Integration', () => {
@@ -24,14 +23,11 @@ describe('Pre-Release Framework Integration', () => {
       fs.rmSync(testProjectPath, { recursive: true, force: true });
     }
 
-    fs.mkdirSync(testProjectPath, { recursive: true });
-
-    // Initialize npm project and install local version
-    execSync('npm init -y', { cwd: testProjectPath, stdio: 'pipe' });
-    execSync(`npm install "${PROJECT_ROOT}"`, { cwd: testProjectPath, stdio: 'pipe' });
+    // Setup test project with endorphin-ai installed from tarball
+    setupTestProject(testProjectPath);
 
     // Initialize Endorphin project
-    execSync('npx endorphin init', { cwd: testProjectPath, stdio: 'pipe' });
+    execSync('node node_modules/endorphin-ai/dist/bin/endorphin.js init', { cwd: testProjectPath, stdio: 'pipe' });
   }, 90000);
 
   afterAll(async () => {
@@ -48,22 +44,22 @@ describe('Pre-Release Framework Integration', () => {
     it('should import framework modules successfully', async () => {
       // Create a test script that imports framework modules
       const testScript = `
-const { HtmlReporter } = require('endorphin-ai/framework/reporters/html-reporter.js');
-const { ConfigLoader } = require('endorphin-ai/framework/core/config-loader.js');
+import { HtmlReporter } from 'endorphin-ai/dist/framework/reporters/html-reporter.js';
+import { getConfig } from 'endorphin-ai/dist/framework/core/config-loader.js';
 
 console.log('HtmlReporter loaded:', typeof HtmlReporter);
-console.log('ConfigLoader loaded:', typeof ConfigLoader);
+console.log('getConfig loaded:', typeof getConfig);
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-imports.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-imports.mjs'), testScript);
 
-      const result = execSync('node test-imports.js', {
+      const result = execSync('node test-imports.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
 
       expect(result).toContain('HtmlReporter loaded: function');
-      expect(result).toContain('ConfigLoader loaded: function');
+      expect(result).toContain('getConfig loaded: function');
     });
 
     it('should load TypeScript definitions', async () => {
@@ -71,9 +67,9 @@ console.log('ConfigLoader loaded:', typeof ConfigLoader);
 
       // Check for key TypeScript definition files
       const definitionFiles = [
-        'framework/types/index.d.ts',
-        'framework/reporters/html-reporter.d.ts',
-        'framework/core/config-loader.d.ts',
+        'dist/framework/types/index.d.ts',
+        'dist/framework/reporters/html-reporter.d.ts',
+        'dist/framework/core/config-loader.d.ts',
       ];
 
       for (const file of definitionFiles) {
@@ -87,7 +83,7 @@ console.log('ConfigLoader loaded:', typeof ConfigLoader);
     });
 
     it('should have all framework directories', async () => {
-      const frameworkPath = path.join(testProjectPath, 'node_modules', 'endorphin-ai', 'framework');
+      const frameworkPath = path.join(testProjectPath, 'node_modules', 'endorphin-ai', 'dist', 'framework');
 
       const requiredDirs = ['core', 'reporters', 'tools', 'types', 'runner', 'config', 'templates'];
 
@@ -102,17 +98,16 @@ console.log('ConfigLoader loaded:', typeof ConfigLoader);
   describe('Configuration System', () => {
     it('should load default configuration', async () => {
       const testScript = `
-const { ConfigLoader } = require('endorphin-ai/framework/core/config-loader.js');
+import { getConfig } from 'endorphin-ai/dist/framework/core/config-loader.js';
 
-const loader = new ConfigLoader();
-const config = loader.loadConfig();
+const config = await getConfig({ cwd: process.cwd(), validateAI: false });
 
 console.log('Config loaded:', JSON.stringify(config, null, 2));
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-config.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-config.mjs'), testScript);
 
-      const result = execSync('node test-config.js', {
+      const result = execSync('node test-config.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -142,19 +137,18 @@ export default {
       fs.writeFileSync(path.join(testProjectPath, 'endorphin.config.ts'), configContent);
 
       const testScript = `
-const { ConfigLoader } = require('endorphin-ai/framework/core/config-loader.js');
+import { getConfig } from 'endorphin-ai/dist/framework/core/config-loader.js';
 
-const loader = new ConfigLoader();
-const config = loader.loadConfig();
+const config = await getConfig({ cwd: process.cwd(), validateAI: false });
 
 console.log('Browser headless:', config.browser.headless);
 console.log('AI model:', config.ai.model);
 console.log('Reporter types:', config.reporter.types);
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-custom-config.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-custom-config.mjs'), testScript);
 
-      const result = execSync('node test-custom-config.js', {
+      const result = execSync('node test-custom-config.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -169,17 +163,16 @@ console.log('Reporter types:', config.reporter.types);
       fs.writeFileSync(path.join(testProjectPath, '.env'), 'OPENAI_API_KEY=test-api-key-12345\n');
 
       const testScript = `
-const { ConfigLoader } = require('endorphin-ai/framework/core/config-loader.js');
+import { getConfig } from 'endorphin-ai/dist/framework/core/config-loader.js';
 
-const loader = new ConfigLoader();
-const config = loader.loadConfig();
+const config = await getConfig({ cwd: process.cwd(), validateAI: false });
 
 console.log('API Key loaded:', config.ai.apiKey?.substring(0, 8));
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-env.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-env.mjs'), testScript);
 
-      const result = execSync('node test-env.js', {
+      const result = execSync('node test-env.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -228,10 +221,10 @@ export const SEARCH_TEST = {
       }
 
       const testScript = `
-const { TestDiscovery } = require('endorphin-ai/framework/core/test-discovery.js');
+import { TestDiscovery } from 'endorphin-ai/dist/framework/core/test-discovery.js';
 
 const discovery = new TestDiscovery('./tests');
-const tests = discovery.discoverTests();
+const tests = await discovery.discoverTests();
 
 console.log('Found tests:', tests.length);
 tests.forEach(test => {
@@ -239,9 +232,9 @@ tests.forEach(test => {
 });
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-discovery.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-discovery.mjs'), testScript);
 
-      const result = execSync('node test-discovery.js', {
+      const result = execSync('node test-discovery.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -253,11 +246,11 @@ tests.forEach(test => {
 
     it('should filter tests by tags', async () => {
       const testScript = `
-const { TestDiscovery } = require('endorphin-ai/framework/core/test-discovery.js');
+import { TestDiscovery } from 'endorphin-ai/dist/framework/core/test-discovery.js';
 
 const discovery = new TestDiscovery('./tests');
-const allTests = discovery.discoverTests();
-const authTests = discovery.getTestsByTag('auth');
+const allTests = await discovery.discoverTests();
+const authTests = await discovery.getTestsByTag('auth');
 
 console.log('All tests:', allTests.length);
 console.log('Auth tests:', authTests.length);
@@ -266,9 +259,9 @@ authTests.forEach(test => {
 });
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-filter.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-filter.mjs'), testScript);
 
-      const result = execSync('node test-filter.js', {
+      const result = execSync('node test-filter.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -281,16 +274,16 @@ authTests.forEach(test => {
   describe('HTML Reporter System', () => {
     it('should create HTML reporter instance', async () => {
       const testScript = `
-const { HtmlReporter } = require('endorphin-ai/framework/reporters/html-reporter.js');
+import { HtmlReporter } from 'endorphin-ai/dist/framework/reporters/html-reporter.js';
 
 const reporter = new HtmlReporter('./test-results');
 console.log('Reporter created successfully');
 console.log('Reporter type:', typeof reporter.generateReport);
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-reporter.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-reporter.mjs'), testScript);
 
-      const result = execSync('node test-reporter.js', {
+      const result = execSync('node test-reporter.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -301,20 +294,20 @@ console.log('Reporter type:', typeof reporter.generateReport);
 
     it('should handle empty test results directory', async () => {
       const testScript = `
-const { HtmlReporter } = require('endorphin-ai/framework/reporters/html-reporter.js');
+import { HtmlReporter } from 'endorphin-ai/dist/framework/reporters/html-reporter.js';
 
 const reporter = new HtmlReporter('./test-results');
 
 try {
-  reporter.generateReport();
+  await reporter.generateReport();
 } catch (error) {
   console.log('Expected error:', error.message);
 }
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-empty-results.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-empty-results.mjs'), testScript);
 
-      const result = execSync('node test-empty-results.js', {
+      const result = execSync('node test-empty-results.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -346,14 +339,14 @@ try {
   describe('Dependencies Validation', () => {
     it('should have Playwright installed and accessible', async () => {
       const testScript = `
-const { chromium } = require('playwright');
+import { chromium } from 'playwright';
 
 console.log('Playwright chromium available:', typeof chromium.launch);
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-playwright.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-playwright.mjs'), testScript);
 
-      const result = execSync('node test-playwright.js', {
+      const result = execSync('node test-playwright.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -364,16 +357,16 @@ console.log('Playwright chromium available:', typeof chromium.launch);
     it('should have LangChain modules accessible', async () => {
       const testScript = `
 try {
-  const { ChatOpenAI } = require('@langchain/openai');
+  const { ChatOpenAI } = await import('@langchain/openai');
   console.log('LangChain OpenAI available:', typeof ChatOpenAI);
 } catch (error) {
   console.log('LangChain import error:', error.message);
 }
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-langchain.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-langchain.mjs'), testScript);
 
-      const result = execSync('node test-langchain.js', {
+      const result = execSync('node test-langchain.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -383,16 +376,16 @@ try {
 
     it('should have dotenv functionality', async () => {
       const testScript = `
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 
 dotenv.config();
 console.log('Dotenv loaded successfully');
 console.log('API key exists:', !!process.env.OPENAI_API_KEY);
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-dotenv.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-dotenv.mjs'), testScript);
 
-      const result = execSync('node test-dotenv.js', {
+      const result = execSync('node test-dotenv.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -411,20 +404,19 @@ console.log('API key exists:', !!process.env.OPENAI_API_KEY);
       }
 
       const testScript = `
-const { ConfigLoader } = require('endorphin-ai/framework/core/config-loader.js');
+import { getConfig } from 'endorphin-ai/dist/framework/core/config-loader.js';
 
 try {
-  const loader = new ConfigLoader();
-  const config = loader.loadConfig();
+  const config = await getConfig({ cwd: process.cwd(), validateAI: false });
   console.log('Config loaded with defaults');
 } catch (error) {
   console.log('Config error:', error.message);
 }
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-no-config.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-no-config.mjs'), testScript);
 
-      const result = execSync('node test-no-config.js', {
+      const result = execSync('node test-no-config.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });
@@ -440,20 +432,20 @@ try {
       );
 
       const testScript = `
-const { TestDiscovery } = require('endorphin-ai/framework/core/test-discovery.js');
+import { TestDiscovery } from 'endorphin-ai/dist/framework/core/test-discovery.js';
 
 try {
   const discovery = new TestDiscovery('./tests');
-  const tests = discovery.discoverTests();
+  const tests = await discovery.discoverTests();
   console.log('Discovery completed, found:', tests.length, 'valid tests');
 } catch (error) {
   console.log('Discovery error:', error.message);
 }
 `;
 
-      fs.writeFileSync(path.join(testProjectPath, 'test-invalid-files.js'), testScript);
+      fs.writeFileSync(path.join(testProjectPath, 'test-invalid-files.mjs'), testScript);
 
-      const result = execSync('node test-invalid-files.js', {
+      const result = execSync('node test-invalid-files.mjs', {
         cwd: testProjectPath,
         encoding: 'utf8',
       });

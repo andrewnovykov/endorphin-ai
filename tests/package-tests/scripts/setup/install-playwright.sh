@@ -20,11 +20,11 @@ fi
 echo "📁 Working directory: $(pwd)"
 echo "🔍 Checking current Playwright installation..."
 
-# Check if playwright is available
-if command -v npx playwright &> /dev/null; then
-    echo "✅ Playwright CLI is available"
+# Check if playwright is available (through endorphin-ai)
+if [ -f "node_modules/endorphin-ai/package.json" ]; then
+    echo "✅ Endorphin AI package is available"
 else
-    echo "❌ Playwright CLI not found"
+    echo "❌ Endorphin AI package not found"
     exit 1
 fi
 

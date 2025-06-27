@@ -100,7 +100,7 @@ export class TestManager {
         }
       }
 
-      if (testCase && testCase.id) {
+      if (testCase?.id) {
         this.loadedTests.set(testCase.id, {
           ...testCase,
           filename,

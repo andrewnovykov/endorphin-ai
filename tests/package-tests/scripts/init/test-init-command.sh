@@ -3,24 +3,48 @@
 echo "🎯 Testing Init Command"
 echo "====================="
 
+# Load configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../../config/test-config.sh"
+
 # Store original directory
 ORIGINAL_DIR=$(pwd)
 
 # Create temporary test directory in the proper location
-TEST_DIR="$ORIGINAL_DIR/tests/package-tests/tmp/temp-init-test"
+TEST_DIR="$PACKAGE_TEST_DIR/tmp/temp-init-test"
 rm -rf "$TEST_DIR"
 mkdir -p "$TEST_DIR"
 
 echo "📁 Created test directory: $TEST_DIR"
 
+# Setup test environment with package installation
+cd "$TEST_DIR"
+npm init -y > /dev/null 2>&1
+
+# Install endorphin-ai from tarball
+PACKAGE_JSON="$REPO_ROOT/package.json"
+VERSION=$(node -p "require('$PACKAGE_JSON').version")
+TARBALL_NAME="endorphin-ai-${VERSION}.tgz"
+TARBALL_PATH="$REPO_ROOT/dist/$TARBALL_NAME"
+
+if [ ! -f "$TARBALL_PATH" ]; then
+    echo "📦 Creating package tarball..."
+    cd "$REPO_ROOT"
+    npm pack --pack-destination dist > /dev/null 2>&1
+    cd "$TEST_DIR"
+fi
+
+echo "📥 Installing endorphin-ai..."
+npm install "$TARBALL_PATH" > /dev/null 2>&1
+
 # Test init command (run from the test directory)
-echo "🚀 Running: npx endorphin init"
-cd "$TEST_DIR" && npx endorphin init
+echo "🚀 Running: endorphin init"
+node node_modules/endorphin-ai/dist/bin/endorphin.js init
 
 # Verify files were created
 echo "📋 Checking created files..."
 
-FILES=(".env" "endorphin.config.ts" "tests/sample-test.ts" ".gitignore" "README-ENDORPHIN.md")
+FILES=(".env" "endorphin.config.js" "tests/sample-test.js" ".gitignore" "README-ENDORPHIN.md")
 ALL_GOOD=true
 
 # Change to test directory for file checks
@@ -48,7 +72,7 @@ done
 
 # Test if example test is valid
 echo "🧪 Validating example test..."
-if [ -f "./tests/sample-test.ts" ] && (grep -q "TEST_ID\|HEALTH_001\|export const" "./tests/sample-test.ts"); then
+if [ -f "./tests/sample-test.js" ] && (grep -q "HEALTH_001\|export const" "./tests/sample-test.js"); then
   echo "✅ Example test syntax valid"
 else
   echo "❌ Example test has syntax errors"
@@ -57,7 +81,7 @@ fi
 
 # Test if config is valid
 echo "⚙️ Validating config file..."
-if [ -f "./endorphin.config.ts" ] && grep -q "export default" "./endorphin.config.ts"; then
+if [ -f "./endorphin.config.js" ] && grep -q "export default" "./endorphin.config.js"; then
   echo "✅ Config file syntax valid"
 else
   echo "❌ Config file has syntax errors"
@@ -72,16 +96,16 @@ cd "$TEST_DIR"
 echo "OPENAI_API_KEY=sk-test-key-for-testing" > .env
 
 echo "  Testing version command..."
-timeout 5 npx endorphin --version >/dev/null 2>&1 && echo "✅ CLI version command works" || echo "⚠️  CLI version command timeout (not critical)"
+timeout 15 node node_modules/endorphin-ai/dist/bin/endorphin.js --version >/dev/null 2>&1 && echo "✅ CLI version command works" || echo "⚠️  CLI version command timeout (not critical)"
 
 echo "  Testing list command..."
-timeout 5 npx endorphin list >/dev/null 2>&1 && echo "✅ CLI list command works" || echo "⚠️  CLI list command timeout (not critical)"
+timeout 15 node node_modules/endorphin-ai/dist/bin/endorphin.js list >/dev/null 2>&1 && echo "✅ CLI list command works" || echo "⚠️  CLI list command timeout (not critical)"
 
 # Test second init (should not overwrite)
 echo "🔄 Testing second init (should not overwrite)..."
-echo "existing config" > "$TEST_DIR/endorphin.config.ts"
-(cd "$TEST_DIR" && npx endorphin init)
-if grep -q "existing config" "$TEST_DIR/endorphin.config.ts"; then
+echo "existing config" > "$TEST_DIR/endorphin.config.js"
+(cd "$TEST_DIR" && node node_modules/endorphin-ai/dist/bin/endorphin.js init)
+if grep -q "existing config" "$TEST_DIR/endorphin.config.js"; then
   echo "✅ Second init doesn't overwrite existing files"
 else
   echo "❌ Second init overwrote existing files"

@@ -8,7 +8,7 @@ import type { FrameworkConfig } from '../framework/types/config';
  */
 export declare function handleHelpAndVersion(args: string[], packageInfo: {
     version: string;
-}, showHelp: () => void): Promise<void>;
+}, showHelp: () => void): void;
 /**
  * Handle list command
  */

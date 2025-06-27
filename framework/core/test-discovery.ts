@@ -236,7 +236,7 @@ export async function runSingleTestById(
   // Set environment variable to reduce noise from browser framework
   process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
 
-  const { EnhancedBrowserTestFramework } = await import('@core/browser-framework.js');
+  const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
   const framework = new EnhancedBrowserTestFramework(config || undefined);
 
   try {
@@ -303,7 +303,7 @@ export async function runTestsByTag(
   // Set environment variable to reduce noise from browser framework
   process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
 
-  const { EnhancedBrowserTestFramework } = await import('@core/browser-framework.js');
+  const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
   const framework = new EnhancedBrowserTestFramework(config || undefined);
 
   try {
@@ -372,7 +372,7 @@ export async function runTestsByPriority(
   // Set environment variable to reduce noise from browser framework
   process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
 
-  const { EnhancedBrowserTestFramework } = await import('@core/browser-framework.js');
+  const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
   const framework = new EnhancedBrowserTestFramework(config || undefined);
 
   try {
@@ -438,7 +438,7 @@ export async function runAllTests(config: FrameworkConfig | null = null): Promis
   // Set environment variable to reduce noise from browser framework
   process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
 
-  const { EnhancedBrowserTestFramework } = await import('@core/browser-framework.js');
+  const { EnhancedBrowserTestFramework } = await import('./browser-framework.js');
   const framework = new EnhancedBrowserTestFramework(config || undefined);
 
   try {

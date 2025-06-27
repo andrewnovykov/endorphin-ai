@@ -1,0 +1,15 @@
+{
+  "name": "manual-test",
+  "version": "1.0.0",
+  "description": "This guide provides step-by-step instructions for manually testing the Endorphin AI package functionality.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "endorphin-ai": "file:../../endorphin-ai-0.5.0.tgz"
+  }
+}

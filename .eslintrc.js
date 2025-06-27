@@ -4,12 +4,35 @@ import tsparser from '@typescript-eslint/parser';
 
 export default [
   js.configs.recommended,
+  // Global ignores
+  {
+    ignores: [
+      'node_modules/',
+      'dist/',
+      'build/',
+      'coverage/',
+      'test-results/',
+      'test-recorder/',
+      'examples/test-results/',
+      'examples/test-recorder/',
+      'tests/package-tests/tmp/',
+      'tests/package-tests/results/',
+      'tests/development/coverage/',
+      'tests/**/tmp/',
+      'tmp/',
+      '*.min.js',
+      'framework/templates/**/*.js',
+    ],
+  },
   {
     files: ['**/*.{js,ts}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
       parser: tsparser,
+      parserOptions: {
+        project: null, // Disable TypeScript project checking
+      },
       globals: {
         process: 'readonly',
         Buffer: 'readonly',
@@ -23,20 +46,6 @@ export default [
     plugins: {
       '@typescript-eslint': tseslint,
     },
-    ignores: [
-      'node_modules/',
-      'dist/',
-      'build/',
-      'coverage/',
-      'test-results/',
-      'test-recorder/',
-      'examples/test-results/',
-      'examples/test-recorder/',
-      'development-tests/package-tests/tmp/',
-      'development-tests/package-tests/results/',
-      '*.min.js',
-      'framework/templates/**/*.js', // Template files remain JS
-    ],
     rules: {
       // TypeScript specific rules
       '@typescript-eslint/no-unused-vars': [

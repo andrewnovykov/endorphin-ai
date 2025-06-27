@@ -8,11 +8,11 @@ import type { FrameworkConfig } from '../framework/types/config';
 /**
  * Handle help and version commands
  */
-export async function handleHelpAndVersion(
+export function handleHelpAndVersion(
   args: string[],
   packageInfo: { version: string },
   showHelp: () => void
-): Promise<void> {
+): void {
   if (
     args.length === 0 ||
     args.includes('--help') ||
@@ -163,7 +163,7 @@ export async function handleOpenCommand(subcommand: string, target?: string): Pr
     console.log('🌐 Opening latest test report...');
     const { HtmlReporter } = await import('../framework/reporters/html-reporter.js');
     const reporter = new HtmlReporter();
-    const reportPath = target || null;
+    const reportPath = target ?? null;
     await reporter.openReport(reportPath);
     process.exit(0);
   }

@@ -17,7 +17,7 @@ const FLAG_PARSERS = {
     '--headless': () => ({ headless: true }),
     '--no-headless': () => ({ headless: false }),
     '--viewport': (nextArg) => {
-        if (nextArg && nextArg.includes('x')) {
+        if (nextArg?.includes('x')) {
             const [width, height] = nextArg.split('x').map(Number);
             return { viewport: { width, height }, consumed: 1 };
         }
@@ -209,12 +209,13 @@ export async function main() {
         const cliFlags = parseCliFlags(args);
         // Route commands
         switch (command) {
-            case 'list':
+            case 'list': {
                 // List command doesn't need AI validation
                 const listConfig = await getConfig({ cwd: process.cwd(), cliFlags, validateAI: false });
                 await handleListCommand(listConfig);
                 break;
-            case 'run':
+            }
+            case 'run': {
                 // Run commands need full AI validation
                 const runConfig = await getConfig({ cwd: process.cwd(), cliFlags });
                 if (args.includes('--debug')) {
@@ -232,6 +233,7 @@ export async function main() {
                     process.exit(1);
                 }
                 break;
+            }
             case 'generate':
                 await handleGenerateCommand(subcommand, args);
                 break;

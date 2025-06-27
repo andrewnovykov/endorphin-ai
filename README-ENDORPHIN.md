@@ -5,9 +5,7 @@ Welcome to your Endorphin AI test project! 🎉
 ## 🚀 Quick Start
 
 ### 1. Configure API Key
-
 Edit `.env` file and add your OpenAI API key:
-
 ```bash
 OPENAI_API_KEY=your_actual_api_key_here
 ```
@@ -15,28 +13,24 @@ OPENAI_API_KEY=your_actual_api_key_here
 Get your API key from: https://platform.openai.com/api-keys
 
 ### 2. Run Example Test
-
 ```bash
 npx endorphin run test HEALTH-001
 ```
 
 ### 3. Record Your Own Test
-
 ```bash
 npx endorphin run test-recorder
 ```
 
 ### 4. List All Tests
-
 ```bash
 npx endorphin list
 ```
 
 ## 📁 Project Structure
-
 ```
 ├── .env                    # Environment variables
-├── endorphin.config.js     # Framework configuration
+├── endorphin.config.js     # Framework configuration  
 ├── .gitignore             # Git ignore patterns
 ├── tests/                  # Your test files
 │   └── sample-test.js      # Sample test (HEALTH-001)
@@ -47,7 +41,6 @@ npx endorphin list
 ## 🔄 Staying Updated
 
 ### Check Version
-
 ```bash
 # Check your current version
 npx endorphin --version
@@ -60,7 +53,6 @@ npm outdated endorphin-ai
 ```
 
 ### Update to Latest
-
 ```bash
 # Update to the latest version
 npm update endorphin-ai
@@ -75,7 +67,6 @@ npx endorphin --version
 ## 📋 Common Commands
 
 ### Test Execution
-
 ```bash
 # Run specific test
 npx endorphin run test HEALTH-001
@@ -87,12 +78,11 @@ npx endorphin run test all
 npx endorphin run test --tag smoke
 npx endorphin run test --tag authentication
 
-# Run tests by priority
+# Run tests by priority  
 npx endorphin run test --priority High
 ```
 
 ### Test Management
-
 ```bash
 # List all available tests
 npx endorphin list
@@ -105,7 +95,6 @@ npx endorphin --help
 ```
 
 ### Browser Options
-
 ```bash
 # Run with visible browser (default)
 npx endorphin run test HEALTH-001 --no-headless
@@ -124,22 +113,22 @@ Your `endorphin.config.js` file controls framework behavior:
 ```javascript
 export default {
   browser: {
-    headless: false, // Show browser window
+    headless: false,        // Show browser window
     viewport: { width: 1280, height: 720 },
-    timeout: 30000, // 30 second timeout
+    timeout: 30000          // 30 second timeout
   },
-
+  
   results: {
-    directory: './test-results',
-    screenshots: true, // Take screenshots
-    recordVideo: false, // Don't record video
+    directory: "./test-results",
+    screenshots: true,      // Take screenshots
+    recordVideo: false      // Don't record video
   },
-
+  
   ai: {
-    model: 'gpt-4o', // AI model to use
-    maxRetries: 3, // Retry failed tests
-    temperature: 0.1, // Low randomness
-  },
+    model: "gpt-4o",       // AI model to use
+    maxRetries: 3,         // Retry failed tests
+    temperature: 0.1       // Low randomness
+  }
 };
 ```
 
@@ -150,27 +139,26 @@ Create test files in the `tests/` directory:
 ```javascript
 // tests/my-test.js
 export const MY_TEST = {
-  id: 'MY-001',
-  name: 'My First Test',
-  description: 'Test login functionality',
-  priority: 'High',
-  tags: ['login', 'smoke'],
-  site: 'https://example.com',
+  id: "MY-001",
+  name: "My First Test",
+  description: "Test login functionality",
+  priority: "High",
+  tags: ["login", "smoke"],
+  site: "https://example.com",
   testData: {
-    email: 'test@example.com',
-    password: 'password123',
+    email: "test@example.com",
+    password: "password123"
   },
   task: `Navigate to https://example.com and click the login button. 
          Fill in the email field with the test email. 
          Fill in the password field with the test password.
-         Click submit and verify login was successful.`,
+         Click submit and verify login was successful.`
 };
 ```
 
 ## 🔍 Troubleshooting
 
 ### API Key Issues
-
 ```bash
 # Check if API key is set
 cat .env
@@ -180,7 +168,6 @@ npx endorphin run test HEALTH-001
 ```
 
 ### Version Issues
-
 ```bash
 # Clear npm cache and reinstall
 npm cache clean --force
@@ -191,7 +178,6 @@ node --version
 ```
 
 ### Test Discovery Issues
-
 ```bash
 # Check test file format
 npx endorphin list
@@ -203,23 +189,18 @@ node -e "import('./tests/sample-test.js').then(console.log)"
 ## 🎯 Next Steps
 
 1. **Run the sample test**: `npx endorphin run test HEALTH-001`
-2. **Record your first test**: `npx endorphin run test-recorder`
+2. **Record your first test**: `npx endorphin run test-recorder`  
 3. **Write custom tests**: Add new files to `tests/` directory
 4. **Configure settings**: Edit `endorphin.config.js` for your needs
 5. **Set up CI/CD**: Add Endorphin tests to your pipeline
 
 ## 📚 Learn More
 
-- **📖 Main Documentation**:
-  https://github.com/andrewnovykov/endorphin-ai#readme
-- **🎬 Test Recorder Guide**:
-  https://github.com/andrewnovykov/endorphin-ai/blob/main/doc/user-guide/Test-Recorder.md
-- **⚙️ Configuration Reference**:
-  https://github.com/andrewnovykov/endorphin-ai#configuration
-- **🏗️ Framework Architecture**:
-  https://github.com/andrewnovykov/endorphin-ai/blob/main/doc/Framework-Architecture.md
-- **🔧 User Setup Guide**:
-  https://github.com/andrewnovykov/endorphin-ai/blob/main/doc/user-guide/User-Setup-Guide.md
+- **📖 Main Documentation**: https://github.com/andrewnovykov/endorphin-ai#readme
+- **🎬 Test Recorder Guide**: https://github.com/andrewnovykov/endorphin-ai/blob/main/doc/user-guide/Test-Recorder.md
+- **⚙️ Configuration Reference**: https://github.com/andrewnovykov/endorphin-ai#configuration
+- **🏗️ Framework Architecture**: https://github.com/andrewnovykov/endorphin-ai/blob/main/doc/Framework-Architecture.md
+- **🔧 User Setup Guide**: https://github.com/andrewnovykov/endorphin-ai/blob/main/doc/user-guide/User-Setup-Guide.md
 
 ## 🆘 Need Help?
 

@@ -1,6 +1,6 @@
 {
   "name": "endorphin-ai",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "E2E Testing Reinvented with AI - A powerful TypeScript browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright",
   "main": "dist/framework/index.js",
   "bin": {
@@ -20,8 +20,10 @@
     "test:e2e": "jest --selectProjects='Post-Install Tests' --testTimeout=180000",
     "test:all": "jest --selectProjects='Development Tests' 'Post-Install Tests'",
     "test:package": "cd development-tests/package-tests && ./run-all-tests.sh",
-    "build": "tsc",
+    "build": "tsc && cp framework/templates/reporter/*.html framework/templates/reporter/*.css dist/framework/templates/reporter/",
     "build:watch": "tsc --watch",
+    "pack:local": "npm run build && npm pack --pack-destination dist",
+    "test:local": "npm run pack:local && ./tests/package-tests/run-all-tests.sh",
     "type-check": "tsc --noEmit",
     "framework:test": "tsx framework/index.ts --test",
     "framework:demo": "tsx framework/index.ts",
@@ -70,8 +72,6 @@
   },
   "files": [
     "dist/",
-    "framework/",
-    "bin/",
     "examples/",
     "README.md",
     "LICENSE.md",

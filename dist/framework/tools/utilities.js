@@ -22,20 +22,20 @@ export function createWaitTool(framework) {
         console.log(`⏱️ ${stepDesc}`);
         try {
             if (selector) {
-                await framework.currentPage.waitForSelector(selector, { state: state, timeout: milliseconds });
+                await framework.currentPage.waitForSelector(selector, { state, timeout: milliseconds });
                 const result = `Element ${selector} is now ${state}`;
-                framework.logTestStep(stepDesc, 'wait', { milliseconds: milliseconds, reason, selector, state: state }, result, true);
+                framework.logTestStep(stepDesc, 'wait', { milliseconds, reason, selector, state }, result, true);
                 return `✅ ${result}`;
             }
             else {
                 await framework.currentPage.waitForTimeout(milliseconds);
                 const result = `Waited for ${milliseconds}ms${reason ? ` - ${reason}` : ''}`;
-                framework.logTestStep(stepDesc, 'wait', { milliseconds: milliseconds, reason, selector, state: state }, result, true);
+                framework.logTestStep(stepDesc, 'wait', { milliseconds, reason, selector, state }, result, true);
                 return result;
             }
         }
         catch (error) {
-            framework.logTestStep(stepDesc, 'wait', { milliseconds: milliseconds, reason, selector, state: state }, error.message, false);
+            framework.logTestStep(stepDesc, 'wait', { milliseconds, reason, selector, state }, error.message, false);
             return `❌ Timeout waiting for ${selector} to be ${state}`;
         }
     }, {
@@ -78,16 +78,16 @@ export function createScreenshotTool(framework) {
                 await framework.currentPage.locator(selector).screenshot({ path: filePath });
             }
             else {
-                await framework.currentPage.screenshot({ path: filePath, fullPage: fullPage });
+                await framework.currentPage.screenshot({ path: filePath, fullPage });
             }
             const result = selector
                 ? `Screenshot of ${selector} saved as ${filename}`
                 : `${fullPage ? 'Full page' : 'Viewport'} screenshot saved as ${filename}`;
-            framework.logTestStep(stepDesc, 'screenshot', { name, selector, fullPage: fullPage }, result, true);
+            framework.logTestStep(stepDesc, 'screenshot', { name, selector, fullPage }, result, true);
             return `📸 ${result}`;
         }
         catch (error) {
-            framework.logTestStep(stepDesc, 'screenshot', { name, selector, fullPage: fullPage }, error.message, false);
+            framework.logTestStep(stepDesc, 'screenshot', { name, selector, fullPage }, error.message, false);
             return `❌ Error taking screenshot: ${error.message}`;
         }
     }, {

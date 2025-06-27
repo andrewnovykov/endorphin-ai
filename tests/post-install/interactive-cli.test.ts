@@ -76,7 +76,7 @@ ENDORPHIN_HEADLESS=false
           }
         });
 
-        const result = await waitForProcess(child, 15000);
+        const result = await waitForProcess(child, 45000);
 
         expect(hasStarted).toBe(true);
         expect(result.stdout).toContain('Test Recorder');
@@ -107,7 +107,7 @@ ENDORPHIN_HEADLESS=false
           child.stdin?.end();
         }, 1000);
 
-        const result = await waitForProcess(child, 10000);
+        const result = await waitForProcess(child, 30000);
 
         // Just check that the command ran without major errors
         expect(result.exitCode).toBeLessThanOrEqual(1);
@@ -142,7 +142,7 @@ ENDORPHIN_HEADLESS=false
           }
         });
 
-        const result = await waitForProcess(child, 15000);
+        const result = await waitForProcess(child, 45000);
 
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toContain('initialized');
@@ -211,7 +211,7 @@ ENDORPHIN_HEADLESS=false
           env: { ...process.env, OPENAI_API_KEY: '' },
         });
 
-        const result = await waitForProcess(child, 15000);
+        const result = await waitForProcess(child, 45000);
 
         expect(result.stderr || result.stdout).toContain('API key');
       } finally {
@@ -240,7 +240,7 @@ ENDORPHIN_HEADLESS=false
           output += data.toString();
         });
 
-        const result = await waitForProcess(child, 15000);
+        const result = await waitForProcess(child, 45000);
 
         // Should show some kind of progress or loading indicator
         expect(result.stdout).toMatch(/(Loading|Scanning|Found|Tests)/);

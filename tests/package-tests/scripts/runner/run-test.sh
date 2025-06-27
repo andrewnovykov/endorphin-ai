@@ -36,14 +36,14 @@ fi
 
 echo ""
 echo "📋 Available tests:"
-npx endorphin list
+node node_modules/endorphin-ai/dist/bin/endorphin.js list
 
 echo ""
 echo "🚀 Running test: $TEST_ID"
 echo "=========================="
 
 # Run the specified test
-if npx endorphin run test "$TEST_ID"; then
+if node node_modules/endorphin-ai/dist/bin/endorphin.js run test "$TEST_ID"; then
   echo ""
   echo "✅ Test completed successfully!"
   
@@ -71,8 +71,8 @@ else
   echo "🔧 Troubleshooting tips:"
   echo "1. Verify OpenAI API key is set correctly in .env"
   echo "2. Check internet connectivity"
-  echo "3. Ensure the test ID exists: npx endorphin list"
-  echo "4. Try running with debug output: DEBUG=1 npx endorphin run test $TEST_ID"
+  echo "3. Ensure the test ID exists: node node_modules/endorphin-ai/dist/bin/endorphin.js list"
+  echo "4. Try running with debug output: DEBUG=1 node node_modules/endorphin-ai/dist/bin/endorphin.js run test $TEST_ID"
 fi
 
 echo ""

@@ -51,34 +51,34 @@ print_section "PHASE 1: SETUP AND VALIDATION"
 
 # Validate setup
 echo -e "${YELLOW}🔍 Validating test environment...${NC}"
-npx endorphin --version
-npx endorphin list
+node node_modules/endorphin-ai/dist/bin/endorphin.js --version
+node node_modules/endorphin-ai/dist/bin/endorphin.js list
 
 print_section "PHASE 2: CONSOLE REPORTER TESTING"
 
 # Console reporter tests
-run_test "Single Test with Console Reporter" "npx endorphin run test USER-001 --headless" "30s"
-run_test "All Tests with Console Reporter" "npx endorphin run test all --headless" "60s"
-run_test "Tag Filtering with Console Reporter" "npx endorphin run test --tag user-test --headless" "30s"
-run_test "Priority Filtering with Console Reporter" "npx endorphin run test --priority High --headless" "30s"
+run_test "Single Test with Console Reporter" "node node_modules/endorphin-ai/dist/bin/endorphin.js run test USER-001 --headless" "30s"
+run_test "All Tests with Console Reporter" "node node_modules/endorphin-ai/dist/bin/endorphin.js run test all --headless" "60s"
+run_test "Tag Filtering with Console Reporter" "node node_modules/endorphin-ai/dist/bin/endorphin.js run test --tag user-test --headless" "30s"
+run_test "Priority Filtering with Console Reporter" "node node_modules/endorphin-ai/dist/bin/endorphin.js run test --priority High --headless" "30s"
 
 print_section "PHASE 3: HTML REPORTER TESTING"
 
 # Generate some test results first
 echo -e "${YELLOW}📋 Ensuring we have test results for HTML reports...${NC}"
-run_test "Generate Test Results" "npx endorphin run test USER-001 --headless" "45s"
+run_test "Generate Test Results" "node node_modules/endorphin-ai/dist/bin/endorphin.js run test USER-001 --headless" "45s"
 
 # HTML reporter tests
-run_test "Generate Basic HTML Report" "npx endorphin generate report" ""
-run_test "Generate Summary HTML Report" "npx endorphin generate report --summary" ""
-run_test "Generate Custom Named Report" "npx endorphin generate report --filename comprehensive-test-report.html" ""
-run_test "List Generated Reports" "npx endorphin generate report --list" ""
+run_test "Generate Basic HTML Report" "node node_modules/endorphin-ai/dist/bin/endorphin.js generate report" ""
+run_test "Generate Summary HTML Report" "node node_modules/endorphin-ai/dist/bin/endorphin.js generate report --summary" ""
+run_test "Generate Custom Named Report" "node node_modules/endorphin-ai/dist/bin/endorphin.js generate report --filename comprehensive-test-report.html" ""
+run_test "List Generated Reports" "node node_modules/endorphin-ai/dist/bin/endorphin.js generate report --list" ""
 
 print_section "PHASE 4: INTEGRATION TESTING"
 
 # Test both reporters in sequence
 echo -e "${YELLOW}🔄 Testing console and HTML reporters together...${NC}"
-run_test "Console + HTML Integration" "npx endorphin run test all --headless && npx endorphin generate report" "75s"
+run_test "Console + HTML Integration" "node node_modules/endorphin-ai/dist/bin/endorphin.js run test all --headless && node node_modules/endorphin-ai/dist/bin/endorphin.js generate report" "75s"
 
 print_section "PHASE 5: VALIDATION AND VERIFICATION"
 

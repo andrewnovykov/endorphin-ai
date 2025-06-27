@@ -47,7 +47,7 @@ case "$COMMAND" in
   "list")
     echo "📋 Listing available tests..."
     if cd_user_project; then
-      npx endorphin list
+      node node_modules/endorphin-ai/dist/bin/endorphin.js list
     fi
     ;;
     
@@ -57,27 +57,27 @@ case "$COMMAND" in
       echo "💡 Usage: ./quick-commands.sh run <test-id>"
       if cd_user_project; then
         echo "📋 Available tests:"
-        npx endorphin list
+        node node_modules/endorphin-ai/dist/bin/endorphin.js list
       fi
       exit 1
     fi
     echo "🧪 Running test: $1"
     if cd_user_project; then
-      npx endorphin run test "$1"
+      node node_modules/endorphin-ai/dist/bin/endorphin.js run test "$1"
     fi
     ;;
     
   "run-all")
     echo "🧪 Running all tests..."
     if cd_user_project; then
-      npx endorphin run test all
+      node node_modules/endorphin-ai/dist/bin/endorphin.js run test all
     fi
     ;;
     
   "run-smoke")
     echo "🧪 Running smoke tests..."
     if cd_user_project; then
-      npx endorphin run test --tag smoke
+      node node_modules/endorphin-ai/dist/bin/endorphin.js run test --tag smoke
     fi
     ;;
     
@@ -85,7 +85,7 @@ case "$COMMAND" in
     echo "🎬 Starting test recorder..."
     echo "💡 Test recorder will create files in: $USER_PROJECT_DIR/test-recorder/"
     if cd_user_project; then
-      npx endorphin run test-recorder
+      node node_modules/endorphin-ai/dist/bin/endorphin.js run test-recorder
     fi
     ;;
     
@@ -117,7 +117,7 @@ case "$COMMAND" in
       ls -la
       echo ""
       echo "🧪 Available tests:"
-      npx endorphin list 2>/dev/null || echo "Unable to list tests"
+      node node_modules/endorphin-ai/dist/bin/endorphin.js list 2>/dev/null || echo "Unable to list tests"
       echo ""
       echo "📊 Generated artifacts:"
       echo "  test-recorder/: $([ -d test-recorder ] && echo "$(ls test-recorder | wc -l) recording(s)" || echo "None")"

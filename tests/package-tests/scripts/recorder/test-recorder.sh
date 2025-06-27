@@ -82,7 +82,7 @@ echo "🚀 Launching test recorder..."
 echo "⏳ This will take 15-20 seconds to complete the full session..."
 
 # Run in background with input and longer timeout
-timeout 30 npx endorphin run test-recorder < /tmp/recorder_input.txt &
+timeout 30 node node_modules/endorphin-ai/dist/bin/endorphin.js run test-recorder < /tmp/recorder_input.txt &
 RECORDER_PID=$!
 
 # Wait for recorder to complete data collection phase
@@ -209,4 +209,4 @@ fi
 
 echo ""
 echo "🔧 To test manually:"
-echo "npx endorphin run test-recorder"
+echo "node node_modules/endorphin-ai/dist/bin/endorphin.js run test-recorder"

@@ -24,13 +24,27 @@ cd "$USER_PROJECT_DIR"
 echo "📦 Initializing npm project..."
 npm init -y > /dev/null 2>&1
 
-# Install endorphin-ai from local repository
-echo "📥 Installing endorphin-ai from local repository..."
-npm install "$REPO_ROOT" > /dev/null 2>&1
+# Install endorphin-ai from tarball for realistic testing
+echo "📥 Installing endorphin-ai from tarball..."
+
+# Get version from package.json and create tarball if needed
+PACKAGE_JSON="$REPO_ROOT/package.json"
+VERSION=$(node -p "require('$PACKAGE_JSON').version")
+TARBALL_NAME="endorphin-ai-${VERSION}.tgz"
+TARBALL_PATH="$REPO_ROOT/dist/$TARBALL_NAME"
+
+if [ ! -f "$TARBALL_PATH" ]; then
+    echo "📦 Creating package tarball..."
+    cd "$REPO_ROOT"
+    npm pack --pack-destination dist > /dev/null 2>&1
+    cd "$USER_PROJECT_DIR"
+fi
+
+npm install "$TARBALL_PATH" > /dev/null 2>&1
 
 # Create user configuration
 echo "⚙️ Creating user configuration..."
-cat > endorphin.config.ts << 'EOF'
+cat > endorphin.config.js << 'EOF'
 export default {
   browser: {
     headless: false,  // Keep browser visible during recording
@@ -87,7 +101,7 @@ mkdir -p tests
 
 # Create a basic test file
 echo "📄 Creating basic test file..."
-cat > tests/user-basic-test.ts << 'EOF'
+cat > tests/user-basic-test.js << 'EOF'
 export const USER_BASIC_TEST = {
   id: "USER-001",
   name: "User Project Basic Test",
