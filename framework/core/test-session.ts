@@ -29,8 +29,8 @@ interface SessionSummary {
  * @returns Test session object
  */
 export function createTestSession(
-  testName: string, 
-  testId: string | null = null, 
+  testName: string,
+  testId: string | null = null,
   resultBaseDir: string
 ): TestSession {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');

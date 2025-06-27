@@ -10,7 +10,7 @@ describe('HTMLReporter', () => {
   describe('Report Generation', () => {
     test('should generate HTML report with test results', () => {
       const mockReporter = {
-        generateReport: jest.fn().mockImplementation((testResults, options = {}) => {
+        generateReport: jest.fn().mockImplementation((testResults, _options = {}) => {
             interface TestResult {
             testId: string;
             testName: string;
@@ -35,7 +35,7 @@ describe('HTMLReporter', () => {
             }
 
             const report: HtmlReport = {
-            title: options.title || 'Endorphin AI Test Report',
+            title: _options.title || 'Endorphin AI Test Report',
             timestamp: new Date().toISOString(),
             summary: {
               total: (testResults as TestResult[]).length,
@@ -80,8 +80,8 @@ describe('HTMLReporter', () => {
 
     test('should generate report with custom title', () => {
       const mockReporter = {
-        generateReport: jest.fn().mockImplementation((testResults, options = {}) => ({
-          title: options.title || 'Default Title',
+        generateReport: jest.fn().mockImplementation((testResults, _options = {}) => ({
+          title: _options.title || 'Default Title',
           timestamp: new Date().toISOString(),
           summary: { total: 0, passed: 0, failed: 0, skipped: 0 },
           results: testResults,
@@ -96,7 +96,7 @@ describe('HTMLReporter', () => {
 
     test('should include timestamps in report', () => {
       const mockReporter = {
-        generateReport: jest.fn().mockImplementation((testResults, options = {}) => {
+        generateReport: jest.fn().mockImplementation((testResults, _options = {}) => {
           const now = new Date();
           return {
             title: 'Test Report',
@@ -242,7 +242,7 @@ describe('HTMLReporter', () => {
           // Mock file system write
           return {
             success: true,
-            filePath: filePath,
+            filePath,
             size: html.length
           };
         })

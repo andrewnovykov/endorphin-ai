@@ -26,6 +26,22 @@ export declare class TestDiscovery {
      */
     loadTestFile(filename: string): Promise<void>;
     /**
+     * Load JavaScript file using dynamic import
+     */
+    private loadJavaScriptFile;
+    /**
+     * Load TypeScript file using tsx or dynamic compilation
+     */
+    private loadTypeScriptFile;
+    /**
+     * Extract test objects from loaded module
+     */
+    private extractTestsFromModule;
+    /**
+     * Check if file exists
+     */
+    private fileExists;
+    /**
      * Validate if an object is a valid test
      */
     private isValidTest;

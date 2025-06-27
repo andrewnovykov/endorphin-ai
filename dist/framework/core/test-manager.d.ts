@@ -2,7 +2,7 @@
  * Test Manager - Handles test discovery, loading, and execution coordination (TypeScript)
  * Manages individual test files in the tests/ folder
  */
-import type { TaskResult, TestConfig } from '@/types/index';
+import type { TaskResult, TestConfig } from '../types/index.js';
 interface LoadedTest extends TestConfig {
     filename: string;
     filePath: string;

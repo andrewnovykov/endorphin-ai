@@ -27,7 +27,7 @@ import type {
   TestReport,
   TestSession,
   TestStep,
-  ToolCall
+  ToolCall,
 } from '../types/index.js';
 import { setupAgent } from './agent-setup.js';
 import { createTestSession, saveTestSession } from './test-session.js';
@@ -193,7 +193,7 @@ export class EnhancedBrowserTestFramework {
 
         try {
           if (!this.page) throw new Error('Page not initialized');
-          
+
           await this.page.goto(params.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
           await this.takeStepScreenshot(`Page loaded: ${params.url}`);
 
@@ -217,7 +217,7 @@ export class EnhancedBrowserTestFramework {
 
         try {
           if (!this.page) throw new Error('Page not initialized');
-          
+
           await this.page.locator(params.selector).click();
           await this.takeStepScreenshot(`Clicked: ${params.selector}`);
 
@@ -241,7 +241,7 @@ export class EnhancedBrowserTestFramework {
 
         try {
           if (!this.page) throw new Error('Page not initialized');
-          
+
           await this.page.locator(params.selector).fill(params.text);
           await this.takeStepScreenshot(`Filled: ${params.selector}`);
 
@@ -394,7 +394,10 @@ export class EnhancedBrowserTestFramework {
     }
   }
 
-  async finishTestSession(status: 'SUCCESS' | 'FAILED' = 'SUCCESS', finalResult: string | null = null): Promise<any> {
+  finishTestSession(
+    status: 'SUCCESS' | 'FAILED' = 'SUCCESS',
+    finalResult: string | null = null
+  ): any {
     if (!this.currentTestSession) return;
 
     this.currentTestSession.endTime = new Date().toISOString();
@@ -403,7 +406,8 @@ export class EnhancedBrowserTestFramework {
       this.currentTestSession.finalResult = finalResult;
     }
     this.currentTestSession.duration =
-      new Date(this.currentTestSession.endTime).getTime() - new Date(this.currentTestSession.startTime).getTime();
+      new Date(this.currentTestSession.endTime).getTime() -
+      new Date(this.currentTestSession.startTime).getTime();
 
     // Save session data
     const summary = saveTestSession(this.currentTestSession);
@@ -416,7 +420,7 @@ export class EnhancedBrowserTestFramework {
 
     // Copy all results to test-recorder folder ONLY for interactive modes
     if (this.isInteractiveMode) {
-      await this.resultsManager.copySessionToRecorder(this.currentTestSession);
+      this.resultsManager.copySessionToRecorder(this.currentTestSession);
     }
 
     this.currentTestSession = null;
@@ -434,12 +438,12 @@ export class EnhancedBrowserTestFramework {
   }
 
   async runTask(taskDescription: string, testName: string | null = null): Promise<TaskResult> {
-    const timestamp = new Date().toISOString();
+    const _timestamp = new Date().toISOString();
     const name = testName || `Test-${Date.now()}`;
 
     console.log(`\n🎯 Running Task: ${name}`);
     console.log(`📝 Task: ${taskDescription}`);
-    console.log(`⏰ Started at: ${timestamp}\n`);
+    console.log(`⏰ Started at: ${_timestamp}\n`);
 
     // Create test session
     const session = this.createTestSession(name, name.replace(/\s+/g, '-').toLowerCase());
@@ -494,7 +498,7 @@ Current Task: ${taskDescription}`;
       await this.takeStepScreenshot('Final page state');
 
       // Finish session
-      await this.finishTestSession('SUCCESS', result);
+      this.finishTestSession('SUCCESS', result);
 
       console.log(`\n✅ Task "${name}" completed successfully!`);
       console.log(`📊 Result: ${result}\n`);
@@ -502,10 +506,10 @@ Current Task: ${taskDescription}`;
       return {
         testName: name,
         task: taskDescription,
-        timestamp,
+        timestamp: _timestamp,
         status: 'SUCCESS',
         result,
-        duration: Date.now() - new Date(timestamp).getTime(),
+        duration: Date.now() - new Date(_timestamp).getTime(),
         sessionDir: session.sessionDir,
       };
     } catch (error: any) {
@@ -517,21 +521,23 @@ Current Task: ${taskDescription}`;
       await this.takeStepScreenshot('Error state');
 
       // Finish session with failure
-      await this.finishTestSession('FAILED', error.message);
+      this.finishTestSession('FAILED', error.message);
 
       return {
         testName: name,
         task: taskDescription,
-        timestamp,
+        timestamp: _timestamp,
         status: 'FAILED',
         error: error.message,
-        duration: Date.now() - new Date(timestamp).getTime(),
+        duration: Date.now() - new Date(_timestamp).getTime(),
         sessionDir: session.sessionDir,
       };
     }
   }
 
-  async runMultipleTasks(tasks: Array<{ name?: string; description: string }>): Promise<TaskResult[]> {
+  async runMultipleTasks(
+    tasks: Array<{ name?: string; description: string }>
+  ): Promise<TaskResult[]> {
     console.log(`\n🚀 Running ${tasks.length} tasks sequentially...\n`);
 
     const results: TaskResult[] = [];
@@ -552,7 +558,9 @@ Current Task: ${taskDescription}`;
     return results;
   }
 
-  async runSingleTest(test: TestConfig): Promise<{ success: boolean; session?: any; error?: string }> {
+  async runSingleTest(
+    test: TestConfig
+  ): Promise<{ success: boolean; session?: any; error?: string }> {
     // Only show detailed logs if not using console reporter (for backwards compatibility)
     const useDetailedLogs = !process.env.ENDORPHIN_CONSOLE_REPORTER;
 
@@ -605,7 +613,7 @@ Current Task: ${taskDescription}`;
       );
 
       // Finish the test session
-      const session = await this.finishTestSession('SUCCESS', 'Test completed successfully');
+      const session = this.finishTestSession('SUCCESS', 'Test completed successfully');
 
       if (useDetailedLogs) {
         console.log(`✅ Test ${test.id} completed successfully!`);
@@ -617,15 +625,32 @@ Current Task: ${taskDescription}`;
       }
 
       this.logTestStep('Test execution failed', null, null, error.message, false);
-      const session = await this.finishTestSession('FAILED', error.message);
+      const session = this.finishTestSession('FAILED', error.message);
 
       return { success: false, error: error.message, session };
     }
   }
 
-  async runMultipleTests(tests: TestConfig[]): Promise<{ results: Array<{ testId: string; testName: string; success: boolean; error?: string; session?: any }>; report: TestReport }> {
+  async runMultipleTests(
+    tests: TestConfig[]
+  ): Promise<{
+    results: Array<{
+      testId: string;
+      testName: string;
+      success: boolean;
+      error?: string;
+      session?: any;
+    }>;
+    report: TestReport;
+  }> {
     console.log(`\n🎯 Running ${tests.length} tests with enhanced result tracking...`);
-    const results: Array<{ testId: string; testName: string; success: boolean; error?: string; session?: any }> = [];
+    const results: Array<{
+      testId: string;
+      testName: string;
+      success: boolean;
+      error?: string;
+      session?: any;
+    }> = [];
 
     for (const test of tests) {
       const result = await this.runSingleTest(test);
@@ -654,13 +679,16 @@ Current Task: ${taskDescription}`;
         passRate: results.length > 0 ? `${((passed / results.length) * 100).toFixed(2)}%` : '0%',
         generatedAt: new Date().toISOString(),
       },
-      results: results.map(result => ({
+      results: results.map((result) => ({
         testId: result.testId,
         name: result.testName,
         status: result.success ? 'passed' : 'failed',
         duration: result.session?.duration || 0,
         error: result.error ?? '',
-        screenshots: result.session?.steps?.flatMap((step: any) => step.screenshots?.map((s: any) => s.filename) || []) || [],
+        screenshots:
+          result.session?.steps?.flatMap(
+            (step: any) => step.screenshots?.map((s: any) => s.filename) || []
+          ) || [],
         logs: result.session?.steps?.map((step: any) => step.description) || [],
         timestamp: result.session?.startTime || new Date().toISOString(),
       })),
@@ -675,7 +703,7 @@ Current Task: ${taskDescription}`;
     return { results, report };
   }
 
-  async enableInteractiveMode(): Promise<void> {
+  enableInteractiveMode(): void {
     this.isInteractiveMode = true;
     console.log('📼 Interactive mode enabled - results will be recorded in test-recorder folder');
     this.cleanupRecorderDirectory();
@@ -745,7 +773,11 @@ Current Task: ${taskDescription}`;
     // Default: try to use AI agent to interpret the command
     try {
       const result = await this.runTask(command);
-      return { toolUsed: 'ai-agent', params: { command }, result: result.result || result.error || 'Command executed' };
+      return {
+        toolUsed: 'ai-agent',
+        params: { command },
+        result: result.result || result.error || 'Command executed',
+      };
     } catch (error: any) {
       throw new Error(`Could not interpret command: "${command}". ${error.message}`);
     }

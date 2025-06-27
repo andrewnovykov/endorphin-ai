@@ -53,7 +53,7 @@ export class TestResultsManager {
     /**
      * Copy test session results to recorder directory
      */
-    async copySessionToRecorder(session) {
+    copySessionToRecorder(session) {
         try {
             const recorderSessionDir = path.join(this.recorderDir, session.sessionName);
             const recorderScreenshotsDir = path.join(recorderSessionDir, 'screenshots');
@@ -103,7 +103,7 @@ export class TestResultsManager {
                 passRate: total > 0 ? `${((passed / total) * 100).toFixed(2)}%` : '0%',
                 generatedAt: new Date().toISOString(),
             },
-            results: this.testResults.map(session => ({
+            results: this.testResults.map((session) => ({
                 testId: session.testId,
                 name: session.sessionName,
                 status: session.status === 'SUCCESS' ? 'passed' : 'failed',
@@ -119,7 +119,7 @@ export class TestResultsManager {
     /**
      * Generate and save a report to file
      */
-    async saveReport(filename) {
+    saveReport(filename) {
         const report = this.generateReport();
         const reportPath = path.join(this.resultsDir, filename || `report-${Date.now()}.json`);
         fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
@@ -138,8 +138,8 @@ export class TestResultsManager {
                 fs.mkdirSync(this.recorderDir, { recursive: true });
             }
         }
-        catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
+        catch (_error) {
+            const message = _error instanceof Error ? _error.message : String(_error);
             console.warn(`Warning: Could not create directories: ${message}`);
         }
     }

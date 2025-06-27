@@ -44,7 +44,7 @@ export type {
 
 // Test types
 export type {
-  DiscoveryResult, TaskResult, TestConfig, TestResult, TestSession,
+  DiscoveryResult, TaskResult, TestCase, TestConfig, TestResult, TestSession,
   TestStep
 } from './test.js';
 

@@ -2,7 +2,7 @@
  * Test Results Manager Module
  * Handles test result collection, storage, and processing
  */
-import type { TestReport, TestSession } from '@/types/index';
+import type { TestReport, TestSession } from '../types/index.js';
 export interface TestResultsManagerOptions {
     resultsDir?: string;
     recorderDir?: string;
@@ -36,7 +36,7 @@ export declare class TestResultsManager {
     /**
      * Copy test session results to recorder directory
      */
-    copySessionToRecorder(session: TestSession): Promise<void>;
+    copySessionToRecorder(session: TestSession): void;
     /**
      * Generate a test report from collected results
      */
@@ -44,7 +44,7 @@ export declare class TestResultsManager {
     /**
      * Generate and save a report to file
      */
-    saveReport(filename?: string): Promise<string>;
+    saveReport(filename?: string): string;
     /**
      * Ensure required directories exist
      */

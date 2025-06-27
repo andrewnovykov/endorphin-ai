@@ -10,7 +10,7 @@ describe('TaskExecutor', () => {
   describe('Task Execution', () => {
     test('should execute natural language task successfully', async () => {
       const mockExecutor = {
-        executeTask: jest.fn().mockImplementation(async (task, site, options = {}) => {
+        executeTask: jest.fn().mockImplementation(async (task, site, _options = {}) => {
           // Mock AI task execution
           const actions = [
             { type: 'navigate', url: site, success: true },
@@ -22,9 +22,9 @@ describe('TaskExecutor', () => {
 
           return {
             success: true,
-            task: task,
-            site: site,
-            actions: actions,
+            task,
+            site,
+            actions,
             duration: 3500,
             aiTokensUsed: 450,
             error: null
@@ -51,8 +51,8 @@ describe('TaskExecutor', () => {
         executeTask: jest.fn().mockImplementation(async (task, site) => {
           return {
             success: false,
-            task: task,
-            site: site,
+            task,
+            site,
             actions: [
               { type: 'navigate', url: site, success: true },
               { type: 'click', selector: '#non-existent', success: false, error: 'Element not found' }
@@ -89,7 +89,7 @@ describe('TaskExecutor', () => {
           if (action.type === 'click') {
             return {
               success: true,
-              action: action,
+              action,
               result: 'Element clicked successfully',
               duration: 150
             };
@@ -97,7 +97,7 @@ describe('TaskExecutor', () => {
           // Default mock return for other action types
           return {
             success: false,
-            action: action,
+            action,
             result: 'Unsupported action type',
             duration: 0
           };
@@ -123,7 +123,7 @@ describe('TaskExecutor', () => {
           if (action.type === 'fill') {
             return {
               success: true,
-              action: action,
+              action,
               result: `Filled field with value: ${action.value}`,
               duration: 200
             };
@@ -131,7 +131,7 @@ describe('TaskExecutor', () => {
           // Default mock return for other action types
           return {
             success: false,
-            action: action,
+            action,
             result: 'Unsupported action type',
             duration: 0
           };
@@ -157,7 +157,7 @@ describe('TaskExecutor', () => {
           if (action.type === 'wait') {
             return {
               success: true,
-              action: action,
+              action,
               result: `Waited for ${action.selector || action.timeout}`,
               duration: action.timeout || 1000
             };
@@ -165,7 +165,7 @@ describe('TaskExecutor', () => {
           // Default mock return for other action types
           return {
             success: false,
-            action: action,
+            action,
             result: 'Unsupported action type',
             duration: 0
           };
@@ -245,7 +245,7 @@ describe('TaskExecutor', () => {
 
           type ActionType = keyof typeof requiredFields;
 
-          interface Action {
+          interface _Action {
             type: ActionType;
             selector?: string;
             value?: string;
@@ -301,9 +301,9 @@ describe('TaskExecutor', () => {
           const totalTokens = promptTokens + responseTokens;
 
           return {
-            promptTokens: promptTokens,
-            responseTokens: responseTokens,
-            totalTokens: totalTokens,
+            promptTokens,
+            responseTokens,
+            totalTokens,
             estimatedCost: totalTokens * 0.00002 // $0.02 per 1K tokens
           };
         })
@@ -326,7 +326,7 @@ describe('TaskExecutor', () => {
     test('should retry failed actions', async () => {
       let attemptCount = 0;
       const mockExecutor = {
-        executeActionWithRetry: jest.fn().mockImplementation(async (action, maxRetries = 3) => {
+        executeActionWithRetry: jest.fn().mockImplementation(async (action, _maxRetries = 3) => {
           attemptCount++;
           
           if (attemptCount < 3) {
@@ -336,7 +336,7 @@ describe('TaskExecutor', () => {
           
           return {
             success: true,
-            action: action,
+            action,
             attempts: attemptCount,
             result: 'Action succeeded after retry'
           };

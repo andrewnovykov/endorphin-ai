@@ -99,10 +99,10 @@ export declare class HtmlReporter {
      * @param maxAge - Maximum age in days (default: 30)
      * @returns Cleanup summary
      */
-    cleanupOldReports(maxAge?: number): Promise<{
+    cleanupOldReports(maxAge?: number): {
         removedCount: number;
         removedFiles: string[];
-    }>;
+    };
 }
 export {};
 //# sourceMappingURL=html-reporter.d.ts.map

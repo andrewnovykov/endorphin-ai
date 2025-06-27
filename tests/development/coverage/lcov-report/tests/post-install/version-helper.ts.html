@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">77.14% </span>
+                <span class="strong">80% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>27/35</span>
+                <span class='fraction'>28/35</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.66% </span>
+                <span class="strong">77.77% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>6/9</span>
+                <span class='fraction'>7/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">77.14% </span>
+                <span class="strong">80% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>27/35</span>
+                <span class='fraction'>28/35</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -158,19 +158,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">13x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">13x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -184,7 +184,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -214,11 +214,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -265,8 +265,8 @@ export async function getTestVersion(): Promise&lt;string&gt; {
  * @param command The endorphin command to run
  * @returns Array of arguments for npx command
  */
-export function <span class="fstat-no" title="function not covered" >createVersionedCommand(</span>version: string, command: string[]): string[] {
-<span class="cstat-no" title="statement not covered" >  return [`endorphin-ai@${version}`, ...command];</span>
+export function createVersionedCommand(version: string, command: string[]): string[] {
+  return [`endorphin-ai@${version}`, ...command];
 }
 &nbsp;
 /**
@@ -295,12 +295,12 @@ export async function verifyVersionExists(version: string): Promise&lt;void&gt; 
     });
 &nbsp;
     child.on('close', (code) =&gt; {
-      <span class="missing-if-branch" title="if path not taken" >I</span>if (code === 0 &amp;&amp; stdout.trim() === version) {
-<span class="cstat-no" title="statement not covered" >        console.log(`Confirmed endorphin-ai@${version} exists on npm registry`);</span>
-<span class="cstat-no" title="statement not covered" >        resolve();</span>
-      } else {
-        console.error('Failed to verify endorphin version:', stderr);
-        reject(new Error(`Version endorphin-ai@${version} not found on npm registry: ${stderr}`));
+      if (code === 0 &amp;&amp; stdout.trim() === version) {
+        console.log(`Confirmed endorphin-ai@${version} exists on npm registry`);
+        resolve();
+      } else <span class="missing-if-branch" title="else path not taken" >E</span>{
+<span class="cstat-no" title="statement not covered" >        console.error('Failed to verify endorphin version:', stderr);</span>
+<span class="cstat-no" title="statement not covered" >        reject(new Error(`Version endorphin-ai@${version} not found on npm registry: ${stderr}`));</span>
       }
     });
 &nbsp;
@@ -316,7 +316,7 @@ export async function verifyVersionExists(version: string): Promise&lt;void&gt; 
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-27T20:08:22.745Z
+                at 2025-06-27T20:14:38.760Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

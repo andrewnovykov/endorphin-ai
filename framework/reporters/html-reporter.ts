@@ -249,7 +249,7 @@ export class HtmlReporter {
           sessionDir: resultPath,
         };
       }
-    } catch (error) {
+    } catch {
       console.warn(`Warning: Could not parse test result from ${resultPath}`);
     }
     return null;
@@ -324,8 +324,8 @@ export class HtmlReporter {
     const recentResultsTable = this.generateRecentResultsTable(data.testResults);
     processedTemplate = processedTemplate.replace(/{{recentResultsTable}}/g, recentResultsTable);
 
-    // Generate JSON data for JavaScript
-    const jsonData = JSON.stringify(data, null, 2);
+    // Generate JSON data for JavaScript - pass just the test results array
+    const jsonData = JSON.stringify(data.testResults, null, 2);
     processedTemplate = processedTemplate.replace(/{{testDataJson}}/g, jsonData);
 
     return processedTemplate;
@@ -400,7 +400,7 @@ export class HtmlReporter {
    */
   private generateRecentResultsTable(testResults: any[]): string {
     if (testResults.length === 0) {
-      return '<tr><td colspan="5" class="text-center">No recent test results available</td></tr>';
+      return '<tr><td colspan="6" class="text-center">No recent test results available</td></tr>';
     }
 
     // Sort by most recent first and take top 10
@@ -409,7 +409,7 @@ export class HtmlReporter {
       .slice(0, 10);
 
     return recentResults
-      .map((result) => {
+      .map((result, index) => {
         const statusBadge =
           result.status === 'SUCCESS'
             ? '<span class="badge bg-success">✅ Passed</span>'
@@ -419,12 +419,17 @@ export class HtmlReporter {
         const timestamp = result.timestamp ? new Date(result.timestamp).toLocaleString() : 'N/A';
 
         return `
-          <tr>
-            <td>${this.escapeHtml(result.testId)}</td>
-            <td>${this.escapeHtml(result.testName)}</td>
+          <tr class="test-result-row" data-result-index="${index}" style="cursor: pointer;">
+            <td><strong>${this.escapeHtml(result.testId)}</strong><br><small class="text-muted">${this.escapeHtml(result.testName)}</small></td>
             <td>${statusBadge}</td>
+            <td>${timestamp}</td>
             <td>${this.formatDuration(result.duration)}</td>
             <td>${screenshotCount} screenshots</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary view-details-btn" data-result-index="${index}">
+                <i class="bi bi-eye"></i> View Details
+              </button>
+            </td>
           </tr>
         `;
       })
@@ -434,7 +439,7 @@ export class HtmlReporter {
   /**
    * Copy static assets (CSS, JS) to output directory
    */
-  private async copyStaticAssets(): Promise<void> {
+  private copyStaticAssets(): void {
     const assetsDir = path.join(this.reportsDir, 'assets');
     if (!fs.existsSync(assetsDir)) {
       fs.mkdirSync(assetsDir, { recursive: true });
@@ -458,18 +463,24 @@ export class HtmlReporter {
   /**
    * Copy screenshots for test results
    */
-  private async copyScreenshots(reportData: any): Promise<void> {
+  private copyScreenshots(reportData: any): void {
     const screenshotsDir = path.join(this.reportsDir, 'screenshots');
     if (!fs.existsSync(screenshotsDir)) {
       fs.mkdirSync(screenshotsDir, { recursive: true });
     }
 
     for (const result of reportData.testResults) {
-      for (const screenshot of result.screenshots) {
-        if (fs.existsSync(screenshot)) {
-          const filename = path.basename(screenshot);
-          const targetPath = path.join(screenshotsDir, filename);
-          fs.copyFileSync(screenshot, targetPath);
+      if (result.screenshots && Array.isArray(result.screenshots)) {
+        for (const screenshot of result.screenshots) {
+          if (fs.existsSync(screenshot)) {
+            const filename = path.basename(screenshot);
+            const targetPath = path.join(screenshotsDir, filename);
+            try {
+              fs.copyFileSync(screenshot, targetPath);
+            } catch (error) {
+              console.warn(`Warning: Could not copy screenshot ${screenshot}:`, error);
+            }
+          }
         }
       }
     }
@@ -540,10 +551,10 @@ export class HtmlReporter {
    * @param maxAge - Maximum age in days (default: 30)
    * @returns Cleanup summary
    */
-  async cleanupOldReports(maxAge: number = 30): Promise<{
+  cleanupOldReports(maxAge: number = 30): {
     removedCount: number;
     removedFiles: string[];
-  }> {
+  } {
     try {
       console.log('🧹 Cleaning up old report files...');
 

@@ -312,7 +312,7 @@ export class EnhancedBrowserTestFramework {
             return null;
         }
     }
-    async finishTestSession(status = 'SUCCESS', finalResult = null) {
+    finishTestSession(status = 'SUCCESS', finalResult = null) {
         if (!this.currentTestSession)
             return;
         this.currentTestSession.endTime = new Date().toISOString();
@@ -321,7 +321,8 @@ export class EnhancedBrowserTestFramework {
             this.currentTestSession.finalResult = finalResult;
         }
         this.currentTestSession.duration =
-            new Date(this.currentTestSession.endTime).getTime() - new Date(this.currentTestSession.startTime).getTime();
+            new Date(this.currentTestSession.endTime).getTime() -
+                new Date(this.currentTestSession.startTime).getTime();
         // Save session data
         const summary = saveTestSession(this.currentTestSession);
         // Add to results manager
@@ -330,7 +331,7 @@ export class EnhancedBrowserTestFramework {
         console.log(`📁 Results saved to: ${this.currentTestSession.sessionDir}`);
         // Copy all results to test-recorder folder ONLY for interactive modes
         if (this.isInteractiveMode) {
-            await this.resultsManager.copySessionToRecorder(this.currentTestSession);
+            this.resultsManager.copySessionToRecorder(this.currentTestSession);
         }
         this.currentTestSession = null;
         return summary;
@@ -345,11 +346,11 @@ export class EnhancedBrowserTestFramework {
         }
     }
     async runTask(taskDescription, testName = null) {
-        const timestamp = new Date().toISOString();
+        const _timestamp = new Date().toISOString();
         const name = testName || `Test-${Date.now()}`;
         console.log(`\n🎯 Running Task: ${name}`);
         console.log(`📝 Task: ${taskDescription}`);
-        console.log(`⏰ Started at: ${timestamp}\n`);
+        console.log(`⏰ Started at: ${_timestamp}\n`);
         // Create test session
         const session = this.createTestSession(name, name.replace(/\s+/g, '-').toLowerCase());
         try {
@@ -394,16 +395,16 @@ Current Task: ${taskDescription}`;
             this.logTestStep('Test completed', null, null, result, true);
             await this.takeStepScreenshot('Final page state');
             // Finish session
-            await this.finishTestSession('SUCCESS', result);
+            this.finishTestSession('SUCCESS', result);
             console.log(`\n✅ Task "${name}" completed successfully!`);
             console.log(`📊 Result: ${result}\n`);
             return {
                 testName: name,
                 task: taskDescription,
-                timestamp,
+                timestamp: _timestamp,
                 status: 'SUCCESS',
                 result,
-                duration: Date.now() - new Date(timestamp).getTime(),
+                duration: Date.now() - new Date(_timestamp).getTime(),
                 sessionDir: session.sessionDir,
             };
         }
@@ -414,14 +415,14 @@ Current Task: ${taskDescription}`;
             this.logTestStep('Test failed', null, null, error.message, false);
             await this.takeStepScreenshot('Error state');
             // Finish session with failure
-            await this.finishTestSession('FAILED', error.message);
+            this.finishTestSession('FAILED', error.message);
             return {
                 testName: name,
                 task: taskDescription,
-                timestamp,
+                timestamp: _timestamp,
                 status: 'FAILED',
                 error: error.message,
-                duration: Date.now() - new Date(timestamp).getTime(),
+                duration: Date.now() - new Date(_timestamp).getTime(),
                 sessionDir: session.sessionDir,
             };
         }
@@ -468,7 +469,7 @@ Current Task: ${taskDescription}`;
             await Promise.race([agentPromise, timeoutPromise]);
             this.logTestStep('Test execution completed successfully', null, null, 'All steps completed', true);
             // Finish the test session
-            const session = await this.finishTestSession('SUCCESS', 'Test completed successfully');
+            const session = this.finishTestSession('SUCCESS', 'Test completed successfully');
             if (useDetailedLogs) {
                 console.log(`✅ Test ${test.id} completed successfully!`);
             }
@@ -479,7 +480,7 @@ Current Task: ${taskDescription}`;
                 console.error(`❌ Test ${test.id} failed:`, error.message);
             }
             this.logTestStep('Test execution failed', null, null, error.message, false);
-            const session = await this.finishTestSession('FAILED', error.message);
+            const session = this.finishTestSession('FAILED', error.message);
             return { success: false, error: error.message, session };
         }
     }
@@ -510,7 +511,7 @@ Current Task: ${taskDescription}`;
                 passRate: results.length > 0 ? `${((passed / results.length) * 100).toFixed(2)}%` : '0%',
                 generatedAt: new Date().toISOString(),
             },
-            results: results.map(result => ({
+            results: results.map((result) => ({
                 testId: result.testId,
                 name: result.testName,
                 status: result.success ? 'passed' : 'failed',
@@ -526,7 +527,7 @@ Current Task: ${taskDescription}`;
         console.log(`📄 HTML Report: ${reportPath}`);
         return { results, report };
     }
-    async enableInteractiveMode() {
+    enableInteractiveMode() {
         this.isInteractiveMode = true;
         console.log('📼 Interactive mode enabled - results will be recorded in test-recorder folder');
         this.cleanupRecorderDirectory();
@@ -584,7 +585,11 @@ Current Task: ${taskDescription}`;
         // Default: try to use AI agent to interpret the command
         try {
             const result = await this.runTask(command);
-            return { toolUsed: 'ai-agent', params: { command }, result: result.result || result.error || 'Command executed' };
+            return {
+                toolUsed: 'ai-agent',
+                params: { command },
+                result: result.result || result.error || 'Command executed',
+            };
         }
         catch (error) {
             throw new Error(`Could not interpret command: "${command}". ${error.message}`);

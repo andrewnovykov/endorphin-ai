@@ -144,7 +144,7 @@ describe('BrowserFramework', () => {
       const mockFramework = {
         navigateToPage: jest.fn().mockImplementation(async (url) => {
           await mockPage.goto(url);
-          return { success: true, url: url };
+          return { success: true, url };
         })
       };
 
@@ -183,7 +183,7 @@ describe('BrowserFramework', () => {
       const mockFramework = {
         clickElement: jest.fn().mockImplementation(async (selector) => {
           await mockPage.click(selector);
-          return { success: true, selector: selector };
+          return { success: true, selector };
         })
       };
 
@@ -198,7 +198,7 @@ describe('BrowserFramework', () => {
       const mockFramework = {
         fillInput: jest.fn().mockImplementation(async (selector, text) => {
           await mockPage.fill(selector, text);
-          return { success: true, selector: selector, text: text };
+          return { success: true, selector, text };
         })
       };
 
@@ -214,7 +214,7 @@ describe('BrowserFramework', () => {
         getElementText: jest.fn().mockImplementation(async (selector) => {
           const locator = mockPage.locator(selector);
           const text = await locator.textContent();
-          return { text: text, selector: selector };
+          return { text, selector };
         })
       };
 
@@ -230,7 +230,7 @@ describe('BrowserFramework', () => {
         isElementVisible: jest.fn().mockImplementation(async (selector) => {
           const locator = mockPage.locator(selector);
           const visible = await locator.isVisible();
-          return { visible: visible, selector: selector };
+          return { visible, selector };
         })
       };
 
@@ -246,7 +246,7 @@ describe('BrowserFramework', () => {
       const mockFramework = {
         takeScreenshot: jest.fn().mockImplementation(async (options = {}) => {
           const screenshot = await mockPage.screenshot(options);
-          return { screenshot: screenshot, options: options };
+          return { screenshot, options };
         })
       };
 
@@ -261,7 +261,7 @@ describe('BrowserFramework', () => {
       const mockFramework = {
         takeScreenshot: jest.fn().mockImplementation(async (options = {}) => {
           const screenshot = await mockPage.screenshot(options);
-          return { screenshot: screenshot };
+          return { screenshot };
         })
       };
 
@@ -277,7 +277,7 @@ describe('BrowserFramework', () => {
       const mockFramework = {
         waitForSelector: jest.fn().mockImplementation(async (selector, options = {}) => {
           await mockPage.waitForSelector(selector, options);
-          return { found: true, selector: selector };
+          return { found: true, selector };
         })
       };
 

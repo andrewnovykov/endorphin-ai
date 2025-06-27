@@ -27,7 +27,7 @@ describe('ConsoleReporter', () => {
     success: boolean;
   }
 
-  interface ConsoleReporter {
+  interface _ConsoleReporter {
     reportTestResult?: (result: TestResult | null | undefined) => void;
     generateSessionSummary?: (summary: SessionSummary) => void;
     reportTestStart?: (testName: string) => void;

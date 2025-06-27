@@ -13,6 +13,10 @@ export interface TestConfig {
     testData?: Record<string, any>;
     task: string;
 }
+export interface TestCase extends TestConfig {
+    recordingId?: string;
+    recordedSteps?: number;
+}
 export interface TestSession {
     sessionId: string;
     sessionName: string;

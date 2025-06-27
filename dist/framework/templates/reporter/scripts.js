@@ -101,19 +101,17 @@ class TestReportViewer {
         }
         this.currentTestIndex = resultIndex;
         const result = this.testData[resultIndex];
-        const session = result.session;
-        const summary = result.summary;
         // Populate modal fields
-        this.updateModalField('modal-test-id', session.testId);
-        this.updateModalField('modal-test-name', session.testName);
-        this.updateModalField('modal-status', this.formatStatus(session.status), true); // true for HTML
-        this.updateModalField('modal-duration', `${session.duration || 0}ms`);
-        this.updateModalField('modal-start-time', this.formatDateTime(session.startTime));
-        this.updateModalField('modal-end-time', this.formatDateTime(session.endTime));
-        this.updateModalField('modal-total-steps', session.steps ? session.steps.length : 0);
+        this.updateModalField('modal-test-id', result.testId);
+        this.updateModalField('modal-test-name', result.testName);
+        this.updateModalField('modal-status', this.formatStatus(result.status), true); // true for HTML
+        this.updateModalField('modal-duration', this.formatDuration(result.duration || 0));
+        this.updateModalField('modal-start-time', 'N/A'); // Not available in current structure
+        this.updateModalField('modal-end-time', 'N/A'); // Not available in current structure
+        this.updateModalField('modal-total-steps', 0); // Not available in current structure
         this.updateModalField('modal-screenshots', result.screenshots ? result.screenshots.length : 0);
-        // Populate steps timeline
-        this.populateStepsTimeline(session.steps || []);
+        // Populate steps timeline (empty for now since steps aren't in current structure)
+        this.populateStepsTimeline([]);
         // Populate screenshots gallery
         this.populateScreenshotsGallery(result);
         // Show modal
@@ -207,33 +205,35 @@ class TestReportViewer {
             return;
         }
         result.screenshots.forEach((screenshot, index) => {
-            const screenshotElement = this.createScreenshotElement(screenshot, result.resultDir, index);
+            const screenshotElement = this.createScreenshotElement(screenshot, result.sessionDir, index);
             gallery.appendChild(screenshotElement);
         });
     }
     /**
      * Create a screenshot element for the gallery
      */
-    createScreenshotElement(screenshot, resultDir, index) {
+    createScreenshotElement(screenshot, sessionDir, index) {
         const col = document.createElement('div');
         col.className = 'col-md-3 col-sm-4 col-6 mb-3';
-        const screenshotPath = `screenshots/${resultDir}/${screenshot}`;
+        // Extract filename from path
+        const filename = screenshot.split('/').pop() || screenshot;
+        const screenshotPath = `screenshots/${filename}`;
         col.innerHTML = `
       <div class="card">
         <img src="${screenshotPath}" 
              class="card-img-top screenshot-thumbnail" 
              alt="Screenshot ${index + 1}"
              data-screenshot="${screenshotPath}"
-             data-screenshot-name="${this.escapeHtml(screenshot)}">
+             data-screenshot-name="${this.escapeHtml(filename)}">
         <div class="card-body p-2">
-          <small class="text-muted">${this.escapeHtml(screenshot)}</small>
+          <small class="text-muted">${this.escapeHtml(filename)}</small>
         </div>
       </div>
     `;
         // Add click event to thumbnail
         const thumbnail = col.querySelector('.screenshot-thumbnail');
         thumbnail.addEventListener('click', () => {
-            this.showScreenshot(screenshotPath, screenshot);
+            this.showScreenshot(screenshotPath, filename);
         });
         return col;
     }

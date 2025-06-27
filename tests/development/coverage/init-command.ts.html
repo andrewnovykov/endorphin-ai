@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -373,29 +373,21 @@
 <a name='L308'></a><a href='#L308'>308</a>
 <a name='L309'></a><a href='#L309'>309</a>
 <a name='L310'></a><a href='#L310'>310</a>
-<a name='L311'></a><a href='#L311'>311</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L311'></a><a href='#L311'>311</a>
+<a name='L312'></a><a href='#L312'>312</a>
+<a name='L313'></a><a href='#L313'>313</a>
+<a name='L314'></a><a href='#L314'>314</a>
+<a name='L315'></a><a href='#L315'>315</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -404,10 +396,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">21x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">21x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -525,11 +530,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">39x</span>
-<span class="cline-any cline-yes">39x</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-yes">41x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">36x</span>
+<span class="cline-any cline-yes">38x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -591,6 +596,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -719,8 +727,9 @@ export async function initProject(targetDir: string = process.cwd()): Promise&lt
 &nbsp;
   try {
     // Check if already initialized
-    const configExists = await fileExists(path.join(targetDir, 'endorphin.config.js')) || 
-                         await fileExists(path.join(targetDir, 'endorphin.config.ts'));
+    const configExists =
+      (await fileExists(path.join(targetDir, 'endorphin.config.js'))) ||
+      (await fileExists(path.join(targetDir, 'endorphin.config.ts')));
     if (configExists) {
       console.log('⚠️  Endorphin AI already initialized in this directory');
       console.log('💡 Run: npx endorphin run test HEALTH-001');
@@ -765,7 +774,7 @@ async function copyExampleFiles(targetDir: string): Promise&lt;void&gt; {
   // Check if examples directory exists
   try {
     await fs.access(examplesDir);
-  } catch (error) {
+  } catch {
     console.warn(`⚠️  Examples directory not found at: ${examplesDir}`);
     console.warn('⚠️  Creating basic configuration files instead...');
     await createBasicFiles(targetDir);
@@ -774,8 +783,8 @@ async function copyExampleFiles(targetDir: string): Promise&lt;void&gt; {
 &nbsp;
   const files = <span class="cstat-no" title="statement not covered" >[</span>
     { src: '.env.example', dest: '.env' },
-    { src: 'endorphin.config.js', dest: 'endorphin.config.js' },
-    { src: 'tests/sample-test.js', dest: 'tests/sample-test.js' },
+    { src: 'endorphin.config.ts', dest: 'endorphin.config.ts' },
+    { src: 'tests/sample-test.ts', dest: 'tests/sample-test.ts' },
     { src: '.gitignore.example', dest: '.gitignore' },
     { src: 'README-ENDORPHIN.md', dest: 'README-ENDORPHIN.md' },
   ];
@@ -790,7 +799,7 @@ async function copyExampleFiles(targetDir: string): Promise&lt;void&gt; {
       // Process content based on file type
 <span class="cstat-no" title="statement not covered" >      if (file.dest === '.env') {</span>
 <span class="cstat-no" title="statement not covered" >        content = processEnvFile(content);</span>
-      } else <span class="cstat-no" title="statement not covered" >if (file.dest === 'endorphin.config.js') {</span>
+      } else <span class="cstat-no" title="statement not covered" >if (file.dest === 'endorphin.config.ts') {</span>
 <span class="cstat-no" title="statement not covered" >        content = processConfigFile(content);</span>
       }
 &nbsp;
@@ -853,7 +862,7 @@ async function createBasicFiles(targetDir: string): Promise&lt;void&gt; {
 # 3. Replace "your_openai_api_key_here" above with your actual key
 # 4. Save this file
 # 5. Run: npx endorphin run test HEALTH-001`;
-  
+&nbsp;
   await fs.writeFile(path.join(targetDir, '.env'), envContent);
   console.log('📄 Created: .env');
 &nbsp;
@@ -896,11 +905,14 @@ export default {
 // - Change viewport for mobile testing
 // - Add your own custom settings here`;
 &nbsp;
-  await fs.writeFile(path.join(targetDir, 'endorphin.config.js'), configContent);
-  console.log('📄 Created: endorphin.config.js');
+  await fs.writeFile(path.join(targetDir, 'endorphin.config.ts'), configContent);
+  console.log('📄 Created: endorphin.config.ts');
 &nbsp;
   // Create basic sample test
-  const testContent = `export const HEALTH_001 = {
+  const testContent = `// Example Endorphin AI Test
+// This is a sample test to help you get started
+&nbsp;
+export const HEALTH_001 = {
   id: 'HEALTH-001',
   name: 'Health Check Test',
   description: 'Basic health check to verify the testing framework is working',
@@ -912,8 +924,8 @@ export default {
 };`;
 &nbsp;
   await fs.mkdir(path.join(targetDir, 'tests'), { recursive: true });
-  await fs.writeFile(path.join(targetDir, 'tests/sample-test.js'), testContent);
-  console.log('📄 Created: tests/sample-test.js');
+  await fs.writeFile(path.join(targetDir, 'tests/sample-test.ts'), testContent);
+  console.log('📄 Created: tests/sample-test.ts');
 &nbsp;
   // Create basic .gitignore
   const gitignoreContent = `# Dependencies
@@ -1000,7 +1012,7 @@ Happy testing! 🚀`;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-27T19:52:29.192Z
+                at 2025-06-27T23:12:30.284Z
             </div>
         <script src="prettify.js"></script>
         <script>

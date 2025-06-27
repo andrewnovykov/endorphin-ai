@@ -2,7 +2,7 @@
  * Task Executor Module
  * Executes AI-driven test tasks and manages test execution lifecycle
  */
-import { AGENT_CONFIG } from '@config/agent-config';
+import { AGENT_CONFIG } from '../config/agent-config.js';
 import { HumanMessage } from '@langchain/core/messages';
 /**
  * Run a test task using the AI agent

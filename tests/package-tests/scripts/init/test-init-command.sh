@@ -44,7 +44,7 @@ node node_modules/endorphin-ai/dist/bin/endorphin.js init
 # Verify files were created
 echo "📋 Checking created files..."
 
-FILES=(".env" "endorphin.config.js" "tests/sample-test.js" ".gitignore" "README-ENDORPHIN.md")
+FILES=(".env" "endorphin.config.ts" "tests/sample-test.ts" ".gitignore" "README-ENDORPHIN.md")
 ALL_GOOD=true
 
 # Change to test directory for file checks
@@ -72,7 +72,7 @@ done
 
 # Test if example test is valid
 echo "🧪 Validating example test..."
-if [ -f "./tests/sample-test.js" ] && (grep -q "HEALTH_001\|export const" "./tests/sample-test.js"); then
+if [ -f "./tests/sample-test.ts" ] && (grep -q "HEALTH_001\|export const" "./tests/sample-test.ts"); then
   echo "✅ Example test syntax valid"
 else
   echo "❌ Example test has syntax errors"
@@ -81,7 +81,7 @@ fi
 
 # Test if config is valid
 echo "⚙️ Validating config file..."
-if [ -f "./endorphin.config.js" ] && grep -q "export default" "./endorphin.config.js"; then
+if [ -f "./endorphin.config.ts" ] && grep -q "export default" "./endorphin.config.ts"; then
   echo "✅ Config file syntax valid"
 else
   echo "❌ Config file has syntax errors"
@@ -103,9 +103,9 @@ timeout 15 node node_modules/endorphin-ai/dist/bin/endorphin.js list >/dev/null 
 
 # Test second init (should not overwrite)
 echo "🔄 Testing second init (should not overwrite)..."
-echo "existing config" > "$TEST_DIR/endorphin.config.js"
+echo "existing config" > "$TEST_DIR/endorphin.config.ts"
 (cd "$TEST_DIR" && node node_modules/endorphin-ai/dist/bin/endorphin.js init)
-if grep -q "existing config" "$TEST_DIR/endorphin.config.js"; then
+if grep -q "existing config" "$TEST_DIR/endorphin.config.ts"; then
   echo "✅ Second init doesn't overwrite existing files"
 else
   echo "❌ Second init overwrote existing files"

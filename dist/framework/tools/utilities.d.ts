@@ -2,7 +2,7 @@
  * Utility Tools for Browser Automation
  * Provides LangChain tools for utilities (wait, screenshot)
  */
-import type { EnhancedBrowserTestFramework } from '@core/browser-framework';
+import type { EnhancedBrowserTestFramework } from '../core/browser-framework.js';
 import { z } from 'zod';
 /**
  * Creates a wait tool for the framework

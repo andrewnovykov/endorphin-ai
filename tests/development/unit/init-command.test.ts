@@ -134,7 +134,7 @@ describe('Init Command', () => {
 
       await initProject(mockTargetDir);
 
-      const expectedEnvContent = `${mockEnvContent}
+      const _expectedEnvContent = `${mockEnvContent}
 
 # 🎯 How to get your OpenAI API key:
 # 1. Go to: https://platform.openai.com/api-keys
@@ -166,7 +166,7 @@ describe('Init Command', () => {
 
       await initProject(mockTargetDir);
 
-      const expectedConfigContent = `// Endorphin AI Configuration
+      const _expectedConfigContent = `// Endorphin AI Configuration
 // This file controls how your tests run
 
 ${mockConfigContent}
@@ -201,7 +201,7 @@ ${mockConfigContent}
       await initProject(mockTargetDir);
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/⚠️  Examples directory not found at:/)
+        expect.stringMatching(/⚠️ {2}Examples directory not found at:/)
       );
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         '⚠️  Creating basic configuration files instead...'
@@ -235,10 +235,14 @@ ${mockConfigContent}
 
   describe('File Existence Check', () => {
     it('should correctly detect existing files', async () => {
-      mockFs.access.mockResolvedValue(undefined);
+      // Mock the first call (.js) to fail, second call (.ts) to succeed
+      mockFs.access
+        .mockRejectedValueOnce(new Error('ENOENT'))
+        .mockResolvedValueOnce(undefined);
 
       await initProject(mockTargetDir);
 
+      expect(mockFs.access).toHaveBeenCalledWith(path.join(mockTargetDir, 'endorphin.config.js'));
       expect(mockFs.access).toHaveBeenCalledWith(path.join(mockTargetDir, 'endorphin.config.ts'));
       expect(consoleLogSpy).toHaveBeenCalledWith('⚠️  Endorphin AI already initialized in this directory');
     });

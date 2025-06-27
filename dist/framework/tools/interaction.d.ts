@@ -2,7 +2,7 @@
  * Interaction Tools for Browser Automation
  * Provides LangChain tools for element interaction (click, fill, clear)
  */
-import type { EnhancedBrowserTestFramework } from '@core/browser-framework';
+import type { EnhancedBrowserTestFramework } from '../core/browser-framework.js';
 import { z } from 'zod';
 /**
  * Creates a click tool for the framework

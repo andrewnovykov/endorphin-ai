@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ES2022",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "allowJs": true,
@@ -90,7 +90,9 @@
     "**/node_modules/**",
     "**/*.min.js",
     "**/templates/scripts.js",
-    "tests/package-tests/tmp/**"
+    "tests/package-tests/tmp/**",
+    "examples/endorphin.config.js",
+    "examples/tests/sample-test.js"
   ],
   "ts-node": {
     "esm": true,

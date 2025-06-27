@@ -169,14 +169,14 @@ async function handleCleanupCommand(subcommand, target) {
     const reporter = new HtmlReporter();
     if (subcommand === 'results') {
         console.log('🧹 Cleaning up old test results...');
-        const keepCount = parseInt(target || '10', 10);
+        const keepCount = parseInt(target ?? '10', 10);
         const cleanup = await reporter.cleanupResults(keepCount);
         console.log(`✅ Cleanup completed: ${cleanup.removedCount} directories removed`);
         process.exit(0);
     }
     if (subcommand === 'reports') {
         console.log('🧹 Cleaning up old report files...');
-        const maxAge = parseInt(target || '30', 10);
+        const maxAge = parseInt(target ?? '30', 10);
         const cleanup = await reporter.cleanupOldReports(maxAge);
         console.log(`✅ Cleanup completed: ${cleanup.removedCount} report files removed`);
         process.exit(0);

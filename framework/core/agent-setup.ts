@@ -1,11 +1,11 @@
 /**
  * Endorphin e2e AI test framework
  * Copyright (C) 2025 Redstudio Agency
- * 
+ *
  * AI Agent Setup - TypeScript Migration
  */
 
-import { AGENT_CONFIG } from '@config/agent-config';
+import { AGENT_CONFIG } from '../config/agent-config.js';
 import { MessagesAnnotation, StateGraph } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
@@ -33,7 +33,7 @@ export async function setupAgent(tools: any[]): Promise<AgentWorkflow> {
   console.log('🤖 Configuring AI agent with tools...');
 
   // Small delay to ensure async behavior
-  await new Promise<void>(resolve => setTimeout(resolve, 0));
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 
   const toolNode = new ToolNode(tools);
 
@@ -50,7 +50,9 @@ export async function setupAgent(tools: any[]): Promise<AgentWorkflow> {
 
     // Check for explicit stop conditions in the message content
     const content = lastMessage.content?.toLowerCase() || '';
-    const hasStopPhrase = AGENT_CONFIG.agent.stopPhrases.some((phrase: string) => content.includes(phrase));
+    const hasStopPhrase = AGENT_CONFIG.agent.stopPhrases.some((phrase: string) =>
+      content.includes(phrase)
+    );
 
     if (hasStopPhrase) {
       console.log(`🛑 Stop condition detected: ${content}`);

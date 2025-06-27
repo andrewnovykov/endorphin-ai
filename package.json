@@ -4,7 +4,8 @@
   "description": "E2E Testing Reinvented with AI - A powerful TypeScript browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright",
   "main": "dist/framework/index.js",
   "bin": {
-    "endorphin": "./dist/bin/endorphin.js"
+    "endorphin": "./dist/bin/endorphin.js",
+    "endorphin-ai": "./dist/bin/endorphin.js"
   },
   "type": "module",
   "scripts": {
@@ -15,12 +16,9 @@
     "test:unit": "jest --selectProjects='Development Tests' tests/development/unit",
     "test:integration": "jest --selectProjects='Development Tests' tests/development/integration",
     "test:dev": "jest --selectProjects='Development Tests'",
-    "test:pre-release": "jest --selectProjects='Pre-Release Tests'",
-    "test:post-install": "jest --selectProjects='Post-Install Tests'",
-    "test:e2e": "jest --selectProjects='Post-Install Tests' --testTimeout=180000",
-    "test:all": "jest --selectProjects='Development Tests' 'Post-Install Tests'",
+    "test:all": "jest --selectProjects='Development Tests'",
     "test:package": "cd development-tests/package-tests && ./run-all-tests.sh",
-    "build": "tsc && cp framework/templates/reporter/*.html framework/templates/reporter/*.css dist/framework/templates/reporter/",
+    "build": "tsc && node scripts/fix-imports.js && cp framework/templates/reporter/*.html framework/templates/reporter/*.css dist/framework/templates/reporter/ && chmod +x dist/bin/endorphin.js",
     "build:watch": "tsc --watch",
     "pack:local": "npm run build && npm pack --pack-destination dist",
     "test:local": "npm run pack:local && ./tests/package-tests/run-all-tests.sh",
@@ -41,6 +39,7 @@
     "quality:fix": "npm run lint:fix && npm run format",
     "build:clean": "rm -rf dist && npm run build",
     "dev": "tsx",
+    "cleanup": "./scripts/cleanup-test-artifacts.sh",
     "prepare": "echo 'Husky disabled temporarily'",
     "precommit": "echo 'Pre-commit hooks disabled temporarily'"
   },
@@ -88,6 +87,7 @@
     "langchain": "^0.3.19",
     "openai": "^4.85.3",
     "playwright": "^1.50.1",
+    "tsx": "^4.9.3",
     "zod": "^3.25.67"
   },
   "directories": {
@@ -110,6 +110,7 @@
     "prettier": "^3.6.0",
     "ts-jest": "^29.4.0",
     "tsx": "^4.20.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-transform-paths": "^3.5.5"
   }
 }

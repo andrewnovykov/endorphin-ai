@@ -27,7 +27,7 @@ describe('Init Command Integration', () => {
     // Clean up test directory
     try {
       await fs.rm(testDir, { recursive: true, force: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
 
@@ -166,7 +166,7 @@ describe('Init Command Integration', () => {
 
       try {
         await expect(initProject(restrictedDir)).rejects.toThrow();
-      } catch (error) {
+      } catch {
         // Expected behavior
       }
 

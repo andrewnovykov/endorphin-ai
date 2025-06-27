@@ -1,7 +1,16 @@
-# Endorphin AI
+# Endorphin AI - Test artifacts (should be in tmp/ or user projects only)
 test-results/
 test-recorder/
 .env
+endorphin.config.js
+endorphin.config.ts
+endorphin-ai-*.tgz
+
+# Temporary test artifacts in main root (should not be committed)
+/endorphin.config.*
+/test-results/
+/test-recorder/
+/*.tgz
 
 # Dependencies
 node_modules/

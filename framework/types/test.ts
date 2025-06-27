@@ -16,6 +16,12 @@ export interface TestConfig {
   task: string;
 }
 
+// Test Case interface for test recorder generated files
+export interface TestCase extends TestConfig {
+  recordingId?: string;
+  recordedSteps?: number;
+}
+
 export interface TestSession {
   sessionId: string;
   sessionName: string;

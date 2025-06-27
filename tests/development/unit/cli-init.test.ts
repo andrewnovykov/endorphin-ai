@@ -35,7 +35,7 @@ interface ProjectStructure {
 /**
  * Interface for initProject result
  */
-interface InitProjectResult {
+interface _InitProjectResult {
   success: boolean;
   projectPath: string;
   projectName: string;
@@ -49,7 +49,7 @@ interface InitProjectResult {
 /**
  * Interface for sample test file
  */
-interface SampleTestFile {
+interface _SampleTestFile {
   fileName: string;
   content: string;
 }
@@ -57,7 +57,7 @@ interface SampleTestFile {
 /**
  * Interface for createSampleTests result
  */
-interface CreateSampleTestsResult {
+interface _CreateSampleTestsResult {
   success: boolean;
   samplesCreated: number;
   files: string[];
@@ -66,7 +66,7 @@ interface CreateSampleTestsResult {
 /**
  * Interface for config generation result
  */
-interface GenerateConfigResult {
+interface _GenerateConfigResult {
   config: Record<string, any>;
   configString: string;
 }
@@ -74,7 +74,7 @@ interface GenerateConfigResult {
 /**
  * Interface for config validation result
  */
-interface ValidateConfigResult {
+interface _ValidateConfigResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
@@ -83,7 +83,7 @@ interface ValidateConfigResult {
 /**
  * Interface for project template
  */
-interface ProjectTemplate {
+interface _ProjectTemplate {
   name: string;
   description: string;
   files: string[];
@@ -92,7 +92,7 @@ interface ProjectTemplate {
 /**
  * Interface for template initialization result
  */
-interface InitFromTemplateResult {
+interface _InitFromTemplateResult {
   success: boolean;
   template: string;
   filesCreated: number;
@@ -102,7 +102,7 @@ interface InitFromTemplateResult {
 /**
  * Interface for interactive setup result
  */
-interface InteractiveSetupResult {
+interface _InteractiveSetupResult {
   success: boolean;
   inputs: Record<string, any>;
   configGenerated: boolean;
@@ -112,14 +112,14 @@ interface InteractiveSetupResult {
 /**
  * Interface for prompt user answers
  */
-interface PromptUserAnswers {
+interface _PromptUserAnswers {
   [key: string]: any;
 }
 
 /**
  * Interface for project name validation result
  */
-interface ValidateProjectNameResult {
+interface _ValidateProjectNameResult {
   valid: boolean;
   errors: string[];
 }
@@ -181,9 +181,9 @@ describe('CLI Init Command', () => {
 
           return {
             success: true,
-            projectPath: projectPath,
-            projectName: projectName,
-            structure: structure,
+            projectPath,
+            projectName,
+            structure,
             message: 'Project initialized successfully'
           };
         }),
@@ -252,7 +252,7 @@ export default {
             // Proceed with initialization despite existing directory
             return {
               success: true,
-              projectPath: projectPath,
+              projectPath,
               warning: 'Existing directory found, files may be overwritten'
             };
           } else {
@@ -348,7 +348,7 @@ export default {
           };
 
           return {
-            config: config,
+            config,
             configString: `export default ${JSON.stringify(config, null, 2)};`
           };
         })
@@ -394,8 +394,8 @@ export default {
 
           return {
             valid: errors.length === 0,
-            errors: errors,
-            warnings: warnings
+            errors,
+            warnings
           };
         })
       };
@@ -443,7 +443,7 @@ export default {
           }
         ]),
 
-        initFromTemplate: jest.fn().mockImplementation(async (templateName: 'basic' | 'advanced' | 'enterprise', projectPath: string) => {
+        initFromTemplate: jest.fn().mockImplementation(async (templateName: 'basic' | 'advanced' | 'enterprise', _projectPath: string) => {
           const templates = {
             basic: {
               directories: ['tests', 'test-results'],
@@ -643,7 +643,7 @@ export default {
 
           return {
             valid: errors.length === 0,
-            errors: errors
+            errors
           };
         })
       };

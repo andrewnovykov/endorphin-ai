@@ -18,4 +18,9 @@ export default {
         temperature: 0.1,
     },
 };
+// 🎯 Configuration Tips:
+// - Set headless: true for faster execution
+// - Increase timeout for slow websites
+// - Change viewport for mobile testing
+// - Add your own custom settings here
 //# sourceMappingURL=endorphin.config.js.map

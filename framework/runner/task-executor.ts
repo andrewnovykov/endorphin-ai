@@ -3,12 +3,9 @@
  * Executes AI-driven test tasks and manages test execution lifecycle
  */
 
-import { AGENT_CONFIG } from '@config/agent-config';
+import { AGENT_CONFIG } from '../config/agent-config.js';
 import { HumanMessage } from '@langchain/core/messages';
-import type {
-  TaskResult,
-  TestSession
-} from '../types/index.js';
+import type { TaskResult, TestSession } from '../types/index.js';
 
 // Define interfaces for better type safety
 interface TaskDescription {
@@ -19,7 +16,13 @@ interface TaskDescription {
 interface FrameworkInstance {
   createTestSession(name: string, id: string): TestSession;
   currentTestSession: TestSession | null;
-  logTestStep(description: string, toolName: string | null, toolArgs: any, result: string, success: boolean): void;
+  logTestStep(
+    description: string,
+    toolName: string | null,
+    toolArgs: any,
+    result: string,
+    success: boolean
+  ): void;
   takeStepScreenshot(description: string): Promise<void>;
   finishTestSession(status: 'SUCCESS' | 'FAILED', result: string): Promise<void>;
   agent: {
@@ -35,8 +38,8 @@ interface FrameworkInstance {
  * @returns Test result
  */
 export async function runTask(
-  framework: FrameworkInstance, 
-  taskDescription: string, 
+  framework: FrameworkInstance,
+  taskDescription: string,
   testName: string | null = null
 ): Promise<TaskResult> {
   const timestamp = new Date().toISOString();
@@ -88,7 +91,7 @@ export async function runTask(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    
+
     console.error(`\n❌ Task "${name}" failed:`);
     console.error(`💥 Error: ${errorMessage}\n`);
 
@@ -118,7 +121,7 @@ export async function runTask(
  * @returns Array of test results
  */
 export async function runTaskSequence(
-  framework: FrameworkInstance, 
+  framework: FrameworkInstance,
   tasks: TaskDescription[]
 ): Promise<TaskResult[]> {
   const results: TaskResult[] = [];

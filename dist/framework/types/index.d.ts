@@ -9,5 +9,5 @@ export type { ExecutionConfig, FrameworkConfig, ResultsConfig } from './config.j
 export { BrowserError, ConfigurationError, EndorphinError, TestExecutionError } from './errors.js';
 export type { RecorderCommand, RecorderSession } from './recorder.js';
 export type { ReportOptions, TestReport, TestSummary } from './reporter.js';
-export type { DiscoveryResult, TaskResult, TestConfig, TestResult, TestSession, TestStep } from './test.js';
+export type { DiscoveryResult, TaskResult, TestCase, TestConfig, TestResult, TestSession, TestStep } from './test.js';
 //# sourceMappingURL=index.d.ts.map

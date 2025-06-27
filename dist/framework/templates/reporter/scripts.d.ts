@@ -41,7 +41,7 @@ export class TestReportViewer {
     /**
      * Create a screenshot element for the gallery
      */
-    createScreenshotElement(screenshot: any, resultDir: any, index: any): HTMLDivElement;
+    createScreenshotElement(screenshot: any, sessionDir: any, index: any): HTMLDivElement;
     /**
      * Show a screenshot in the screenshot modal
      */

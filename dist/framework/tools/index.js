@@ -2,11 +2,11 @@
  * Browser Automation Tools Collection
  * Provides all LangChain tools for browser automation
  */
-import { createGetPageContentTool, createGetSimplePageContentTool } from './content';
-import { createClearFieldTool, createClickTool, createFillTool } from './interaction';
+import { createGetPageContentTool, createGetSimplePageContentTool } from './content.js';
+import { createClearFieldTool, createClickTool, createFillTool } from './interaction.js';
 import { createNavigationTool } from './navigation.js';
 import { createScreenshotTool, createWaitTool } from './utilities.js';
-import { createGetElementInfoTool, createVerifyElementTool } from './verification';
+import { createGetElementInfoTool, createVerifyElementTool } from './verification.js';
 /**
  * Create all browser automation tools for the framework
  * @param framework - Framework instance

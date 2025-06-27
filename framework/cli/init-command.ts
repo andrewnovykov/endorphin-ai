@@ -34,8 +34,9 @@ export async function initProject(targetDir: string = process.cwd()): Promise<vo
 
   try {
     // Check if already initialized
-    const configExists = await fileExists(path.join(targetDir, 'endorphin.config.js')) || 
-                         await fileExists(path.join(targetDir, 'endorphin.config.ts'));
+    const configExists =
+      (await fileExists(path.join(targetDir, 'endorphin.config.js'))) ||
+      (await fileExists(path.join(targetDir, 'endorphin.config.ts')));
     if (configExists) {
       console.log('⚠️  Endorphin AI already initialized in this directory');
       console.log('💡 Run: npx endorphin run test HEALTH-001');
@@ -168,7 +169,7 @@ async function createBasicFiles(targetDir: string): Promise<void> {
 # 3. Replace "your_openai_api_key_here" above with your actual key
 # 4. Save this file
 # 5. Run: npx endorphin run test HEALTH-001`;
-  
+
   await fs.writeFile(path.join(targetDir, '.env'), envContent);
   console.log('📄 Created: .env');
 

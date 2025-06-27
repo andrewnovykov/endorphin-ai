@@ -2,7 +2,7 @@
  * Content Tools for Browser Automation
  * Provides LangChain tools for page content analysis
  */
-import type { EnhancedBrowserTestFramework } from '@core/browser-framework';
+import type { EnhancedBrowserTestFramework } from '../core/browser-framework.js';
 import { z } from 'zod';
 /**
  * Creates a get page content tool for the framework

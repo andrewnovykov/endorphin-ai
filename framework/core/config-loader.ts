@@ -71,9 +71,15 @@ export class ConfigLoader {
     for (const path of possiblePaths) {
       if (existsSync(path)) {
         try {
-          const configUrl = pathToFileURL(path).href;
-          const module = await import(configUrl);
-          return module.default || module;
+          // Handle TypeScript files
+          if (path.endsWith('.ts')) {
+            return await this.loadTypeScriptConfig(path);
+          } else {
+            // Handle JavaScript files
+            const configUrl = pathToFileURL(path).href;
+            const module = await import(configUrl);
+            return module.default || module;
+          }
         } catch (error) {
           console.warn(`⚠️ Failed to load config from ${path}:`, error);
         }
@@ -81,6 +87,44 @@ export class ConfigLoader {
     }
 
     return {};
+  }
+
+  /**
+   * Load TypeScript config file using tsx or fallback
+   */
+  private async loadTypeScriptConfig(filePath: string): Promise<Partial<FrameworkConfig>> {
+    try {
+      // Try to register tsx loader if not already registered
+      if (typeof (globalThis as any).__tsx_registered === 'undefined') {
+        try {
+          // Try to dynamically import tsx
+          const { register } = await import('tsx/esm/api');
+          register();
+          (globalThis as any).__tsx_registered = true;
+        } catch {
+          // If tsx is not available, fallback to JavaScript file
+          console.warn(`⚠️ TypeScript config loader not available, looking for JavaScript version`);
+          const jsConfigPath = filePath.replace('.ts', '.js');
+          if (existsSync(jsConfigPath)) {
+            const configUrl = pathToFileURL(jsConfigPath).href;
+            const module = await import(configUrl);
+            return module.default || module;
+          } else {
+            throw new Error(
+              `TypeScript config ${filePath} found but tsx loader not available and no JavaScript version exists`
+            );
+          }
+        }
+      }
+
+      // Load TypeScript file using tsx
+      const configUrl = pathToFileURL(filePath).href;
+      const module = await import(`${configUrl}?t=${Date.now()}`);
+      return module.default || module;
+    } catch (error) {
+      console.error(`Failed to load TypeScript config ${filePath}:`, error);
+      throw error;
+    }
   }
 
   /**

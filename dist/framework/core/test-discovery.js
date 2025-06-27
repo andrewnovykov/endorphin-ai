@@ -42,7 +42,7 @@ export class TestDiscovery {
             try {
                 await stat(this.testsDirectory);
             }
-            catch (error) {
+            catch {
                 console.log(`📁 Tests directory not found: ${this.testsDirectory}`);
                 console.log('💡 Create a "tests/" directory and add your test files there.');
                 return;
@@ -62,8 +62,8 @@ export class TestDiscovery {
             }
             console.log(`✅ Loaded ${this.tests.size} test(s) total\n`);
         }
-        catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
+        catch (_error) {
+            const message = _error instanceof Error ? _error.message : String(_error);
             console.error('❌ Error discovering tests:', message);
         }
     }
@@ -73,25 +73,87 @@ export class TestDiscovery {
     async loadTestFile(filename) {
         try {
             const filePath = join(this.testsDirectory, filename);
-            const fileUrl = pathToFileURL(filePath).href;
-            // Dynamic import with cache busting
-            const module = await import(`${fileUrl}?t=${Date.now()}`);
-            // Extract all exported test objects
-            for (const [exportName, exportValue] of Object.entries(module)) {
-                if (this.isValidTest(exportValue)) {
-                    const test = exportValue;
-                    this.tests.set(test.id, {
-                        ...test,
-                        sourceFile: filename,
-                        exportName,
-                    });
-                    console.log(`   ✓ ${test.id}: ${test.name}`);
-                }
+            // Handle TypeScript files by checking if tsx is available and using it
+            if (filename.endsWith('.ts')) {
+                await this.loadTypeScriptFile(filePath, filename);
+            }
+            else {
+                await this.loadJavaScriptFile(filePath, filename);
             }
         }
-        catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
+        catch (_error) {
+            const message = _error instanceof Error ? _error.message : String(_error);
             console.error(`❌ Error loading ${filename}:`, message);
+        }
+    }
+    /**
+     * Load JavaScript file using dynamic import
+     */
+    async loadJavaScriptFile(filePath, filename) {
+        const fileUrl = pathToFileURL(filePath).href;
+        const module = await import(`${fileUrl}?t=${Date.now()}`);
+        this.extractTestsFromModule(module, filename);
+    }
+    /**
+     * Load TypeScript file using tsx or dynamic compilation
+     */
+    async loadTypeScriptFile(filePath, filename) {
+        try {
+            // Try to register tsx loader if not already registered
+            if (typeof globalThis.__tsx_registered === 'undefined') {
+                try {
+                    // Try to dynamically import tsx
+                    const { register } = await import('tsx/esm/api');
+                    register();
+                    globalThis.__tsx_registered = true;
+                }
+                catch {
+                    // If tsx is not available, fallback to JavaScript compilation
+                    console.warn(`⚠️ TypeScript loader not available, attempting to load as JavaScript`);
+                    const jsFilePath = filePath.replace('.ts', '.js');
+                    if (await this.fileExists(jsFilePath)) {
+                        return this.loadJavaScriptFile(jsFilePath, filename.replace('.ts', '.js'));
+                    }
+                    else {
+                        throw new Error(`TypeScript file cannot be loaded: ${filename}. Please install tsx or compile to JavaScript.`);
+                    }
+                }
+            }
+            // Now load the TypeScript file
+            const fileUrl = pathToFileURL(filePath).href;
+            const module = await import(`${fileUrl}?t=${Date.now()}`);
+            this.extractTestsFromModule(module, filename);
+        }
+        catch (error) {
+            throw new Error(`Failed to load TypeScript file ${filename}: ${error}`);
+        }
+    }
+    /**
+     * Extract test objects from loaded module
+     */
+    extractTestsFromModule(module, filename) {
+        for (const [exportName, exportValue] of Object.entries(module)) {
+            if (this.isValidTest(exportValue)) {
+                const test = exportValue;
+                this.tests.set(test.id, {
+                    ...test,
+                    sourceFile: filename,
+                    exportName,
+                });
+                console.log(`   ✓ ${test.id}: ${test.name}`);
+            }
+        }
+    }
+    /**
+     * Check if file exists
+     */
+    async fileExists(filePath) {
+        try {
+            await import('fs').then((fs) => fs.promises.access(filePath));
+            return true;
+        }
+        catch {
+            return false;
         }
     }
     /**

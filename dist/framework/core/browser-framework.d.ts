@@ -31,7 +31,7 @@ export declare class EnhancedBrowserTestFramework {
     createTestSession(testName: string, testId?: string | null): TestSession;
     logTestStep(stepDescription: string, toolName?: string | null, toolArgs?: any, result?: string | null, isSuccess?: boolean): void;
     takeStepScreenshot(description?: string | null): Promise<string | null>;
-    finishTestSession(status?: 'SUCCESS' | 'FAILED', finalResult?: string | null): Promise<any>;
+    finishTestSession(status?: 'SUCCESS' | 'FAILED', finalResult?: string | null): any;
     cleanup(): Promise<void>;
     runTask(taskDescription: string, testName?: string | null): Promise<TaskResult>;
     runMultipleTasks(tasks: Array<{
@@ -53,7 +53,7 @@ export declare class EnhancedBrowserTestFramework {
         }>;
         report: TestReport;
     }>;
-    enableInteractiveMode(): Promise<void>;
+    enableInteractiveMode(): void;
     disableInteractiveMode(): void;
     get currentPage(): Page | null;
     get currentBrowser(): Browser | null;

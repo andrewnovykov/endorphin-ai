@@ -3,12 +3,12 @@
  * Provides all LangChain tools for browser automation
  */
 
-import { EnhancedBrowserTestFramework } from '@core/browser-framework';
-import { createGetPageContentTool, createGetSimplePageContentTool } from './content';
-import { createClearFieldTool, createClickTool, createFillTool } from './interaction';
+import { EnhancedBrowserTestFramework } from '../core/browser-framework.js';
+import { createGetPageContentTool, createGetSimplePageContentTool } from './content.js';
+import { createClearFieldTool, createClickTool, createFillTool } from './interaction.js';
 import { createNavigationTool } from './navigation.js';
 import { createScreenshotTool, createWaitTool } from './utilities.js';
-import { createGetElementInfoTool, createVerifyElementTool } from './verification';
+import { createGetElementInfoTool, createVerifyElementTool } from './verification.js';
 
 /**
  * Create all browser automation tools for the framework

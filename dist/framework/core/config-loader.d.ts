@@ -2,7 +2,7 @@
  * Configuration loader for Endorphin AI
  * Handles loading and merging of configuration from multiple sources
  */
-import type { CLIFlags, FrameworkConfig } from '@/types/index';
+import type { CLIFlags, FrameworkConfig } from '../types/index.js';
 export declare class ConfigLoader {
     private defaultConfig;
     constructor();
@@ -14,6 +14,10 @@ export declare class ConfigLoader {
      * Load user configuration from file
      */
     loadUserConfig(configPath?: string): Promise<Partial<FrameworkConfig>>;
+    /**
+     * Load TypeScript config file using tsx or fallback
+     */
+    private loadTypeScriptConfig;
     /**
      * Load configuration from environment variables
      */

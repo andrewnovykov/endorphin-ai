@@ -29,8 +29,8 @@ export async function initProject(targetDir = process.cwd()) {
     console.log('🎯 Initializing Endorphin AI project...');
     try {
         // Check if already initialized
-        const configExists = await fileExists(path.join(targetDir, 'endorphin.config.js')) ||
-            await fileExists(path.join(targetDir, 'endorphin.config.ts'));
+        const configExists = (await fileExists(path.join(targetDir, 'endorphin.config.js'))) ||
+            (await fileExists(path.join(targetDir, 'endorphin.config.ts')));
         if (configExists) {
             console.log('⚠️  Endorphin AI already initialized in this directory');
             console.log('💡 Run: npx endorphin run test HEALTH-001');

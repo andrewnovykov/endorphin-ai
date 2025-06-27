@@ -4,7 +4,7 @@
  *
  * AI Agent Setup - TypeScript Migration
  */
-import { AGENT_CONFIG } from '@config/agent-config';
+import { AGENT_CONFIG } from '../config/agent-config.js';
 import { MessagesAnnotation, StateGraph } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
@@ -16,7 +16,7 @@ import { ChatOpenAI } from '@langchain/openai';
 export async function setupAgent(tools) {
     console.log('🤖 Configuring AI agent with tools...');
     // Small delay to ensure async behavior
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const toolNode = new ToolNode(tools);
     if (!AGENT_CONFIG.openai.apiKey) {
         throw new Error('OpenAI API key is missing in AGENT_CONFIG.openai.apiKey');

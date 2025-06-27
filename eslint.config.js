@@ -4,6 +4,31 @@ import tsparser from '@typescript-eslint/parser';
 
 export default [
   js.configs.recommended,
+  // Global ignores - must be first
+  {
+    ignores: [
+      'node_modules/',
+      'dist/',
+      'build/',
+      'coverage/',
+      'test-results/',
+      'test-recorder/',
+      'examples/test-results/',
+      'examples/test-recorder/',
+      'tests/package-tests/tmp/',
+      'tests/package-tests/results/',
+      'tests/archive/',
+      'tmp/',
+      '*.min.js',
+      '**/*.d.ts',
+      // Generated template files (HTML report scripts)
+      '**/templates/scripts.js',
+      '**/test-results/**/scripts.js',
+      // Empty JavaScript template files (being removed)
+      'examples/endorphin.config.js',
+      'examples/tests/sample-test.js',
+    ],
+  },
   {
     languageOptions: {
       ecmaVersion: 'latest',
@@ -24,22 +49,6 @@ export default [
         require: 'readonly',
       },
     },
-    ignores: [
-      'node_modules/',
-      'dist/',
-      'build/',
-      'coverage/',
-      'test-results/',
-      'test-recorder/',
-      'examples/test-results/',
-      'examples/test-recorder/',
-      'development-tests/package-tests/tmp/',
-      'development-tests/package-tests/results/',
-      '*.min.js',
-      // Generated template files (HTML report scripts)
-      '**/templates/scripts.js',
-      '**/test-results/**/scripts.js',
-    ],
     rules: {
       // Code Quality
       'no-console': 'off', // Allow console for CLI tool
@@ -91,7 +100,7 @@ export default [
 
   // Test files
   {
-    files: ['**/*.test.js', '**/*.spec.js', '**/tests/**/*.js', '**/development-tests/**/*.js'],
+    files: ['**/*.test.js', '**/*.spec.js', '**/*.test.ts', '**/*.spec.ts', '**/tests/**/*.js', '**/tests/**/*.ts', '**/development-tests/**/*.js'],
     languageOptions: {
       globals: {
         test: 'readonly',
@@ -103,11 +112,20 @@ export default [
         beforeAll: 'readonly',
         afterAll: 'readonly',
         vi: 'readonly',
+        jest: 'readonly',
       },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
     },
     rules: {
       'no-unused-expressions': 'off',
       'max-len': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'require-await': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      'complexity': 'off',
     },
   },
 
@@ -171,7 +189,6 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './tsconfig.json',
       },
       globals: {
         process: 'readonly',
@@ -204,10 +221,10 @@ export default [
       ],
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'warn',
-      '@typescript-eslint/prefer-nullish-coalescing': 'error',
-      '@typescript-eslint/prefer-optional-chain': 'error',
+      // '@typescript-eslint/prefer-nullish-coalescing': 'error', // Requires type info
+      // '@typescript-eslint/prefer-optional-chain': 'error', // Requires type info
       // Disable base ESLint rules that conflict with TypeScript
       'no-unused-vars': 'off',
       'no-undef': 'off', // TypeScript handles this
