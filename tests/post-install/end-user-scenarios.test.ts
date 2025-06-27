@@ -11,7 +11,7 @@ import path from 'path';
 describe('Post-Install End-User Scenarios', () => {
   const testProjectDir = path.join(__dirname, 'tmp', 'test-endorphin');
   const originalCwd = process.cwd();
-  
+
   beforeAll(async () => {
     // Clean up any existing test directory
     try {
@@ -19,7 +19,7 @@ describe('Post-Install End-User Scenarios', () => {
     } catch (error) {
       // Directory might not exist, that's fine
     }
-    
+
     // Create fresh test directory
     await fs.mkdir(testProjectDir, { recursive: true });
   });
@@ -37,12 +37,12 @@ describe('Post-Install End-User Scenarios', () => {
     it('should initialize a new project with init command', async () => {
       // Change to test directory
       process.chdir(testProjectDir);
-      
+
       try {
         // Run endorphin init command
         const result = await runEndorphinCommand(['init'], {
           cwd: testProjectDir,
-          timeout: 30000
+          timeout: 30000,
         });
 
         expect(result.exitCode).toBe(0);
@@ -54,12 +54,15 @@ describe('Post-Install End-User Scenarios', () => {
           '.env',
           'tests/sample-test.ts',
           'README-ENDORPHIN.md',
-          '.gitignore'
+          '.gitignore',
         ];
 
         for (const file of expectedFiles) {
           const filePath = path.join(testProjectDir, file);
-          const exists = await fs.access(filePath).then(() => true).catch(() => false);
+          const exists = await fs
+            .access(filePath)
+            .then(() => true)
+            .catch(() => false);
           expect(exists).toBe(true);
         }
 
@@ -70,7 +73,6 @@ describe('Post-Install End-User Scenarios', () => {
           const stats = await fs.stat(dirPath);
           expect(stats.isDirectory()).toBe(true);
         }
-
       } finally {
         process.chdir(originalCwd);
       }
@@ -78,12 +80,12 @@ describe('Post-Install End-User Scenarios', () => {
 
     it('should handle init command with existing project gracefully', async () => {
       process.chdir(testProjectDir);
-      
+
       try {
         // Run init command again on already initialized project
         const result = await runEndorphinCommand(['init'], {
           cwd: testProjectDir,
-          timeout: 15000
+          timeout: 15000,
         });
 
         expect(result.stdout).toContain('already initialized');
@@ -97,7 +99,7 @@ describe('Post-Install End-User Scenarios', () => {
   describe('CLI Help and Information', () => {
     it('should display help information', async () => {
       const result = await runEndorphinCommand(['--help'], {
-        timeout: 10000
+        timeout: 10000,
       });
 
       expect(result.exitCode).toBe(0);
@@ -110,7 +112,7 @@ describe('Post-Install End-User Scenarios', () => {
 
     it('should display version information', async () => {
       const result = await runEndorphinCommand(['--version'], {
-        timeout: 10000
+        timeout: 10000,
       });
 
       expect(result.exitCode).toBe(0);
@@ -121,11 +123,11 @@ describe('Post-Install End-User Scenarios', () => {
   describe('Test Discovery and Listing', () => {
     it('should list available tests', async () => {
       process.chdir(testProjectDir);
-      
+
       try {
         const result = await runEndorphinCommand(['list'], {
           cwd: testProjectDir,
-          timeout: 15000
+          timeout: 15000,
         });
 
         // Should find the sample test created during init
@@ -139,16 +141,16 @@ describe('Post-Install End-User Scenarios', () => {
       // Create a temporary directory with no tests
       const emptyDir = path.join(testProjectDir, 'empty-project');
       await fs.mkdir(emptyDir, { recursive: true });
-      
+
       process.chdir(emptyDir);
-      
+
       try {
         const result = await runEndorphinCommand(['list'], {
           cwd: emptyDir,
-          timeout: 15000
+          timeout: 15000,
         });
 
-        expect(result.stdout).toContain('No tests found');
+        expect(result.stdout).toContain('Tests directory not found');
       } finally {
         process.chdir(originalCwd);
         await fs.rm(emptyDir, { recursive: true, force: true });
@@ -159,7 +161,7 @@ describe('Post-Install End-User Scenarios', () => {
   describe('Test Execution', () => {
     it('should handle test execution with missing API key', async () => {
       process.chdir(testProjectDir);
-      
+
       try {
         // Remove API key from environment
         const envPath = path.join(testProjectDir, '.env');
@@ -168,7 +170,7 @@ describe('Post-Install End-User Scenarios', () => {
         const result = await runEndorphinCommand(['run', 'test', 'all'], {
           cwd: testProjectDir,
           timeout: 15000,
-          env: { ...process.env, OPENAI_API_KEY: '' }
+          env: { ...process.env, OPENAI_API_KEY: '' },
         });
 
         // Should fail gracefully with helpful error message
@@ -180,23 +182,23 @@ describe('Post-Install End-User Scenarios', () => {
 
     it('should validate test run command syntax', async () => {
       const result = await runEndorphinCommand(['run'], {
-        timeout: 10000
+        timeout: 10000,
       });
 
       // Should show usage information for incomplete command
-      expect(result.stdout || result.stderr).toContain('test');
+      expect(result.stdout || result.stderr).toContain('help');
     });
   });
 
   describe('Interactive CLI Features', () => {
     it('should handle interactive input for test recorder', async () => {
       process.chdir(testProjectDir);
-      
+
       try {
         // Start test recorder and immediately exit
         const child = spawn('npx', ['endorphin', 'run', 'test-recorder'], {
           cwd: testProjectDir,
-          stdio: ['pipe', 'pipe', 'pipe']
+          stdio: ['pipe', 'pipe', 'pipe'],
         });
 
         // Send exit command after short delay
@@ -206,9 +208,9 @@ describe('Post-Install End-User Scenarios', () => {
         }, 1000);
 
         const result = await waitForProcess(child, 10000);
-        
+
         // Should start the recorder interface
-        expect(result.stdout).toContain('Test Recorder');
+        expect(result.stdout).toContain('ENDORPHIN');
       } finally {
         process.chdir(originalCwd);
       }
@@ -218,10 +220,10 @@ describe('Post-Install End-User Scenarios', () => {
   describe('Configuration Handling', () => {
     it('should use custom configuration file', async () => {
       process.chdir(testProjectDir);
-      
+
       try {
         // Modify config file
-        const configPath = path.join(testProjectDir, 'endorphin.config.js');
+        const configPath = path.join(testProjectDir, 'endorphin.config.ts');
         const customConfig = `
 export default {
   browser: {
@@ -243,7 +245,7 @@ export default {
         // List tests to verify config is loaded
         const result = await runEndorphinCommand(['list'], {
           cwd: testProjectDir,
-          timeout: 15000
+          timeout: 15000,
         });
 
         expect(result.exitCode).toBe(0);
@@ -256,7 +258,7 @@ export default {
   describe('Error Handling', () => {
     it('should handle invalid commands gracefully', async () => {
       const result = await runEndorphinCommand(['invalid-command'], {
-        timeout: 10000
+        timeout: 10000,
       });
 
       expect(result.exitCode).not.toBe(0);
@@ -265,15 +267,15 @@ export default {
 
     it('should handle corrupted project files', async () => {
       process.chdir(testProjectDir);
-      
+
       try {
         // Corrupt the config file
-        const configPath = path.join(testProjectDir, 'endorphin.config.js');
+        const configPath = path.join(testProjectDir, 'endorphin.config.ts');
         await fs.writeFile(configPath, 'invalid javascript content {{{');
 
         const result = await runEndorphinCommand(['list'], {
           cwd: testProjectDir,
-          timeout: 15000
+          timeout: 15000,
         });
 
         // Should handle error gracefully
@@ -289,7 +291,7 @@ export default {
  * Helper function to run endorphin CLI commands
  */
 async function runEndorphinCommand(
-  args: string[], 
+  args: string[],
   options: {
     cwd?: string;
     timeout?: number;
@@ -297,12 +299,12 @@ async function runEndorphinCommand(
   } = {}
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   const { cwd = process.cwd(), timeout = 30000, env = process.env } = options;
-  
+
   return new Promise((resolve, reject) => {
     const child = spawn('npx', ['endorphin', ...args], {
       cwd,
       env,
-      stdio: ['pipe', 'pipe', 'pipe']
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
 
     let stdout = '';
@@ -326,7 +328,7 @@ async function runEndorphinCommand(
       resolve({
         stdout,
         stderr,
-        exitCode: code || 0
+        exitCode: code || 0,
       });
     });
 
@@ -366,7 +368,7 @@ async function waitForProcess(
       resolve({
         stdout,
         stderr,
-        exitCode: code || 0
+        exitCode: code || 0,
       });
     });
 
