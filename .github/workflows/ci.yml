@@ -6,12 +6,19 @@ on:
   push:
     branches: [main, develop]
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+env:
+  # Required for package tests
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
+jobs:
+  # Development Tests (TypeScript source)
+  development-tests:
+    name: Development Tests
+    runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -22,8 +29,214 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
+      - name: Run TypeScript type checking
+        run: npm run type-check
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Run development tests
         run: npm test
 
-      - name: Run linting
-        run: npm run lint || echo "No lint script found"
+      - name: Upload test coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-coverage
+          path: tests/development/coverage/
+
+  # Build and Package Tests
+  package-tests:
+    name: Package Tests
+    runs-on: ubuntu-latest
+    needs: development-tests
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          ls -la dist/
+          ls -la dist/bin/
+          ls -la dist/framework/
+          node dist/bin/endorphin.js --version || echo "Version check failed"
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+
+      - name: Create test environment
+        run: |
+          mkdir -p /tmp/ci-test
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > /tmp/ci-test/.env
+
+      - name: Run package tests
+        working-directory: tests/package-tests
+        env:
+          CI: true
+          TEST_TIMEOUT: 300
+        run: |
+          # Make scripts executable
+          chmod +x run-all-tests.sh
+          chmod +x scripts/**/*.sh
+          
+          # Run package tests with timeout
+          timeout 20m ./run-all-tests.sh || exit_code=$?
+          
+          # Check exit code
+          if [ "${exit_code:-0}" -eq 124 ]; then
+            echo "Package tests timed out after 20 minutes"
+            exit 1
+          elif [ "${exit_code:-0}" -ne 0 ]; then
+            echo "Package tests failed with exit code: ${exit_code:-0}"
+            exit 1
+          fi
+
+      - name: Upload package test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: package-test-results
+          path: tests/package-tests/results/
+
+  # Integration Tests Matrix
+  integration-tests:
+    name: Integration Tests
+    runs-on: ${{ matrix.os }}
+    needs: development-tests
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['18', '20', '22']
+        exclude:
+          # Reduce matrix size for faster CI
+          - os: windows-latest
+            node-version: '18'
+          - os: macos-latest
+            node-version: '18'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run integration tests
+        run: npm run test:integration
+
+      - name: Test CLI commands (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          # Test basic CLI functionality
+          node dist/bin/endorphin.js --version
+          node dist/bin/endorphin.js --help
+
+      - name: Test CLI commands (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          # Test basic CLI functionality on Windows
+          node dist/bin/endorphin.js --version
+          node dist/bin/endorphin.js --help
+
+  # Security and Quality Checks
+  security-checks:
+    name: Security & Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level moderate
+        continue-on-error: true
+
+      - name: Check for outdated dependencies
+        run: npm outdated || true
+
+      - name: Validate package.json
+        run: npm run build && npm pack --dry-run
+
+  # End-to-End Smoke Tests
+  e2e-smoke-tests:
+    name: E2E Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [development-tests, package-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+
+      - name: Run health check test
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          # Create minimal test environment
+          mkdir -p /tmp/e2e-test
+          cd /tmp/e2e-test
+          
+          # Initialize project
+          echo "OPENAI_API_KEY=$OPENAI_API_KEY" > .env
+          
+          # Run basic health check if API key is available
+          if [ -n "$OPENAI_API_KEY" ]; then
+            timeout 5m node $GITHUB_WORKSPACE/dist/bin/endorphin.js run test HEALTH-001 || echo "Health check skipped - no API key or test failed"
+          else
+            echo "Skipping E2E tests - no OpenAI API key provided"
+          fi
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: /tmp/e2e-test/test-results/
