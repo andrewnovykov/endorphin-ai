@@ -44,9 +44,15 @@ export async function handleListCommand(config: FrameworkConfig): Promise<void> 
  */
 export async function handleInitCommand(): Promise<void> {
   console.log('🎯 Initializing Endorphin AI project...');
-  const { initProject } = await import('../framework/cli/init-command.js');
-  await initProject(process.cwd());
-  process.exit(0);
+  try {
+    const { initProject } = await import('../framework/cli/init-command.js');
+    await initProject(process.cwd());
+    process.exit(0);
+  } catch (error: any) {
+    console.error('❌ Failed to initialize project:', error.message);
+    console.log('💡 Try running: npm install endorphin-ai --save-dev');
+    process.exit(1);
+  }
 }
 
 /**

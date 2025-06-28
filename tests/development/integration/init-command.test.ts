@@ -76,7 +76,7 @@ describe('Init Command Integration', () => {
       expect(envContent).toContain('OPENAI_API_KEY=');
       expect(envContent).toContain('🎯 How to get your OpenAI API key:');
       expect(envContent).toContain('https://platform.openai.com/api-keys');
-      expect(envContent).toContain('npx endorphin run test HEALTH-001');
+      expect(envContent).toContain('npx endorphin-ai run test HEALTH-001');
     });
 
     it('should create proper config file with helpful comments', async () => {
@@ -114,7 +114,7 @@ describe('Init Command Integration', () => {
       await initProject(testDir);
       
       expect(consoleLogSpy).toHaveBeenCalledWith('⚠️  Endorphin AI already initialized in this directory');
-      expect(consoleLogSpy).toHaveBeenCalledWith('💡 Run: npx endorphin run test HEALTH-001');
+      expect(consoleLogSpy).toHaveBeenCalledWith('💡 Run: npx endorphin-ai run test HEALTH-001');
     });
 
     it('should handle missing examples directory gracefully', async () => {

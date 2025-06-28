@@ -225,7 +225,8 @@ async function handleCleanupCommand(subcommand: string, target?: string): Promis
  */
 export async function main(): Promise<void> {
   try {
-    await handleHelpAndVersion(args, packageInfo, showHelp);
+    // Handle help and version first (these should always work)
+    handleHelpAndVersion(args, packageInfo, showHelp);
 
     const command = args[0];
     const subcommand = args[1];
@@ -301,6 +302,23 @@ export async function main(): Promise<void> {
 }
 
 // Run CLI when executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// This works for both direct execution and npm package execution
+const isMainModule = () => {
+  // Check if this is the main module being executed
+  try {
+    // For ES modules, check if the current file matches the entry point
+    const currentFile = fileURLToPath(import.meta.url);
+    const entryFile = process.argv[1];
+    
+    // Handle both direct execution and symlinked npm binaries
+    return currentFile === entryFile || 
+           entryFile.includes('endorphin-ai') || 
+           entryFile.includes('endorphin');
+  } catch {
+    return true; // Default to running if we can't determine
+  }
+};
+
+if (isMainModule()) {
   main();
 }

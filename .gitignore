@@ -23,6 +23,10 @@ tests/development/coverage/
 coverage/
 .nyc_output
 
+# Package test results
+tests/package-tests/results/
+tests/package-tests/tmp/
+
 # Dependencies
 node_modules/
 package-lock.json

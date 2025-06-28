@@ -1,0 +1,52 @@
+{
+  "name": "create-endorphin-ai",
+  "version": "0.7.4",
+  "description": "Create a new Endorphin AI project with one command",
+  "type": "module",
+  "bin": {
+    "create-endorphin-ai": "./bin/create-endorphin-ai.js"
+  },
+  "main": "./bin/create-endorphin-ai.js",
+  "files": [
+    "bin/",
+    "templates/",
+    "README.md"
+  ],
+  "keywords": [
+    "ai",
+    "testing",
+    "e2e",
+    "automation",
+    "browser",
+    "playwright",
+    "langchain",
+    "openai",
+    "gpt-4",
+    "test-framework",
+    "typescript",
+    "create",
+    "init"
+  ],
+  "author": "Andrew Novykov <andrewkievtola@gmail.com>",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrewnovykov/endorphin-ai.git",
+    "directory": "create-endorphin-ai"
+  },
+  "bugs": {
+    "url": "https://github.com/andrewnovykov/endorphin-ai/issues"
+  },
+  "homepage": "https://github.com/andrewnovykov/endorphin-ai#readme",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1",
+    "prompts": "^2.4.2"
+  },
+  "scripts": {
+    "prepublishOnly": "echo 'Ready to publish create-endorphin-ai'"
+  }
+}

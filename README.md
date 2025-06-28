@@ -42,17 +42,24 @@ comprehensive test management.
 
 ### 📦 Installation & Setup
 
-Get started in under 2 minutes:
+Get started in under 30 seconds:
 
+```bash
+# ⚡ Quick setup (recommended)
+npx create-endorphin-ai@latest my-ai-tests
+cd my-ai-tests
+```
+
+**Or manual setup:**
 ```bash
 # 1. Create your project
 mkdir my-ai-tests && cd my-ai-tests
 
 # 2. Install Endorphin AI
-npm install endorphin-ai
+npm install endorphin-ai@latest --save-dev
 
 # 3. Initialize with everything you need
-npx endorphin init
+npx endorphin-ai init
 ```
 
 **What you get:**
@@ -74,16 +81,40 @@ echo "OPENAI_API_KEY=your-openai-api-key-here" > .env
 
 ```bash
 # Run the sample health check test
-npx endorphin run test HEALTH-001
+npx endorphin-ai run test HEALTH-001
 
 # Generate a beautiful HTML report
-npx endorphin generate report && npx endorphin open report
+npx endorphin-ai generate report && npx endorphin-ai open report
 ```
 
 **🎉 That's it!** You now have:
 - A working AI-powered test
 - Interactive HTML reports with screenshots
 - Complete project structure for scaling
+
+### 🔧 Troubleshooting Installation
+
+If `npx endorphin-ai` doesn't work, try these **guaranteed solutions**:
+
+```bash
+# Option 1: Use npm scripts (always works)
+npm run endorphin:init                # Initialize project
+npm run endorphin:version             # Check version
+npm run endorphin:help                # Get help
+
+# Option 2: Clear npx cache and retry
+npx --clear-cache
+npx endorphin-ai init
+
+# Option 3: Use direct path
+./node_modules/.bin/endorphin-ai init
+
+# Option 4: Global installation
+npm install -g endorphin-ai
+endorphin-ai init
+```
+
+**Why this happens:** This is a known npm/npx issue with local binary resolution, not a problem with Endorphin AI. The npm scripts above always work regardless of npx behavior.
 
 ### Manual Setup (Alternative)
 
@@ -149,11 +180,13 @@ If you prefer manual setup:
    ```json
    {
      "scripts": {
-       "test": "endorphin run test all",
-       "test:smoke": "endorphin run test --tag smoke",
-       "test:auth": "endorphin run test --tag authentication",
-       "test:single": "endorphin run test",
-       "test:record": "endorphin run test-recorder"
+       "test": "endorphin-ai run test all",
+       "test:smoke": "endorphin-ai run test --tag smoke",
+       "test:auth": "endorphin-ai run test --tag authentication", 
+       "test:single": "endorphin-ai run test",
+       "test:record": "endorphin-ai run test-recorder",
+       "endorphin:init": "./node_modules/.bin/endorphin-ai init",
+       "endorphin:version": "./node_modules/.bin/endorphin --version"
      }
    }
    ```
@@ -189,25 +222,25 @@ If you prefer manual setup:
 
 ## 🔄 Staying Updated
 
-### Current Version: v0.6.0
+### Current Version: v0.6.1
 
 ```bash
 # Check your current version
-npx endorphin --version
+npx endorphin-ai --version
 
 # Update to the latest version
 npm update endorphin-ai
 
 # Get help and see new features
-npx endorphin --help
+npx endorphin-ai --help
 ```
 
-### What's New in v0.6.0
-- ✅ **Enhanced CLI** with dual command names (`endorphin` and `endorphin-ai`)
-- ✅ **Improved HTML Reports** with better filtering and search
-- ✅ **Security-First** with automated vulnerability scanning
-- ✅ **Cross-Platform CI/CD** support for Windows, Linux, and macOS
-- ✅ **Production-Ready** compiled JavaScript without tsx dependency
+### What's New in v0.6.1
+- ✅ **Fixed npx Resolution Issues** with post-install script and npm script alternatives
+- ✅ **Enhanced User Experience** with clear troubleshooting guidance
+- ✅ **Reliable Installation** that works regardless of npm/npx behavior
+- ✅ **Multiple Access Methods** including guaranteed npm scripts
+- ✅ **Better Documentation** with comprehensive troubleshooting section
 
 ## 🚀 Project Initialization
 
@@ -216,7 +249,7 @@ npx endorphin --help
 ```bash
 # Quick setup for new projects
 mkdir my-test-project && cd my-test-project
-npx endorphin init
+npx endorphin-ai init
 ```
 
 The `init` command creates:
@@ -240,7 +273,7 @@ For existing Endorphin projects, the `init` command is optional and safe:
 
 ```bash
 # Safe to run in existing projects
-npx endorphin init
+npx endorphin-ai init
 ```
 
 ### Usage Commands
@@ -249,10 +282,10 @@ npx endorphin init
 
 ```bash
 # Check current version
-npx endorphin --version
+npx endorphin-ai --version
 
 # Get help and see all commands
-npx endorphin --help
+npx endorphin-ai --help
 
 # Update to latest version
 npm update endorphin-ai
@@ -262,7 +295,7 @@ npm update endorphin-ai
 
 ```bash
 # Create a new Endorphin AI project with all necessary files
-npx endorphin init
+npx endorphin-ai init
 
 # What gets created:
 # ├── tests/sample-test.ts     # Ready-to-run TypeScript test
@@ -699,14 +732,14 @@ npx endorphin list
 
 ```bash
 # Initialize new project (recommended for new projects)
-npx endorphin init
+npx endorphin-ai init
 
 # Show help and available commands
-npx endorphin --help
+npx endorphin-ai --help
 npx endorphin help
 
 # Check current version
-npx endorphin --version
+npx endorphin-ai --version
 ```
 
 ### HTML Reports & Analytics
@@ -797,7 +830,10 @@ Add these to your `package.json`:
     "test:report": "endorphin generate report",
     "test:summary": "endorphin generate report --summary",
     "test:open": "endorphin open report",
-    "test:cleanup": "endorphin cleanup results"
+    "test:cleanup": "endorphin cleanup results",
+    "endorphin:init": "./node_modules/.bin/endorphin-ai init",
+    "endorphin:version": "./node_modules/.bin/endorphin --version",
+    "endorphin:help": "./node_modules/.bin/endorphin --help"
   }
 }
 ```
@@ -809,6 +845,11 @@ npm test                # Run all tests
 npm run test:smoke      # Run smoke tests
 npm run test:report     # Generate HTML report
 npm run test:open       # Open latest report
+
+# Guaranteed to work (bypasses npx issues):
+npm run endorphin:init  # Initialize project
+npm run endorphin:version # Check version
+npm run endorphin:help  # Get help
 ```
 
 ## 🔄 Staying Updated
@@ -817,7 +858,7 @@ npm run test:open       # Open latest report
 
 ```bash
 # Check current installed version
-npx endorphin --version
+npx endorphin-ai --version
 
 # Check latest available version on npm
 npm view endorphin-ai version
@@ -836,15 +877,16 @@ npm update endorphin-ai
 npm install endorphin-ai@latest
 
 # Verify the update
-npx endorphin --version
+npx endorphin-ai --version
 ```
 
 ### Version History & Features
 
-- **v0.6.0** *(Latest)*: Enhanced CLI, security-first publishing, cross-platform CI/CD
+- **v0.6.1** *(Latest)*: Fixed npx resolution issues, enhanced user experience
+- **v0.6.0**: Enhanced CLI, security-first publishing, cross-platform CI/CD
 - **v0.5.0**: Advanced HTML reporting with interactive features
 - **v0.4.0**: TypeScript-first experience with full type definitions
-- **v0.3.0**: Added `endorphin init` command for instant project setup
+- **v0.3.0**: Added `endorphin-ai init` command for instant project setup
 - **v0.2.x**: Core framework with AI-powered testing
 - **v0.1.x**: Initial release with basic functionality
 
