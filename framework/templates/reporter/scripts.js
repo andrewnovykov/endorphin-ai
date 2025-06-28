@@ -40,7 +40,7 @@ class TestReportViewer {
    */
   attachEventListeners() {
     // View details buttons
-    document.querySelectorAll('.view-details-btn').forEach(btn => {
+    document.querySelectorAll('.view-details-btn').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const resultIndex = parseInt(btn.getAttribute('data-result-index'));
@@ -49,7 +49,7 @@ class TestReportViewer {
     });
 
     // Test result rows (clickable)
-    document.querySelectorAll('.test-result-row').forEach(row => {
+    document.querySelectorAll('.test-result-row').forEach((row) => {
       row.addEventListener('click', () => {
         const resultIndex = parseInt(row.getAttribute('data-result-index'));
         this.showTestDetails(resultIndex);
@@ -59,13 +59,13 @@ class TestReportViewer {
     // Search functionality
     const searchInput = document.getElementById('test-search');
     const clearSearchBtn = document.getElementById('clear-search');
-    
+
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         this.filterResults(e.target.value, this.currentFilter);
       });
     }
-    
+
     if (clearSearchBtn) {
       clearSearchBtn.addEventListener('click', () => {
         searchInput.value = '';
@@ -75,13 +75,13 @@ class TestReportViewer {
     }
 
     // Filter buttons
-    document.querySelectorAll('[data-filter]').forEach(btn => {
+    document.querySelectorAll('[data-filter]').forEach((btn) => {
       btn.addEventListener('click', () => {
         // Remove active class from all filter buttons
-        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('[data-filter]').forEach((b) => b.classList.remove('active'));
         // Add active class to clicked button
         btn.classList.add('active');
-        
+
         const filter = btn.getAttribute('data-filter');
         this.currentFilter = filter;
         const searchTerm = searchInput ? searchInput.value : '';
@@ -92,13 +92,13 @@ class TestReportViewer {
     // Export and print buttons
     const exportBtn = document.getElementById('export-json');
     const printBtn = document.getElementById('print-report');
-    
+
     if (exportBtn) {
       exportBtn.addEventListener('click', () => {
         this.exportToJson();
       });
     }
-    
+
     if (printBtn) {
       printBtn.addEventListener('click', () => {
         this.printReport();
@@ -114,7 +114,7 @@ class TestReportViewer {
     }
 
     // Screenshot click events will be attached dynamically
-    
+
     // Initialize filter state
     this.currentFilter = 'all';
   }
@@ -194,9 +194,9 @@ class TestReportViewer {
   createStepElement(step, index) {
     const stepDiv = document.createElement('div');
     stepDiv.className = `timeline-item ${step.status.toLowerCase()}`;
-    
+
     const statusClass = step.status === 'SUCCESS' ? 'status-success' : 'status-failure';
-    
+
     stepDiv.innerHTML = `
       <div class="timeline-content">
         <div class="timeline-header">
@@ -206,25 +206,37 @@ class TestReportViewer {
         <div class="timeline-description">
           ${this.escapeHtml(step.description)}
         </div>
-        ${step.result ? `
+        ${
+          step.result
+            ? `
           <div class="timeline-result">
             <strong>Result:</strong> ${this.escapeHtml(step.result)}
           </div>
-        ` : ''}
-        ${step.toolName ? `
+        `
+            : ''
+        }
+        ${
+          step.toolName
+            ? `
           <div class="timeline-tool-call">
             <strong>Tool:</strong> ${this.escapeHtml(step.toolName)}
             ${step.toolArgs ? `<br><strong>Args:</strong> ${this.escapeHtml(JSON.stringify(step.toolArgs, null, 2))}` : ''}
           </div>
-        ` : ''}
-        ${step.screenshots && step.screenshots.length > 0 ? `
+        `
+            : ''
+        }
+        ${
+          step.screenshots && step.screenshots.length > 0
+            ? `
           <div class="mt-2">
             <small class="text-muted">Screenshots (${step.screenshots.length}):</small>
             <div class="step-screenshots mt-1" data-step-number="${step.stepNumber}">
               <!-- Screenshots will be added dynamically -->
             </div>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     `;
 
@@ -233,21 +245,31 @@ class TestReportViewer {
       const screenshotsContainer = stepDiv.querySelector('.step-screenshots');
       if (screenshotsContainer) {
         step.screenshots.forEach((screenshot, idx) => {
-          const imgPath = typeof screenshot === 'object' && screenshot.filepath ? screenshot.filepath : `screenshots/${screenshot}`;
-          const imgName = typeof screenshot === 'object' && screenshot.filename ? screenshot.filename : screenshot;
-          const imgDesc = typeof screenshot === 'object' && screenshot.description ? screenshot.description : `Screenshot ${idx + 1}`;
-          
+          const imgPath =
+            typeof screenshot === 'object' && screenshot.filepath
+              ? screenshot.filepath
+              : `screenshots/${screenshot}`;
+          const imgName =
+            typeof screenshot === 'object' && screenshot.filename
+              ? screenshot.filename
+              : screenshot;
+          const imgDesc =
+            typeof screenshot === 'object' && screenshot.description
+              ? screenshot.description
+              : `Screenshot ${idx + 1}`;
+
           const img = document.createElement('img');
           img.src = imgPath;
           img.alt = imgDesc;
           img.title = imgDesc;
           img.className = 'step-screenshot-thumb me-2 mb-1';
-          img.style.cssText = 'max-width: 100px; max-height: 60px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px;';
-          
+          img.style.cssText =
+            'max-width: 100px; max-height: 60px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px;';
+
           img.addEventListener('click', () => {
             this.showScreenshot(imgPath, imgName);
           });
-          
+
           screenshotsContainer.appendChild(img);
         });
       }
@@ -266,7 +288,8 @@ class TestReportViewer {
     gallery.innerHTML = '';
 
     if (!result.screenshots || result.screenshots.length === 0) {
-      gallery.innerHTML = '<div class="col-12 text-muted text-center">No screenshots available</div>';
+      gallery.innerHTML =
+        '<div class="col-12 text-muted text-center">No screenshots available</div>';
       return;
     }
 
@@ -282,9 +305,9 @@ class TestReportViewer {
   createScreenshotElement(screenshot, resultDir, index) {
     const col = document.createElement('div');
     col.className = 'col-md-3 col-sm-4 col-6 mb-3';
-    
+
     const screenshotPath = `screenshots/${screenshot}`;
-    
+
     col.innerHTML = `
       <div class="card">
         <img src="${screenshotPath}" 
@@ -313,12 +336,12 @@ class TestReportViewer {
   showScreenshot(screenshotPath, screenshotName) {
     const viewer = document.getElementById('screenshot-viewer');
     const info = document.getElementById('screenshot-info');
-    
+
     if (viewer) {
       viewer.src = screenshotPath;
       viewer.alt = screenshotName;
     }
-    
+
     if (info) {
       info.textContent = screenshotName;
     }
@@ -341,7 +364,7 @@ class TestReportViewer {
    */
   formatDateTime(dateTimeString) {
     if (!dateTimeString) return 'N/A';
-    
+
     try {
       const date = new Date(dateTimeString);
       return date.toLocaleString();
@@ -357,7 +380,7 @@ class TestReportViewer {
     if (typeof text !== 'string') {
       return String(text);
     }
-    
+
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
@@ -394,19 +417,18 @@ class TestReportViewer {
     const rows = document.querySelectorAll('.test-result-row');
     const lowerSearchTerm = searchTerm.toLowerCase();
     let visibleCount = 0;
-    let totalCount = rows.length;
+    const totalCount = rows.length;
 
-    rows.forEach(row => {
+    rows.forEach((row) => {
       const testId = row.querySelector('strong').textContent.toLowerCase();
       const testName = row.querySelector('.text-muted').textContent.toLowerCase();
       const statusElement = row.querySelector('.badge');
       const status = statusElement ? statusElement.textContent.trim() : '';
-      
+
       // Check search term match
-      const searchMatch = !searchTerm || 
-                         testId.includes(lowerSearchTerm) || 
-                         testName.includes(lowerSearchTerm);
-      
+      const searchMatch =
+        !searchTerm || testId.includes(lowerSearchTerm) || testName.includes(lowerSearchTerm);
+
       // Check status filter match
       let statusMatch = true;
       if (statusFilter === 'passed') {
@@ -414,26 +436,28 @@ class TestReportViewer {
       } else if (statusFilter === 'failed') {
         statusMatch = status.includes('Failed');
       }
-      
+
       const shouldShow = searchMatch && statusMatch;
       row.style.display = shouldShow ? '' : 'none';
-      
+
       // Add highlight class for search matches
       if (shouldShow && searchTerm) {
         row.classList.add('highlight');
       } else {
         row.classList.remove('highlight');
       }
-      
+
       if (shouldShow) visibleCount++;
     });
 
     // Update search results info
     this.updateSearchResultsInfo(visibleCount, totalCount, searchTerm, statusFilter);
-    
+
     // Scroll to first visible result if searching
     if (searchTerm && visibleCount > 0) {
-      const firstVisibleRow = document.querySelector('.test-result-row[style=""], .test-result-row:not([style*="none"])');
+      const firstVisibleRow = document.querySelector(
+        '.test-result-row[style=""], .test-result-row:not([style*="none"])'
+      );
       if (firstVisibleRow) {
         firstVisibleRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
@@ -448,7 +472,7 @@ class TestReportViewer {
     if (!infoElement) return;
 
     let message = '';
-    
+
     if (searchTerm && statusFilter !== 'all') {
       message = `Showing ${visibleCount} of ${totalCount} tests matching "${searchTerm}" with status "${statusFilter}"`;
     } else if (searchTerm) {
@@ -458,9 +482,9 @@ class TestReportViewer {
     } else {
       message = `Showing all ${totalCount} test results`;
     }
-    
+
     infoElement.textContent = message;
-    
+
     // Add highlight class if filtering is active
     if (searchTerm || statusFilter !== 'all') {
       infoElement.classList.add('text-primary');
@@ -478,7 +502,7 @@ class TestReportViewer {
     const dataStr = JSON.stringify(this.testData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = `endorphin-test-report-${new Date().toISOString().split('T')[0]}.json`;
@@ -503,11 +527,14 @@ class ReportUtils {
    */
   static copyToClipboard(text) {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => {
-        ReportUtils.showToast('Copied to clipboard');
-      }).catch(err => {
-        console.error('Failed to copy:', err);
-      });
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          ReportUtils.showToast('Copied to clipboard');
+        })
+        .catch((err) => {
+          console.error('Failed to copy:', err);
+        });
     } else {
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
@@ -538,12 +565,12 @@ class ReportUtils {
       document.body.appendChild(toastContainer);
     }
 
-    const toastId = 'toast-' + Date.now();
+    const toastId = `toast-${Date.now()}`;
     const toast = document.createElement('div');
     toast.id = toastId;
     toast.className = `toast align-items-center text-white bg-${type} border-0`;
     toast.setAttribute('role', 'alert');
-    
+
     toast.innerHTML = `
       <div class="d-flex">
         <div class="toast-body">${message}</div>
@@ -552,7 +579,7 @@ class ReportUtils {
     `;
 
     toastContainer.appendChild(toast);
-    
+
     const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
     bsToast.show();
 
@@ -570,7 +597,7 @@ class ReportUtils {
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   }
 
   /**
@@ -578,8 +605,16 @@ class ReportUtils {
    */
   static generateColor(index) {
     const colors = [
-      '#0066cc', '#28a745', '#dc3545', '#ffc107', '#17a2b8',
-      '#6f42c1', '#e83e8c', '#fd7e14', '#20c997', '#6c757d'
+      '#0066cc',
+      '#28a745',
+      '#dc3545',
+      '#ffc107',
+      '#17a2b8',
+      '#6f42c1',
+      '#e83e8c',
+      '#fd7e14',
+      '#20c997',
+      '#6c757d',
     ];
     return colors[index % colors.length];
   }
@@ -588,7 +623,7 @@ class ReportUtils {
 // Initialize the report viewer when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   window.reportViewer = new TestReportViewer();
-  
+
   // Add keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     // Ctrl/Cmd + E to export
@@ -596,13 +631,13 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       window.reportViewer.exportToJson();
     }
-    
+
     // Ctrl/Cmd + P to print
     if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
       e.preventDefault();
       window.reportViewer.printReport();
     }
-    
+
     // Ctrl/Cmd + F to focus search
     if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
       e.preventDefault();
@@ -612,7 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.select();
       }
     }
-    
+
     // Escape to clear search
     if (e.key === 'Escape') {
       const searchInput = document.getElementById('test-search');
@@ -621,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.reportViewer.filterResults('', window.reportViewer.currentFilter);
       }
     }
-    
+
     // Number keys to select filters (1=All, 2=Passed, 3=Failed)
     if (e.key >= '1' && e.key <= '3' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();

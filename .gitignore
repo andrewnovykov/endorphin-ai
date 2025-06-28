@@ -1,6 +1,7 @@
 # Endorphin AI - Test artifacts (should be in tmp/ or user projects only)
 test-results/
 test-recorder/
+
 .env
 endorphin.config.js
 endorphin.config.ts
@@ -10,6 +11,7 @@ endorphin-ai-*.tgz
 /endorphin.config.*
 /test-results/
 /test-recorder/
+tests/development/coverage/*
 /*.tgz
 
 # Dependencies
