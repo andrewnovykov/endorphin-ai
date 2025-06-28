@@ -67,8 +67,8 @@
   "jest.jestCommandLine": "npm test",
   "jest.autoRun": "off",
   // Playwright
-  "playwright.showTrace": true,
-  "playwright.reuseBrowser": true,
+  "playwright.showTrace": false,
+  "playwright.reuseBrowser": false,
   // Markdown
   "markdown.extension.toc.updateOnSave": true,
   // Language specific settings
