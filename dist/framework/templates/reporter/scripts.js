@@ -219,11 +219,39 @@ class TestReportViewer {
         ` : ''}
         ${step.screenshots && step.screenshots.length > 0 ? `
           <div class="mt-2">
-            <small class="text-muted">Screenshots: ${step.screenshots.length}</small>
+            <small class="text-muted">Screenshots (${step.screenshots.length}):</small>
+            <div class="step-screenshots mt-1" data-step-number="${step.stepNumber}">
+              <!-- Screenshots will be added dynamically -->
+            </div>
           </div>
         ` : ''}
       </div>
     `;
+
+    // Add step screenshots after creating the element
+    if (step.screenshots && step.screenshots.length > 0) {
+      const screenshotsContainer = stepDiv.querySelector('.step-screenshots');
+      if (screenshotsContainer) {
+        step.screenshots.forEach((screenshot, idx) => {
+          const imgPath = typeof screenshot === 'object' && screenshot.filepath ? screenshot.filepath : `screenshots/${screenshot}`;
+          const imgName = typeof screenshot === 'object' && screenshot.filename ? screenshot.filename : screenshot;
+          const imgDesc = typeof screenshot === 'object' && screenshot.description ? screenshot.description : `Screenshot ${idx + 1}`;
+          
+          const img = document.createElement('img');
+          img.src = imgPath;
+          img.alt = imgDesc;
+          img.title = imgDesc;
+          img.className = 'step-screenshot-thumb me-2 mb-1';
+          img.style.cssText = 'max-width: 100px; max-height: 60px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px;';
+          
+          img.addEventListener('click', () => {
+            this.showScreenshot(imgPath, imgName);
+          });
+          
+          screenshotsContainer.appendChild(img);
+        });
+      }
+    }
 
     return stepDiv;
   }
@@ -255,7 +283,7 @@ class TestReportViewer {
     const col = document.createElement('div');
     col.className = 'col-md-3 col-sm-4 col-6 mb-3';
     
-    const screenshotPath = `screenshots/${resultDir}/${screenshot}`;
+    const screenshotPath = `screenshots/${screenshot}`;
     
     col.innerHTML = `
       <div class="card">
@@ -382,9 +410,9 @@ class TestReportViewer {
       // Check status filter match
       let statusMatch = true;
       if (statusFilter === 'passed') {
-        statusMatch = status.includes('SUCCESS');
+        statusMatch = status.includes('Passed');
       } else if (statusFilter === 'failed') {
-        statusMatch = status.includes('FAILED');
+        statusMatch = status.includes('Failed');
       }
       
       const shouldShow = searchMatch && statusMatch;

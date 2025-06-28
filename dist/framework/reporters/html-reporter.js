@@ -180,12 +180,30 @@ export class HtmlReporter {
                 const sessionData = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
                 // Get screenshots
                 const screenshotsDir = path.join(resultPath, 'screenshots');
-                const screenshots = fs.existsSync(screenshotsDir)
+                const screenshotFiles = fs.existsSync(screenshotsDir)
                     ? fs
                         .readdirSync(screenshotsDir)
                         .filter((f) => f.endsWith('.png') || f.endsWith('.jpg'))
-                        .map((f) => f) // Just filenames, not full paths
                     : [];
+                // Create full paths for copying but store filenames for display
+                const screenshotsForCopying = screenshotFiles.map((f) => path.join(screenshotsDir, f));
+                const screenshotsForDisplay = screenshotFiles; // Just filenames
+                // Process steps to fix screenshot paths to be relative
+                const processedSteps = (sessionData.steps || []).map((step) => {
+                    if (step.screenshots && Array.isArray(step.screenshots)) {
+                        step.screenshots = step.screenshots.map((screenshot) => {
+                            if (typeof screenshot === 'object' && screenshot.filename) {
+                                // Update the screenshot object to use relative path
+                                return {
+                                    ...screenshot,
+                                    filepath: `screenshots/${screenshot.filename}`
+                                };
+                            }
+                            return screenshot;
+                        });
+                    }
+                    return step;
+                });
                 // Structure the data as expected by the JavaScript
                 return {
                     session: {
@@ -195,7 +213,7 @@ export class HtmlReporter {
                         duration: sessionData.duration || 0,
                         startTime: sessionData.startTime,
                         endTime: sessionData.endTime,
-                        steps: sessionData.steps || [],
+                        steps: processedSteps,
                         sessionId: sessionData.sessionId || path.basename(resultPath),
                         sessionName: sessionData.sessionName || sessionData.testName,
                         sessionDir: path.basename(resultPath),
@@ -206,7 +224,8 @@ export class HtmlReporter {
                         duration: sessionData.duration || 0,
                         error: sessionData.error || sessionData.finalResult
                     },
-                    screenshots,
+                    screenshots: screenshotsForDisplay,
+                    screenshotsForCopying,
                     resultDir: path.basename(resultPath),
                     // Keep these for backward compatibility with table generation
                     testId: sessionData.testId || sessionData.sessionId || path.basename(resultPath),
@@ -392,8 +411,9 @@ export class HtmlReporter {
             fs.mkdirSync(screenshotsDir, { recursive: true });
         }
         for (const result of reportData.testResults) {
-            if (result.screenshots && Array.isArray(result.screenshots)) {
-                for (const screenshot of result.screenshots) {
+            // Use screenshotsForCopying for actual file copying (full paths)
+            if (result.screenshotsForCopying && Array.isArray(result.screenshotsForCopying)) {
+                for (const screenshot of result.screenshotsForCopying) {
                     if (fs.existsSync(screenshot)) {
                         const filename = path.basename(screenshot);
                         const targetPath = path.join(screenshotsDir, filename);
