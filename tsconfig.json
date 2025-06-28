@@ -1,0 +1,101 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "checkJs": false,
+    "isolatedModules": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "./framework/*"
+      ],
+      "@core/*": [
+        "./framework/core/*"
+      ],
+      "@tools/*": [
+        "./framework/tools/*"
+      ],
+      "@config/*": [
+        "./framework/config/*"
+      ],
+      "@types/*": [
+        "./framework/types/*"
+      ],
+      "@runner/*": [
+        "./framework/runner/*"
+      ],
+      "@test-recorder/*": [
+        "./framework/test-recorder/*"
+      ],
+      "@templates/*": [
+        "./framework/templates/*"
+      ],
+      "@reporters/*": [
+        "./framework/reporters/*"
+      ],
+      "@results/*": [
+        "./framework/results/*"
+      ],
+      "@cli/*": [
+        "./framework/cli/*"
+      ]
+    },
+    "types": [
+      "node",
+      "jest",
+      "@types/jest"
+    ],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "framework/**/*",
+    "bin/**/*",
+    "examples/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "test-results",
+    "test-recorder",
+    "**/test-results/**",
+    "**/node_modules/**",
+    "**/*.min.js",
+    "**/templates/scripts.js",
+    "tests/package-tests/tmp/**",
+    "examples/endorphin.config.js",
+    "examples/tests/sample-test.js"
+  ],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
+}

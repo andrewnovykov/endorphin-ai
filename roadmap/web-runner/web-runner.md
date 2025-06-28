@@ -2,37 +2,46 @@
 
 ## Overview
 
-This guide provides a complete implementation plan for adding a professional web UI to the Endorphin AI test runner. The web UI will allow users to view, search, and run tests through a browser interface while maintaining full CLI compatibility.
+This guide provides a complete implementation plan for adding a professional web
+UI to the Endorphin AI test runner. The web UI will allow users to view, search,
+and run tests through a browser interface while maintaining full CLI
+compatibility.
 
 ## Architecture Overview
 
 The web UI consists of three main components:
 
-1. **Express Server** (`framework/web/server.js`) - Serves the React app and provides REST API endpoints
-2. **WebSocket Reporter** (`framework/web/websocket-reporter.js`) - Extends ConsoleReporter for real-time updates
+1. **Express Server** (`framework/web/server.js`) - Serves the React app and
+   provides REST API endpoints
+2. **WebSocket Reporter** (`framework/web/websocket-reporter.js`) - Extends
+   ConsoleReporter for real-time updates
 3. **React Frontend** (`framework/web/src/`) - Professional UI built with Vite
 
 ## Implementation Plan
 
 ### Phase 1: Core Infrastructure
+
 - [x] Create web server directory structure
 - [x] Implement Express server with REST API
 - [x] Create WebSocket reporter extending ConsoleReporter
 - [x] Add CLI command for launching web UI
 
 ### Phase 2: Frontend Development
+
 - [x] Set up React + Vite project
 - [x] Create main dashboard with test listing
 - [x] Implement test search and filtering
 - [x] Add test execution interface with real-time updates
 
 ### Phase 3: Integration & Testing
+
 - [x] Integrate web reporter with existing framework
 - [x] Test CLI compatibility (no breaking changes)
 - [x] Add comprehensive error handling
 - [x] Create user documentation
 
 ### Phase 4: Polish & Documentation
+
 - [x] Add professional styling and animations
 - [x] Implement responsive design
 - [x] Create demo video and screenshots
@@ -65,6 +74,7 @@ framework/web/
 ### Step 1: Create Web Server Infrastructure
 
 #### 1.1 Create directory structure
+
 ```bash
 mkdir -p framework/web/src/components
 mkdir -p framework/web/src/styles
@@ -72,6 +82,7 @@ mkdir -p framework/web/public
 ```
 
 #### 1.2 Create Express server (`framework/web/server.js`)
+
 ```javascript
 import express from 'express';
 import { createServer } from 'http';
@@ -87,9 +98,9 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
-  }
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+  },
 });
 
 // Serve static files from public directory
@@ -110,7 +121,7 @@ app.post('/api/tests/:testId/run', async (req, res) => {
   try {
     const { testId } = req.params;
     const reporter = new WebSocketReporter(io);
-    
+
     // Run test with WebSocket reporter
     const result = await runTest(testId, { reporter });
     res.json(result);
@@ -122,7 +133,7 @@ app.post('/api/tests/:testId/run', async (req, res) => {
 // WebSocket connection handling
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
-  
+
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
   });
@@ -135,6 +146,7 @@ server.listen(PORT, () => {
 ```
 
 #### 1.3 Create WebSocket reporter (`framework/web/websocket-reporter.js`)
+
 ```javascript
 import { ConsoleReporter } from '../core/console-reporter.js';
 
@@ -174,6 +186,7 @@ export class WebSocketReporter extends ConsoleReporter {
 ### Step 2: Frontend Development
 
 #### 2.1 Create Vite configuration (`framework/web/vite.config.js`)
+
 ```javascript
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -187,13 +200,14 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:3000'
-    }
-  }
+      '/api': 'http://localhost:3000',
+    },
+  },
 });
 ```
 
 #### 2.2 Create package.json (`framework/web/package.json`)
+
 ```json
 {
   "name": "endorphin-web-ui",
@@ -219,6 +233,7 @@ export default defineConfig({
 ```
 
 #### 2.3 Create main React app (`framework/web/src/App.jsx`)
+
 ```jsx
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
@@ -249,17 +264,17 @@ function App() {
   };
 
   return (
-    <div className="app">
-      <header className="app-header">
+    <div className='app'>
+      <header className='app-header'>
         <h1>🧬 Endorphin AI Test Runner</h1>
         {currentView === 'runner' && (
-          <button onClick={handleBackToDashboard} className="back-button">
+          <button onClick={handleBackToDashboard} className='back-button'>
             ← Back to Dashboard
           </button>
         )}
       </header>
 
-      <main className="app-main">
+      <main className='app-main'>
         {currentView === 'dashboard' ? (
           <Dashboard onRunTest={handleRunTest} />
         ) : (
@@ -276,6 +291,7 @@ export default App;
 ### Step 3: Add CLI Command
 
 #### 3.1 Update CLI (`bin/endorphin.js`)
+
 Add the following command handler:
 
 ```javascript
@@ -283,24 +299,31 @@ Add the following command handler:
 if (command === 'serve' || command === 'ui') {
   const { spawn } = await import('child_process');
   const path = await import('path');
-  
+
   console.log('🚀 Starting Endorphin Web UI...');
-  
+
   // Start the web server
-  const serverPath = path.join(process.cwd(), 'node_modules', 'endorphin-ai', 'framework', 'web', 'server.js');
+  const serverPath = path.join(
+    process.cwd(),
+    'node_modules',
+    'endorphin-ai',
+    'framework',
+    'web',
+    'server.js'
+  );
   const server = spawn('node', [serverPath], { stdio: 'inherit' });
-  
+
   server.on('error', (err) => {
     console.error('Failed to start web server:', err);
     process.exit(1);
   });
-  
+
   // Handle graceful shutdown
   process.on('SIGINT', () => {
     server.kill();
     process.exit(0);
   });
-  
+
   return;
 }
 ```
@@ -308,35 +331,37 @@ if (command === 'serve' || command === 'ui') {
 ### Step 4: Update Core Framework (Minimal Changes)
 
 #### 4.1 Update test discovery (`framework/core/test-discovery.js`)
+
 Add optional reporter parameter:
 
 ```javascript
 export async function discoverTests(options = {}) {
   const { reporter } = options;
-  
+
   // ...existing code...
-  
+
   if (reporter) {
     reporter.onDiscoveryStart?.();
   }
-  
+
   // ...existing discovery logic...
-  
+
   if (reporter) {
     reporter.onDiscoveryComplete?.(tests);
   }
-  
+
   return tests;
 }
 ```
 
 #### 4.2 Update test runner (`framework/core/test-runner.js`)
+
 Ensure reporter is passed through:
 
 ```javascript
 export async function runTest(testId, options = {}) {
   const { reporter = new ConsoleReporter() } = options;
-  
+
   // ...existing code using reporter...
 }
 ```
@@ -344,6 +369,7 @@ export async function runTest(testId, options = {}) {
 ## Implementation Checklist
 
 ### Core Infrastructure ✅
+
 - [x] Create `framework/web/` directory structure
 - [x] Implement Express server with REST API endpoints
 - [x] Create WebSocket reporter extending ConsoleReporter
@@ -351,6 +377,7 @@ export async function runTest(testId, options = {}) {
 - [x] Configure Vite for React development
 
 ### Backend API ✅
+
 - [x] `/api/tests` - GET endpoint to list all tests
 - [x] `/api/tests/:id` - GET endpoint to get specific test details
 - [x] `/api/tests/:id/run` - POST endpoint to run specific test
@@ -361,6 +388,7 @@ export async function runTest(testId, options = {}) {
 - [x] CORS configuration for development
 
 ### Frontend Components ✅
+
 - [x] Main App component with routing
 - [x] Dashboard component for test overview
 - [x] TestList component with search/filter
@@ -369,6 +397,7 @@ export async function runTest(testId, options = {}) {
 - [x] Professional CSS styling
 
 ### Real-time Features ✅
+
 - [x] WebSocket connection management
 - [x] Live test step updates
 - [x] Screenshot display during execution
@@ -376,6 +405,7 @@ export async function runTest(testId, options = {}) {
 - [x] Error message display
 
 ### CLI Integration ✅
+
 - [x] Add `endorphin serve` command
 - [x] Add `endorphin ui` command alias
 - [x] Graceful server startup and shutdown
@@ -383,6 +413,7 @@ export async function runTest(testId, options = {}) {
 - [x] Development vs production modes
 
 ### Framework Integration ✅
+
 - [x] Update test-discovery.js for optional reporter
 - [x] Ensure test-runner.js accepts custom reporter
 - [x] Maintain backward compatibility with CLI
@@ -390,6 +421,7 @@ export async function runTest(testId, options = {}) {
 - [x] Proper error propagation
 
 ### Testing & Quality ✅
+
 - [x] Test web UI with various test files
 - [x] Verify CLI commands still work unchanged
 - [x] Test WebSocket connection reliability
@@ -397,6 +429,7 @@ export async function runTest(testId, options = {}) {
 - [x] Mobile responsive design testing
 
 ### Documentation ✅
+
 - [x] Update main README with web UI instructions
 - [x] Add web UI user guide
 - [x] Create developer documentation
@@ -404,6 +437,7 @@ export async function runTest(testId, options = {}) {
 - [x] Include demo video/screenshots
 
 ### Performance & Polish ✅
+
 - [x] Optimize bundle size
 - [x] Add loading states and animations
 - [x] Implement proper error boundaries
@@ -415,6 +449,7 @@ export async function runTest(testId, options = {}) {
 ### For Users
 
 1. **Start the web UI:**
+
    ```bash
    endorphin serve
    # or
@@ -435,6 +470,7 @@ export async function runTest(testId, options = {}) {
 ### For Developers
 
 1. **Development setup:**
+
    ```bash
    cd framework/web
    npm install
@@ -453,14 +489,16 @@ export async function runTest(testId, options = {}) {
 ✅ **Easy Integration** - Reuses existing framework code  
 ✅ **Backward Compatible** - Works with all existing test files and configs  
 ✅ **Real-time Updates** - Live test progress with screenshots  
-✅ **Search & Filter** - Easy test discovery and management  
+✅ **Search & Filter** - Easy test discovery and management
 
 ## Technical Notes
 
-- **WebSocket Reporter**: Extends existing ConsoleReporter, so CLI output unchanged
+- **WebSocket Reporter**: Extends existing ConsoleReporter, so CLI output
+  unchanged
 - **API Design**: RESTful endpoints that wrap existing framework functions
 - **Frontend State**: React components manage UI state separately from framework
-- **Build Process**: Vite builds frontend to `public/` directory served by Express
+- **Build Process**: Vite builds frontend to `public/` directory served by
+  Express
 - **Port Configuration**: Web UI runs on port 3000, Vite dev server on 5173
 
 ## Troubleshooting
@@ -483,17 +521,22 @@ export async function runTest(testId, options = {}) {
 
 ## Overview
 
-This guide outlines the implementation of a professional web UI for the Endorphin AI test runner. The web UI will allow users to view, search, and run tests from a browser with real-time progress updates, step-by-step execution display, and full CLI compatibility.
+This guide outlines the implementation of a professional web UI for the
+Endorphin AI test runner. The web UI will allow users to view, search, and run
+tests from a browser with real-time progress updates, step-by-step execution
+display, and full CLI compatibility.
 
 ## Architecture
 
 ### Full-Stack Approach
+
 - **Backend**: Node.js/Express server with WebSocket support
 - **Frontend**: React with Vite for fast development and modern UI
 - **Real-time Communication**: WebSockets for live test execution updates
 - **Data Storage**: File-based (existing test files and results)
 
 ### Directory Structure
+
 ```
 framework/
   web/
@@ -523,6 +566,7 @@ framework/
 ## Implementation Plan
 
 ### Phase 1: Backend Infrastructure
+
 1. **Express Server Setup**
    - Create `/framework/web/server.js` with Express app
    - Serve static files from `/framework/web/public`
@@ -543,6 +587,7 @@ framework/
    - Handle client connection/disconnection
 
 ### Phase 2: Frontend Development
+
 1. **React App Setup**
    - Initialize Vite project in `/framework/web/src`
    - Set up modern React with hooks and context
@@ -562,6 +607,7 @@ framework/
    - Screenshot streaming during execution
 
 ### Phase 3: Integration & Polish
+
 1. **CLI Integration**
    - Add `endorphin serve` or `endorphin ui` command
    - Auto-detect available port
@@ -625,10 +671,10 @@ export class WebUIServer {
         const testId = req.params.id;
         const reporter = new WebSocketReporter(this.wss);
         const runner = new TestRunner({ reporter });
-        
+
         // Run test asynchronously
         runner.runTest(testId).catch(console.error);
-        
+
         res.json({ status: 'started', testId });
       } catch (error) {
         res.status(500).json({ error: error.message });
@@ -644,7 +690,7 @@ export class WebUIServer {
   setupWebSocket() {
     this.wss.on('connection', (ws) => {
       console.log('WebSocket client connected');
-      
+
       ws.on('close', () => {
         console.log('WebSocket client disconnected');
       });
@@ -654,7 +700,9 @@ export class WebUIServer {
   async start() {
     return new Promise((resolve) => {
       this.server.listen(this.port, () => {
-        console.log(`Endorphin Web UI running at http://localhost:${this.port}`);
+        console.log(
+          `Endorphin Web UI running at http://localhost:${this.port}`
+        );
         resolve();
       });
     });
@@ -684,7 +732,7 @@ export class WebSocketReporter extends BaseReporter {
 
   broadcast(message) {
     const data = JSON.stringify(message);
-    this.wss.clients.forEach(client => {
+    this.wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(data);
       }
@@ -695,7 +743,7 @@ export class WebSocketReporter extends BaseReporter {
     this.broadcast({
       type: 'test-start',
       test: test,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -703,7 +751,7 @@ export class WebSocketReporter extends BaseReporter {
     this.broadcast({
       type: 'test-step',
       step: step,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -711,7 +759,7 @@ export class WebSocketReporter extends BaseReporter {
     this.broadcast({
       type: 'test-complete',
       result: result,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -719,7 +767,7 @@ export class WebSocketReporter extends BaseReporter {
     this.broadcast({
       type: 'screenshot',
       path: screenshotPath,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -742,17 +790,17 @@ function App() {
   return (
     <WebSocketProvider>
       <Router>
-        <div className="min-h-screen bg-gray-100">
-          <nav className="bg-purple-600 text-white p-4">
-            <h1 className="text-2xl font-bold">Endorphin AI Test Runner</h1>
+        <div className='min-h-screen bg-gray-100'>
+          <nav className='bg-purple-600 text-white p-4'>
+            <h1 className='text-2xl font-bold'>Endorphin AI Test Runner</h1>
           </nav>
-          
-          <main className="container mx-auto p-6">
+
+          <main className='container mx-auto p-6'>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/tests" element={<TestList />} />
-              <Route path="/tests/:id/run" element={<TestRunner />} />
-              <Route path="/results" element={<TestResults />} />
+              <Route path='/' element={<Dashboard />} />
+              <Route path='/tests' element={<TestList />} />
+              <Route path='/tests/:id/run' element={<TestRunner />} />
+              <Route path='/results' element={<TestResults />} />
             </Routes>
           </main>
         </div>
@@ -781,14 +829,14 @@ const TestRunner = () => {
   useEffect(() => {
     if (lastMessage) {
       const data = JSON.parse(lastMessage.data);
-      
+
       switch (data.type) {
         case 'test-start':
           setTestStatus('running');
           setSteps([]);
           break;
         case 'test-step':
-          setSteps(prev => [...prev, data.step]);
+          setSteps((prev) => [...prev, data.step]);
           break;
         case 'test-complete':
           setTestStatus('completed');
@@ -803,7 +851,7 @@ const TestRunner = () => {
   const runTest = async () => {
     try {
       const response = await fetch(`/api/tests/${id}/run`, {
-        method: 'POST'
+        method: 'POST',
       });
       const result = await response.json();
       console.log('Test started:', result);
@@ -813,23 +861,23 @@ const TestRunner = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">Test Execution</h2>
-        
+    <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+      <div className='bg-white rounded-lg shadow p-6'>
+        <h2 className='text-xl font-bold mb-4'>Test Execution</h2>
+
         <button
           onClick={runTest}
           disabled={testStatus === 'running'}
-          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-50"
+          className='bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-50'
         >
           {testStatus === 'running' ? 'Running...' : 'Run Test'}
         </button>
 
-        <div className="mt-4">
-          <h3 className="font-semibold mb-2">Steps:</h3>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
+        <div className='mt-4'>
+          <h3 className='font-semibold mb-2'>Steps:</h3>
+          <div className='space-y-2 max-h-64 overflow-y-auto'>
             {steps.map((step, index) => (
-              <div key={index} className="p-2 bg-gray-50 rounded text-sm">
+              <div key={index} className='p-2 bg-gray-50 rounded text-sm'>
                 {step.description}
               </div>
             ))}
@@ -837,17 +885,17 @@ const TestRunner = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">Live Screenshot</h2>
+      <div className='bg-white rounded-lg shadow p-6'>
+        <h2 className='text-xl font-bold mb-4'>Live Screenshot</h2>
         {currentScreenshot ? (
           <img
             src={`/screenshots/${currentScreenshot}`}
-            alt="Current test step"
-            className="w-full h-auto border rounded"
+            alt='Current test step'
+            className='w-full h-auto border rounded'
           />
         ) : (
-          <div className="w-full h-64 bg-gray-100 border rounded flex items-center justify-center">
-            <span className="text-gray-500">No screenshot available</span>
+          <div className='w-full h-64 bg-gray-100 border rounded flex items-center justify-center'>
+            <span className='text-gray-500'>No screenshot available</span>
           </div>
         )}
       </div>
@@ -867,13 +915,13 @@ Update `/bin/endorphin.js` to add web UI commands:
 else if (args[1] === 'serve' || args[1] === 'ui') {
   const { WebUIServer } = await import('../framework/web/server.js');
   const server = new WebUIServer({ port: args[2] || 3000 });
-  
+
   await server.start();
-  
+
   // Auto-open browser
   const open = await import('open');
   await open.default(`http://localhost:${server.port}`);
-  
+
   // Handle graceful shutdown
   process.on('SIGINT', async () => {
     await server.stop();
@@ -920,19 +968,20 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'public',
-    emptyOutDir: true
+    emptyOutDir: true,
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:3000'
-    }
-  }
+      '/api': 'http://localhost:3000',
+    },
+  },
 });
 ```
 
 ## Implementation Checklist
 
 ### Backend Development
+
 - [ ] Create Express server with basic routing
 - [ ] Implement REST API endpoints for tests and results
 - [ ] Set up WebSocket server for real-time communication
@@ -943,6 +992,7 @@ export default defineConfig({
 - [ ] Test API endpoints with Postman/curl
 
 ### Frontend Development
+
 - [ ] Set up Vite + React project structure
 - [ ] Configure Tailwind CSS for styling
 - [ ] Create main App component with routing
@@ -955,6 +1005,7 @@ export default defineConfig({
 - [ ] Create loading states and error handling
 
 ### Integration & Testing
+
 - [ ] Add CLI command for starting web UI (`endorphin serve`)
 - [ ] Implement auto-browser opening
 - [ ] Test WebSocket communication end-to-end
@@ -966,6 +1017,7 @@ export default defineConfig({
 - [ ] Test on different browsers and devices
 
 ### Documentation & Polish
+
 - [ ] Create user guide for web UI
 - [ ] Add screenshots to documentation
 - [ ] Record demo video
@@ -976,6 +1028,7 @@ export default defineConfig({
 - [ ] Optimize performance and loading times
 
 ### Deployment & Distribution
+
 - [ ] Ensure web UI builds are included in npm package
 - [ ] Test installation and setup process
 - [ ] Create Docker container option
@@ -988,24 +1041,28 @@ export default defineConfig({
 ## Key Considerations
 
 ### Backward Compatibility
+
 - All existing CLI commands must continue working unchanged
 - Test file format remains exactly the same
 - Configuration system unchanged
 - No breaking changes to core framework
 
 ### Performance
+
 - Lazy load components to reduce initial bundle size
 - Implement pagination for large test suites
 - Optimize WebSocket message frequency
 - Cache test results for faster loading
 
 ### Security
+
 - Sanitize all user inputs
 - Implement basic authentication if needed
 - Secure WebSocket connections
 - Validate file paths and prevent directory traversal
 
 ### User Experience
+
 - Intuitive navigation and clear visual hierarchy
 - Responsive design for all screen sizes
 - Fast loading and smooth real-time updates
@@ -1020,4 +1077,6 @@ export default defineConfig({
 5. **Documentation**: Complete user and developer guides
 6. **Testing**: Comprehensive test coverage for new features
 
-This implementation will provide a modern, professional web interface for Endorphin AI while maintaining full backward compatibility with existing CLI workflows.
+This implementation will provide a modern, professional web interface for
+Endorphin AI while maintaining full backward compatibility with existing CLI
+workflows.

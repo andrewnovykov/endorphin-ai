@@ -6,7 +6,8 @@
   ## E2E Testing Reinvented with AI
 </div>
 
-Write tests in plain English. Let AI generate, validate, and fix them automatically.
+Write tests in plain English. Let AI generate, validate, and fix them
+automatically.
 
 <div align="center">
   <img src="./doc/images/playwright-logo.png" alt="Playwright" height="40" />
@@ -14,7 +15,10 @@ Write tests in plain English. Let AI generate, validate, and fix them automatica
   <img src="./doc/images/langchain-logo.png" alt="LangChain" height="40" />
 </div>
 
-A powerful, modular browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright. Provides intelligent browser automation with automatic element detection, visual validation, and comprehensive test management.
+A powerful, modular browser automation framework using AI-powered testing with
+LangChain, OpenAI GPT-4o, and Playwright. Provides intelligent browser
+automation with automatic element detection, visual validation, and
+comprehensive test management.
 
 ## 🚀 Quick Start
 
@@ -27,25 +31,30 @@ A powerful, modular browser automation framework using AI-powered testing with L
 </div>
 
 ### Installation
+
 ```bash
 # Install Endorphin AI
 npm install endorphin-ai
 ```
 
 ### Setup (New - Automated!)
+
 1. Create and initialize your project:
+
    ```bash
    mkdir my-test-project && cd my-test-project
    npx endorphin init
    ```
 
 2. Set up your OpenAI API key:
+
    ```bash
    # Edit the .env file and add your API key
    # OPENAI_API_KEY=your_api_key_here
    ```
 
 3. Run your first test:
+
    ```bash
    npx endorphin run test HEALTH-001
    ```
@@ -56,56 +65,64 @@ npm install endorphin-ai
    npx endorphin open report
    ```
 
-That's it! Your project is ready with a sample test, configuration, all necessary directories, and beautiful HTML reporting.
+That's it! Your project is ready with a sample test, configuration, all
+necessary directories, and beautiful HTML reporting.
 
 ### Manual Setup (Alternative)
+
 If you prefer manual setup:
 
 1. Create your project directory:
+
    ```bash
    mkdir my-test-project && cd my-test-project
    ```
 
 2. Initialize with ES modules:
+
    ```bash
    npm init -y
    npm pkg set type="module"
    ```
 
 3. Install Endorphin AI:
+
    ```bash
    npm install endorphin-ai
    ```
 
 4. Set up your `.env` file with your OpenAI API key:
+
    ```env
    OPENAI_API_KEY=your_api_key_here
    ```
 
 5. Create tests directory:
+
    ```bash
    mkdir tests
    ```
 
 6. Create your first test file `tests/login-test.js`:
+
    ```javascript
    export const QE001 = {
-     id: "QE-001",
-     name: "Basic Login Test", 
-     description: "Test the login functionality with valid credentials",
-     priority: "High",
-     tags: ["authentication", "login", "smoke"],
-     site: "https://qafromla.herokuapp.com/",
+     id: 'QE-001',
+     name: 'Basic Login Test',
+     description: 'Test the login functionality with valid credentials',
+     priority: 'High',
+     tags: ['authentication', 'login', 'smoke'],
+     site: 'https://qafromla.herokuapp.com/',
      testData: {
-       originalEmail: "papapin888@gmail.com",
-       originalPassword: "lalalend"
+       originalEmail: 'papapin888@gmail.com',
+       originalPassword: 'lalalend',
      },
      task: `Navigate to https://qafromla.herokuapp.com/. 
      Click on "Log In" button. Wait 2 seconds for page load. 
      Fill email field with "papapin888@gmail.com". 
      Fill password field with "lalalend". 
      Click "Sign In" button. Wait 3 seconds for page load. 
-     Verify login was successful by checking page content.`
+     Verify login was successful by checking page content.`,
    };
    ```
 
@@ -125,6 +142,7 @@ If you prefer manual setup:
 ## 🔄 Updating Endorphin AI
 
 ### For Existing Projects
+
 ```bash
 # Update to the latest version
 npm update endorphin-ai
@@ -140,13 +158,16 @@ npx endorphin --help
 ```
 
 ### Migration Notes
+
 - **v0.3.0+**: Introduces `endorphin init` command for new projects
 - **v0.2.x**: Existing projects continue to work without changes
-- **Backward Compatibility**: All existing tests and configurations remain compatible
+- **Backward Compatibility**: All existing tests and configurations remain
+  compatible
 
 ## 🚀 Project Initialization
 
 ### New Projects (Recommended)
+
 ```bash
 # Quick setup for new projects
 mkdir my-test-project && cd my-test-project
@@ -154,16 +175,19 @@ npx endorphin init
 ```
 
 The `init` command creates:
-- ✅ `tests/` directory with sample test  
+
+- ✅ `tests/` directory with sample test
 - ✅ `test-results/` for test outputs
 - ✅ `test-recorder/` for recorded tests
 - ✅ `.env` file with API key placeholder
 - ✅ `endorphin.config.js` with optimized settings
-- ✅ `.gitignore` with Endorphin-specific patterns  
+- ✅ `.gitignore` with Endorphin-specific patterns
 - ✅ `README-ENDORPHIN.md` quick start guide
 
 ### Existing Projects
+
 For existing Endorphin projects, the `init` command is optional and safe:
+
 - ✅ Never overwrites existing configuration files
 - ✅ Only creates missing directories
 - ✅ Adds helpful template files if needed
@@ -176,6 +200,7 @@ npx endorphin init
 ### Usage Commands
 
 #### ℹ️ Version & Help
+
 ```bash
 # Check current version
 npx endorphin --version
@@ -188,6 +213,7 @@ npm update endorphin-ai
 ```
 
 #### 🎯 Initialize New Project
+
 ```bash
 # Create a new Endorphin AI project with all necessary files
 npx endorphin init
@@ -201,6 +227,7 @@ npx endorphin init
 ```
 
 #### 🧪 Run Specific Test
+
 ```bash
 # Using npm scripts (recommended)
 npm run test:single QE-001
@@ -213,6 +240,7 @@ endorphin run test QE-001
 ```
 
 #### 🏷️ Run Tests by Category
+
 ```bash
 # Using npm scripts
 npm run test:smoke
@@ -224,6 +252,7 @@ npx endorphin run test --priority High
 ```
 
 #### 🎯 Run All Tests
+
 ```bash
 # Using npm scripts
 npm test
@@ -233,6 +262,7 @@ npx endorphin run test all
 ```
 
 #### 🎬 Test Recorder Mode
+
 ```bash
 # Using npm scripts
 npm run test:record
@@ -243,7 +273,8 @@ npx endorphin run test-recorder
 
 ## 📊 HTML Reports & Analytics
 
-Endorphin AI generates beautiful, interactive HTML reports that provide comprehensive insights into your test execution results.
+Endorphin AI generates beautiful, interactive HTML reports that provide
+comprehensive insights into your test execution results.
 
 ### 🚀 Quick Report Generation
 
@@ -264,23 +295,27 @@ npx endorphin open report report-2025-06-22.html
 ### ✨ Report Features
 
 #### 📈 **Interactive Dashboard**
+
 - **Real-time Statistics**: Success rates, test counts, execution trends
 - **Visual Progress Bars**: Easy-to-understand success rate indicators
 - **Summary Cards**: Quick overview of test health
 
 #### 🔍 **Advanced Search & Filtering**
+
 - **Real-time Search**: Find tests by name or ID instantly
 - **Status Filtering**: Filter by passed/failed tests with one click
 - **Smart Results**: Shows "5 of 25 tests matching 'login' with status 'failed'"
 - **Keyboard Shortcuts**: `Ctrl+F` to search, `Ctrl+3` for failed tests only
 
 #### 🎯 **Detailed Test Analysis**
+
 - **Step-by-Step Timeline**: See exactly what happened during test execution
 - **Screenshot Galleries**: Visual debugging with click-to-zoom screenshots
 - **Interactive Modals**: Deep dive into test execution details
 - **Tool Call Tracking**: See which browser actions were performed
 
 #### ⌨️ **Productivity Features**
+
 - **Export to JSON**: Data-driven analysis and custom reporting
 - **Print Support**: Documentation-ready printed reports
 - **Responsive Design**: Works on desktop, tablet, and mobile
@@ -298,20 +333,25 @@ npx endorphin cleanup results 5
 # Clean up old report files (older than 30 days)
 npx endorphin cleanup reports
 
-# Clean up report files older than 7 days  
+# Clean up report files older than 7 days
 npx endorphin cleanup reports 7
 ```
 
 ### 📖 Complete Guide
-For detailed usage instructions, advanced features, and best practices, see the **[HTML Reporter User Guide](./doc/user-guide/HTML-Reporter-Guide.md)**.
+
+For detailed usage instructions, advanced features, and best practices, see the
+**[HTML Reporter User Guide](./doc/user-guide/HTML-Reporter-Guide.md)**.
 
 ## 🏗️ Framework Architecture
 
-Endorphin AI is built with a modular, extensible architecture designed for reliability and maintainability. 
+Endorphin AI is built with a modular, extensible architecture designed for
+reliability and maintainability.
 
-📖 **[View detailed Framework Architecture documentation](./doc/Framework-Architecture.md)**
+📖
+**[View detailed Framework Architecture documentation](./doc/Framework-Architecture.md)**
 
 ### Key Components
+
 - **Core Framework**: Main test execution engine and session management
 - **Browser Tools**: Intelligent automation tools powered by AI
 - **Configuration System**: Flexible, hierarchical configuration management
@@ -321,7 +361,9 @@ Endorphin AI is built with a modular, extensible architecture designed for relia
 ## ⚙️ Configuration
 
 ### Default Configuration
-Endorphin AI works out of the box with sensible defaults, but you can customize it by creating an `endorphin.config.js` file in your project root:
+
+Endorphin AI works out of the box with sensible defaults, but you can customize
+it by creating an `endorphin.config.js` file in your project root:
 
 ```javascript
 // endorphin.config.js
@@ -330,20 +372,21 @@ export default {
   defaultTimeout: 30000,
   headless: false,
   viewport: { width: 1280, height: 720 },
-  
+
   // Default test data
   testData: {
-    baseUrl: "https://staging.example.com",
-    adminEmail: "admin@example.com"
+    baseUrl: 'https://staging.example.com',
+    adminEmail: 'admin@example.com',
   },
-  
+
   // Result settings
   screenshots: true,
-  recordVideo: false
+  recordVideo: false,
 };
 ```
 
 ### CLI Options
+
 You can override configuration with CLI flags:
 
 ```bash
@@ -365,6 +408,7 @@ npx endorphin run test all --env staging
 You can organize your tests using tags and priorities:
 
 ### Common Tags
+
 - `authentication` - Login, logout, registration tests
 - `smoke` - Critical path tests that must pass
 - `navigation` - Menu, links, page routing tests
@@ -374,24 +418,26 @@ You can organize your tests using tags and priorities:
 - `responsive` - Mobile/tablet/desktop tests
 
 ### Priority Levels
+
 - `High` - Critical functionality, run on every build
 - `Medium` - Important features, run daily
 - `Low` - Nice-to-have features, run weekly
 
 ### Example Test Organization
+
 ```javascript
 // tests/auth-tests.js
 export const LOGIN_TEST = {
-  id: "AUTH-001",
-  tags: ["authentication", "smoke"],
-  priority: "High",
+  id: 'AUTH-001',
+  tags: ['authentication', 'smoke'],
+  priority: 'High',
   // ...
 };
 
 export const LOGOUT_TEST = {
-  id: "AUTH-002", 
-  tags: ["authentication"],
-  priority: "Medium",
+  id: 'AUTH-002',
+  tags: ['authentication'],
+  priority: 'Medium',
   // ...
 };
 ```
@@ -417,23 +463,24 @@ Each test file should export test objects with this structure:
 
 ```javascript
 export const QE001 = {
-  id: "QE-001",                    // Unique test identifier
-  name: "Basic Login Test",        // Human readable name
-  description: "Test login functionality with valid credentials",
-  priority: "High",               // High, Medium, Low
-  tags: ["authentication", "login", "smoke"],  // Categories
-  site: "https://example.com/",   // Target website
-  testData: {                     // Test data (optional)
-    email: "test@example.com",
-    password: "password123"
+  id: 'QE-001', // Unique test identifier
+  name: 'Basic Login Test', // Human readable name
+  description: 'Test login functionality with valid credentials',
+  priority: 'High', // High, Medium, Low
+  tags: ['authentication', 'login', 'smoke'], // Categories
+  site: 'https://example.com/', // Target website
+  testData: {
+    // Test data (optional)
+    email: 'test@example.com',
+    password: 'password123',
   },
-  task: `Your test instructions in plain English...`
+  task: `Your test instructions in plain English...`,
 };
 
 // Multiple tests per file
 export const QE002 = {
-  id: "QE-002",
-  name: "Registration Test",
+  id: 'QE-002',
+  name: 'Registration Test',
   // ... more test config
 };
 ```
@@ -441,6 +488,7 @@ export const QE002 = {
 ## 📊 Test Results
 
 Each test execution creates:
+
 - **📁 Session Directory**: `test-result/[test-id]_[timestamp]/`
 - **📝 Session Data**: `test-session.json` with complete execution details
 - **📊 Summary**: `summary.json` with test outcomes
@@ -448,6 +496,7 @@ Each test execution creates:
 - **🔄 Step Logs**: Detailed execution tracking
 
 ### Example Test Output
+
 ```
 🎯 Running: QE-001 - Basic Login Test
 📸 Screenshot taken: step-1-navigation.png
@@ -458,24 +507,29 @@ Each test execution creates:
 ## 🎮 Interactive Features
 
 ### Custom Test Creation
+
 ```bash
 # Using npm scripts
 npm run test:record
 
 # Using npx/global
-npx endorphin run test-recorder  
+npx endorphin run test-recorder
 ```
+
 Create tests on-the-fly with guided prompts:
+
 - Custom navigation tasks
-- Form filling scenarios  
+- Form filling scenarios
 - Login test automation
 - Content verification
 
 ## 🔍 Browser Automation Tools
 
-Intelligent AI-powered tools for navigation, interaction, verification, and utilities.
+Intelligent AI-powered tools for navigation, interaction, verification, and
+utilities.
 
-📖 **[View detailed tool documentation](./doc/Framework-Architecture.md#browser-automation-tools)**
+📖
+**[View detailed tool documentation](./doc/Framework-Architecture.md#browser-automation-tools)**
 
 ## 🎉 Features
 
@@ -486,15 +540,17 @@ Intelligent AI-powered tools for navigation, interaction, verification, and util
 ✅ **Interactive Mode**: Real-time test creation and execution  
 ✅ **Flexible Configuration**: Easily customizable browser and AI settings  
 ✅ **Comprehensive Reporting**: Detailed results with visual documentation  
-✅ **Error Handling**: Robust retry mechanisms and failure recovery  
+✅ **Error Handling**: Robust retry mechanisms and failure recovery
 
-The framework is production-ready and provides a solid foundation for scalable browser automation testing!
+The framework is production-ready and provides a solid foundation for scalable
+browser automation testing!
 
 ## 🎮 Complete CLI Reference
 
 ### Core Commands
 
 #### Test Execution
+
 ```bash
 # Run a specific test
 npx endorphin run test TEST-001
@@ -512,6 +568,7 @@ npx endorphin run test --priority Medium
 ```
 
 #### Test Creation & Recording
+
 ```bash
 # Start interactive test recorder
 npx endorphin run test-recorder
@@ -521,6 +578,7 @@ npx endorphin list
 ```
 
 #### Project Setup
+
 ```bash
 # Initialize new project (recommended for new projects)
 npx endorphin init
@@ -536,6 +594,7 @@ npx endorphin --version
 ### HTML Reports & Analytics
 
 #### Report Generation
+
 ```bash
 # Generate full interactive HTML report
 npx endorphin generate report
@@ -545,6 +604,7 @@ npx endorphin generate report --summary
 ```
 
 #### Report Management
+
 ```bash
 # Open latest report in browser
 npx endorphin open report
@@ -555,6 +615,7 @@ npx endorphin open report summary-report.html
 ```
 
 #### Cleanup Commands
+
 ```bash
 # Clean old test results (keep 10 most recent per test)
 npx endorphin cleanup results
@@ -572,6 +633,7 @@ npx endorphin cleanup reports 7
 ### Advanced Options
 
 #### Browser Configuration
+
 ```bash
 # Use different browsers
 npx endorphin run test all --browser firefox
@@ -587,6 +649,7 @@ npx endorphin run test all --viewport 1366x768
 ```
 
 #### AI & Performance
+
 ```bash
 # Use different AI models
 npx endorphin run test all --model gpt-4
@@ -610,7 +673,7 @@ Add these to your `package.json`:
   "scripts": {
     "test": "endorphin run test all",
     "test:smoke": "endorphin run test --tag smoke",
-    "test:auth": "endorphin run test --tag authentication", 
+    "test:auth": "endorphin run test --tag authentication",
     "test:single": "endorphin run test",
     "test:record": "endorphin run test-recorder",
     "test:report": "endorphin generate report",
@@ -622,6 +685,7 @@ Add these to your `package.json`:
 ```
 
 Then use npm scripts:
+
 ```bash
 npm test                # Run all tests
 npm run test:smoke      # Run smoke tests
@@ -632,6 +696,7 @@ npm run test:open       # Open latest report
 ## 🔄 Staying Updated
 
 ### Check Your Version
+
 ```bash
 # Check current installed version
 npx endorphin --version
@@ -644,6 +709,7 @@ npm outdated endorphin-ai
 ```
 
 ### Update to Latest
+
 ```bash
 # Update to the latest version
 npm update endorphin-ai
@@ -656,18 +722,24 @@ npx endorphin --version
 ```
 
 ### Version History & Features
+
 - **v0.3.0**: Added `endorphin init` command for instant project setup
 - **v0.2.x**: Core framework with AI-powered testing
 - **v0.1.x**: Initial release with basic functionality
 
 ### Breaking Changes
+
 Endorphin AI follows semantic versioning:
+
 - **Major versions** (1.0.0): May include breaking changes
-- **Minor versions** (0.3.0): New features, backward compatible  
+- **Minor versions** (0.3.0): New features, backward compatible
 - **Patch versions** (0.2.1): Bug fixes, backward compatible
 
 ## License
 
-Endorphin is licensed under the GNU Affero General Public License, Version 3 (AGPLv3). The full license text is available in the `LICENSE` file.
+Endorphin is licensed under the GNU Affero General Public License, Version 3
+(AGPLv3). The full license text is available in the `LICENSE` file.
 
-For organizations that cannot use AGPLv3-licensed software, commercial licenses are available. Please contact us at [iam@andrewnovykov.com] for more information.
+For organizations that cannot use AGPLv3-licensed software, commercial licenses
+are available. Please contact us at [iam@andrewnovykov.com] for more
+information.

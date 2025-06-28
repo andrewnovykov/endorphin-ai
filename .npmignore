@@ -7,10 +7,12 @@ node_modules/
 .DS_Store
 .vscode/
 
-# Test results and recordings
+# Test results and recordings  
 test-result/
 test-recorder/
-examples/
+
+# Development tarballs (exclude from published package)
+dist/*.tgz
 
 # Legacy and temporary files
 legacy/
@@ -18,9 +20,8 @@ ai-instructions/
 *.tmp
 *.temp
 
-# Development and testing
-dev-tests/
-vitest.config.js
+# Development and testing (already excluded by files array)
+tests/
 test-*.js
 *.test.js
 
@@ -28,4 +29,6 @@ test-*.js
 .git/
 .gitignore
 
+# Development documentation (keep only user-facing docs)
+doc/framework-development/
 PUBLISHING-GUIDE.md

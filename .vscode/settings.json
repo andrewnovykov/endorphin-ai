@@ -1,0 +1,116 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.rulers": [
+    100
+  ],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  // File associations
+  "files.associations": {
+    "*.js": "javascript",
+    "*.mjs": "javascript",
+    "endorphin.config.js": "javascript"
+  },
+  // Auto-save
+  "files.autoSave": "onFocusChange",
+  // Search exclusions
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/test-results": true,
+    "**/test-recorder": true,
+    "development-tests/package-tests/tmp": true,
+    "development-tests/package-tests/results": true,
+    "**/*.min.js": true
+  },
+  // File watcher exclusions
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/test-results/**": true,
+    "**/test-recorder/**": true,
+    "development-tests/package-tests/tmp/**": true,
+    "development-tests/package-tests/results/**": true
+  },
+  // JavaScript/Node.js specific
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "javascript.suggest.autoImports": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  // ESLint
+  "eslint.workingDirectories": [
+    "."
+  ],
+  "eslint.validate": [
+    "javascript"
+  ],
+  "eslint.format.enable": false,
+  // Prettier
+  "prettier.requireConfig": true,
+  "prettier.useEditorConfig": false,
+  // Terminal
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.env.osx": {
+    "NODE_ENV": "development"
+  },
+  // Git
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  // Testing
+  "jest.jestCommandLine": "npm test",
+  "jest.autoRun": "off",
+  // Playwright
+  "playwright.showTrace": true,
+  "playwright.reuseBrowser": true,
+  // Markdown
+  "markdown.extension.toc.updateOnSave": true,
+  // Language specific settings
+  "[javascript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit",
+      "source.removeUnusedImports": "explicit"
+    }
+  },
+  "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit",
+      "source.removeUnusedImports": "explicit"
+    }
+  },
+  "[javascriptreact]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit",
+      "source.removeUnusedImports": "explicit"
+    }
+  },
+  "[typescriptreact]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit",
+      "source.removeUnusedImports": "explicit"
+    }
+  },
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
+  },
+  "[yaml]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced"
+  }
+}

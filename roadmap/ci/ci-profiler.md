@@ -2,11 +2,14 @@
 
 ## Overview
 
-This guide covers CI/CD resource requirements, profiling implementation, and job configuration examples for running Endorphin AI browser tests in continuous integration environments.
+This guide covers CI/CD resource requirements, profiling implementation, and job
+configuration examples for running Endorphin AI browser tests in continuous
+integration environments.
 
 ## Hardware Requirements
 
 ### Minimum CI Runner Specs
+
 ```yaml
 # GitHub Actions / GitLab CI
 resources:
@@ -17,6 +20,7 @@ resources:
 ```
 
 ### Recommended CI Runner Specs
+
 ```yaml
 # For optimal performance
 resources:
@@ -28,6 +32,7 @@ resources:
 ```
 
 ### Resource Usage Breakdown
+
 - **Playwright Browser**: 1-2GB RAM per browser instance
 - **Node.js Process**: 200-500MB RAM
 - **AI Processing**: 100-300MB RAM (API calls to OpenAI)
@@ -37,6 +42,7 @@ resources:
 ## CI Configuration Examples
 
 ### GitHub Actions (`/.github/workflows/endorphin-tests.yml`)
+
 ```yaml
 name: Endorphin AI Tests
 
@@ -49,33 +55,33 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     # Resource optimization
     strategy:
       matrix:
         node-version: [18, 20]
         shard: [1, 2, 3] # Parallel test execution
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-      
+
       - name: Setup test environment
         run: |
           mkdir -p test-results
           mkdir -p test-recorder
-      
+
       - name: Run Endorphin tests with profiling
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -87,13 +93,13 @@ jobs:
           # Start resource monitoring
           ./scripts/ci-monitor.sh &
           MONITOR_PID=$!
-          
+
           # Run tests with timeout
           timeout 30m npm run test:ci || exit 1
-          
+
           # Stop monitoring
           kill $MONITOR_PID
-      
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -104,7 +110,7 @@ jobs:
             test-recorder/
             profiling-data/
           retention-days: 30
-      
+
       - name: Upload resource metrics
         uses: actions/upload-artifact@v4
         with:
@@ -113,18 +119,20 @@ jobs:
 ```
 
 ### GitLab CI (`/.gitlab-ci.yml`)
+
 ```yaml
 stages:
   - test
 
 variables:
-  NODE_VERSION: "18"
-  ENDORPHIN_PROFILE: "true"
+  NODE_VERSION: '18'
+  ENDORPHIN_PROFILE: 'true'
 
 .test_template: &test_template
   image: node:${NODE_VERSION}-bullseye
   before_script:
-    - apt-get update && apt-get install -y libnss3 libatk1.0-0 libdrm2 libxkbcommon0 libgtk-3-0 libgbm1 libasound2
+    - apt-get update && apt-get install -y libnss3 libatk1.0-0 libdrm2
+      libxkbcommon0 libgtk-3-0 libgbm1 libasound2
     - npm ci
     - npx playwright install chromium
   script:
@@ -150,6 +158,7 @@ endorphin_tests:
 ```
 
 ### Docker Container for CI (`/docker/ci.Dockerfile`)
+
 ```dockerfile
 FROM node:18-bullseye-slim
 
@@ -196,6 +205,7 @@ CMD ["npm", "run", "test:ci"]
 ## Resource Profiling Implementation
 
 ### CI Profiler (`/framework/core/ci-profiler.js`)
+
 ```javascript
 /**
  * CI Resource Profiler for Endorphin AI
@@ -220,13 +230,13 @@ export class CIProfiler {
         avgResponseTime: 0
       }
     };
-    
+
     this.interval = null;
   }
 
   start() {
     console.log('🔍 Starting CI profiler...');
-    
+
     // Monitor system resources every 5 seconds
     this.interval = setInterval(() => {
       this.collectMetrics();
@@ -237,7 +247,7 @@ export class CIProfiler {
     if (this.interval) {
       clearInterval(this.interval);
     }
-    
+
     this.metrics.endTime = Date.now();
     this.generateReport();
   }
@@ -245,7 +255,7 @@ export class CIProfiler {
   collectMetrics() {
     const memUsage = process.memoryUsage();
     const cpuUsage = process.cpuUsage();
-    
+
     this.metrics.memory.push({
       timestamp: Date.now(),
       heapUsed: memUsage.heapUsed,
@@ -253,7 +263,7 @@ export class CIProfiler {
       external: memUsage.external,
       rss: memUsage.rss
     });
-    
+
     this.metrics.cpu.push({
       timestamp: Date.now(),
       user: cpuUsage.user,
@@ -294,7 +304,7 @@ export class CIProfiler {
   recordAICall(tokens, responseTime) {
     this.metrics.ai.apiCalls++;
     this.metrics.ai.totalTokens += tokens;
-    this.metrics.ai.avgResponseTime = 
+    this.metrics.ai.avgResponseTime =
       (this.metrics.ai.avgResponseTime + responseTime) / 2;
   }
 
@@ -302,7 +312,7 @@ export class CIProfiler {
     const duration = this.metrics.endTime - this.metrics.startTime;
     const maxMemory = Math.max(...this.metrics.memory.map(m => m.heapUsed));
     const avgMemory = this.metrics.memory.reduce((sum, m) => sum + m.heapUsed, 0) / this.metrics.memory.length;
-    
+
     const report = {
       summary: {
         totalDuration: duration,
@@ -323,10 +333,10 @@ export class CIProfiler {
     // Save report
     const fs = await import('fs');
     fs.writeFileSync('profiling-data/ci-report.json', JSON.stringify(report, null, 2));
-    
+
     // Log summary
     this.logSummary(report.summary);
-    
+
     return report;
   }
 
@@ -380,6 +390,7 @@ export class CIProfiler {
 ```
 
 ### Resource Monitor Script (`/scripts/ci-monitor.sh`)
+
 ```bash
 #!/bin/bash
 # Monitor system resources during CI execution
@@ -389,16 +400,16 @@ echo '{"metrics": [' > $LOG_FILE
 
 while true; do
   TIMESTAMP=$(date +%s)
-  
+
   # Get CPU usage
   CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1)
-  
+
   # Get memory usage
   MEM=$(free | grep Mem | awk '{printf "%.2f", $3/$2 * 100.0}')
-  
+
   # Get disk usage
   DISK=$(df / | awk 'NR==2 {print $5}' | cut -d'%' -f1)
-  
+
   # Get Node.js process info
   NODE_PID=$(pgrep -f "node.*endorphin" | head -1)
   if [ ! -z "$NODE_PID" ]; then
@@ -408,7 +419,7 @@ while true; do
     NODE_MEM="0"
     NODE_CPU="0"
   fi
-  
+
   # Write metrics
   echo "  {" >> $LOG_FILE
   echo "    \"timestamp\": $TIMESTAMP," >> $LOG_FILE
@@ -418,7 +429,7 @@ while true; do
   echo "    \"node_memory_mb\": $NODE_MEM," >> $LOG_FILE
   echo "    \"node_cpu\": $NODE_CPU" >> $LOG_FILE
   echo "  }," >> $LOG_FILE
-  
+
   sleep 10
 done
 ```
@@ -426,6 +437,7 @@ done
 ### Integration with Framework
 
 #### Update Console Reporter (`/framework/core/console-reporter.js`)
+
 ```javascript
 // Add profiling support to existing console reporter
 import { CIProfiler } from './ci-profiler.js';
@@ -433,7 +445,7 @@ import { CIProfiler } from './ci-profiler.js';
 export class ConsoleReporter {
   constructor(options = {}) {
     // ...existing code...
-    
+
     // Initialize profiler in CI
     if (process.env.CI && process.env.ENDORPHIN_PROFILE) {
       this.profiler = new CIProfiler();
@@ -443,7 +455,7 @@ export class ConsoleReporter {
 
   startSession() {
     // ...existing code...
-    
+
     if (this.profiler) {
       console.log('🔍 Profiling enabled for CI environment');
     }
@@ -451,7 +463,7 @@ export class ConsoleReporter {
 
   reportTestStart(testId, testName) {
     // ...existing code...
-    
+
     if (this.profiler) {
       this.profiler.recordTestStart(testId);
     }
@@ -459,10 +471,10 @@ export class ConsoleReporter {
 
   reportTestResult(testId, result) {
     // ...existing code...
-    
+
     if (this.profiler) {
       this.profiler.recordTestEnd(
-        testId, 
+        testId,
         result.success ? 'success' : 'failed',
         result.error
       );
@@ -471,7 +483,7 @@ export class ConsoleReporter {
 
   endSession() {
     // ...existing code...
-    
+
     if (this.profiler) {
       this.profiler.stop();
     }
@@ -482,6 +494,7 @@ export class ConsoleReporter {
 ## CI Configuration Options
 
 ### Package.json Scripts
+
 ```json
 {
   "scripts": {
@@ -494,6 +507,7 @@ export class ConsoleReporter {
 ```
 
 ### Environment Variables
+
 ```bash
 # Core settings
 OPENAI_API_KEY=your_api_key
@@ -515,6 +529,7 @@ PLAYWRIGHT_BROWSERS_PATH="/ms-playwright"
 ## Cost Analysis
 
 ### GitHub Actions (Public repos - Free)
+
 ```yaml
 Resource Limits:
   - 2,000 minutes/month free
@@ -527,6 +542,7 @@ Endorphin AI Usage:
 ```
 
 ### GitHub Actions (Private repos)
+
 ```yaml
 Costs:
   - Linux: $0.008/minute
@@ -539,6 +555,7 @@ Monthly Estimate (500 test runs):
 ```
 
 ### GitLab CI (SaaS)
+
 ```yaml
 Costs:
   - Shared runners: 400 minutes/month free
@@ -551,6 +568,7 @@ Monthly Estimate (500 test runs):
 ```
 
 ### Self-hosted Runners
+
 ```yaml
 Hardware Investment:
   - Basic server: $100-200/month
@@ -567,15 +585,16 @@ Benefits:
 ## Performance Optimization
 
 ### Parallel Test Execution
+
 ```javascript
 // Add to framework/core/test-discovery.js
 export async function runTestsInParallel(tests, options = {}) {
   const { maxConcurrency = 2, reporter } = options;
   const chunks = chunkArray(tests, maxConcurrency);
-  
+
   for (const chunk of chunks) {
     await Promise.all(
-      chunk.map(test => runSingleTestById(test.id, { reporter }))
+      chunk.map((test) => runSingleTestById(test.id, { reporter }))
     );
   }
 }
@@ -590,6 +609,7 @@ function chunkArray(array, size) {
 ```
 
 ### Resource Cleanup
+
 ```javascript
 // Add browser cleanup
 afterEach(async () => {
@@ -597,7 +617,7 @@ afterEach(async () => {
     await global.browser.close();
     global.browser = null;
   }
-  
+
   // Force garbage collection in CI
   if (process.env.CI && global.gc) {
     global.gc();
@@ -606,163 +626,207 @@ afterEach(async () => {
 ```
 
 ### Memory Management
+
 ```javascript
 // Optimize browser context
 const browserContext = await browser.newContext({
   // Reduce memory usage
   ignoreHTTPSErrors: true,
   bypassCSP: true,
-  
+
   // Disable unnecessary features
   javaScriptEnabled: true,
   acceptDownloads: false,
-  
+
   // Limit resources
   serviceWorkers: 'block',
-  
+
   // Video/screenshot optimization
   recordVideo: process.env.CI ? undefined : { dir: 'test-results/videos' },
-  screenshot: { mode: 'only-on-failure', fullPage: false }
+  screenshot: { mode: 'only-on-failure', fullPage: false },
 });
 ```
 
 ## Monitoring Dashboard
 
 ### Simple HTML Dashboard (`/monitoring/ci-dashboard.html`)
+
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Endorphin CI Metrics</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-    .dashboard { max-width: 1200px; margin: 0 auto; }
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-    .metric-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .metric-value { font-size: 2em; font-weight: bold; color: #6366f1; }
-    h1 { color: #374151; text-align: center; }
-    h3 { color: #6b7280; margin-top: 0; }
-  </style>
-</head>
-<body>
-  <div class="dashboard">
-    <h1>Endorphin AI CI Metrics</h1>
-    
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <h3>Test Success Rate</h3>
-        <div class="metric-value" id="successRate">--</div>
-        <canvas id="successRateChart" width="400" height="200"></canvas>
-      </div>
-      
-      <div class="metric-card">
-        <h3>Memory Usage</h3>
-        <div class="metric-value" id="peakMemory">--</div>
-        <canvas id="memoryChart" width="400" height="200"></canvas>
-      </div>
-      
-      <div class="metric-card">
-        <h3>Test Duration</h3>
-        <div class="metric-value" id="avgDuration">--</div>
-        <canvas id="durationChart" width="400" height="200"></canvas>
-      </div>
-      
-      <div class="metric-card">
-        <h3>Resource Recommendations</h3>
-        <div id="recommendations">
-          <p>Loading recommendations...</p>
+  <head>
+    <title>Endorphin CI Metrics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+      .dashboard {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 20px;
+      }
+      .metric-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .metric-value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #6366f1;
+      }
+      h1 {
+        color: #374151;
+        text-align: center;
+      }
+      h3 {
+        color: #6b7280;
+        margin-top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <h1>Endorphin AI CI Metrics</h1>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h3>Test Success Rate</h3>
+          <div class="metric-value" id="successRate">--</div>
+          <canvas id="successRateChart" width="400" height="200"></canvas>
+        </div>
+
+        <div class="metric-card">
+          <h3>Memory Usage</h3>
+          <div class="metric-value" id="peakMemory">--</div>
+          <canvas id="memoryChart" width="400" height="200"></canvas>
+        </div>
+
+        <div class="metric-card">
+          <h3>Test Duration</h3>
+          <div class="metric-value" id="avgDuration">--</div>
+          <canvas id="durationChart" width="400" height="200"></canvas>
+        </div>
+
+        <div class="metric-card">
+          <h3>Resource Recommendations</h3>
+          <div id="recommendations">
+            <p>Loading recommendations...</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    // Load and display CI metrics
-    async function loadMetrics() {
-      try {
-        const response = await fetch('/profiling-data/ci-report.json');
-        const data = await response.json();
-        
-        // Update summary values
-        document.getElementById('successRate').textContent = 
-          Math.round((data.summary.testsSucceeded / data.summary.testsExecuted) * 100) + '%';
-        document.getElementById('peakMemory').textContent = 
-          Math.round(data.summary.maxMemoryUsage / 1024 / 1024) + 'MB';
-        document.getElementById('avgDuration').textContent = 
-          Math.round(data.summary.totalDuration / 1000) + 's';
-        
-        // Render charts
-        renderCharts(data);
-        
-        // Show recommendations
-        renderRecommendations(data.recommendations);
-        
-      } catch (error) {
-        console.error('Failed to load metrics:', error);
-      }
-    }
-    
-    function renderCharts(data) {
-      // Success rate chart
-      new Chart(document.getElementById('successRateChart'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Passed', 'Failed'],
-          datasets: [{
-            data: [data.summary.testsSucceeded, data.summary.testsFailed],
-            backgroundColor: ['#10b981', '#ef4444']
-          }]
+    <script>
+      // Load and display CI metrics
+      async function loadMetrics() {
+        try {
+          const response = await fetch('/profiling-data/ci-report.json');
+          const data = await response.json();
+
+          // Update summary values
+          document.getElementById('successRate').textContent =
+            Math.round(
+              (data.summary.testsSucceeded / data.summary.testsExecuted) * 100
+            ) + '%';
+          document.getElementById('peakMemory').textContent =
+            Math.round(data.summary.maxMemoryUsage / 1024 / 1024) + 'MB';
+          document.getElementById('avgDuration').textContent =
+            Math.round(data.summary.totalDuration / 1000) + 's';
+
+          // Render charts
+          renderCharts(data);
+
+          // Show recommendations
+          renderRecommendations(data.recommendations);
+        } catch (error) {
+          console.error('Failed to load metrics:', error);
         }
-      });
-      
-      // Memory usage chart
-      const memoryData = data.rawMetrics.memory.slice(-20); // Last 20 points
-      new Chart(document.getElementById('memoryChart'), {
-        type: 'line',
-        data: {
-          labels: memoryData.map(m => new Date(m.timestamp).toLocaleTimeString()),
-          datasets: [{
-            label: 'Memory Usage (MB)',
-            data: memoryData.map(m => m.heapUsed / 1024 / 1024),
-            borderColor: '#6366f1',
-            tension: 0.1
-          }]
-        }
-      });
-    }
-    
-    function renderRecommendations(recommendations) {
-      const container = document.getElementById('recommendations');
-      if (recommendations.length === 0) {
-        container.innerHTML = '<p style="color: #10b981;">✅ No issues detected</p>';
-        return;
       }
-      
-      container.innerHTML = recommendations.map(rec => `
+
+      function renderCharts(data) {
+        // Success rate chart
+        new Chart(document.getElementById('successRateChart'), {
+          type: 'doughnut',
+          data: {
+            labels: ['Passed', 'Failed'],
+            datasets: [
+              {
+                data: [data.summary.testsSucceeded, data.summary.testsFailed],
+                backgroundColor: ['#10b981', '#ef4444'],
+              },
+            ],
+          },
+        });
+
+        // Memory usage chart
+        const memoryData = data.rawMetrics.memory.slice(-20); // Last 20 points
+        new Chart(document.getElementById('memoryChart'), {
+          type: 'line',
+          data: {
+            labels: memoryData.map((m) =>
+              new Date(m.timestamp).toLocaleTimeString()
+            ),
+            datasets: [
+              {
+                label: 'Memory Usage (MB)',
+                data: memoryData.map((m) => m.heapUsed / 1024 / 1024),
+                borderColor: '#6366f1',
+                tension: 0.1,
+              },
+            ],
+          },
+        });
+      }
+
+      function renderRecommendations(recommendations) {
+        const container = document.getElementById('recommendations');
+        if (recommendations.length === 0) {
+          container.innerHTML =
+            '<p style="color: #10b981;">✅ No issues detected</p>';
+          return;
+        }
+
+        container.innerHTML = recommendations
+          .map(
+            (rec) => `
         <div style="margin-bottom: 10px; padding: 10px; border-left: 4px solid ${
-          rec.level === 'error' ? '#ef4444' : 
-          rec.level === 'warning' ? '#f59e0b' : '#6366f1'
+          rec.level === 'error'
+            ? '#ef4444'
+            : rec.level === 'warning'
+              ? '#f59e0b'
+              : '#6366f1'
         }; background: #f9fafb;">
           <strong>${rec.message}</strong><br>
           <small>${rec.suggestion}</small>
         </div>
-      `).join('');
-    }
-    
-    // Load metrics on page load
-    loadMetrics();
-    
-    // Refresh every 30 seconds
-    setInterval(loadMetrics, 30000);
-  </script>
-</body>
+      `
+          )
+          .join('');
+      }
+
+      // Load metrics on page load
+      loadMetrics();
+
+      // Refresh every 30 seconds
+      setInterval(loadMetrics, 30000);
+    </script>
+  </body>
 </html>
 ```
 
 ## Troubleshooting Common Issues
 
 ### Memory Issues
+
 ```bash
 # If you see "JavaScript heap out of memory"
 export NODE_OPTIONS="--max-old-space-size=4096"
@@ -772,6 +836,7 @@ export NODE_OPTIONS="--max-old-space-size=8192 --optimize-for-size"
 ```
 
 ### Browser Launch Failures
+
 ```bash
 # Install missing dependencies (Ubuntu/Debian)
 sudo apt-get update
@@ -782,18 +847,20 @@ apk add --no-cache nss freetype freetype-dev harfbuzz ca-certificates ttf-freefo
 ```
 
 ### Timeout Issues
+
 ```javascript
 // Increase timeouts for CI
 const config = {
   testTimeout: 180000, // 3 minutes
   browserTimeout: 60000, // 1 minute
-  navigationTimeout: 30000 // 30 seconds
+  navigationTimeout: 30000, // 30 seconds
 };
 ```
 
 ## Best Practices
 
 ### Resource Optimization
+
 1. **Use headless mode** in CI environments
 2. **Limit parallel tests** based on available memory
 3. **Clean up browser contexts** after each test
@@ -801,6 +868,7 @@ const config = {
 5. **Cache dependencies** (node_modules, browsers)
 
 ### Reliability
+
 1. **Retry failed tests** up to 2 times
 2. **Use stable selectors** in test instructions
 3. **Add explicit waits** for dynamic content
@@ -808,10 +876,13 @@ const config = {
 5. **Use screenshots** for debugging failures
 
 ### Cost Management
+
 1. **Run smoke tests** on every commit
 2. **Full test suite** only on main branch
 3. **Use cron jobs** for nightly comprehensive tests
 4. **Optimize test execution time** regularly
 5. **Consider self-hosted runners** for high usage
 
-This comprehensive guide provides everything needed to successfully run Endorphin AI tests in CI/CD environments with proper resource monitoring and optimization.
+This comprehensive guide provides everything needed to successfully run
+Endorphin AI tests in CI/CD environments with proper resource monitoring and
+optimization.

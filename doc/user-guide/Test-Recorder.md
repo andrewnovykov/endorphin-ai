@@ -1,55 +1,99 @@
 # Test Recorder - User Guide
 
-Create automated tests by recording your browser interactions in natural language. The AI agent performs the actions while you watch, capturing everything needed to recreate your test.
+_Last Updated: June 27, 2025 - v0.4.1+_
 
-## Quick Start
+Create automated tests by recording your browser interactions in natural
+language. The AI agent performs the actions while you watch, capturing
+everything needed to recreate your test.
+
+## 🎯 Overview
+
+The Test Recorder is an **interactive tool** that helps you create tests by:
+
+- 🗣️ **Natural Language Commands** - Tell the AI what to do in plain English
+- 👀 **Visual Feedback** - Watch the AI perform actions in a real browser
+- 📝 **Automatic Generation** - Get a ready-to-run test file created for you
+- 🎯 **No Technical Skills Required** - Write tests without coding
+
+## 🚀 Quick Start
 
 ```bash
-# In your project directory with Endorphin AI installed
-npx endorphin run test-recorder
+# Start the interactive test recorder in your project directory
+endorphin run test-recorder
 ```
 
-## How It Works
+**Requirements:**
 
-1. **Setup**: Answer a few questions about your test
-2. **Record**: Give natural language commands like "click login button"  
-3. **Watch**: See the AI perform actions in a real browser
-4. **Generate**: Get a ready-to-run test file automatically
+- Endorphin AI installed in your project
+- OpenAI API key configured
+- Target website accessible
 
-## Step-by-Step Example
+## 🎬 How It Works
+
+1. **📋 Setup**: Answer questions about your test (ID, name, website)
+2. **🗣️ Record**: Give natural language commands like "click the login button"
+3. **👀 Watch**: See the AI perform actions in a real browser window
+4. **📝 Generate**: Get a ready-to-run test file automatically created
+5. **✅ Run**: Execute your recorded test anytime with
+   `endorphin run test TEST-ID`
+
+## 📝 Step-by-Step Example
 
 ### 1. Start Recording
+
 ```bash
-npx endorphin run test-recorder
+cd your-project-directory
+endorphin run test-recorder
 ```
 
 ### 2. Fill in Test Details
+
+The recorder will prompt you for:
+
 ```
-Test ID: QE-LOGIN-001
-Test Name: User Login Test  
-Description: Test login with valid credentials
-Priority: High
-Tags: authentication, login, smoke
-Site URL: https://myapp.com
+? Test ID: LOGIN-001
+? Test Name: User Login Test
+? Description: Test user login with valid credentials
+? Priority: High
+? Tags (comma-separated): authentication, login, smoke
+? Site URL: https://your-app.com
 ```
 
 ### 3. Give Natural Language Commands
+
 ```
-🎬 Next step: click the login link
-🎬 Next step: fill email field with test@example.com
-🎬 Next step: fill password field with password123
-🎬 Next step: click the submit button
-🎬 Next step: verify welcome message appears
-🎬 Next step: done
+🎬 Recording session started. Type your commands:
+
+> click the login button
+✅ AI: Clicked the login button
+
+> fill the email field with test@example.com
+✅ AI: Filled email field with "test@example.com"
+
+> fill the password field with password123
+✅ AI: Filled password field with "password123"
+
+> click the submit button
+✅ AI: Clicked the submit button
+
+> verify the welcome message appears
+✅ AI: Verified welcome message is visible
+
+> done
+✅ Recording complete! Test file saved to tests/LOGIN-001.ts
 ```
 
 ### 4. Generated Test
-Your test is automatically saved as `tests/qe-login-001-recorded-test.js` and ready to run!
+
+Your test is automatically saved as `tests/qe-login-001-recorded-test.js` and
+ready to run!
 
 ## What You Get
 
 ### Organized Screenshots
+
 Every step creates before/after screenshots in organized folders:
+
 ```
 test-recorder/QE-LOGIN-001-[timestamp]/
 └── steps/
@@ -61,19 +105,20 @@ test-recorder/QE-LOGIN-001-[timestamp]/
 ```
 
 ### Ready-to-Run Test File
+
 ```javascript
 // tests/qe-login-001-recorded-test.js
 export const QE_LOGIN_001 = {
-  id: "QE-LOGIN-001",
-  name: "User Login Test",
-  tags: ["authentication", "login", "smoke", "recorded"],
-  site: "https://myapp.com",
+  id: 'QE-LOGIN-001',
+  name: 'User Login Test',
+  tags: ['authentication', 'login', 'smoke', 'recorded'],
+  site: 'https://myapp.com',
   task: `Test the user login functionality:
 1. Click the login link
 2. Fill email field with test@example.com  
 3. Fill password field with password123
 4. Click the submit button
-5. Verify welcome message appears`
+5. Verify welcome message appears`,
 };
 ```
 
@@ -83,7 +128,7 @@ export const QE_LOGIN_001 = {
 # Run your specific test
 npx endorphin run test QE-LOGIN-001
 
-# Run all recorded tests  
+# Run all recorded tests
 npx endorphin run test --tag recorded
 
 # See all available tests
@@ -92,57 +137,65 @@ npx endorphin list
 
 ## Command Examples
 
-| What You Want To Do | Command To Type |
-|---------------------|-----------------|
-| Click a button | `click the submit button` |
-| Fill in text | `fill email field with test@example.com` |
+| What You Want To Do  | Command To Type                                |
+| -------------------- | ---------------------------------------------- |
+| Click a button       | `click the submit button`                      |
+| Fill in text         | `fill email field with test@example.com`       |
 | Select from dropdown | `select "United States" from country dropdown` |
-| Check for text | `verify "Welcome back!" appears on page` |
-| Navigate | `go to the profile page` |
-| Wait | `wait for the page to load` |
-| Scroll | `scroll down to see more content` |
-| Finish recording | `done` |
+| Check for text       | `verify "Welcome back!" appears on page`       |
+| Navigate             | `go to the profile page`                       |
+| Wait                 | `wait for the page to load`                    |
+| Scroll               | `scroll down to see more content`              |
+| Finish recording     | `done`                                         |
 
 ## Tips for Great Tests
 
 ### Be Specific
+
 ❌ `click button`  
 ✅ `click the blue submit button`
 
-### Include Verifications  
+### Include Verifications
+
 ❌ Just actions  
 ✅ `verify login success message appears`
 
 ### Use Realistic Data
+
 ❌ `fill field with test`  
 ✅ `fill email field with john.doe@company.com`
 
 ### Break Down Complex Flows
+
 ❌ One long command  
 ✅ Step-by-step actions
 
 ## Setup Requirements
 
 ### Prerequisites
+
 - Node.js 16+ installed
 - Endorphin AI installed in your project
 - OpenAI API key (for AI agent)
 
 ### Configuration
-Create `endorphin.config.js` in your project:
+
+Create `endorphin.config.ts` in your project:
+
 ```javascript
 export default {
   browser: {
-    headless: false,  // See the browser during recording
-    viewport: { width: 1280, height: 720 }
+    headless: false, // See the browser during recording
+    viewport: { width: 1280, height: 720 },
   },
   ai: {
-    model: "gpt-4o"
-  }
+    model: 'gpt-4o',
+  },
 };
 ```
 
 Set your OpenAI API key:
+
 ```bash
 # Add to your .env file
 OPENAI_API_KEY=your_key_here
@@ -151,27 +204,32 @@ OPENAI_API_KEY=your_key_here
 ## Common Issues & Solutions
 
 ### "Browser not opening"
+
 Make sure your config has `headless: false`:
-```javascript
-// endorphin.config.js
+
+```typescript
+// endorphin.config.ts
 export default {
   browser: {
-    headless: false  // This makes browser visible
-  }
+    headless: false, // This makes browser visible
+  },
 };
 ```
 
-### "AI not responding"  
+### "AI not responding"
+
 - Check your OpenAI API key is correct
 - Verify you have API credits available
 - Check your internet connection
 
 ### "Test not found after recording"
+
 - Check the `tests/` folder for your generated file
 - Run `npx endorphin list` to see if it's discovered
 - Verify the test ID matches the filename
 
 ### "Generated test won't run"
+
 - Make sure you're in the project directory
 - Check that Endorphin AI is properly installed
 - Verify your config file is valid
@@ -179,17 +237,20 @@ export default {
 ## Advanced Features
 
 ### Using Test Data
+
 ```
 🎬 Next step: fill email with {{user.email}}
 🎬 Next step: fill password with {{user.password}}
 ```
 
 ### Environment-Specific URLs
+
 ```
 🎬 Next step: navigate to {{baseUrl}}/dashboard
 ```
 
 ### Conditional Actions
+
 ```
 🎬 Next step: if error message appears, take screenshot
 ```
@@ -197,7 +258,7 @@ export default {
 ## Best Practices
 
 1. **Start Simple**: Begin with basic workflows, add complexity later
-2. **Test Real Scenarios**: Use actual user journeys, not just happy paths  
+2. **Test Real Scenarios**: Use actual user journeys, not just happy paths
 3. **Add Verifications**: Always check that actions worked as expected
 4. **Use Descriptive Names**: Make test IDs and names clear and searchable
 5. **Organize with Tags**: Use consistent tags for easy test management
@@ -209,4 +270,6 @@ export default {
 - Use descriptive test names and IDs for easier debugging
 - Look at the screenshot artifacts to see what actually happened
 
-The Test Recorder makes it easy to create comprehensive automated tests without writing code. Just describe what you want to test in plain English, and let the AI do the work!
+The Test Recorder makes it easy to create comprehensive automated tests without
+writing code. Just describe what you want to test in plain English, and let the
+AI do the work!

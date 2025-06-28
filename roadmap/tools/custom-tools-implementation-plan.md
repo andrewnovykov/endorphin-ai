@@ -1,18 +1,21 @@
 # Custom Tools Implementation Plan - Endorphin AI
 
-*Created: June 22, 2025*
-*Status: Planning Phase*
+_Created: June 22, 2025_ _Status: Planning Phase_
 
 ## 🎯 Overview
 
-Implementation plan for adding custom tools capability to Endorphin AI framework. This will allow users to create their own tools that integrate seamlessly with the AI agent for specialized testing needs.
+Implementation plan for adding custom tools capability to Endorphin AI
+framework. This will allow users to create their own tools that integrate
+seamlessly with the AI agent for specialized testing needs.
 
 ## 📋 Implementation Checklist
 
 ### Phase 1: Core Infrastructure 🏗️
 
 #### 1.1 Configuration System Updates
-- [ ] **Update config schema** - Add `customTools` array support in config-loader.js
+
+- [ ] **Update config schema** - Add `customTools` array support in
+      config-loader.js
   - [ ] Add validation for customTools paths
   - [ ] Support both directory and file paths
   - [ ] Add error handling for invalid paths
@@ -23,7 +26,9 @@ Implementation plan for adding custom tools capability to Endorphin AI framework
   - [ ] Document expected format (string array of paths)
 
 #### 1.2 Tool Discovery System
-- [ ] **Create tool discovery module** - `framework/core/custom-tool-discovery.js`
+
+- [ ] **Create tool discovery module** -
+      `framework/core/custom-tool-discovery.js`
   - [ ] Directory scanning functionality
   - [ ] File import and validation
   - [ ] ES module loading with cache busting
@@ -37,6 +42,7 @@ Implementation plan for adding custom tools capability to Endorphin AI framework
   - [ ] Check for name conflicts with built-in tools
 
 #### 1.3 Tool Loading Integration
+
 - [ ] **Update tools/index.js** - Integrate custom tools with built-in tools
   - [ ] Modify createAllTools function
   - [ ] Add custom tool loading logic
@@ -51,6 +57,7 @@ Implementation plan for adding custom tools capability to Endorphin AI framework
 ### Phase 2: Tool Development Support 🔧
 
 #### 2.1 Tool Template System
+
 - [ ] **Create tool templates** - `framework/templates/`
   - [ ] Basic tool template
   - [ ] API tool template
@@ -63,6 +70,7 @@ Implementation plan for adding custom tools capability to Endorphin AI framework
   - [ ] Create basic test file
 
 #### 2.2 Development Tools
+
 - [ ] **Tool validation CLI** - `endorphin validate tools`
   - [ ] Check tool syntax
   - [ ] Validate exports
@@ -78,6 +86,7 @@ Implementation plan for adding custom tools capability to Endorphin AI framework
 ### Phase 3: Error Handling & Debugging 🐛
 
 #### 3.1 Error Management
+
 - [ ] **Custom tool error handling**
   - [ ] Graceful handling of tool loading failures
   - [ ] Detailed error messages for debugging
@@ -91,6 +100,7 @@ Implementation plan for adding custom tools capability to Endorphin AI framework
   - [ ] Recovery mechanisms
 
 #### 3.2 Debug Support
+
 - [ ] **Debug logging system**
   - [ ] Tool loading debug output
   - [ ] Custom tool execution tracing
@@ -106,6 +116,7 @@ Implementation plan for adding custom tools capability to Endorphin AI framework
 ### Phase 4: Testing & Quality Assurance 🧪
 
 #### 4.1 Framework Tests
+
 - [ ] **Unit tests for custom tool system**
   - [ ] Tool discovery tests
   - [ ] Configuration loading tests
@@ -119,6 +130,7 @@ Implementation plan for adding custom tools capability to Endorphin AI framework
   - [ ] Multiple tool scenarios
 
 #### 4.2 Example Tools & Tests
+
 - [ ] **Create example custom tools**
   - [ ] Simple API tool
   - [ ] File manipulation tool
@@ -134,12 +146,15 @@ Implementation plan for adding custom tools capability to Endorphin AI framework
 ### Phase 5: Documentation & Examples 📚
 
 #### 5.1 Documentation Updates
+
 - [ ] **Update main README** - Add custom tools section
 - [ ] **Update User Setup Guide** - Include custom tools setup
-- [ ] **Custom Tools Guide** - Already created, update with implementation details
+- [ ] **Custom Tools Guide** - Already created, update with implementation
+      details
 - [ ] **Framework Architecture docs** - Document custom tool system
 
 #### 5.2 Examples & Templates
+
 - [ ] **Update examples directory**
   - [ ] Add example custom tools
   - [ ] Update sample tests to use custom tools
@@ -176,10 +191,10 @@ framework/
 export default {
   // ...existing config
   customTools: [
-    "./tools",                    // Directory path
-    "./custom-tools",             // Another directory
-    "./integrations/api-tools.js" // Individual file
-  ]
+    './tools', // Directory path
+    './custom-tools', // Another directory
+    './integrations/api-tools.js', // Individual file
+  ],
 };
 ```
 
@@ -214,19 +229,23 @@ export default {
 try {
   const customToolModule = await import(toolPath);
   const toolFunctions = extractToolFunctions(customToolModule);
-  
+
   for (const [name, func] of toolFunctions) {
     try {
       const tool = func(framework);
       validateTool(tool);
       tools.push(tool);
     } catch (toolError) {
-      console.warn(`⚠️ Failed to load custom tool ${name}: ${toolError.message}`);
+      console.warn(
+        `⚠️ Failed to load custom tool ${name}: ${toolError.message}`
+      );
       // Continue loading other tools
     }
   }
 } catch (moduleError) {
-  console.error(`❌ Failed to load custom tool file ${toolPath}: ${moduleError.message}`);
+  console.error(
+    `❌ Failed to load custom tool file ${toolPath}: ${moduleError.message}`
+  );
   // Log but don't crash the framework
 }
 ```
@@ -270,21 +289,25 @@ dev-tests/
 ## 📅 Implementation Timeline
 
 ### Week 1: Core Infrastructure
+
 - [ ] Configuration system updates
 - [ ] Tool discovery module
 - [ ] Basic integration with existing system
 
 ### Week 2: Tool Development Support
+
 - [ ] CLI commands for tool management
 - [ ] Template system
 - [ ] Validation tools
 
 ### Week 3: Error Handling & Testing
+
 - [ ] Comprehensive error handling
 - [ ] Debug support
 - [ ] Framework test suite
 
 ### Week 4: Documentation & Polish
+
 - [ ] Documentation updates
 - [ ] Example tools and tests
 - [ ] Performance optimization
@@ -293,6 +316,7 @@ dev-tests/
 ## 🔍 Key Implementation Files
 
 ### 1. `framework/core/custom-tool-discovery.js`
+
 ```javascript
 // Main tool discovery and loading logic
 export class CustomToolDiscovery {
@@ -309,6 +333,7 @@ export class CustomToolDiscovery {
 ```
 
 ### 2. Updated `framework/core/config-loader.js`
+
 ```javascript
 // Add customTools validation
 const configSchema = {
@@ -316,20 +341,21 @@ const configSchema = {
   customTools: {
     type: 'array',
     items: { type: 'string' },
-    default: []
-  }
+    default: [],
+  },
 };
 ```
 
 ### 3. Updated `framework/tools/index.js`
+
 ```javascript
 export async function createAllTools(framework) {
   const builtInTools = [
     // ...existing built-in tools
   ];
-  
+
   const customTools = await loadCustomTools(framework);
-  
+
   return [...builtInTools, ...customTools];
 }
 ```
@@ -337,16 +363,19 @@ export async function createAllTools(framework) {
 ## 🚨 Risk Mitigation
 
 ### Security Considerations
+
 - [ ] **Path traversal protection** - Validate custom tool paths
 - [ ] **Code execution safety** - Sandbox custom tool execution if needed
 - [ ] **Input validation** - Ensure custom tools can't break framework
 
 ### Performance Considerations
+
 - [ ] **Lazy loading** - Load custom tools only when needed
 - [ ] **Caching** - Cache tool modules to avoid repeated imports
 - [ ] **Error isolation** - Prevent custom tool errors from crashing tests
 
 ### Compatibility Considerations
+
 - [ ] **Version compatibility** - Check custom tools work with framework version
 - [ ] **Dependency management** - Handle custom tool dependencies
 - [ ] **Breaking changes** - Plan migration path for tool API changes
@@ -365,4 +394,5 @@ export async function createAllTools(framework) {
 
 ---
 
-*This plan should be updated as implementation progresses and requirements are refined.*
+_This plan should be updated as implementation progresses and requirements are
+refined._

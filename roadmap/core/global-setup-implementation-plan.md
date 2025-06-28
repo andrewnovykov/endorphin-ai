@@ -1,18 +1,22 @@
 # Global Setup & Teardown Implementation Plan - Endorphin AI
 
-*Created: June 22, 2025*
-*Status: Planning Phase*
+_Created: June 22, 2025_ _Status: Planning Phase_
 
 ## 🎯 Overview
 
-Implementation plan for adding Global Setup and Teardown functionality to Endorphin AI framework. This feature allows users to run custom JavaScript code before and after their entire test suite for environment preparation, resource management, and cleanup operations.
+Implementation plan for adding Global Setup and Teardown functionality to
+Endorphin AI framework. This feature allows users to run custom JavaScript code
+before and after their entire test suite for environment preparation, resource
+management, and cleanup operations.
 
 ## 📋 Implementation Checklist
 
 ### Phase 1: Configuration System Updates 🔧
 
 #### 1.1 Configuration Schema Updates
-- [ ] **Update config-loader.js** - Add support for global setup/teardown configuration
+
+- [ ] **Update config-loader.js** - Add support for global setup/teardown
+      configuration
   - [ ] Add `globalSetup` property (string or array of strings)
   - [ ] Add `globalTeardown` property (string or array of strings)
   - [ ] Add `setupOptions` object with timeout, retries, continueOnFailure
@@ -27,6 +31,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] Provide helpful error messages for invalid configs
 
 #### 1.2 Default Configuration
+
 - [ ] **Update default config** - Add sensible defaults
   ```javascript
   const defaultConfig = {
@@ -35,19 +40,20 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
     setupOptions: {
       timeout: 30000,
       retries: 0,
-      continueOnFailure: false
+      continueOnFailure: false,
     },
     teardownOptions: {
       timeout: 15000,
       retries: 0,
-      forceCleanup: true
-    }
+      forceCleanup: true,
+    },
   };
   ```
 
 ### Phase 2: Setup/Teardown Execution Engine 🚀
 
 #### 2.1 Setup/Teardown Manager
+
 - [ ] **Create setup-teardown-manager.js** - Core execution engine
   - [ ] File discovery and loading
   - [ ] Dynamic import with ES modules support
@@ -57,6 +63,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] Error collection and reporting
 
 #### 2.2 Execution Context
+
 - [ ] **Context preparation**
   - [ ] Isolated execution environment
   - [ ] Global object management
@@ -65,6 +72,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] Error boundary implementation
 
 #### 2.3 Lifecycle Management
+
 - [ ] **Setup execution**
   - [ ] Pre-test suite execution
   - [ ] Failure handling (abort vs continue)
@@ -80,6 +88,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
 ### Phase 3: Test Runner Integration 🔄
 
 #### 3.1 Test Runner Updates
+
 - [ ] **Update test-runner.js** - Integrate setup/teardown lifecycle
   - [ ] Setup execution before test discovery
   - [ ] Teardown execution after all tests complete
@@ -87,6 +96,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] State management between setup/tests/teardown
 
 #### 3.2 CLI Integration
+
 - [ ] **Update CLI commands** - Add setup/teardown support
   - [ ] `endorphin run test` - Execute with setup/teardown
   - [ ] `endorphin setup` - Run only setup operations
@@ -95,6 +105,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] `--skip-teardown` flag to bypass teardown
 
 #### 3.3 Error Handling Strategy
+
 - [ ] **Setup failure handling**
   - [ ] Abort test execution on critical setup failure
   - [ ] Continue with warnings on non-critical failures
@@ -110,6 +121,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
 ### Phase 4: Debugging & Monitoring 🔍
 
 #### 4.1 Logging System
+
 - [ ] **Enhanced logging** - Detailed setup/teardown logging
   - [ ] Execution start/end timestamps
   - [ ] Duration tracking
@@ -118,6 +130,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] Debug mode with verbose output
 
 #### 4.2 Debug Tools
+
 - [ ] **Debug CLI commands**
   - [ ] `endorphin debug setup` - Test setup in isolation
   - [ ] `endorphin debug teardown` - Test teardown in isolation
@@ -125,6 +138,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] `--dry-run` flag to validate without executing
 
 #### 4.3 Health Checks
+
 - [ ] **Setup validation**
   - [ ] Pre-execution file validation
   - [ ] Dependency checking
@@ -134,6 +148,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
 ### Phase 5: Testing & Quality Assurance 🧪
 
 #### 5.1 Framework Tests
+
 - [ ] **Unit tests for setup/teardown system**
   - [ ] Configuration loading tests
   - [ ] File discovery and loading tests
@@ -142,6 +157,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] Timeout and retry tests
 
 #### 5.2 Integration Tests
+
 - [ ] **End-to-end setup/teardown tests**
   - [ ] Full lifecycle integration tests
   - [ ] Multiple file execution tests
@@ -149,6 +165,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] Resource cleanup verification tests
 
 #### 5.3 Example Implementations
+
 - [ ] **Create example setup/teardown files**
   - [ ] Database setup example
   - [ ] Mock server setup example
@@ -158,6 +175,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
 ### Phase 6: Documentation & Examples 📚
 
 #### 6.1 Documentation Updates
+
 - [ ] **Update main documentation**
   - [ ] README.md with setup/teardown section
   - [ ] User Setup Guide updates
@@ -165,6 +183,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] Global Setup Guide (already created)
 
 #### 6.2 Examples & Templates
+
 - [ ] **Update examples directory**
   - [ ] Add example global.setup.js
   - [ ] Add example global.teardown.js
@@ -172,6 +191,7 @@ Implementation plan for adding Global Setup and Teardown functionality to Endorp
   - [ ] Add advanced use case examples
 
 #### 6.3 Best Practices Guide
+
 - [ ] **Create best practices documentation**
   - [ ] Resource management patterns
   - [ ] Error handling strategies
@@ -203,21 +223,21 @@ bin/
 // Enhanced configuration schema
 const configSchema = {
   // Existing config...
-  
+
   // Global setup configuration
   globalSetup: {
     type: ['string', 'array'],
     items: { type: 'string' },
-    description: 'Path(s) to global setup file(s)'
+    description: 'Path(s) to global setup file(s)',
   },
-  
+
   // Global teardown configuration
   globalTeardown: {
     type: ['string', 'array'],
     items: { type: 'string' },
-    description: 'Path(s) to global teardown file(s)'
+    description: 'Path(s) to global teardown file(s)',
   },
-  
+
   // Setup execution options
   setupOptions: {
     type: 'object',
@@ -225,10 +245,10 @@ const configSchema = {
       timeout: { type: 'number', minimum: 1000, default: 30000 },
       retries: { type: 'number', minimum: 0, maximum: 5, default: 0 },
       continueOnFailure: { type: 'boolean', default: false },
-      parallel: { type: 'boolean', default: false }
-    }
+      parallel: { type: 'boolean', default: false },
+    },
   },
-  
+
   // Teardown execution options
   teardownOptions: {
     type: 'object',
@@ -236,9 +256,9 @@ const configSchema = {
       timeout: { type: 'number', minimum: 1000, default: 15000 },
       retries: { type: 'number', minimum: 0, maximum: 5, default: 0 },
       forceCleanup: { type: 'boolean', default: true },
-      parallel: { type: 'boolean', default: false }
-    }
-  }
+      parallel: { type: 'boolean', default: false },
+    },
+  },
 };
 ```
 
@@ -290,10 +310,10 @@ export class TestRunner {
     try {
       // Execute global setup
       await this.setupTeardownManager.executeSetup();
-      
+
       // Run tests
       const results = await this.executeTestSuite();
-      
+
       return results;
     } finally {
       // Always execute teardown
@@ -351,21 +371,25 @@ dev-tests/
 ## 📅 Implementation Timeline
 
 ### Week 1: Configuration & Core Engine
+
 - [ ] Configuration system updates
 - [ ] Setup/teardown manager core implementation
 - [ ] Basic file loading and execution
 
 ### Week 2: Test Runner Integration
+
 - [ ] Test runner lifecycle integration
 - [ ] CLI command updates
 - [ ] Error handling implementation
 
 ### Week 3: Testing & Debugging
+
 - [ ] Comprehensive test suite
 - [ ] Debug tools and logging
 - [ ] Performance optimization
 
 ### Week 4: Documentation & Examples
+
 - [ ] Documentation updates
 - [ ] Example implementations
 - [ ] Best practices guide
@@ -374,25 +398,30 @@ dev-tests/
 ## 🔍 Key Implementation Considerations
 
 ### Security & Safety
+
 - [ ] **Sandboxing**: Isolate setup/teardown execution
 - [ ] **Path validation**: Prevent directory traversal attacks
 - [ ] **Resource limits**: Prevent resource exhaustion
 - [ ] **Error isolation**: Prevent setup errors from affecting framework
 
 ### Performance
+
 - [ ] **Lazy loading**: Load setup/teardown files only when needed
 - [ ] **Parallel execution**: Support parallel setup operations when safe
 - [ ] **Caching**: Cache loaded modules appropriately
 - [ ] **Resource monitoring**: Track resource usage during setup/teardown
 
 ### Compatibility
+
 - [ ] **ES modules**: Full ES module support for setup/teardown files
 - [ ] **CommonJS fallback**: Support for legacy CommonJS modules
 - [ ] **Node.js versions**: Ensure compatibility across supported Node versions
 - [ ] **Platform support**: Work across Windows, macOS, and Linux
 
 ### Error Recovery
-- [ ] **Graceful degradation**: Continue with limited functionality on setup failure
+
+- [ ] **Graceful degradation**: Continue with limited functionality on setup
+      failure
 - [ ] **Emergency cleanup**: Automatic cleanup on catastrophic failures
 - [ ] **State persistence**: Maintain cleanup state across process boundaries
 - [ ] **Partial success**: Handle scenarios where some setup operations fail
@@ -400,6 +429,7 @@ dev-tests/
 ## 🚨 Risk Mitigation
 
 ### High-Risk Areas
+
 1. **Infinite loops in setup/teardown code**
    - Mitigation: Strict timeout enforcement
    - Fallback: Process termination and restart
@@ -417,6 +447,7 @@ dev-tests/
    - Fallback: Safe mode with limited functionality
 
 ### Testing Edge Cases
+
 - [ ] Very long setup/teardown operations
 - [ ] Network failures during setup
 - [ ] Disk space exhaustion
@@ -427,6 +458,7 @@ dev-tests/
 ## ✅ Acceptance Criteria
 
 ### Functional Requirements
+
 - [ ] Users can configure global setup/teardown files in config
 - [ ] Framework executes setup before any tests run
 - [ ] Framework executes teardown after all tests complete
@@ -438,18 +470,21 @@ dev-tests/
 - [ ] Clear error reporting for setup/teardown failures
 
 ### Performance Requirements
+
 - [ ] Setup/teardown adds <5% overhead to test execution time
 - [ ] Memory usage remains stable during long-running operations
 - [ ] File loading is efficient for large setup files
 - [ ] Parallel execution improves performance when applicable
 
 ### Reliability Requirements
+
 - [ ] Framework remains stable despite user code errors
 - [ ] Resource cleanup is guaranteed in all scenarios
 - [ ] Error recovery works correctly
 - [ ] State consistency is maintained across lifecycle
 
 ### Usability Requirements
+
 - [ ] Clear documentation with examples
 - [ ] Helpful error messages for common mistakes
 - [ ] Debug tools for troubleshooting
@@ -457,4 +492,5 @@ dev-tests/
 
 ---
 
-*This implementation plan should be updated as development progresses and requirements are refined based on user feedback and testing.*
+_This implementation plan should be updated as development progresses and
+requirements are refined based on user feedback and testing._

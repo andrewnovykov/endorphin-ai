@@ -1,30 +1,47 @@
 {
   "name": "endorphin-ai",
-  "version": "0.4.1",
-  "description": "E2E Testing Reinvented with AI - A powerful browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright",
-  "main": "framework/index.js",
+  "version": "0.5.0",
+  "description": "E2E Testing Reinvented with AI - A powerful TypeScript browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright",
+  "main": "dist/framework/index.js",
   "bin": {
-    "endorphin": "bin/endorphin.js"
+    "endorphin": "./dist/bin/endorphin.js",
+    "endorphin-ai": "./dist/bin/endorphin.js"
   },
   "type": "module",
   "scripts": {
-    "start": "node framework/test-framework.js",
-    "test": "cd development-tests/framework-tests && npx vitest",
-    "test:watch": "cd development-tests/framework-tests && npx vitest --watch",
-    "test:ui": "cd development-tests/framework-tests && npx vitest --ui",
-    "test:coverage": "cd development-tests/framework-tests && npx vitest --coverage",
-    "test:recorder": "cd development-tests/framework-tests && npx vitest test-recorder*.test.js",
-    "test:framework": "cd development-tests/framework-tests && npx vitest",
-    "test:dev": "npx vitest development-tests",
-    "test:all": "npm run test:framework && npm run test:dev",
-    "framework:test": "node framework/test-framework.js --test",
-    "framework:demo": "node framework/test-framework.js",
-    "framework:all": "node framework/test-framework.js --all",
-    "framework:list": "node framework/test-framework.js --list",
-    "framework:auth": "node framework/test-framework.js --tag authentication",
-    "framework:smoke": "node framework/test-framework.js --tag smoke",
-    "framework:high": "node framework/test-framework.js --priority High",
-    "test-recorder": "node framework/interactive/enhanced-interactive-recorder.js"
+    "start": "tsx framework/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest --passWithNoTests tests/development/unit",
+    "test:integration": "jest --passWithNoTests --coverage=false tests/development/integration",
+    "test:dev": "jest --selectProjects='Development Tests'",
+    "test:all": "jest --selectProjects='Development Tests'",
+    "test:package": "cd tests/package-tests && ./run-all-tests.sh",
+    "build": "tsc && node scripts/fix-imports.js && cp framework/templates/reporter/*.html framework/templates/reporter/*.css framework/templates/reporter/*.js dist/framework/templates/reporter/ && chmod +x dist/bin/endorphin.js",
+    "build:watch": "tsc --watch",
+    "pack:local": "npm run build && npm pack --pack-destination dist",
+    "test:local": "npm run pack:local && ./tests/package-tests/run-all-tests.sh",
+    "type-check": "tsc --noEmit",
+    "framework:test": "tsx framework/index.ts --test",
+    "framework:demo": "tsx framework/index.ts",
+    "framework:all": "tsx framework/index.ts --all",
+    "framework:list": "tsx framework/index.ts --list",
+    "framework:auth": "tsx framework/index.ts --tag authentication",
+    "framework:smoke": "tsx framework/index.ts --tag smoke",
+    "framework:high": "tsx framework/index.ts --priority High",
+    "test-recorder": "tsx framework/test-recorder/index.ts",
+    "lint": "eslint . --ext .js,.mjs,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.mjs,.ts,.tsx --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "quality": "npm run lint && npm run format:check",
+    "quality:fix": "npm run lint:fix && npm run format",
+    "build:clean": "rm -rf dist && npm run build",
+    "dev": "tsx",
+    "cleanup": "./scripts/cleanup-test-artifacts.sh",
+    "prepare": "echo 'Husky disabled temporarily'",
+    "precommit": "echo 'Pre-commit hooks disabled temporarily'"
   },
   "keywords": [
     "ai",
@@ -36,7 +53,9 @@
     "langchain",
     "openai",
     "gpt-4",
-    "test-framework"
+    "test-framework",
+    "typescript",
+    "type-safe"
   ],
   "author": "Andrew Novykov <iam@andrewnovykov.com>",
   "repository": {
@@ -51,8 +70,7 @@
     "node": ">=16.0.0"
   },
   "files": [
-    "framework/",
-    "bin/",
+    "dist/",
     "examples/",
     "README.md",
     "LICENSE.md",
@@ -69,6 +87,7 @@
     "langchain": "^0.3.19",
     "openai": "^4.85.3",
     "playwright": "^1.50.1",
+    "tsx": "^4.9.3",
     "zod": "^3.25.67"
   },
   "directories": {
@@ -76,7 +95,22 @@
     "test": "tests"
   },
   "devDependencies": {
-    "@vitest/ui": "^2.1.9",
-    "vitest": "^2.1.9"
+    "@eslint/js": "^9.29.0",
+    "@jest/globals": "^30.0.3",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.35.0",
+    "@typescript-eslint/parser": "^8.35.0",
+    "eslint": "^9.29.0",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.7",
+    "jest": "^30.0.3",
+    "jest-environment-node": "^30.0.2",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.6.0",
+    "ts-jest": "^29.4.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "typescript-transform-paths": "^3.5.5"
   }
 }

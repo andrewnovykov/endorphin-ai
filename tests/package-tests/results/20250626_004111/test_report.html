@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endorphin AI Package Test Report</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #fafafa;
+        }
+        .metric {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 0;
+        }
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 5px 0 0 0;
+        }
+        .passed { color: #4CAF50; }
+        .failed { color: #f44336; }
+        .total { color: #2196F3; }
+        .duration { color: #FF9800; }
+        .tests-section {
+            padding: 30px;
+        }
+        .section-title {
+            font-size: 1.5em;
+            margin: 0 0 20px 0;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .test-grid {
+            display: grid;
+            gap: 15px;
+        }
+        .test-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            align-items: center;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border-left: 4px solid #ddd;
+        }
+        .test-item.passed {
+            border-left-color: #4CAF50;
+            background: #f8fff8;
+        }
+        .test-item.failed {
+            border-left-color: #f44336;
+            background: #fff8f8;
+        }
+        .test-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .test-status.passed { background: #4CAF50; }
+        .test-status.failed { background: #f44336; }
+        .test-name {
+            font-weight: 600;
+            color: #333;
+        }
+        .test-duration {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .test-log {
+            color: #2196F3;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .test-log:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            padding: 30px;
+            background: #f5f5f5;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .session-info {
+            background: #f0f0f0;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Package Test Report</h1>
+            <p>Endorphin AI - User Experience Testing</p>
+        </div>
+        <div class="summary">
+            <div class="metric"><div class="metric-value total">10</div><div class="metric-label">Total Tests</div></div>
+            <div class="metric"><div class="metric-value passed">9</div><div class="metric-label">Passed</div></div>
+            <div class="metric"><div class="metric-value failed">1</div><div class="metric-label">Failed</div></div>
+            <div class="metric"><div class="metric-value duration">90%</div><div class="metric-label">Success Rate</div></div>
+        </div>
+        <div class="tests-section">
+            <h2 class="section-title">📋 Session Information</h2>
+            <div class="session-info">Endorphin AI Package Test Session
+==================================
+Session ID: 20250626_004111
+Start Time: Thu Jun 26 00:41:11 PDT 2025
+Repository: /Users/papapin777/Documents/CODE/AI/endorphin-ai
+Test Environment: /Users/papapin777/Documents/CODE/AI/endorphin-ai/development-tests/package-tests/tmp/test-endorphin
+Node Version: v20.17.0
+NPM Version: 10.8.2
+OS: Darwin
+==================================
+
+
+Final Results:
+==============
+End Time: Thu Jun 26 00:42:12 PDT 2025
+Total Duration: 61s
+Total Tests: 10
+Passed: 9
+Failed: 1
+Success Rate: 90%</div>
+        </div>
+        <div class="tests-section">
+            <h2 class="section-title">🧪 Test Results</h2>
+            <div class="test-grid">
+                <div class="test-item passed">
+                    <div class="test-status passed">✓</div>
+                    <div class="test-name">Environment Setup</div>
+                    <div class="test-duration">3s</div>
+                    <a href="Environment_Setup.log" class="test-log">View Log</a>
+                </div>
+                <div class="test-item failed">
+                    <div class="test-status failed">✗</div>
+                    <div class="test-name">Init Command</div>
+                    <div class="test-duration">6s</div>
+                    <a href="Init_Command.log" class="test-log">View Log</a>
+                </div>
+                <div class="test-item passed">
+                    <div class="test-status passed">✓</div>
+                    <div class="test-name">Install Playwright Browsers</div>
+                    <div class="test-duration">2s</div>
+                    <a href="Install_Playwright_Browsers.log" class="test-log">View Log</a>
+                </div>
+                <div class="test-item passed">
+                    <div class="test-status passed">✓</div>
+                    <div class="test-name">Test Recorder Functionality</div>
+                    <div class="test-duration">25s</div>
+                    <a href="Test_Recorder_Functionality.log" class="test-log">View Log</a>
+                </div>
+                <div class="test-item passed">
+                    <div class="test-status passed">✓</div>
+                    <div class="test-name">Test Recorder File Location</div>
+                    <div class="test-duration">5s</div>
+                    <a href="Test_Recorder_File_Location.log" class="test-log">View Log</a>
+                </div>
+                <div class="test-item passed">
+                    <div class="test-status passed">✓</div>
+                    <div class="test-name">Basic Test Execution</div>
+                    <div class="test-duration">2s</div>
+                    <a href="Basic_Test_Execution.log" class="test-log">View Log</a>
+                </div>
+                <div class="test-item passed">
+                    <div class="test-status passed">✓</div>
+                    <div class="test-name">CLI Commands</div>
+                    <div class="test-duration">0s</div>
+                    <a href="CLI_Commands.log" class="test-log">View Log</a>
+                </div>
+                <div class="test-item passed">
+                    <div class="test-status passed">✓</div>
+                    <div class="test-name">Console Reporter</div>
+                    <div class="test-duration">4s</div>
+                    <a href="Console_Reporter.log" class="test-log">View Log</a>
+                </div>
+                <div class="test-item passed">
+                    <div class="test-status passed">✓</div>
+                    <div class="test-name">HTML Reporter</div>
+                    <div class="test-duration">5s</div>
+                    <a href="HTML_Reporter.log" class="test-log">View Log</a>
+                </div>
+                <div class="test-item passed">
+                    <div class="test-status passed">✓</div>
+                    <div class="test-name">All Reporters</div>
+                    <div class="test-duration">9s</div>
+                    <a href="All_Reporters.log" class="test-log">View Log</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Generated by Endorphin AI Package Test Runner</p>
+            <p>For more information, visit the test logs or check the repository documentation</p>
+        </div>
+    </div>
+</body>
+</html>

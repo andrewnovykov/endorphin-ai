@@ -1,38 +1,29 @@
-node_modules/
+# Endorphin AI - Test artifacts (should be in tmp/ or user projects only)
+test-results/
+test-recorder/
+
 .env
-# LangGraph API
-.langgraph_api
-test-results/*
-test-recorder/*
-ai-instruction/*
-.DS_Store
-doc/.DS_Store
-# Temporary test files (keep scripts)
-tmp/test-endorphin/test-results/
-tmp/test-endorphin/test-recorder/
-tmp/test-endorphin/tests/
-tmp/test-endorphin/node_modules/
-tmp/test-endorphin/package-lock.json
-tmp/test-endorphin/endorphin.config.js
-tmp/test-endorphin/.env
-tmp/console-test/
+endorphin.config.js
+endorphin.config.ts
+endorphin-ai-*.tgz
 
-# NPM Publishing artifacts
-*.tgz
-package/
-temp-package-test/
-npm-test/
-test-npm-install/
+# Temporary test artifacts in main root (should not be committed)
+/endorphin.config.*
+/test-results/
+/test-recorder/
+tests/development/coverage/*
+/*.tgz
 
-# Version control
+# Dependencies
+node_modules/
+package-lock.json
+
+# Logs
+*.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.npm
 
-# Build artifacts
-dist/
-build/
-coverage/
-dev-tests/html
-dev-tests/results
+# OS
+.DS_Store
+Thumbs.db
+
+tmp/*
