@@ -1,6 +1,6 @@
 {
   "name": "endorphin-ai",
-  "version": "0.7.4",
+  "version": "0.8.0",
   "description": "E2E Testing Reinvented with AI - A powerful TypeScript browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright",
   "main": "dist/framework/index.js",
   "bin": {
