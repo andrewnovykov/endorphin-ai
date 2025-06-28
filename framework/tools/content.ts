@@ -6,6 +6,7 @@
 import type { EnhancedBrowserTestFramework } from '@core/browser-framework';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { createContentOptimizationTool } from './content-optimization.js';
 
 /**
  * Creates a get page content tool for the framework
@@ -13,18 +14,52 @@ import { z } from 'zod';
  * @returns LangChain tool for getting page content
  */
 export function createGetPageContentTool(framework: EnhancedBrowserTestFramework) {
+  const optimizationTool = createContentOptimizationTool(framework);
+  
   return tool(
     async (params: { 
       includeTitle?: boolean | undefined; 
       maxLength?: number | undefined; 
     }) => {
       const includeTitle = params.includeTitle ?? true;
-      const maxLength = params.maxLength ?? 8000;
       
-      const stepDesc = 'Get page content for analysis';
-      console.log(`📄 ${stepDesc}`);
+      const stepDesc = 'Get optimized page content for analysis';
+      console.log(`📄 ${stepDesc} (with automatic token optimization)`);
 
       try {
+        // Try optimized content first
+        const optimizedResult = await optimizationTool.invoke({ 
+          instruction: (framework as any).currentInstruction || '' 
+        });
+        
+        if (optimizedResult && !optimizedResult.error) {
+          let content = '';
+          
+          if (includeTitle) {
+            const title = await framework.currentPage!.title();
+            const url = framework.currentPage!.url();
+            content += `Page Title: ${title}\nURL: ${url}\n\n`;
+          }
+          
+          content += optimizedResult.content;
+          
+          framework.logTestStep(
+            stepDesc,
+            'getPageContent',
+            { 
+              includeTitle, 
+              optimization: optimizedResult.metadata,
+              tokenSavings: optimizedResult.metadata?.estimatedSavings || 0
+            },
+            `Retrieved optimized content: ${optimizedResult.metadata?.tokensUsed || 0} tokens (saved ${optimizedResult.metadata?.estimatedSavings || 0})`,
+            true
+          );
+          
+          return content;
+        }
+        
+        // Fallback to original method if optimization fails
+        const maxLength = params.maxLength ?? 8000;
         let content = '';
 
         if (includeTitle) {
@@ -43,8 +78,8 @@ export function createGetPageContentTool(framework: EnhancedBrowserTestFramework
         framework.logTestStep(
           stepDesc,
           'getPageContent',
-          { includeTitle, maxLength },
-          `Retrieved ${content.length} characters`,
+          { includeTitle, maxLength, fallback: true },
+          `Retrieved ${content.length} characters (fallback mode)`,
           true
         );
         return content;
@@ -52,7 +87,7 @@ export function createGetPageContentTool(framework: EnhancedBrowserTestFramework
         framework.logTestStep(
           stepDesc,
           'getPageContent',
-          { includeTitle, maxLength },
+          { includeTitle, error: error.message },
           error.message,
           false
         );
@@ -61,7 +96,7 @@ export function createGetPageContentTool(framework: EnhancedBrowserTestFramework
     },
     {
       name: 'getPageContent',
-      description: 'Get HTML content of the current page for analysis.',
+      description: 'Get intelligently optimized page content for analysis. Automatically reduces tokens by focusing on interactive elements and relevant content.',
       schema: z.object({
         includeTitle: z.boolean().optional(),
         maxLength: z.number().optional(),

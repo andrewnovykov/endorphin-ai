@@ -5,6 +5,7 @@
 
 import { EnhancedBrowserTestFramework } from '../core/browser-framework.js';
 import { createGetPageContentTool, createGetSimplePageContentTool } from './content.js';
+import { createContentOptimizationTool } from './content-optimization.js';
 import { createClearFieldTool, createClickTool, createFillTool } from './interaction.js';
 import { createNavigationTool } from './navigation.js';
 import { createScreenshotTool, createWaitTool } from './utilities.js';
@@ -20,9 +21,10 @@ export function createAllTools(framework: EnhancedBrowserTestFramework): any[] {
     // Navigation tools
     createNavigationTool(framework),
 
-    // Content analysis tools
-    createGetPageContentTool(framework),
+    // Content analysis tools (optimized)
+    createGetPageContentTool(framework), // Now uses automatic optimization
     createGetSimplePageContentTool(framework),
+    createContentOptimizationTool(framework), // Direct access to optimization
 
     // Interaction tools
     createClickTool(framework),

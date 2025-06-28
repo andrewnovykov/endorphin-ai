@@ -411,6 +411,13 @@ export class EnhancedBrowserTestFramework {
     config: any = {},
     stepDescription: string = 'AI agent call'
   ): Promise<any> {
+    // Extract instruction for content optimization
+    if (messages && messages.messages && messages.messages.length > 0) {
+      const lastMessage = messages.messages[messages.messages.length - 1];
+      if (lastMessage.content) {
+        (this as any).currentInstruction = lastMessage.content;
+      }
+    }
     // Estimate prompt tokens
     const messageContent = typeof messages === 'object' && messages.messages 
       ? messages.messages.map((m: any) => m.content).join(' ')
