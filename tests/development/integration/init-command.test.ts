@@ -114,7 +114,7 @@ describe('Init Command Integration', () => {
       await initProject(testDir);
       
       expect(consoleLogSpy).toHaveBeenCalledWith('⚠️  Endorphin AI already initialized in this directory');
-      expect(consoleLogSpy).toHaveBeenCalledWith('💡 Run: npx endorphin run test HEALTH-001');
+      expect(consoleLogSpy).toHaveBeenCalledWith('💡 Run: npx endorphin-ai run test HEALTH-001');
     });
 
     it('should handle missing examples directory gracefully', async () => {

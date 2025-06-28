@@ -17,27 +17,27 @@ Get your API key from: https://platform.openai.com/api-keys
 ### 2. Run Example Test
 
 ```bash
-npx endorphin run test HEALTH-001
+npx endorphin-ai run test HEALTH-001
 ```
 
 ### 3. Generate reporter
 
 ```bash
-npx endorphin generate report
-npx endorphin open report
+npx endorphin-ai generate report
+npx endorphin-ai open report
 
 ```
 
 ### 4. Record Your Own Test
 
 ```bash
-npx endorphin run test-recorder
+npx endorphin-ai run test-recorder
 ```
 
 ### 5. List All Tests
 
 ```bash
-npx endorphin list
+npx endorphin-ai list
 ```
 
 ## 📁 Project Structure
@@ -58,7 +58,7 @@ npx endorphin list
 
 ```bash
 # Check your current version
-npx endorphin --version
+npx endorphin-ai --version
 
 # Check latest available version
 npm view endorphin-ai version
@@ -77,7 +77,7 @@ npm update endorphin-ai
 npm install endorphin-ai@latest
 
 # Verify the update worked
-npx endorphin --version
+npx endorphin-ai --version
 ```
 
 ## 📋 Common Commands
@@ -86,43 +86,43 @@ npx endorphin --version
 
 ```bash
 # Run specific test
-npx endorphin run test HEALTH-001
+npx endorphin-ai run test HEALTH-001
 
 # Run all tests
-npx endorphin run test all
+npx endorphin-ai run test all
 
 # Run tests by tag
-npx endorphin run test --tag smoke
-npx endorphin run test --tag authentication
+npx endorphin-ai run test --tag smoke
+npx endorphin-ai run test --tag authentication
 
 # Run tests by priority
-npx endorphin run test --priority High
+npx endorphin-ai run test --priority High
 ```
 
 ### Test Management
 
 ```bash
 # List all available tests
-npx endorphin list
+npx endorphin-ai list
 
 # Start test recorder for creating new tests
-npx endorphin run test-recorder
+npx endorphin-ai run test-recorder
 
 # Get help and see all commands
-npx endorphin --help
+npx endorphin-ai --help
 ```
 
 ### Browser Options
 
 ```bash
 # Run with visible browser (default)
-npx endorphin run test HEALTH-001 --no-headless
+npx endorphin-ai run test HEALTH-001 --no-headless
 
 # Run in headless mode (faster)
-npx endorphin run test HEALTH-001 --headless
+npx endorphin-ai run test HEALTH-001 --headless
 
 # Set custom viewport size
-npx endorphin run test HEALTH-001 --viewport 1920x1080
+npx endorphin-ai run test HEALTH-001 --viewport 1920x1080
 ```
 
 ## ⚙️ Configuration
@@ -156,7 +156,9 @@ export default {
 Create test files in the `tests/` directory:
 
 ```javascript
-// tests/my-test.js
+// tests/my-test.ts
+import type { TestCase } from 'endorphin-ai';
+
 export const MY_TEST = {
   id: 'MY-001',
   name: 'My First Test',
@@ -168,8 +170,8 @@ export const MY_TEST = {
     email: 'test@example.com',
     password: 'password123',
   },
-  task: `Navigate to https://example.com and click the login button. 
-         Fill in the email field with the test email. 
+  task: `Navigate to https://example.com and click the login button.
+         Fill in the email field with the test email.
          Fill in the password field with the test password.
          Click submit and verify login was successful.`,
 };
@@ -184,7 +186,7 @@ export const MY_TEST = {
 cat .env
 
 # Test API key works
-npx endorphin run test HEALTH-001
+npx endorphin-ai run test HEALTH-001
 ```
 
 ### Version Issues
@@ -202,7 +204,7 @@ node --version
 
 ```bash
 # Check test file format
-npx endorphin list
+npx endorphin-ai list
 
 # Verify exports are correct
 node -e "import('./tests/sample-test.js').then(console.log)"
@@ -210,8 +212,8 @@ node -e "import('./tests/sample-test.js').then(console.log)"
 
 ## 🎯 Next Steps
 
-1. **Run the sample test**: `npx endorphin run test HEALTH-001`
-2. **Record your first test**: `npx endorphin run test-recorder`
+1. **Run the sample test**: `npx endorphin-ai run test HEALTH-001`
+2. **Record your first test**: `npx endorphin-ai run test-recorder`
 3. **Write custom tests**: Add new files to `tests/` directory
 4. **Configure settings**: Edit `endorphin.config.js` for your needs
 5. **Set up CI/CD**: Add Endorphin tests to your pipeline

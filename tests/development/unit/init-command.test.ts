@@ -62,7 +62,7 @@ describe('Init Command', () => {
       await initProject(mockTargetDir);
 
       expect(consoleLogSpy).toHaveBeenCalledWith('⚠️  Endorphin AI already initialized in this directory');
-      expect(consoleLogSpy).toHaveBeenCalledWith('💡 Run: npx endorphin run test HEALTH-001');
+      expect(consoleLogSpy).toHaveBeenCalledWith('💡 Run: npx endorphin-ai run test HEALTH-001');
       
       // Should not create directories or files
       expect(mockFs.mkdir).not.toHaveBeenCalled();

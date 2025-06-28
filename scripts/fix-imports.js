@@ -11,7 +11,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const distDir = path.join(__dirname, '..', 'dist', 'framework');
+const distFrameworkDir = path.join(__dirname, '..', 'dist', 'framework');
+const distBinDir = path.join(__dirname, '..', 'dist', 'bin');
 
 // Path alias mappings
 const pathMappings = {
@@ -80,5 +81,15 @@ function processDirectory(dir) {
 }
 
 console.log('🔧 Fixing TypeScript path aliases in compiled JavaScript...');
-processDirectory(distDir);
+
+// Process framework directory
+if (fs.existsSync(distFrameworkDir)) {
+  processDirectory(distFrameworkDir);
+}
+
+// Process bin directory  
+if (fs.existsSync(distBinDir)) {
+  processDirectory(distBinDir);
+}
+
 console.log('✅ Import paths fixed!');

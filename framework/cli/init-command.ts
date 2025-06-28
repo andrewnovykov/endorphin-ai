@@ -39,7 +39,7 @@ export async function initProject(targetDir: string = process.cwd()): Promise<vo
       (await fileExists(path.join(targetDir, 'endorphin.config.ts')));
     if (configExists) {
       console.log('⚠️  Endorphin AI already initialized in this directory');
-      console.log('💡 Run: npx endorphin run test HEALTH-001');
+      console.log('💡 Run: npx endorphin-ai run test HEALTH-001');
       return;
     }
 
@@ -53,8 +53,9 @@ export async function initProject(targetDir: string = process.cwd()): Promise<vo
     console.log('');
     console.log('🚀 Next steps:');
     console.log('  1. Edit .env and add your OpenAI API key');
-    console.log('  2. Run: npx endorphin run test HEALTH-001');
-    console.log('  3. Try: npx endorphin run test-recorder');
+    console.log('  2. Run: npx endorphin-ai run test HEALTH-001');
+    console.log('  3. Try: npx endorphin-ai run generate report');
+    console.log('  4. Try: npx endorphin-ai run test-recorder');
     console.log('');
     console.log('📚 Learn more: https://github.com/andrewnovykov/endorphin-ai');
   } catch (error: any) {
@@ -131,7 +132,7 @@ function processEnvFile(content: string): string {
 # 2. Create new secret key
 # 3. Replace "your_openai_api_key_here" above with your actual key
 # 4. Save this file
-# 5. Run: npx endorphin run test HEALTH-001`;
+# 5. Run: npx endorphin-ai run test HEALTH-001`;
 }
 
 function processConfigFile(content: string): string {
@@ -168,7 +169,7 @@ async function createBasicFiles(targetDir: string): Promise<void> {
 # 2. Create new secret key
 # 3. Replace "your_openai_api_key_here" above with your actual key
 # 4. Save this file
-# 5. Run: npx endorphin run test HEALTH-001`;
+# 5. Run: npx endorphin-ai run test HEALTH-001`;
 
   await fs.writeFile(path.join(targetDir, '.env'), envContent);
   console.log('📄 Created: .env');
@@ -288,7 +289,7 @@ Welcome to your new Endorphin AI testing project! 🎯
 
 2. **Run your first test:**
    \`\`\`bash
-   npx endorphin run test HEALTH-001
+   npx endorphin-ai run test HEALTH-001
    \`\`\`
 
 3. **View test results:**
@@ -305,7 +306,7 @@ Welcome to your new Endorphin AI testing project! 🎯
 
 - Add more tests in the \`tests/\` directory
 - Customize your configuration in \`endorphin.config.js\`
-- Explore the interactive test recorder: \`npx endorphin run test-recorder\`
+- Explore the interactive test recorder: \`npx endorphin-ai run test-recorder\`
 
 Happy testing! 🚀`;
 

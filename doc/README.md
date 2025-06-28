@@ -5,7 +5,7 @@ This directory contains comprehensive documentation for the Endorphin AI framewo
 ## 📚 Documentation Structure
 
 ### For Users
-- **[Quick Start Guide](user-guide/Quick-Start-v0.5.0.md)** - Get started with v0.5.0 features
+- **[Quick Start Guide](user-guide/Quick-Start-v0.5.0.md)** - Get started with latest features
 - **[User Setup Guide](user-guide/User-Setup-Guide.md)** - Complete setup instructions
 - **[HTML Reporter Guide](user-guide/HTML-Reporter-Guide.md)** - Interactive reports documentation
 - **[Test Recorder Guide](user-guide/Test-Recorder.md)** - Recording test workflows
