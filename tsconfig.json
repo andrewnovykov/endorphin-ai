@@ -76,8 +76,7 @@
   },
   "include": [
     "framework/**/*",
-    "bin/**/*",
-    "examples/**/*"
+    "bin/**/*"
   ],
   "exclude": [
     "node_modules",

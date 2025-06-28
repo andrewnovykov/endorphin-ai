@@ -54,8 +54,14 @@ export async function initProject(targetDir: string = process.cwd()): Promise<vo
     console.log('🚀 Next steps:');
     console.log('  1. Edit .env and add your OpenAI API key');
     console.log('  2. Run: npx endorphin-ai run test HEALTH-001');
-    console.log('  3. Try: npx endorphin-ai run generate report');
-    console.log('  4. Try: npx endorphin-ai run test-recorder');
+    console.log('  3. Try the API demo: npx endorphin-ai run test API-DEMO-001');
+    console.log('  4. Check your custom tools: npx endorphin-ai list tools');
+    console.log('  5. Try: npx endorphin-ai run generate report');
+    console.log('  6. Try: npx endorphin-ai run test-recorder');
+    console.log('');
+    console.log('🛠️ Custom Tools:');
+    console.log('  - JSONPlaceholder API tool included in tools/ directory');
+    console.log('  - Create more: npx endorphin-ai create tool my-tool');
     console.log('');
     console.log('📚 Learn more: https://github.com/andrewnovykov/endorphin-ai');
   } catch (error: any) {
@@ -65,7 +71,7 @@ export async function initProject(targetDir: string = process.cwd()): Promise<vo
 }
 
 async function createDirectories(targetDir: string): Promise<void> {
-  const dirs = ['tests', 'test-results', 'test-recorder'];
+  const dirs = ['tests', 'test-results', 'test-recorder', 'tools'];
 
   for (const dir of dirs) {
     const dirPath = path.join(targetDir, dir);
@@ -93,6 +99,9 @@ async function copyExampleFiles(targetDir: string): Promise<void> {
     { src: '.env.example', dest: '.env' },
     { src: 'endorphin.config.ts', dest: 'endorphin.config.ts' },
     { src: 'tests/sample-test.ts', dest: 'tests/sample-test.ts' },
+    { src: 'tests/api-demo.yaml', dest: 'tests/api-demo.yaml' },
+    { src: 'tools/jsonplaceholder-api.ts', dest: 'tools/jsonplaceholder-api.ts' },
+    { src: 'tools/README.md', dest: 'tools/README.md' },
     { src: '.gitignore.example', dest: '.gitignore' },
     { src: 'README-ENDORPHIN.md', dest: 'README-ENDORPHIN.md' },
   ];
@@ -205,6 +214,11 @@ export default {
   // Test Settings
   testsDirectory: 'tests',
   environment: 'development',
+
+  // Custom tools configuration
+  customTools: [
+    './tools', // Load all tools from the tools directory
+  ],
 };
 
 // 🎯 Configuration Tips:
@@ -312,4 +326,174 @@ Happy testing! 🚀`;
 
   await fs.writeFile(path.join(targetDir, 'README-ENDORPHIN.md'), readmeContent);
   console.log('📄 Created: README-ENDORPHIN.md');
+
+  // Create custom tools
+  await createBasicCustomTools(targetDir);
+}
+
+async function createBasicCustomTools(targetDir: string): Promise<void> {
+  // Create tools directory
+  await fs.mkdir(path.join(targetDir, 'tools'), { recursive: true });
+
+  // Create JSONPlaceholder API tool
+  const apiToolContent = `/**
+ * JSONPlaceholder API Tool
+ * This tool demonstrates API testing with a real public service
+ */
+
+import { tool } from '@langchain/core/tools';
+import { z } from 'zod';
+import type { EnhancedBrowserTestFramework } from 'endorphin-ai';
+
+/**
+ * Creates a JSONPlaceholder API testing tool
+ * @param framework - Framework instance
+ * @returns LangChain tool for testing JSONPlaceholder API
+ */
+export function createJsonPlaceholderApiTool(framework: EnhancedBrowserTestFramework) {
+  return tool(
+    async (params: {
+      endpoint: string;
+      method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+      data?: any;
+    }) => {
+      const { endpoint, method = 'GET', data } = params;
+      const baseUrl = 'https://jsonplaceholder.typicode.com';
+      const url = \`$\{baseUrl}$\{endpoint.startsWith('/') ? endpoint : '/' + endpoint}\`;
+      
+      const stepDesc = \`API $\{method} request to: $\{endpoint}\`;
+      console.log(\`🌐 $\{stepDesc}\`);
+      
+      try {
+        const requestOptions: RequestInit = {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        };
+        
+        if (data && (method === 'POST' || method === 'PUT')) {
+          requestOptions.body = JSON.stringify(data);
+        }
+        
+        const response = await fetch(url, requestOptions);
+        const responseData = await response.json();
+        
+        framework.logTestStep(
+          stepDesc,
+          'jsonplaceholder-api',
+          params,
+          \`API response: $\{response.status} $\{response.statusText}\`,
+          response.ok
+        );
+        
+        if (response.ok) {
+          return \`✅ $\{method} $\{endpoint} succeeded ($\{response.status}): $\{JSON.stringify(responseData, null, 2)}\`;
+        } else {
+          throw new Error(\`API request failed: $\{response.status} $\{response.statusText}\`);
+        }
+      } catch (error: any) {
+        framework.logTestStep(
+          stepDesc,
+          'jsonplaceholder-api',
+          params,
+          error.message,
+          false
+        );
+        throw error;
+      }
+    },
+    {
+      name: 'jsonplaceholder-api',
+      description: 'Make API requests to JSONPlaceholder test service (posts, users, comments, etc.)',
+      schema: z.object({
+        endpoint: z.string().describe('API endpoint (e.g., /posts/1, /users, /comments)'),
+        method: z.enum(['GET', 'POST', 'PUT', 'DELETE']).optional().describe('HTTP method (default: GET)'),
+        data: z.any().optional().describe('Request body data for POST/PUT requests'),
+      }),
+    }
+  );
+}`;
+
+  await fs.writeFile(path.join(targetDir, 'tools/jsonplaceholder-api.ts'), apiToolContent);
+  console.log('📄 Created: tools/jsonplaceholder-api.ts');
+
+  // Create tools README
+  const toolsReadmeContent = `# Custom Tools
+
+This directory contains custom tools for your Endorphin AI project.
+
+## 🛠️ Available Tools
+
+### JSONPlaceholder API Tool (\`jsonplaceholder-api.ts\`)
+A working example tool that demonstrates API testing with a real public service.
+
+**Features:**
+- Test JSONPlaceholder API endpoints (posts, users, comments, etc.)
+- Support for GET, POST, PUT, DELETE methods
+- Automatic error handling and logging
+- Real API responses for testing
+
+**Usage in tests:**
+\`\`\`yaml
+steps:
+  - action: Get all posts from JSONPlaceholder API using /posts endpoint
+  - action: Get user with ID 1 using /users/1 endpoint  
+  - action: Create a new post with title "My Test Post" and body "This is a test post"
+  - action: Update post 1 with new title "Updated Post"
+\`\`\`
+
+## 📝 Creating New Tools
+
+To create a new custom tool:
+
+\`\`\`bash
+npx endorphin create tool my-new-tool --template basic
+\`\`\`
+
+Available templates:
+- \`basic\` - Simple tool template
+- \`ui\` - UI automation tool for browser interactions
+- \`api\` - API testing tool template
+
+## 🔧 Configuration
+
+Your tools are automatically loaded because they're configured in \`endorphin.config.ts\`:
+
+\`\`\`typescript
+export default {
+  // ... other config
+  customTools: [
+    './tools'  // This directory
+  ],
+};
+\`\`\`
+
+## 📚 Learn More
+
+- [Custom Tools Guide](https://github.com/andrewnovykov/endorphin-ai#custom-tools)
+- [Tool Development Documentation](https://github.com/andrewnovykov/endorphin-ai#tool-development)
+- [API Examples](https://github.com/andrewnovykov/endorphin-ai#api-testing)`;
+
+  await fs.writeFile(path.join(targetDir, 'tools/README.md'), toolsReadmeContent);
+  console.log('📄 Created: tools/README.md');
+
+  // Create API demo test
+  const apiDemoContent = `id: API-DEMO-001
+name: JSONPlaceholder API Demo
+description: Demonstrates API testing with custom tools
+tags:
+  - api
+  - demo
+  - custom-tools
+priority: medium
+expectedDuration: 30
+steps:
+  - action: Get all posts from JSONPlaceholder using /posts endpoint
+  - action: Get the first user details using /users/1 endpoint
+  - action: Get comments for post 1 using /posts/1/comments endpoint
+  - action: Create a new post with title "Test Post from Endorphin AI" and body "This post was created using Endorphin AI custom tools"`;
+
+  await fs.writeFile(path.join(targetDir, 'tests/api-demo.yaml'), apiDemoContent);
+  console.log('📄 Created: tests/api-demo.yaml');
 }

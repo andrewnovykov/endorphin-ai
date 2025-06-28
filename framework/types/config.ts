@@ -17,6 +17,7 @@ export interface FrameworkConfig {
   parallel: number;
   maxRetries: number;
   baseUrl?: string;
+  customTools?: string[]; // Array of paths to custom tool files or directories
   [key: string]: any; // Allow dynamic access
 }
 

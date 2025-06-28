@@ -1,0 +1,14 @@
+id: API-DEMO-001
+name: JSONPlaceholder API Demo
+description: Demonstrates API testing with custom tools
+tags:
+  - api
+  - demo
+  - custom-tools
+priority: medium
+expectedDuration: 30
+steps:
+  - action: Get all posts from JSONPlaceholder using /posts endpoint
+  - action: Get the first user details using /users/1 endpoint
+  - action: Get comments for post 1 using /posts/1/comments endpoint
+  - action: Create a new post with title "Test Post from Endorphin AI" and body "This post was created using Endorphin AI custom tools"

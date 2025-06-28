@@ -4,7 +4,7 @@ This file contains instructions for AI assistants (like Claude) working on the E
 
 ## Project Overview
 
-Endorphin AI is a **TypeScript-first browser automation testing framework** that uses AI agents to execute natural language test instructions. The framework is built with modern TypeScript, compiles to JavaScript for distribution, and provides interactive HTML reports.
+Endorphin AI is a **TypeScript-first browser automation testing framework** that uses AI agents to execute natural language test instructions. The framework is built with modern TypeScript, compiles to JavaScript for distribution, provides interactive HTML reports, and supports custom tools for extending testing capabilities.
 
 ## Architecture Summary
 
@@ -32,6 +32,11 @@ npm run test:post-install  # Post-install verification
 # Real test execution (requires OpenAI API key)
 npx tsx bin/endorphin.ts run test HEALTH-001
 npx tsx bin/endorphin.ts generate report
+
+# Custom tools management
+npx tsx bin/endorphin.ts create tool my-tool
+npx tsx bin/endorphin.ts validate tools
+npx tsx bin/endorphin.ts list tools
 ```
 
 ## Directory Structure
@@ -43,8 +48,12 @@ framework/                 # TypeScript source code
 │   ├── index.ts          # Main type exports (includes TestCase)
 │   ├── test.ts           # Test execution types
 │   └── ...
-├── core/                 # Core framework components  
+├── core/                 # Core framework components
+│   ├── custom-tool-discovery.ts  # Custom tool loading system
+│   └── custom-tool-errors.ts     # Error handling for custom tools
 ├── tools/                # Browser automation tools
+├── cli/                  # CLI command handlers
+│   └── tool-commands.ts  # Custom tool CLI commands
 ├── reporters/            # Report generation
 │   └── html-reporter.ts  # Interactive HTML reports
 ├── templates/            # HTML report templates
@@ -76,6 +85,54 @@ export type { TestCase } from './test.js';
 This type is used by the test recorder and must be importable as:
 ```typescript
 import { TestCase } from 'endorphin-ai';
+```
+
+## Custom Tools System
+
+### Overview
+The framework supports custom tools that extend testing capabilities with user-defined AI-powered functionality. Custom tools are TypeScript functions that integrate with LangChain and the testing framework.
+
+### Key Components
+- **Tool Discovery**: `framework/core/custom-tool-discovery.ts` - Automatic loading and validation
+- **Error Handling**: `framework/core/custom-tool-errors.ts` - Comprehensive error management  
+- **CLI Commands**: `framework/cli/tool-commands.ts` - Tool creation and management
+- **Templates**: `framework/templates/tools/` - Tool creation templates
+
+### Configuration
+```typescript
+// endorphin.config.ts
+export default {
+  customTools: ['./tools'], // Array of paths to tool files/directories
+  // Other config...
+};
+```
+
+### Tool Structure
+```typescript
+// tools/my-tool.ts
+import { z } from 'zod';
+import type { EnhancedBrowserTestFramework } from 'endorphin-ai';
+
+export function createMyTool(framework: EnhancedBrowserTestFramework) {
+  return {
+    name: 'my-tool',
+    description: 'Tool description',
+    schema: z.object({
+      input: z.string().describe('Input parameter'),
+    }),
+    call: async ({ input }) => {
+      framework.logTestStep(`Executing tool with: ${input}`);
+      return { result: 'Tool executed successfully' };
+    },
+  };
+}
+```
+
+### CLI Commands
+```bash
+npx endorphin create tool my-tool --template api
+npx endorphin validate tools
+npx endorphin list tools --verbose
 ```
 
 ## HTML Reporter System

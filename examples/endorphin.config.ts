@@ -19,6 +19,11 @@ export default {
     maxRetries: 3,
     temperature: 0.1,
   },
+
+  // Custom tools configuration
+  customTools: [
+    './tools', // Load all tools from the tools directory
+  ],
 };
 
 // 🎯 Configuration Tips:

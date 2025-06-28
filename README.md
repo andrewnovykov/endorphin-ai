@@ -208,6 +208,7 @@ If you prefer manual setup:
 ### 🛠️ Developer Experience
 - **Zero configuration** - Works out of the box
 - **TypeScript support** with full type definitions
+- **Custom tools** - Extend testing capabilities with your own AI-powered tools
 - **Multiple browsers** - Chrome, Firefox, Safari support
 - **Parallel execution** for faster test runs
 - **Hot reload** for rapid test development
@@ -222,7 +223,7 @@ If you prefer manual setup:
 
 ## 🔄 Staying Updated
 
-### Current Version: v0.6.1
+### Current Version: v0.8.0
 
 ```bash
 # Check your current version
@@ -235,12 +236,13 @@ npm update endorphin-ai
 npx endorphin-ai --help
 ```
 
-### What's New in v0.6.1
-- ✅ **Fixed npx Resolution Issues** with post-install script and npm script alternatives
-- ✅ **Enhanced User Experience** with clear troubleshooting guidance
-- ✅ **Reliable Installation** that works regardless of npm/npx behavior
-- ✅ **Multiple Access Methods** including guaranteed npm scripts
-- ✅ **Better Documentation** with comprehensive troubleshooting section
+### What's New in v0.8.0
+- ✅ **Custom Tools Support** - Extend testing capabilities with your own AI-powered tools
+- ✅ **CLI Tool Management** - Create, validate, and list custom tools
+- ✅ **Template System** - Quick tool creation with built-in templates (basic, API, UI)
+- ✅ **Comprehensive Error Handling** - Robust error classification and recovery
+- ✅ **Auto-Discovery** - Automatic tool loading with detailed validation
+- ✅ **TypeScript-First** - Full type safety and IntelliSense for custom tools
 
 ## 🚀 Project Initialization
 
@@ -259,6 +261,7 @@ The `init` command creates:
 - ✅ `test-recorder/` for recorded tests
 - ✅ `.env` file with API key placeholder
 - ✅ `endorphin.config.ts` with optimized TypeScript settings
+- ✅ `tools/` directory with working custom tool examples
 - ✅ `tsconfig.json` for TypeScript compilation
 - ✅ `.gitignore` with Endorphin-specific patterns
 - ✅ `README-ENDORPHIN.md` quick start guide
@@ -299,6 +302,9 @@ npx endorphin-ai init
 
 # What gets created:
 # ├── tests/sample-test.ts     # Ready-to-run TypeScript test
+# ├── tools/                   # Custom tools directory
+# │   ├── jsonplaceholder-api.ts # Working API tool example
+# │   └── README.md            # Custom tools documentation
 # ├── .env                     # API key configuration
 # ├── endorphin.config.ts      # Framework settings (TypeScript)
 # ├── tsconfig.json            # TypeScript configuration
@@ -534,6 +540,118 @@ export const LOGOUT_TEST: TestCase = {
 };
 ```
 
+## 🔧 Custom Tools
+
+Endorphin AI supports custom tools that extend the framework's capabilities with your own AI-powered functionality.
+
+### 🚀 Quick Start with Custom Tools
+
+When you run `npx endorphin-ai init`, you automatically get a working custom tool example:
+
+```bash
+npx endorphin-ai init
+# Creates tools/jsonplaceholder-api.ts - a working API testing tool
+```
+
+### 📝 Creating Custom Tools
+
+Use the CLI to create new tools from templates:
+
+```bash
+# Create a basic custom tool
+npx endorphin create tool my-custom-tool
+
+# Create an API testing tool
+npx endorphin create tool api-validator --template api
+
+# Create a UI automation tool  
+npx endorphin create tool ui-helper --template ui
+```
+
+### ✅ Validate Your Tools
+
+Ensure your custom tools work correctly:
+
+```bash
+# Validate all custom tools
+npx endorphin validate tools
+
+# List all available tools (built-in + custom)
+npx endorphin list tools
+
+# Show detailed information
+npx endorphin list tools --verbose
+```
+
+### 🛠️ Tool Development
+
+Create powerful custom tools in TypeScript:
+
+```typescript
+// tools/my-api-tool.ts
+import { z } from 'zod';
+import type { EnhancedBrowserTestFramework } from 'endorphin-ai';
+
+export function createApiTool(framework: EnhancedBrowserTestFramework) {
+  return {
+    name: 'api-validator',
+    description: 'Validate API responses and data',
+    schema: z.object({
+      endpoint: z.string().describe('API endpoint to test'),
+      method: z.enum(['GET', 'POST', 'PUT', 'DELETE']).default('GET'),
+      expectedStatus: z.number().default(200),
+    }),
+    call: async ({ endpoint, method, expectedStatus }) => {
+      framework.logTestStep(`Testing ${method} ${endpoint}`);
+      
+      const response = await fetch(endpoint, { method });
+      const data = await response.json();
+      
+      if (response.status !== expectedStatus) {
+        throw new Error(`Expected ${expectedStatus}, got ${response.status}`);
+      }
+      
+      return {
+        status: response.status,
+        data,
+        message: `API test passed: ${method} ${endpoint}`,
+      };
+    },
+  };
+}
+```
+
+### ⚙️ Configuration
+
+Add custom tools to your `endorphin.config.ts`:
+
+```typescript
+// endorphin.config.ts
+import type { FrameworkConfig } from 'endorphin-ai';
+
+const config: FrameworkConfig = {
+  // Enable custom tools from the tools directory
+  customTools: ['./tools'],
+  
+  // Or specify individual files
+  customTools: [
+    './tools/api-tool.ts',
+    './tools/database-tool.ts',
+    './my-custom-tools/',
+  ],
+  
+  // Other configuration...
+};
+
+export default config;
+```
+
+### 📖 Custom Tools Guide
+
+For detailed documentation on creating, configuring, and using custom tools, see:
+
+**[📖 Custom Tools Development Guide](./doc/Custom-Tools-Guide.md)**
+
 ## 📁 Project Structure
 
 Your project should look like this:
@@ -545,6 +663,10 @@ my-test-project/
 │   ├── login-test.ts      # Authentication tests
 │   ├── checkout-test.ts   # E-commerce tests
 │   └── navigation-test.ts # UI/Navigation tests
+├── tools/                  # Custom tools (optional)
+│   ├── jsonplaceholder-api.ts # API testing tool
+│   ├── database-tool.ts   # Database operations
+│   └── custom-validators.ts # Custom validation tools
 ├── endorphin.config.ts    # Optional configuration (TypeScript)
 ├── tsconfig.json          # TypeScript configuration
 └── package.json           # Project config
@@ -728,6 +850,22 @@ npx endorphin run test-recorder
 npx endorphin list
 ```
 
+#### Custom Tools Management
+
+```bash
+# Create a new custom tool
+npx endorphin create tool my-tool
+npx endorphin create tool api-tool --template api
+npx endorphin create tool ui-tool --template ui
+
+# Validate all custom tools
+npx endorphin validate tools
+
+# List all tools (built-in + custom)
+npx endorphin list tools
+npx endorphin list tools --verbose
+```
+
 #### Project Setup
 
 ```bash
@@ -831,6 +969,9 @@ Add these to your `package.json`:
     "test:summary": "endorphin generate report --summary",
     "test:open": "endorphin open report",
     "test:cleanup": "endorphin cleanup results",
+    "tools:create": "endorphin create tool",
+    "tools:validate": "endorphin validate tools",
+    "tools:list": "endorphin list tools",
     "endorphin:init": "./node_modules/.bin/endorphin-ai init",
     "endorphin:version": "./node_modules/.bin/endorphin --version",
     "endorphin:help": "./node_modules/.bin/endorphin --help"
@@ -845,6 +986,11 @@ npm test                # Run all tests
 npm run test:smoke      # Run smoke tests
 npm run test:report     # Generate HTML report
 npm run test:open       # Open latest report
+
+# Custom tools management:
+npm run tools:create my-tool  # Create new tool
+npm run tools:validate # Validate all tools
+npm run tools:list     # List all tools
 
 # Guaranteed to work (bypasses npx issues):
 npm run endorphin:init  # Initialize project
@@ -882,7 +1028,8 @@ npx endorphin-ai --version
 
 ### Version History & Features
 
-- **v0.6.1** *(Latest)*: Fixed npx resolution issues, enhanced user experience
+- **v0.8.0** *(Latest)*: Custom tools support with CLI management and templates
+- **v0.6.1**: Fixed npx resolution issues, enhanced user experience
 - **v0.6.0**: Enhanced CLI, security-first publishing, cross-platform CI/CD
 - **v0.5.0**: Advanced HTML reporting with interactive features
 - **v0.4.0**: TypeScript-first experience with full type definitions
@@ -907,6 +1054,7 @@ Update with confidence - your existing tests won't break!
 
 ### 📚 Documentation
 - **[Quick Start Guide](./README.md)** - Get up and running quickly
+- **[Custom Tools Development Guide](./doc/Custom-Tools-Guide.md)** - Create and manage custom tools
 - **[HTML Reporter Guide](./doc/user-guide/HTML-Reporter-Guide.md)** - Interactive reporting
 - **[Framework Architecture](./doc/Framework-Architecture.md)** - Technical deep dive
 

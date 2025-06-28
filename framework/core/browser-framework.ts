@@ -181,7 +181,7 @@ export class EnhancedBrowserTestFramework {
     this.page = await this.context.newPage();
 
     // Setup tools with tracking
-    this.setupTools();
+    await this.setupTools();
 
     // Create AI agent
     await this.setupAgent();
@@ -189,11 +189,11 @@ export class EnhancedBrowserTestFramework {
     console.log('✅ Framework initialized successfully!');
   }
 
-  private setupTools(): void {
+  private async setupTools(): Promise<void> {
     console.log('🛠️ Setting up browser automation tools...');
 
     // Create tools for the AI agent
-    this.toolsArray = createAllTools(this);
+    this.toolsArray = await createAllTools(this);
 
     // Create direct tool access object for framework use
     this.tools = {
@@ -808,6 +808,10 @@ Current Task: ${taskDescription}`;
 
   get activeTestSession(): TestSession | null {
     return this.currentTestSession;
+  }
+
+  get frameworkConfig(): FrameworkConfig {
+    return this.config;
   }
 
   // Natural Language Command Execution Methods
