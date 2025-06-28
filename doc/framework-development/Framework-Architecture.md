@@ -1,6 +1,6 @@
 # 🏗️ Framework Architecture
 
-_Last Updated: June 27, 2025 - v0.4.1+_
+_Last Updated: June 28, 2025 - v0.5.0+_
 
 ## Overview
 
@@ -8,7 +8,7 @@ Endorphin AI is built with a **TypeScript-first modular architecture** that
 separates concerns and provides clear interfaces between components. The
 framework is designed for extensibility, maintainability, and ease of testing.
 
-**Architecture Highlights (v0.4.1+):**
+**Architecture Highlights (v0.5.0+):**
 
 - ✅ **TypeScript Development**: Full type safety and modern tooling
 - ✅ **JavaScript Distribution**: Compiled output for production
@@ -16,6 +16,8 @@ framework is designed for extensibility, maintainability, and ease of testing.
 - ✅ **Path Aliases**: Clean imports with `@core/`, `@tools/`, `@types/`
 - ✅ **Comprehensive Testing**: Multi-tier testing strategy
 - ✅ **Production Ready**: No development dependencies at runtime
+- ✅ **TestCase Type**: Exported TestCase interface for test recorder integration
+- ✅ **Interactive HTML Reports**: Fully functional screenshot display and filtering
 
 ## 📁 Directory Structure
 
@@ -60,7 +62,12 @@ framework/
 │   └── session-recorder.ts      # Session management
 ├── reporters/                   # Report generation
 │   ├── console-reporter.ts      # Console output
-│   └── html-reporter.ts         # HTML report generation
+│   └── html-reporter.ts         # Interactive HTML report generation
+├── templates/                   # Template files
+│   └── reporter/               # HTML report templates
+│       ├── report-template.html # Interactive HTML template
+│       ├── styles.css          # Bootstrap-based styling
+│       └── scripts.js          # Interactive JavaScript functionality
 ├── runner/                      # Test execution
 │   └── task-executor.ts         # Task execution engine
 └── results/                     # Result management
@@ -226,7 +233,7 @@ import { config } from '@core/config-loader.js';
 - **`errors.ts`**: Error classes and error handling types
 - **`recorder.ts`**: Interactive recording and session types
 - **`reporter.ts`**: Report generation and formatting types
-- **`test.ts`**: Test execution and result types
+- **`test.ts`**: Test execution and result types (includes TestCase interface)
 
 #### Path Aliases for Clean Imports
 

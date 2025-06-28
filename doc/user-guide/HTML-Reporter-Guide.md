@@ -1,6 +1,6 @@
 # HTML Reporter User Guide
 
-_Last Updated: June 27, 2025 - v0.4.1+_
+_Last Updated: June 28, 2025 - v0.5.0+_
 
 The Endorphin AI HTML Reporter provides comprehensive, interactive test reports
 that help you analyze test execution results, identify patterns, and debug
@@ -54,7 +54,13 @@ endorphin run test --tag smoke
 endorphin generate report
 ```
 
-- Faster loading for large test suites
+## ✨ What's New in v0.5.0
+
+- **🖼️ Enhanced Screenshot Display**: Screenshots now display as actual images instead of text
+- **🎯 Fixed Filter Functionality**: All/Passed/Failed filter tabs now work correctly
+- **🔍 Improved Search**: Real-time search by test ID and name
+- **📱 Better Mobile Support**: Responsive design improvements
+- **⚡ Performance Optimizations**: Faster loading for large test suites
 
 ## Report Features
 
@@ -110,10 +116,12 @@ Click on any test result to view:
 
 #### Screenshot Gallery
 
-- Visual record of test execution
-- Click to zoom and examine details
-- Organized by execution sequence
-- Supports multiple formats (PNG, JPG)
+- **Visual record of test execution** with actual image thumbnails
+- **Click to zoom and examine details** in full-screen modal
+- **Step-level screenshots** embedded directly in timeline
+- **Organized by execution sequence** with timestamps
+- **Supports multiple formats** (PNG, JPG)
+- **Hover for descriptions** and additional metadata
 
 ### ⌨️ Keyboard Shortcuts
 
@@ -166,15 +174,14 @@ Reports are stored in:
 ```
 test-results/
 ├── reports/
-│   ├── report-2025-06-22.html      # Full reports
-│   ├── summary-report.html         # Latest summary
-│   ├── styles.css                  # Styling assets
-│   ├── scripts.js                  # Interactive functionality
-│   └── screenshots/                # Screenshot assets
-└── TEST-001_2025-06-22T20-32-05/  # Raw test data
-    ├── summary.json
-    ├── test-session.json
-    └── screenshots/
+│   ├── report-2025-06-28.html      # Full interactive reports
+│   ├── assets/                     # Static assets
+│   │   ├── styles.css              # Bootstrap + custom styling
+│   │   └── scripts.js              # Interactive functionality
+│   └── screenshots/                # Copied screenshot assets
+└── TEST-001_2025-06-28T00-17-57/  # Raw test data
+    ├── test-session.json           # Test execution data
+    └── screenshots/                # Original screenshots
 ```
 
 ## Best Practices
@@ -233,15 +240,18 @@ endorphin open report report-2025-06-22.html
 
 #### Search/Filter Not Working
 
-- Ensure JavaScript is enabled in your browser
-- Clear browser cache and reload
-- Check browser console for errors
+- **Ensure JavaScript is enabled** in your browser
+- **Clear browser cache** and reload the report
+- **Check browser console** for JavaScript errors
+- **Verify filter buttons** are clickable and highlighted when active
 
 #### Missing Screenshots
 
-- Verify screenshot directory exists: `test-results/reports/screenshots/`
-- Check if screenshots were captured during test execution
-- Ensure proper file permissions
+- **Verify screenshot directory exists**: `test-results/reports/screenshots/`
+- **Check if screenshots were captured** during test execution
+- **Ensure proper file permissions** for screenshot files
+- **Check console for 404 errors** indicating missing screenshot files
+- **Verify asset paths** are correct in the report HTML
 
 ### Performance Optimization
 
