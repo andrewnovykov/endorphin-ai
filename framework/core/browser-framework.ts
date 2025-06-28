@@ -32,6 +32,7 @@ import type {
 import { setupAgent } from './agent-setup.js';
 import { createTestSession, saveTestSession } from './test-session.js';
 import { TokenTracker } from './token-tracker.js';
+import { PageSnapshotManager } from './page-snapshot.js';
 
 /**
  * Enhanced Browser Test Framework - Core Framework Class
@@ -51,6 +52,7 @@ export class EnhancedBrowserTestFramework {
   private isInteractiveMode: boolean = false;
   private config: FrameworkConfig;
   private tokenTracker: TokenTracker;
+  private snapshotManager: PageSnapshotManager;
 
   constructor(config: Partial<FrameworkConfig> = {}) {
     // Initialize configuration with defaults - deep merge to prevent issues
@@ -133,6 +135,9 @@ export class EnhancedBrowserTestFramework {
 
     // Initialize token tracker
     this.tokenTracker = new TokenTracker(this.config.ai?.openai?.modelName || 'gpt-4o');
+    
+    // Initialize page snapshot manager
+    this.snapshotManager = new PageSnapshotManager();
   }
 
   private getBrowserType() {
@@ -937,5 +942,12 @@ Current Task: ${taskDescription}`;
    */
   setInteractiveMode(interactive: boolean): void {
     this.isInteractiveMode = interactive;
+  }
+
+  /**
+   * Get the page snapshot manager
+   */
+  getSnapshotManager(): PageSnapshotManager {
+    return this.snapshotManager;
   }
 }

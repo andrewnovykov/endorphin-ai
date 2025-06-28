@@ -112,5 +112,6 @@
     "editor.insertSpaces": true,
     "editor.tabSize": 2,
     "editor.autoIndent": "advanced"
-  }
+  },
+  "liveServer.settings.port": 5501
 }
