@@ -310,9 +310,10 @@ Check the specific OS/Node combination that failed:
 - Review test complexity and duration
 
 #### Integration Test Failures
-- Check Node.js version compatibility
-- Verify cross-platform path handling
-- Test CLI commands on target platform
+- **Windows compatibility**: Uses bash shell and simplified Jest commands
+- **Coverage issues**: Integration tests run without coverage to avoid threshold conflicts
+- **Node.js version compatibility**: Tests across 18, 20, 22
+- **Cross-platform paths**: All paths use forward slashes (Node.js compatible)
 
 #### Build Artifact Issues
 - Verify TypeScript compilation
@@ -330,6 +331,12 @@ Check the specific OS/Node combination that failed:
 # Check CI environment locally
 CI=true npm test
 
+# Test integration tests specifically
+npm run test:integration
+
+# Test unit tests only
+npm run test:unit
+
 # Simulate package test environment
 mkdir /tmp/test-env
 cd /tmp/test-env
@@ -340,6 +347,12 @@ npm run build
 find dist/ -type f | head -20
 
 # Verify CLI functionality
+node dist/bin/endorphin.js --help
+node dist/bin/endorphin.js --version
+
+# Windows-specific debugging
+# Ensure bash is available and paths work
+which bash
 node dist/bin/endorphin.js --help
 ```
 

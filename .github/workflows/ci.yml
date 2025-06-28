@@ -157,6 +157,7 @@ jobs:
 
       - name: Test CLI commands (Windows)
         if: runner.os == 'Windows'
+        shell: bash
         run: |
           # Test basic CLI functionality on Windows
           node dist/bin/endorphin.js --version
