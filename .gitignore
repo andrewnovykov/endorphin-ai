@@ -2,17 +2,26 @@
 test-results/
 test-recorder/
 
+# Environment and config files
 .env
+.env.*
 endorphin.config.js
 endorphin.config.ts
-endorphin-ai-*.tgz
 
 # Temporary test artifacts in main root (should not be committed)
 /endorphin.config.*
 /test-results/
 /test-recorder/
-tests/development/coverage/*
-/*.tgz
+
+# Build artifacts and distribution files
+dist/
+*.tgz
+endorphin-ai-*.tgz
+
+# Test coverage reports  
+tests/development/coverage/
+coverage/
+.nyc_output
 
 # Dependencies
 node_modules/
@@ -21,9 +30,43 @@ package-lock.json
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-# OS
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-tmp/*
+# Temporary directories
+tmp/
+temp/
+.tmp/
+.temp/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Local testing artifacts
+/test-install-*/
+/endorphin-test-*/

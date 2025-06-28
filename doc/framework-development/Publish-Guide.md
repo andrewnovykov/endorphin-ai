@@ -1,6 +1,6 @@
 # NPM Package Publish Guide - Endorphin AI
 
-_Last Updated: January 3, 2025 - v0.4.1+_
+_Last Updated: January 2025 - v0.6.0+_
 
 ## 🎯 Overview
 
@@ -9,21 +9,17 @@ Endorphin AI package to NPM. The framework uses **TypeScript for development**
 and **ships compiled JavaScript** for universal compatibility and optimal
 performance.
 
-The publishing workflow now includes **automated pre-release testing** to
-validate the local development version before publishing, ensuring robust and
-reliable releases.
+The publishing workflow includes **comprehensive CI/CD testing** and 
+**security validation** to ensure robust and reliable releases.
 
-**What's New in v0.4.1+:**
+**What's New in v0.6.0+:**
 
-- ✅ **Comprehensive Pre-Release Testing**: Automated validation of local
-  package installation, CLI functionality, and framework features
-- ✅ **Production-Ready CLI**: Compiled JavaScript CLI that works without tsx
-  dependency
-- ✅ **Complete Type Support**: Full TypeScript definitions for framework and
-  tools
-- ✅ **Robust Build Process**: TypeScript compilation with path alias resolution
-- ✅ **Enhanced Package Validation**: Automated testing of package structure and
-  functionality
+- ✅ **Complete CI/CD Pipeline**: Multi-platform testing (Windows, Linux, macOS) 
+- ✅ **Security-First Publishing**: Automated vulnerability scanning and fixes
+- ✅ **Cross-Platform CLI**: Production-ready JavaScript CLI without tsx dependency
+- ✅ **Full TypeScript Support**: Complete type definitions and strict type checking
+- ✅ **Multi-Environment Testing**: Development, pre-release, post-install validation
+- ✅ **Automated Package Validation**: GitHub Actions integration with comprehensive testing
 
 ## 🧪 Testing Strategy Overview
 
@@ -159,14 +155,14 @@ echo "Types: $(node -p 'require("./package.json").types')"
 echo "Files: $(node -p 'require("./package.json").files')"
 ```
 
-**Required Configuration for v0.4.1+:**
+**Required Configuration for v0.6.0+:**
 
 - [ ] `"main": "dist/framework/index.js"` (compiled JavaScript entry)
-- [ ] `"bin": {"endorphin": "./dist/bin/endorphin.js"}` (compiled CLI, no tsx)
+- [ ] `"bin": {"endorphin": "./dist/bin/endorphin.js", "endorphin-ai": "./dist/bin/endorphin.js"}` (dual CLI names)
 - [ ] `"types": "dist/framework/index.d.ts"` (TypeScript definitions)
-- [ ] `"files": ["dist/", "framework/", "bin/", "examples/", ...]` (include
-      dist/)
+- [ ] `"files": ["dist/", "examples/", "README.md", "LICENSE.md", "MIGRATION-GUIDE.md"]` (essential files only)
 - [ ] `"type": "module"` (ES modules for modern Node.js)
+- [ ] `"engines": {"node": ">=16.0.0"}` (Node.js version requirement)
 - [ ] Dependencies are up to date and secure
 
 **Critical Build Artifacts:**
@@ -185,24 +181,24 @@ ls -la dist/framework/tools/                    # Browser tools
 
 ### Semantic Versioning (SemVer)
 
-Current version: `0.4.1`
+Current version: `0.6.0`
 
 #### Version Increment Rules
 
-- **Patch (0.4.2)**: Bug fixes, minor improvements, no breaking changes
-- **Minor (0.5.0)**: New features, enhancements, backward compatible
+- **Patch (0.6.1)**: Bug fixes, minor improvements, no breaking changes
+- **Minor (0.7.0)**: New features, enhancements, backward compatible
 - **Major (1.0.0)**: Breaking changes, major architecture updates
 
 ### Update Version
 
 ```bash
 # Automated version bump with git tag
-npm version patch    # 0.4.1 → 0.4.2
-npm version minor    # 0.4.1 → 0.5.0
-npm version major    # 0.4.1 → 1.0.0
+npm version patch    # 0.6.0 → 0.6.1
+npm version minor    # 0.6.0 → 0.7.0
+npm version major    # 0.6.0 → 1.0.0
 
 # Manual version (no git operations)
-npm version 0.4.2 --no-git-tag-version
+npm version 0.6.1 --no-git-tag-version
 ```
 
 ## 🚀 Publication Process
@@ -229,8 +225,9 @@ npm run build:clean          # Remove old dist/, rebuild fresh
 
 # 🧪 Comprehensive automated testing workflow
 npm test                     # Development tests (TypeScript source)
-npm run test:pre-release     # Automated local package tests (JavaScript)
-npm run test:package         # Integration test scenarios
+npm run test:unit            # Unit tests
+npm run test:integration     # Integration tests
+npm run test:package         # Package integration scenarios
 
 # 🔍 CLI validation with compiled JavaScript
 echo "Testing compiled CLI (production-ready):"
@@ -239,58 +236,55 @@ echo "Testing compiled CLI (production-ready):"
 
 # Verify no tsx dependency at runtime
 node dist/bin/endorphin.js --version || echo "❌ CLI requires Node.js runtime fixes"
+
+# 🔒 Security audit and vulnerability check
+npm audit --audit-level=high
+npm audit fix --force  # Fix critical/high vulnerabilities if found
 ```
 
-**Pre-Release Testing Details:**
+**Current Testing Structure:**
 
-The `npm run test:pre-release` command runs comprehensive automated tests:
+The Endorphin AI project uses a comprehensive multi-layer testing approach:
 
-1. **Local Installation Test** (`local-installation.test.ts`)
-   - Tests local package installation from development source
-   - Verifies package.json configuration
-   - Validates file structure and dependencies
+1. **Development Tests** (`tests/development/`)
+   - **Unit Tests**: Framework components, utilities, core functionality
+   - **Integration Tests**: Component interaction, config loading, CLI commands
+   - **Coverage Reports**: Code coverage analysis and reporting
 
-2. **CLI Functionality Test** (`cli-functionality.test.ts`)
-   - Tests all CLI commands with compiled JavaScript
-   - Validates help, version, list, init commands
-   - Ensures CLI works without tsx dependency
+2. **Package Tests** (`tests/package-tests/`)
+   - **Local Installation**: Package installation and dependency validation
+   - **CLI Functionality**: Command-line interface testing
+   - **Integration Scenarios**: Real-world usage patterns
 
-3. **E2E Testing** (`e2e-testing.test.ts`)
-   - Tests browser automation and AI integration
-   - Validates framework core functionality
-   - Tests tool execution and result handling
+3. **Pre-Release Tests** (`tests/pre-release/`)
+   - **Local Installation Validation**: Automated package testing
+   - **Framework Integration**: Core framework functionality
+   - **Real-World Scenarios**: Complete workflow validation
+   - **CLI Testing**: Production CLI validation
 
-4. **Test Recorder** (`test-recorder.test.ts`)
-   - Validates interactive test recording
-   - Tests session recording and playback
-   - Ensures recorder isolation and cleanup
-
-5. **Test Reporter** (`test-reporter.test.ts`)
-   - Tests HTML report generation
-   - Validates console reporting
-   - Checks report formatting and content
-
-6. **Real-World Scenarios** (`real-world-scenarios.test.ts`)
-   - Tests complete workflows end-to-end
-   - Validates realistic usage patterns
-   - Tests integration with example projects
+4. **Post-Install Tests** (`tests/post-install/`)
+   - **Published Package Verification**: NPM registry validation
+   - **End-User Scenarios**: Installation and usage testing
+   - **Interactive CLI Testing**: User experience validation
 
 ### Step 3: Validate Pre-Release Package (Automated)
 
 The automated pre-release testing system handles most validation automatically:
 
 ```bash
-# 🎯 Run automated pre-release validation
-npm run test:pre-release
+# 🎯 Run comprehensive package validation
+npm run test:package
 
-# This automated workflow includes:
-# ✅ Local package installation from development source
+# This includes:
+# ✅ Local package installation validation
 # ✅ CLI functionality testing with compiled JavaScript
 # ✅ Framework integration testing
-# ✅ E2E testing capabilities validation
-# ✅ Test recorder functionality verification
-# ✅ HTML report generation testing
 # ✅ Real-world scenario validation
+
+# Additional validation (if pre-release tests exist)
+if [ -d "tests/pre-release" ]; then
+  cd tests/pre-release && npm test
+fi
 ```
 
 **Manual Pre-Release Validation (if needed):**
@@ -461,6 +455,14 @@ npm config get registry  # Should be https://registry.npmjs.org/
 # Login if needed
 npm login
 
+# 🔒 Final security check before publish
+npm audit --audit-level=high
+if [ $? -ne 0 ]; then
+  echo "❌ Security vulnerabilities found. Fix before publishing:"
+  npm audit fix --force
+  npm audit --audit-level=high  # Re-check after fixes
+fi
+
 # 🚀 Publish the package
 echo "🚀 Publishing to NPM..."
 npm publish
@@ -511,9 +513,9 @@ npm run type-check                     # Verify TypeScript compilation
 
 # Testing workflow
 npm test                              # Development tests (TypeScript)
-npm run test:pre-release              # Local package tests (JavaScript)
-npm run test:post-install             # Published package tests
-npm run test:package                  # Integration tests
+npm run test:unit                     # Unit tests
+npm run test:integration              # Integration tests
+npm run test:package                  # Package integration tests
 
 # CLI validation
 ./dist/bin/endorphin.js --version     # Test compiled CLI
@@ -525,26 +527,29 @@ npm pack --dry-run                    # Preview package contents
 npm publish                           # Publish to NPM
 ```
 
-### Package.json Configuration (v0.4.1+)
+### Package.json Configuration (v0.6.0+)
 
 ```json
 {
   "name": "endorphin-ai",
-  "version": "0.4.1",
+  "version": "0.6.0",
   "main": "dist/framework/index.js",
   "bin": {
-    "endorphin": "./dist/bin/endorphin.js"
+    "endorphin": "./dist/bin/endorphin.js",
+    "endorphin-ai": "./dist/bin/endorphin.js"
   },
   "types": "dist/framework/index.d.ts",
   "type": "module",
   "files": [
     "dist/",
-    "framework/",
-    "bin/",
     "examples/",
     "README.md",
-    "LICENSE.md"
-  ]
+    "LICENSE.md",
+    "MIGRATION-GUIDE.md"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  }
 }
 ```
 
@@ -563,15 +568,22 @@ dist/
 └── ...                       # Other compiled modules
 ```
 
-### Pre-Release Test Coverage
+### Current Test Coverage
 
-- **Local Installation** (`local-installation.test.ts`)
-- **CLI Functionality** (`cli-functionality.test.ts`)
-- **Framework Integration** (`framework-integration.test.ts`)
-- **E2E Testing** (`e2e-testing.test.ts`)
-- **Test Recorder** (`test-recorder.test.ts`)
-- **HTML Reporter** (`test-reporter.test.ts`)
-- **Real-World Scenarios** (`real-world-scenarios.test.ts`)
+**Development Tests:**
+- Unit tests for core framework components
+- Integration tests for CLI and config loading
+- Code coverage reports and analysis
+
+**Package Tests:**
+- Local installation validation scripts
+- CLI functionality testing
+- Real-world integration scenarios
+
+**Pre-Release Tests:** (if available)
+- Automated local package testing
+- Framework integration validation
+- Production-ready CLI testing
 
 ### Troubleshooting Quick Fixes
 
