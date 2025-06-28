@@ -35,6 +35,13 @@ describe('npx Resolution Integration', () => {
         expect(true).toBe(true);
         return;
       }
+      
+      // Skip permission check on Windows (Windows doesn't use Unix permissions)
+      if (process.platform === 'win32') {
+        expect(true).toBe(true);
+        return;
+      }
+      
       const fs = await import('fs/promises');
       const stats = await fs.stat(binaryPath);
       // Check if file has execute permissions (mode & 0o111)
@@ -73,8 +80,14 @@ describe('npx Resolution Integration', () => {
         done();
         return;
       }
-      const child = spawn(binaryPath, ['--version'], {
-        stdio: ['ignore', 'pipe', 'pipe']
+      
+      // On Windows, we need to use 'node' to execute the script
+      const command = process.platform === 'win32' ? 'node' : binaryPath;
+      const args = process.platform === 'win32' ? [binaryPath, '--version'] : ['--version'];
+      
+      const child = spawn(command, args, {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        shell: process.platform === 'win32'
       });
 
       let output = '';
