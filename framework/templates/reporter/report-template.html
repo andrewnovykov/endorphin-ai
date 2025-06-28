@@ -85,7 +85,7 @@
 
     <!-- Summary Cards -->
     <div class="row mb-4">
-      <div class="col-md-3">
+      <div class="col-md-2">
         <div class="card text-center">
           <div class="card-body">
             <h5 class="card-title text-primary">Total Tests</h5>
@@ -93,7 +93,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <div class="card text-center">
           <div class="card-body">
             <h5 class="card-title text-info">Total Runs</h5>
@@ -101,7 +101,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <div class="card text-center">
           <div class="card-body">
             <h5 class="card-title text-success">Successful</h5>
@@ -109,11 +109,27 @@
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <div class="card text-center">
           <div class="card-body">
             <h5 class="card-title text-danger">Failed</h5>
             <h2 class="card-text">{{failedRuns}}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title text-warning">Total Tokens</h5>
+            <h2 class="card-text">{{totalTokens}}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title text-secondary">Total Cost</h5>
+            <h2 class="card-text">${{totalCost}}</h2>
           </div>
         </div>
       </div>
@@ -149,11 +165,11 @@
                 <thead>
                   <tr>
                     <th>Test</th>
-                    <th>Total Runs</th>
-                    <th>Successful</th>
-                    <th>Failed</th>
-                    <th>Success Rate</th>
-                    <th>Last Run</th>
+                    <th>Status</th>
+                    <th>Duration</th>
+                    <th>Tokens</th>
+                    <th>Cost</th>
+                    <th>Model</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -181,8 +197,9 @@
                   <tr>
                     <th>Test</th>
                     <th>Status</th>
-                    <th>Executed</th>
                     <th>Duration</th>
+                    <th>Tokens</th>
+                    <th>Cost</th>
                     <th>Steps</th>
                     <th>Actions</th>
                   </tr>
@@ -209,7 +226,7 @@
         <div class="modal-body">
           <!-- Test Info -->
           <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <h6>Test Information</h6>
               <table class="table table-sm">
                 <tr>
@@ -230,7 +247,7 @@
                 </tr>
               </table>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <h6>Execution Details</h6>
               <table class="table table-sm">
                 <tr>
@@ -248,6 +265,27 @@
                 <tr>
                   <td><strong>Screenshots:</strong></td>
                   <td id="modal-screenshots"></td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-4">
+              <h6>Token Usage</h6>
+              <table class="table table-sm">
+                <tr>
+                  <td><strong>Total Tokens:</strong></td>
+                  <td id="modal-total-tokens"></td>
+                </tr>
+                <tr>
+                  <td><strong>Total Cost:</strong></td>
+                  <td id="modal-total-cost"></td>
+                </tr>
+                <tr>
+                  <td><strong>AI Calls:</strong></td>
+                  <td id="modal-ai-calls"></td>
+                </tr>
+                <tr>
+                  <td><strong>Model:</strong></td>
+                  <td id="modal-model"></td>
                 </tr>
               </table>
             </div>

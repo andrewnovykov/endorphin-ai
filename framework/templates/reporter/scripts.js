@@ -142,6 +142,13 @@ class TestReportViewer {
     this.updateModalField('modal-end-time', this.formatDateTime(session.endTime));
     this.updateModalField('modal-total-steps', session.steps ? session.steps.length : 0);
     this.updateModalField('modal-screenshots', result.screenshots ? result.screenshots.length : 0);
+    
+    // Populate token usage fields
+    const tokenSummary = session.tokenSummary || summary.tokenSummary || {};
+    this.updateModalField('modal-total-tokens', (tokenSummary.totalTokens || 0).toLocaleString());
+    this.updateModalField('modal-total-cost', `$${(tokenSummary.totalCost || 0).toFixed(4)}`);
+    this.updateModalField('modal-ai-calls', tokenSummary.aiCalls || 0);
+    this.updateModalField('modal-model', tokenSummary.model || 'N/A');
 
     // Populate steps timeline
     this.populateStepsTimeline(session.steps || []);

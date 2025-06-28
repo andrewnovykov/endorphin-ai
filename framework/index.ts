@@ -15,6 +15,7 @@ export { TestManager } from './core/test-manager';
 export { createTestSession, generateSessionSummary, saveTestSession } from './core/test-session';
 export { runTask, runTaskSequence } from './runner/task-executor';
 export { createAllTools } from './tools/index';
+export { TokenTracker } from './core/token-tracker';
 
 // Configuration exports
 export { AGENT_CONFIG } from './config/agent-config';
@@ -35,10 +36,16 @@ export { initProject } from './cli/init-command.js';
 
 // Individual tool creators for custom setups
 export { createGetPageContentTool, createGetSimplePageContentTool } from './tools/content';
+export { createContentOptimizationTool } from './tools/content-optimization';
+export { createDifferentialContentTool } from './tools/differential-content';
 export { createClearFieldTool, createClickTool, createFillTool } from './tools/interaction';
 export { createNavigationTool } from './tools/navigation';
 export { createScreenshotTool, createWaitTool } from './tools/utilities';
 export { createGetElementInfoTool, createVerifyElementTool } from './tools/verification';
+
+// Page snapshot system
+export { PageSnapshotManager } from './core/page-snapshot';
+export type { PageSnapshot, PageDelta } from './core/page-snapshot';
 
 // Type exports
 export type * from './types/index';

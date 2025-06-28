@@ -259,6 +259,18 @@ export class HtmlReporter {
           return step;
         });
 
+        // Calculate token metrics from steps and session
+        const stepTokens = processedSteps.reduce((total: number, step: any) => {
+          return total + (step.tokenUsage?.totalTokens || 0);
+        }, 0);
+        
+        const sessionTokens = sessionData.tokenSummary?.totalTokens || 0;
+        const totalTokens = Math.max(stepTokens, sessionTokens); // Use session total if available
+        const totalCost = sessionData.tokenSummary?.totalCost || 0;
+        const aiCalls = sessionData.tokenSummary?.aiCalls || 0;
+        const avgTokensPerCall = sessionData.tokenSummary?.avgTokensPerCall || 0;
+        const model = sessionData.tokenSummary?.model || 'gpt-4o';
+
         // Structure the data as expected by the JavaScript
         return {
           session: {
@@ -272,12 +284,26 @@ export class HtmlReporter {
             sessionId: sessionData.sessionId || path.basename(resultPath),
             sessionName: sessionData.sessionName || sessionData.testName,
             sessionDir: path.basename(resultPath),
-            finalResult: sessionData.finalResult || sessionData.error
+            finalResult: sessionData.finalResult || sessionData.error,
+            tokenSummary: {
+              totalTokens,
+              totalCost,
+              aiCalls,
+              avgTokensPerCall,
+              model
+            }
           },
           summary: {
             status: sessionData.status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
             duration: sessionData.duration || 0,
-            error: sessionData.error || sessionData.finalResult
+            error: sessionData.error || sessionData.finalResult,
+            tokenSummary: {
+              totalTokens,
+              totalCost,
+              aiCalls,
+              avgTokensPerCall,
+              model
+            }
           },
           screenshots: screenshotsForDisplay,
           screenshotsForCopying,
@@ -335,6 +361,14 @@ export class HtmlReporter {
   private processTemplate(template: string, data: any): string {
     let processedTemplate = template;
 
+    // Calculate token summary from all results
+    const totalTokens = data.testResults.reduce((total: number, result: any) => {
+      return total + (result.summary?.tokenSummary?.totalTokens || 0);
+    }, 0);
+    const totalCost = data.testResults.reduce((total: number, result: any) => {
+      return total + (result.summary?.tokenSummary?.totalCost || 0);
+    }, 0);
+
     // Replace summary data - match the actual template placeholders
     processedTemplate = processedTemplate.replace(
       /{{totalTests}}/g,
@@ -355,6 +389,14 @@ export class HtmlReporter {
     processedTemplate = processedTemplate.replace(
       /{{successRate}}/g,
       data.summary.successRate.toFixed(1)
+    );
+    processedTemplate = processedTemplate.replace(
+      /{{totalTokens}}/g,
+      totalTokens.toLocaleString()
+    );
+    processedTemplate = processedTemplate.replace(
+      /{{totalCost}}/g,
+      totalCost.toFixed(4)
     );
     processedTemplate = processedTemplate.replace(/{{generatedAt}}/g, new Date().toLocaleString());
 
@@ -415,7 +457,7 @@ export class HtmlReporter {
    */
   private generateTestStatsTable(testResults: any[]): string {
     if (testResults.length === 0) {
-      return '<tr><td colspan="4" class="text-center">No test results available</td></tr>';
+      return '<tr><td colspan="6" class="text-center">No test results available</td></tr>';
     }
 
     return testResults
@@ -425,12 +467,18 @@ export class HtmlReporter {
             ? '<span class="badge bg-success">✅ Passed</span>'
             : '<span class="badge bg-danger">❌ Failed</span>';
 
+        const tokens = result.summary?.tokenSummary?.totalTokens || 0;
+        const cost = result.summary?.tokenSummary?.totalCost || 0;
+        const model = result.summary?.tokenSummary?.model || 'N/A';
+
         return `
           <tr>
-            <td>${this.escapeHtml(result.testId)}</td>
-            <td>${this.escapeHtml(result.testName)}</td>
+            <td><strong>${this.escapeHtml(result.testId)}</strong><br><small class="text-muted">${this.escapeHtml(result.testName)}</small></td>
             <td>${statusBadge}</td>
             <td>${this.formatDuration(result.duration)}</td>
+            <td><span class="badge bg-info">${tokens.toLocaleString()}</span></td>
+            <td><span class="badge bg-warning">$${cost.toFixed(4)}</span></td>
+            <td><small class="text-muted">${model}</small></td>
           </tr>
         `;
       })
@@ -442,7 +490,7 @@ export class HtmlReporter {
    */
   private generateRecentResultsTable(testResults: any[]): string {
     if (testResults.length === 0) {
-      return '<tr><td colspan="6" class="text-center">No recent test results available</td></tr>';
+      return '<tr><td colspan="7" class="text-center">No recent test results available</td></tr>';
     }
 
     // Sort by most recent first and take top 10
@@ -458,14 +506,16 @@ export class HtmlReporter {
             : '<span class="badge bg-danger">❌ Failed</span>';
 
         const screenshotCount = result.screenshots ? result.screenshots.length : 0;
-        const timestamp = result.timestamp ? new Date(result.timestamp).toLocaleString() : 'N/A';
+        const tokens = result.summary?.tokenSummary?.totalTokens || 0;
+        const cost = result.summary?.tokenSummary?.totalCost || 0;
 
         return `
           <tr class="test-result-row" data-result-index="${index}" style="cursor: pointer;">
             <td><strong>${this.escapeHtml(result.testId)}</strong><br><small class="text-muted">${this.escapeHtml(result.testName)}</small></td>
             <td>${statusBadge}</td>
-            <td>${timestamp}</td>
             <td>${this.formatDuration(result.duration)}</td>
+            <td><span class="badge bg-info">${tokens.toLocaleString()}</span></td>
+            <td><span class="badge bg-warning">$${cost.toFixed(4)}</span></td>
             <td>${screenshotCount} screenshots</td>
             <td>
               <button class="btn btn-sm btn-outline-primary view-details-btn" data-result-index="${index}">

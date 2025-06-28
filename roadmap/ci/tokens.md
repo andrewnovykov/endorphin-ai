@@ -1,1113 +1,887 @@
-# Token Optimization for Endorphin AI
+# Token Optimization for Endorphin AI TypeScript Framework
 
 ## Overview
 
-This document outlines strategies to dramatically reduce AI token usage while
-improving test accuracy through HTML chunking, differential snapshots, and smart
-validation. Current approach sends full page snapshots to LLM, which burns
-excessive tokens. New approach combines chunking, diff analysis, and targeted
-updates.
+This document outlines a comprehensive strategy to dramatically reduce AI token usage while improving test accuracy through intelligent content processing, differential state tracking, and smart context building. The approach leverages the modern TypeScript framework architecture with type-safe implementations and modular tool integration.
 
-## Current Problem
+## Current Problem Analysis
 
-### Token Usage Analysis
-
+### Token Usage Baseline
 - **Full page snapshot**: 10,000-50,000 tokens per interaction
 - **Typical test with 10 steps**: 100,000-500,000 tokens
-- **Cost impact**: $0.50-$2.50 per test run
-- **Accuracy issues**: LLM gets overwhelmed with irrelevant content
+- **Cost impact**: $0.50-$2.50 per test run (GPT-4)
+- **Accuracy issues**: LLM overwhelmed with irrelevant content
 
-### Pain Points
+### Framework-Specific Pain Points
+1. Content tools send entire page content (up to 8000 chars)
+2. No state persistence between AI interactions
+3. Redundant information in consecutive tool calls
+4. High latency due to large prompts
+5. Context window limitations with complex pages
 
-1. Sending entire DOM even for small changes
-2. No validation that actions were successful
-3. Redundant information in consecutive snapshots
-4. High latency due to large payloads
-5. Context window limitations with large pages
+## Solution Architecture for TypeScript Framework
 
-## Proposed Solution Architecture
+### 1. Intelligent Content Tools
 
-### 1. HTML Chunking Strategy
+#### Enhanced Content Tool with Token Optimization
+```typescript
+// framework/tools/content-optimization.ts
+import { tool } from '@langchain/core/tools';
+import { z } from 'zod';
 
-#### Intelligent Content Segmentation
+export interface ContentChunk {
+  id: string;
+  type: 'navigation' | 'form' | 'content' | 'interactive' | 'footer';
+  selector: string;
+  content: string;
+  tokens: number;
+  interactive: boolean;
+  relevanceScore?: number;
+}
 
-```javascript
-/**
- * Smart HTML Chunker for Endorphin AI
- * Breaks down page content into logical, manageable chunks
- */
-export class HTMLChunker {
-  constructor(options = {}) {
-    this.maxChunkSize = options.maxChunkSize || 2000; // tokens
-    this.overlapSize = options.overlapSize || 200; // tokens for context
-    this.preserveStructure = options.preserveStructure || true;
-  }
+export interface PageSnapshot {
+  url: string;
+  timestamp: number;
+  chunks: ContentChunk[];
+  metadata: {
+    title: string;
+    totalElements: number;
+    interactiveElements: number;
+  };
+}
 
-  chunkPage(html, url) {
-    const parsed = this.parseHTML(html);
-    const chunks = this.createSemanticChunks(parsed);
+const contentOptimizationSchema = z.object({
+  maxTokens: z.number().default(4000),
+  focusSelectors: z.array(z.string()).optional(),
+  excludeSelectors: z.array(z.string()).optional(),
+  prioritize: z.enum(['forms', 'interactive', 'content']).default('interactive'),
+});
 
-    return {
-      url,
-      timestamp: Date.now(),
-      totalChunks: chunks.length,
-      chunks: chunks.map((chunk, index) => ({
-        id: `chunk-${index}`,
-        content: chunk.html,
-        metadata: {
-          selector: chunk.selector,
-          type: chunk.type,
-          interactive: chunk.hasInteractiveElements,
-          tokens: this.estimateTokens(chunk.html),
-        },
-      })),
-    };
-  }
-
-  createSemanticChunks(parsed) {
-    const chunks = [];
-
-    // 1. Navigation/Header chunk
-    const nav = this.extractSection(parsed, 'nav, header, .navbar, .header');
-    if (nav) chunks.push({ type: 'navigation', ...nav });
-
-    // 2. Main content chunks (by sections/articles)
-    const mainSections = this.extractSections(
-      parsed,
-      'main, section, article, .content'
-    );
-    chunks.push(
-      ...mainSections.map((section) => ({ type: 'content', ...section }))
-    );
-
-    // 3. Form chunks (keep forms together)
-    const forms = this.extractSections(parsed, 'form');
-    chunks.push(...forms.map((form) => ({ type: 'form', ...form })));
-
-    // 4. Interactive elements chunk
-    const interactive = this.extractInteractiveElements(parsed);
-    if (interactive) chunks.push({ type: 'interactive', ...interactive });
-
-    // 5. Footer chunk
-    const footer = this.extractSection(parsed, 'footer, .footer');
-    if (footer) chunks.push({ type: 'footer', ...footer });
-
-    return this.optimizeChunks(chunks);
-  }
-
-  extractInteractiveElements(parsed) {
-    const selectors = [
-      'button',
-      'input',
-      'select',
-      'textarea',
-      'a[href]',
-      '[onclick]',
-      '[role="button"]',
-      '.btn',
-      '.button',
-    ];
-
-    const elements = [];
-    selectors.forEach((selector) => {
-      const found = parsed.querySelectorAll(selector);
-      elements.push(...Array.from(found));
-    });
-
-    if (elements.length === 0) return null;
-
-    return {
-      html: this.buildMinimalHTML(elements),
-      selector: 'interactive-elements',
-      hasInteractiveElements: true,
-    };
-  }
-
-  buildMinimalHTML(elements) {
-    // Create minimal HTML with just the interactive elements and their context
-    return elements.map((el) => {
-      const parent =
-        el.closest('[data-testid], .container, section, div[class]') ||
-        el.parentElement;
+export function createContentOptimizationTool(framework: EnhancedBrowserTestFramework) {
+  return tool(async ({ maxTokens, focusSelectors, excludeSelectors, prioritize }) => {
+    try {
+      const page = framework.getPage();
+      
+      // Intelligent content chunking
+      const snapshot = await createPageSnapshot(page, {
+        maxTokens,
+        focusSelectors,
+        excludeSelectors,
+        prioritize
+      });
+      
+      // Store snapshot for differential analysis
+      framework.storePageSnapshot(snapshot);
+      
+      const optimizedContent = await selectOptimalChunks(snapshot, maxTokens);
+      
+      framework.logTestStep('content-optimization', {
+        totalChunks: snapshot.chunks.length,
+        selectedChunks: optimizedContent.chunks.length,
+        tokenBudget: maxTokens,
+        tokensUsed: optimizedContent.totalTokens,
+        optimization: `${((1 - optimizedContent.totalTokens / estimateFullPageTokens(snapshot)) * 100).toFixed(1)}% reduction`
+      });
+      
       return {
-        tag: el.tagName.toLowerCase(),
-        attributes: this.getRelevantAttributes(el),
-        text: el.textContent?.trim().substring(0, 100),
-        selector: this.generateSelector(el),
-        context: parent ? parent.tagName.toLowerCase() : null,
+        content: optimizedContent.formattedContent,
+        metadata: {
+          chunks: optimizedContent.chunks.length,
+          totalTokens: optimizedContent.totalTokens,
+          optimizationRate: optimizedContent.totalTokens / estimateFullPageTokens(snapshot)
+        }
       };
+      
+    } catch (error) {
+      framework.logTestStep('content-optimization-error', { error: error.message });
+      return { error: `Content optimization failed: ${error.message}` };
+    }
+  }, {
+    name: 'getOptimizedContent',
+    description: 'Get intelligently chunked and optimized page content within token budget',
+    schema: contentOptimizationSchema,
+  });
+}
+
+async function createPageSnapshot(page: Page, options: any): Promise<PageSnapshot> {
+  const html = await page.content();
+  const url = page.url();
+  const title = await page.title();
+  
+  // Parse and chunk content semantically
+  const chunks: ContentChunk[] = [];
+  
+  // Navigation chunk
+  const navContent = await extractSectionContent(page, 'nav, header, .navbar, [role="navigation"]');
+  if (navContent) {
+    chunks.push({
+      id: 'nav-chunk',
+      type: 'navigation',
+      selector: 'nav, header',
+      content: navContent,
+      tokens: estimateTokens(navContent),
+      interactive: await containsInteractiveElements(page, 'nav, header')
     });
   }
-
-  estimateTokens(content) {
-    // Rough estimation: 1 token ≈ 4 characters
-    return Math.ceil(content.length / 4);
+  
+  // Form chunks (keep forms together)
+  const forms = await page.$$('form');
+  for (let i = 0; i < forms.length; i++) {
+    const formContent = await forms[i].innerHTML();
+    chunks.push({
+      id: `form-chunk-${i}`,
+      type: 'form',
+      selector: `form:nth-of-type(${i + 1})`,
+      content: formContent,
+      tokens: estimateTokens(formContent),
+      interactive: true
+    });
   }
+  
+  // Interactive elements chunk
+  const interactiveSelectors = [
+    'button', 'input', 'select', 'textarea', 'a[href]',
+    '[onclick]', '[role="button"]', '.btn', '.button'
+  ];
+  
+  for (const selector of interactiveSelectors) {
+    const elements = await page.$$(selector);
+    if (elements.length > 0) {
+      const content = await extractInteractiveElementsContent(page, selector);
+      chunks.push({
+        id: `interactive-${selector.replace(/[^a-zA-Z0-9]/g, '-')}`,
+        type: 'interactive',
+        selector,
+        content,
+        tokens: estimateTokens(content),
+        interactive: true
+      });
+    }
+  }
+  
+  // Main content chunks
+  const mainSections = await page.$$('main, section, article, .content, [role="main"]');
+  for (let i = 0; i < mainSections.length; i++) {
+    const sectionContent = await mainSections[i].textContent();
+    if (sectionContent && sectionContent.trim().length > 50) {
+      chunks.push({
+        id: `content-chunk-${i}`,
+        type: 'content',
+        selector: `main:nth-of-type(${i + 1}), section:nth-of-type(${i + 1})`,
+        content: sectionContent.trim().substring(0, 2000),
+        tokens: estimateTokens(sectionContent),
+        interactive: await containsInteractiveElements(page, `main:nth-of-type(${i + 1}), section:nth-of-type(${i + 1})`)
+      });
+    }
+  }
+  
+  return {
+    url,
+    timestamp: Date.now(),
+    chunks,
+    metadata: {
+      title,
+      totalElements: await page.$$eval('*', elements => elements.length),
+      interactiveElements: await page.$$eval(interactiveSelectors.join(','), elements => elements.length)
+    }
+  };
 }
 ```
 
-### 2. Differential Snapshot System
+### 2. Differential State Management
 
-#### Page State Management
+#### State Tracking and Diff Analysis
+```typescript
+// framework/core/state-manager.ts
+export interface FrameworkState {
+  currentSnapshot?: PageSnapshot;
+  previousSnapshot?: PageSnapshot;
+  actionHistory: ActionRecord[];
+  tokenUsage: TokenUsageTracker;
+}
 
-```javascript
-/**
- * Differential Snapshot Manager
- * Tracks page changes and sends only diffs to LLM
- */
-export class DiffSnapshotManager {
+export interface ActionRecord {
+  id: string;
+  timestamp: number;
+  type: 'click' | 'fill' | 'navigate' | 'select';
+  selector: string;
+  parameters: Record<string, any>;
+  validation?: ActionValidation;
+  tokenCost: number;
+}
+
+export interface ActionValidation {
+  success: boolean;
+  checks: ValidationCheck[];
+  reason?: string;
+}
+
+export interface ValidationCheck {
+  type: 'url' | 'element' | 'text' | 'attribute';
+  selector?: string;
+  expected: any;
+  actual: any;
+  success: boolean;
+}
+
+export class FrameworkStateManager {
+  private state: FrameworkState;
+  
   constructor() {
-    this.previousState = null;
-    this.actionHistory = [];
-    this.differ = new SmartDiffer();
+    this.state = {
+      actionHistory: [],
+      tokenUsage: new TokenUsageTracker()
+    };
   }
-
-  async captureState(page, actionContext = null) {
-    const currentState = await this.extractPageState(page);
-
-    if (!this.previousState) {
-      // First capture - send full chunked content
-      this.previousState = currentState;
+  
+  async captureSnapshot(page: Page, actionContext?: ActionRecord): Promise<SnapshotResult> {
+    const newSnapshot = await createPageSnapshot(page, {});
+    
+    if (!this.state.currentSnapshot) {
+      // First snapshot - return full content
+      this.state.currentSnapshot = newSnapshot;
       return {
         type: 'initial',
-        chunks: currentState.chunks,
-        metadata: currentState.metadata,
+        snapshot: newSnapshot,
+        changes: [],
+        tokenEstimate: estimateFullPageTokens(newSnapshot)
       };
     }
-
-    // Generate diff
-    const diff = this.differ.compare(this.previousState, currentState);
-
+    
+    // Generate differential analysis
+    const diff = await this.generateDiff(this.state.currentSnapshot, newSnapshot);
+    
     // Update state
-    this.previousState = currentState;
-
+    this.state.previousSnapshot = this.state.currentSnapshot;
+    this.state.currentSnapshot = newSnapshot;
+    
     if (actionContext) {
-      this.actionHistory.push({
-        action: actionContext,
-        timestamp: Date.now(),
-        changes: diff.changes.length,
-      });
+      // Validate the last action
+      const validation = await this.validateAction(page, actionContext);
+      actionContext.validation = validation;
+      this.state.actionHistory.push(actionContext);
     }
-
+    
     return {
       type: 'differential',
+      snapshot: newSnapshot,
       changes: diff.changes,
       affectedChunks: diff.affectedChunks,
-      validation: await this.validateLastAction(page, actionContext),
-      metadata: {
-        ...currentState.metadata,
-        changesSummary: diff.summary,
-      },
+      validation: actionContext?.validation,
+      tokenEstimate: diff.estimatedTokens
     };
   }
-
-  async extractPageState(page) {
-    const html = await page.content();
-    const url = page.url();
-    const chunker = new HTMLChunker();
-
-    return {
-      url,
-      chunks: chunker.chunkPage(html, url),
-      metadata: {
-        title: await page.title(),
-        viewport: await page.viewportSize(),
-        loadState: await page.evaluate(() => document.readyState),
-        timestamp: Date.now(),
-      },
-    };
-  }
-
-  async validateLastAction(page, actionContext) {
-    if (!actionContext) return null;
-
-    const validation = {};
-
-    switch (actionContext.type) {
-      case 'click':
-        validation.clicked = await this.validateClick(page, actionContext);
-        break;
-      case 'fill':
-        validation.filled = await this.validateFill(page, actionContext);
-        break;
-      case 'navigate':
-        validation.navigated = await this.validateNavigation(
-          page,
-          actionContext
-        );
-        break;
-    }
-
-    return validation;
-  }
-
-  async validateFill(page, actionContext) {
-    try {
-      const element = page.locator(actionContext.selector);
-      const currentValue = await element.inputValue();
-
-      return {
-        success: currentValue === actionContext.expectedValue,
-        actualValue: currentValue,
-        expectedValue: actionContext.expectedValue,
-        selector: actionContext.selector,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        selector: actionContext.selector,
-      };
-    }
-  }
-
-  async validateClick(page, actionContext) {
-    try {
-      // Check if click resulted in expected changes
-      const checks = [];
-
-      // URL change detection
-      if (actionContext.expectedUrl) {
-        checks.push({
-          type: 'url',
-          expected: actionContext.expectedUrl,
-          actual: page.url(),
-          success: page.url().includes(actionContext.expectedUrl),
-        });
-      }
-
-      // Element visibility change
-      if (actionContext.expectedVisible) {
-        const isVisible = await page
-          .locator(actionContext.expectedVisible)
-          .isVisible();
-        checks.push({
-          type: 'visibility',
-          selector: actionContext.expectedVisible,
-          success: isVisible,
-        });
-      }
-
-      // Element text change
-      if (actionContext.expectedText) {
-        const element = page.locator(actionContext.expectedText.selector);
-        const text = await element.textContent();
-        checks.push({
-          type: 'text',
-          expected: actionContext.expectedText.value,
-          actual: text,
-          success: text?.includes(actionContext.expectedText.value),
-        });
-      }
-
-      return {
-        success: checks.every((check) => check.success),
-        checks,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  }
-}
-```
-
-#### Smart Differ Implementation
-
-```javascript
-/**
- * Smart HTML Differ
- * Identifies meaningful changes between page states
- */
-export class SmartDiffer {
-  constructor() {
-    this.ignoredAttributes = ['style', 'class']; // Often change without meaning
-    this.importantSelectors = [
-      'input',
-      'select',
-      'textarea',
-      'button',
-      '[data-testid]',
-      '.error',
-      '.success',
-      '.alert',
-    ];
-  }
-
-  compare(previousState, currentState) {
-    const changes = [];
-    const affectedChunks = new Set();
-
-    // Compare chunks
-    for (
-      let i = 0;
-      i < Math.max(previousState.chunks.length, currentState.chunks.length);
-      i++
-    ) {
-      const prevChunk = previousState.chunks[i];
-      const currChunk = currentState.chunks[i];
-
-      if (!prevChunk) {
-        // New chunk added
+  
+  private async generateDiff(previous: PageSnapshot, current: PageSnapshot): Promise<DiffResult> {
+    const changes: ContentChange[] = [];
+    const affectedChunks: string[] = [];
+    
+    // Compare chunks by ID and type
+    const previousChunkMap = new Map(previous.chunks.map(c => [c.id, c]));
+    const currentChunkMap = new Map(current.chunks.map(c => [c.id, c]));
+    
+    // Find added chunks
+    for (const [id, chunk] of currentChunkMap) {
+      if (!previousChunkMap.has(id)) {
         changes.push({
           type: 'added',
-          chunkId: currChunk.id,
-          content: currChunk.content,
+          chunkId: id,
+          content: chunk.content,
+          importance: calculateChangeImportance(chunk)
         });
-        affectedChunks.add(currChunk.id);
-      } else if (!currChunk) {
-        // Chunk removed
-        changes.push({
-          type: 'removed',
-          chunkId: prevChunk.id,
-        });
-        affectedChunks.add(prevChunk.id);
-      } else {
-        // Compare chunk content
-        const chunkDiff = this.compareChunks(prevChunk, currChunk);
-        if (chunkDiff.hasChanges) {
-          changes.push({
-            type: 'modified',
-            chunkId: currChunk.id,
-            diff: chunkDiff,
-          });
-          affectedChunks.add(currChunk.id);
-        }
+        affectedChunks.push(id);
       }
     }
-
+    
+    // Find removed chunks
+    for (const [id, chunk] of previousChunkMap) {
+      if (!currentChunkMap.has(id)) {
+        changes.push({
+          type: 'removed',
+          chunkId: id,
+          importance: calculateChangeImportance(chunk)
+        });
+        affectedChunks.push(id);
+      }
+    }
+    
+    // Find modified chunks
+    for (const [id, currentChunk] of currentChunkMap) {
+      const previousChunk = previousChunkMap.get(id);
+      if (previousChunk && previousChunk.content !== currentChunk.content) {
+        const contentDiff = generateContentDiff(previousChunk.content, currentChunk.content);
+        changes.push({
+          type: 'modified',
+          chunkId: id,
+          diff: contentDiff,
+          importance: calculateChangeImportance(currentChunk, contentDiff)
+        });
+        affectedChunks.push(id);
+      }
+    }
+    
     return {
       changes,
-      affectedChunks: Array.from(affectedChunks),
-      summary: this.generateSummary(changes),
+      affectedChunks,
+      estimatedTokens: calculateDiffTokens(changes),
+      summary: {
+        totalChanges: changes.length,
+        importantChanges: changes.filter(c => c.importance > 0.7).length,
+        hasUrlChange: previous.url !== current.url
+      }
     };
   }
-
-  compareChunks(prevChunk, currChunk) {
-    // Use a library like 'diff' for detailed comparison
-    const diff = this.createDetailedDiff(prevChunk.content, currChunk.content);
-
+  
+  private async validateAction(page: Page, action: ActionRecord): Promise<ActionValidation> {
+    const checks: ValidationCheck[] = [];
+    
+    switch (action.type) {
+      case 'fill':
+        try {
+          const element = page.locator(action.selector);
+          const actualValue = await element.inputValue();
+          checks.push({
+            type: 'element',
+            selector: action.selector,
+            expected: action.parameters.value,
+            actual: actualValue,
+            success: actualValue === action.parameters.value
+          });
+        } catch (error) {
+          checks.push({
+            type: 'element',
+            selector: action.selector,
+            expected: action.parameters.value,
+            actual: null,
+            success: false
+          });
+        }
+        break;
+        
+      case 'click':
+        // Validate click by checking for expected changes
+        if (action.parameters.expectedUrl) {
+          checks.push({
+            type: 'url',
+            expected: action.parameters.expectedUrl,
+            actual: page.url(),
+            success: page.url().includes(action.parameters.expectedUrl)
+          });
+        }
+        
+        if (action.parameters.expectedElement) {
+          try {
+            const isVisible = await page.locator(action.parameters.expectedElement).isVisible();
+            checks.push({
+              type: 'element',
+              selector: action.parameters.expectedElement,
+              expected: true,
+              actual: isVisible,
+              success: isVisible
+            });
+          } catch {
+            checks.push({
+              type: 'element',
+              selector: action.parameters.expectedElement,
+              expected: true,
+              actual: false,
+              success: false
+            });
+          }
+        }
+        break;
+    }
+    
     return {
-      hasChanges: diff.length > 0,
-      changes: diff,
-      importantChanges: diff.filter((change) => this.isImportantChange(change)),
+      success: checks.every(check => check.success),
+      checks,
+      reason: checks.every(check => check.success) ? 'All validations passed' : 'Some validations failed'
     };
-  }
-
-  createDetailedDiff(prev, curr) {
-    // Simplified diff - in real implementation, use library like 'diff'
-    if (prev === curr) return [];
-
-    return [
-      {
-        type: 'change',
-        oldValue: this.truncateContent(prev),
-        newValue: this.truncateContent(curr),
-        importance: this.assessImportance(prev, curr),
-      },
-    ];
-  }
-
-  isImportantChange(change) {
-    // Determine if change is important for AI context
-    const importantKeywords = [
-      'error',
-      'success',
-      'invalid',
-      'required',
-      'submit',
-      'loading',
-      'disabled',
-      'hidden',
-    ];
-
-    const content = (change.newValue || '').toLowerCase();
-    return importantKeywords.some((keyword) => content.includes(keyword));
-  }
-
-  generateSummary(changes) {
-    return {
-      totalChanges: changes.length,
-      changeTypes: this.groupChangesByType(changes),
-      hasImportantChanges: changes.some(
-        (c) => c.diff?.importantChanges?.length > 0
-      ),
-    };
-  }
-
-  truncateContent(content, maxLength = 500) {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
   }
 }
 ```
 
-### 3. Intelligent Context Building
+### 3. Smart Context Building
 
-#### Context-Aware Prompt Generation
+#### Token-Aware Prompt Generation
+```typescript
+// framework/tools/smart-context.ts
+export interface ContextBuildOptions {
+  tokenBudget: number;
+  instruction: string;
+  testContext: any;
+  priorityWeights: Record<string, number>;
+}
 
-```javascript
-/**
- * Smart Context Builder
- * Builds minimal, focused prompts for LLM
- */
 export class SmartContextBuilder {
-  constructor() {
-    this.tokenBudget = 8000; // Leave room for response
-    this.priorityWeights = {
-      form: 1.0,
-      interactive: 0.8,
-      content: 0.6,
-      navigation: 0.4,
-      footer: 0.2,
-    };
-  }
-
-  buildPrompt(snapshotData, instruction, testContext) {
-    if (snapshotData.type === 'initial') {
-      return this.buildInitialPrompt(snapshotData, instruction, testContext);
+  private readonly defaultTokenBudget = 6000; // Leave room for response
+  private readonly priorityWeights = {
+    form: 1.0,
+    interactive: 0.8,
+    content: 0.6,
+    navigation: 0.4,
+    footer: 0.2
+  };
+  
+  buildContext(snapshotResult: SnapshotResult, options: ContextBuildOptions): ContextResult {
+    if (snapshotResult.type === 'initial') {
+      return this.buildInitialContext(snapshotResult, options);
     } else {
-      return this.buildDifferentialPrompt(
-        snapshotData,
-        instruction,
-        testContext
-      );
+      return this.buildDifferentialContext(snapshotResult, options);
     }
   }
-
-  buildInitialPrompt(snapshotData, instruction, testContext) {
-    const prioritizedChunks = this.prioritizeChunks(
-      snapshotData.chunks,
-      instruction
-    );
-    const selectedChunks = this.selectChunksWithinBudget(prioritizedChunks);
-
+  
+  private buildInitialContext(result: SnapshotResult, options: ContextBuildOptions): ContextResult {
+    const prioritizedChunks = this.prioritizeChunks(result.snapshot.chunks, options.instruction);
+    const selectedChunks = this.selectChunksWithinBudget(prioritizedChunks, options.tokenBudget);
+    
+    const context = [
+      `# Page Analysis`,
+      `URL: ${result.snapshot.url}`,
+      `Title: ${result.snapshot.metadata.title}`,
+      `Task: ${options.instruction}`,
+      '',
+      '## Available Content:',
+      ...selectedChunks.map(chunk => this.formatChunkForContext(chunk)),
+      '',
+      'Please analyze the page and determine the best action to complete the task.'
+    ].join('\n');
+    
     return {
-      system: this.getSystemPrompt(),
-      user: [
-        `Test Context: ${testContext.description}`,
-        `Current Task: ${instruction}`,
-        `Page URL: ${snapshotData.metadata?.url}`,
-        `Page Title: ${snapshotData.metadata?.title}`,
-        '',
-        'Page Content (by sections):',
-        ...selectedChunks.map((chunk) => this.formatChunk(chunk)),
-        '',
-        'Please perform the requested action and provide the selector to use.',
-      ].join('\n'),
+      context,
+      tokenEstimate: estimateTokens(context),
       metadata: {
+        type: 'initial',
         chunksUsed: selectedChunks.length,
-        totalChunks: snapshotData.chunks.length,
-        estimatedTokens: this.estimatePromptTokens(selectedChunks),
-      },
+        totalChunks: result.snapshot.chunks.length,
+        optimization: 1 - (selectedChunks.length / result.snapshot.chunks.length)
+      }
     };
   }
-
-  buildDifferentialPrompt(snapshotData, instruction, testContext) {
-    const validation = snapshotData.validation;
-    const changes = snapshotData.changes;
-
-    let prompt = [
-      `Previous action validation: ${validation ? 'Success' : 'Failed'}`,
-    ];
-
-    if (validation) {
-      prompt.push(`Validation details: ${JSON.stringify(validation, null, 2)}`);
+  
+  private buildDifferentialContext(result: SnapshotResult, options: ContextBuildOptions): ContextResult {
+    const contextParts = [`# Page State Update`];
+    
+    // Add validation results
+    if (result.validation) {
+      contextParts.push(`Previous action: ${result.validation.success ? 'SUCCESS' : 'FAILED'}`);
+      if (!result.validation.success) {
+        contextParts.push(`Reason: ${result.validation.reason}`);
+        contextParts.push('Validation details:');
+        result.validation.checks.forEach(check => {
+          contextParts.push(`- ${check.type}: expected "${check.expected}", got "${check.actual}"`);
+        });
+      }
+      contextParts.push('');
     }
-
-    if (changes.length > 0) {
-      prompt.push('', 'Page changes detected:');
-      changes.forEach((change) => {
-        prompt.push(`- ${change.type}: ${this.summarizeChange(change)}`);
+    
+    // Add change summary
+    if (result.changes.length > 0) {
+      contextParts.push('## Changes Detected:');
+      result.changes.forEach(change => {
+        contextParts.push(`- ${change.type}: ${this.summarizeChange(change)}`);
       });
-
-      // Include only affected chunks
-      const affectedChunks = this.getAffectedChunks(snapshotData);
+      
+      // Include only affected content
+      const affectedChunks = this.getAffectedChunks(result.snapshot, result.affectedChunks);
       if (affectedChunks.length > 0) {
-        prompt.push('', 'Updated content:');
-        affectedChunks.forEach((chunk) => {
-          prompt.push(this.formatChunk(chunk));
+        contextParts.push('', '## Updated Content:');
+        affectedChunks.forEach(chunk => {
+          contextParts.push(this.formatChunkForContext(chunk));
         });
       }
     } else {
-      prompt.push('No significant changes detected.');
+      contextParts.push('No significant changes detected.');
     }
-
-    prompt.push('', `Next task: ${instruction}`);
-
+    
+    contextParts.push('', `Next task: ${options.instruction}`);
+    
+    const context = contextParts.join('\n');
+    
     return {
-      system: this.getSystemPrompt(),
-      user: prompt.join('\n'),
+      context,
+      tokenEstimate: estimateTokens(context),
       metadata: {
-        changesIncluded: changes.length,
-        validationIncluded: !!validation,
-        estimatedTokens: this.estimatePromptTokens(prompt),
-      },
+        type: 'differential',
+        changesIncluded: result.changes.length,
+        validationIncluded: !!result.validation,
+        optimization: result.tokenEstimate / this.defaultTokenBudget
+      }
     };
   }
-
-  prioritizeChunks(chunks, instruction) {
+  
+  private prioritizeChunks(chunks: ContentChunk[], instruction: string): ContentChunk[] {
     return chunks
-      .map((chunk) => ({
+      .map(chunk => ({
         ...chunk,
         relevanceScore: this.calculateRelevance(chunk, instruction),
-        priorityScore: this.priorityWeights[chunk.metadata.type] || 0.5,
+        priorityScore: this.priorityWeights[chunk.type] || 0.5
       }))
-      .sort(
-        (a, b) =>
-          b.relevanceScore +
-          b.priorityScore -
-          (a.relevanceScore + a.priorityScore)
-      );
+      .sort((a, b) => (b.relevanceScore + b.priorityScore) - (a.relevanceScore + a.priorityScore));
   }
-
-  calculateRelevance(chunk, instruction) {
+  
+  private calculateRelevance(chunk: ContentChunk, instruction: string): number {
     const keywords = this.extractKeywords(instruction);
     const chunkText = chunk.content.toLowerCase();
-
+    
     let score = 0;
-    keywords.forEach((keyword) => {
+    keywords.forEach(keyword => {
       if (chunkText.includes(keyword.toLowerCase())) {
         score += 1;
       }
     });
-
-    // Boost score for interactive elements when instruction involves action
-    if (chunk.metadata.interactive && this.isActionInstruction(instruction)) {
+    
+    // Boost interactive elements for action instructions
+    if (chunk.interactive && this.isActionInstruction(instruction)) {
       score += 2;
     }
-
+    
     return score;
   }
-
-  extractKeywords(instruction) {
-    // Simple keyword extraction - could be enhanced with NLP
-    const actionWords = [
-      'click',
-      'fill',
-      'select',
-      'submit',
-      'navigate',
-      'type',
-    ];
+  
+  private extractKeywords(instruction: string): string[] {
+    const actionWords = ['click', 'fill', 'select', 'submit', 'navigate', 'type', 'choose'];
     const words = instruction.toLowerCase().split(/\s+/);
-
-    return words.filter(
-      (word) => word.length > 3 && !actionWords.includes(word)
-    );
+    return words.filter(word => word.length > 3 && !actionWords.includes(word));
   }
-
-  isActionInstruction(instruction) {
+  
+  private isActionInstruction(instruction: string): boolean {
     const actionWords = ['click', 'fill', 'select', 'submit', 'type', 'choose'];
-    return actionWords.some((action) =>
-      instruction.toLowerCase().includes(action)
-    );
-  }
-
-  selectChunksWithinBudget(prioritizedChunks) {
-    const selected = [];
-    let currentTokens = 0;
-
-    for (const chunk of prioritizedChunks) {
-      const chunkTokens = chunk.metadata.tokens;
-      if (currentTokens + chunkTokens <= this.tokenBudget) {
-        selected.push(chunk);
-        currentTokens += chunkTokens;
-      } else {
-        break;
-      }
-    }
-
-    return selected;
-  }
-
-  formatChunk(chunk) {
-    return [
-      `## ${chunk.metadata.type.toUpperCase()} Section`,
-      `Selector: ${chunk.metadata.selector}`,
-      chunk.content,
-      '',
-    ].join('\n');
+    return actionWords.some(action => instruction.toLowerCase().includes(action));
   }
 }
 ```
 
-### 4. Integration with Framework
+### 4. Framework Integration
 
-#### Enhanced Browser Framework
-
-```javascript
-/**
- * Enhanced Browser Framework with Token Optimization
- */
-export class TokenOptimizedBrowserFramework {
-  constructor(options = {}) {
-    this.snapshotManager = new DiffSnapshotManager();
+#### Enhanced Browser Framework with Token Optimization
+```typescript
+// framework/core/browser-framework.ts - Extend existing class
+export class EnhancedBrowserTestFramework {
+  private stateManager: FrameworkStateManager;
+  private contextBuilder: SmartContextBuilder;
+  private tokenTracker: TokenUsageTracker;
+  
+  constructor(config: FrameworkConfig) {
+    // ... existing constructor code ...
+    
+    // Initialize token optimization components
+    this.stateManager = new FrameworkStateManager();
     this.contextBuilder = new SmartContextBuilder();
     this.tokenTracker = new TokenUsageTracker();
+    
+    // Add token optimization tools if enabled
+    if (config.token?.optimization !== false) {
+      this.tools.push(createContentOptimizationTool(this));
+      this.tools.push(createTokenAnalyticsTool(this));
+    }
   }
-
-  async executeInstruction(page, instruction, testContext) {
-    // Capture current state (initial or diff)
-    const snapshotData = await this.snapshotManager.captureState(page);
-
-    // Build optimized prompt
-    const prompt = this.contextBuilder.buildPrompt(
-      snapshotData,
+  
+  async executeInstructionWithOptimization(instruction: string): Promise<ExecutionResult> {
+    const page = this.getPage();
+    
+    // Capture optimized page state
+    const snapshotResult = await this.stateManager.captureSnapshot(page);
+    
+    // Build token-optimized context
+    const contextResult = this.contextBuilder.buildContext(snapshotResult, {
+      tokenBudget: this.config.token?.budget || 6000,
       instruction,
-      testContext
-    );
-
+      testContext: this.currentSession,
+      priorityWeights: this.config.token?.priorityWeights || {}
+    });
+    
     // Track token usage
-    this.tokenTracker.recordPrompt(prompt.metadata.estimatedTokens);
-
-    // Send to AI
-    const response = await this.sendToAI(prompt);
-
+    this.tokenTracker.recordPrompt(contextResult.tokenEstimate);
+    
+    // Execute with AI agent
+    const response = await this.agent.invoke({
+      messages: [{
+        role: 'user',
+        content: contextResult.context
+      }]
+    });
+    
     // Track response tokens
-    this.tokenTracker.recordResponse(response.tokenCount);
-
-    // Execute the AI's response
-    const result = await this.executeAIResponse(page, response, instruction);
-
-    // Validate the action
-    if (result.success) {
-      await this.snapshotManager.captureState(page, {
-        type: result.actionType,
-        selector: result.selector,
-        expectedValue: result.expectedValue,
-        instruction,
-      });
-    }
-
+    this.tokenTracker.recordResponse(response.tokenCount || estimateTokens(response.content));
+    
+    // Log optimization metrics
+    this.logTestStep('token-optimization', {
+      instruction,
+      promptTokens: contextResult.tokenEstimate,
+      responseTokens: response.tokenCount,
+      optimization: contextResult.metadata.optimization,
+      type: contextResult.metadata.type
+    });
+    
     return {
-      ...result,
+      success: true,
+      response: response.content,
       tokenUsage: this.tokenTracker.getLastUsage(),
-      optimizationMetrics: {
-        promptTokens: prompt.metadata.estimatedTokens,
-        chunksUsed: prompt.metadata.chunksUsed,
-        totalChunks: prompt.metadata.totalChunks,
-      },
+      optimization: contextResult.metadata
     };
   }
-
-  async executeAIResponse(page, response, originalInstruction) {
-    try {
-      const action = JSON.parse(response.content);
-
-      switch (action.type) {
-        case 'click':
-          await page.locator(action.selector).click();
-          return {
-            success: true,
-            actionType: 'click',
-            selector: action.selector,
-            message: `Clicked ${action.selector}`,
-          };
-
-        case 'fill':
-          await page.locator(action.selector).fill(action.value);
-          return {
-            success: true,
-            actionType: 'fill',
-            selector: action.selector,
-            expectedValue: action.value,
-            message: `Filled ${action.selector} with "${action.value}"`,
-          };
-
-        case 'navigate':
-          await page.goto(action.url);
-          return {
-            success: true,
-            actionType: 'navigate',
-            url: action.url,
-            message: `Navigated to ${action.url}`,
-          };
-
-        default:
-          throw new Error(`Unknown action type: ${action.type}`);
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        instruction: originalInstruction,
-      };
-    }
+  
+  storePageSnapshot(snapshot: PageSnapshot): void {
+    this.stateManager.setCurrentSnapshot(snapshot);
+  }
+  
+  getTokenUsage(): TokenUsageReport {
+    return this.tokenTracker.generateReport();
   }
 }
 ```
 
-### 5. Token Usage Tracking
+### 5. Configuration Integration
 
-#### Comprehensive Token Analytics
+#### TypeScript Configuration Extensions
+```typescript
+// framework/types/config.ts - Extend existing interfaces
+export interface TokenConfig {
+  enabled?: boolean;
+  budget?: number;
+  model?: 'gpt-3.5-turbo' | 'gpt-4' | 'gpt-4-turbo';
+  optimization?: 'aggressive' | 'balanced' | 'conservative';
+  tracking?: boolean;
+  chunking?: {
+    maxChunkSize?: number;
+    overlapSize?: number;
+    preserveStructure?: boolean;
+  };
+  validation?: {
+    enabled?: boolean;
+    timeout?: number;
+    retryAttempts?: number;
+  };
+  priorityWeights?: Record<string, number>;
+}
 
-```javascript
-/**
- * Token Usage Tracker and Analytics
- */
-export class TokenUsageTracker {
-  constructor() {
-    this.sessions = [];
-    this.currentSession = null;
+export interface FrameworkConfig {
+  // ... existing config properties ...
+  token?: TokenConfig;
+}
+
+// Default configuration
+export const DEFAULT_TOKEN_CONFIG: TokenConfig = {
+  enabled: true,
+  budget: 6000,
+  model: 'gpt-4-turbo',
+  optimization: 'balanced',
+  tracking: true,
+  chunking: {
+    maxChunkSize: 2000,
+    overlapSize: 200,
+    preserveStructure: true
+  },
+  validation: {
+    enabled: true,
+    timeout: 5000,
+    retryAttempts: 2
+  },
+  priorityWeights: {
+    form: 1.0,
+    interactive: 0.8,
+    content: 0.6,
+    navigation: 0.4,
+    footer: 0.2
   }
+};
+```
 
-  startSession(testId) {
-    this.currentSession = {
-      testId,
-      startTime: Date.now(),
-      endTime: null,
-      interactions: [],
-      totalPromptTokens: 0,
-      totalResponseTokens: 0,
-      totalCost: 0,
-      optimizationMetrics: {
-        chunksUsed: 0,
-        chunksAvailable: 0,
-        diffsGenerated: 0,
-        validationsPerformed: 0,
-      },
-    };
-  }
+### 6. CLI Integration
 
-  recordPrompt(tokens, metadata = {}) {
-    if (!this.currentSession) return;
+#### Command Line Support
+```typescript
+// bin/endorphin.ts - Add token-related flags
+const FLAG_PARSERS: Record<string, (nextArg: string) => Partial<FrameworkConfig>> = {
+  // ... existing flags ...
+  '--token-budget': (nextArg) => ({ 
+    token: { budget: parseInt(nextArg) } 
+  }),
+  '--token-optimization': (nextArg) => ({ 
+    token: { optimization: nextArg as 'aggressive' | 'balanced' | 'conservative' } 
+  }),
+  '--token-tracking': () => ({ 
+    token: { tracking: true } 
+  }),
+  '--disable-token-optimization': () => ({ 
+    token: { enabled: false } 
+  }),
+};
 
-    this.currentSession.totalPromptTokens += tokens;
-    this.currentSession.optimizationMetrics.chunksUsed +=
-      metadata.chunksUsed || 0;
-    this.currentSession.optimizationMetrics.chunksAvailable +=
-      metadata.totalChunks || 0;
+// Add new CLI commands
+if (command === 'analyze' && subcommand === 'tokens') {
+  await analyzeTokenUsage(config);
+}
 
-    this.currentSession.interactions.push({
-      type: 'prompt',
-      tokens,
-      timestamp: Date.now(),
-      metadata,
-    });
-  }
-
-  recordResponse(tokens, metadata = {}) {
-    if (!this.currentSession) return;
-
-    this.currentSession.totalResponseTokens += tokens;
-
-    this.currentSession.interactions.push({
-      type: 'response',
-      tokens,
-      timestamp: Date.now(),
-      metadata,
-    });
-  }
-
-  endSession() {
-    if (!this.currentSession) return null;
-
-    this.currentSession.endTime = Date.now();
-    this.currentSession.duration =
-      this.currentSession.endTime - this.currentSession.startTime;
-    this.currentSession.totalCost = this.calculateCost(this.currentSession);
-
-    this.sessions.push(this.currentSession);
-    const session = this.currentSession;
-    this.currentSession = null;
-
-    return session;
-  }
-
-  calculateCost(session) {
-    // OpenAI pricing (as of 2024)
-    const promptCostPer1K = 0.0015; // GPT-4
-    const responseCostPer1K = 0.002;
-
-    const promptCost = (session.totalPromptTokens / 1000) * promptCostPer1K;
-    const responseCost =
-      (session.totalResponseTokens / 1000) * responseCostPer1K;
-
-    return promptCost + responseCost;
-  }
-
-  generateReport() {
-    const totalSessions = this.sessions.length;
-    const totalTokens = this.sessions.reduce(
-      (sum, s) => sum + s.totalPromptTokens + s.totalResponseTokens,
-      0
-    );
-    const totalCost = this.sessions.reduce((sum, s) => sum + s.totalCost, 0);
-
-    const avgTokensPerSession = totalTokens / totalSessions;
-    const avgCostPerSession = totalCost / totalSessions;
-
-    const optimizationEffectiveness = this.calculateOptimizationEffectiveness();
-
-    return {
-      summary: {
-        totalSessions,
-        totalTokens,
-        totalCost: totalCost.toFixed(4),
-        avgTokensPerSession: avgTokensPerSession.toFixed(0),
-        avgCostPerSession: avgCostPerSession.toFixed(4),
-      },
-      optimization: optimizationEffectiveness,
-      recommendations: this.generateRecommendations(optimizationEffectiveness),
-      sessions: this.sessions,
-    };
-  }
-
-  calculateOptimizationEffectiveness() {
-    const totalChunksAvailable = this.sessions.reduce(
-      (sum, s) => sum + s.optimizationMetrics.chunksAvailable,
-      0
-    );
-    const totalChunksUsed = this.sessions.reduce(
-      (sum, s) => sum + s.optimizationMetrics.chunksUsed,
-      0
-    );
-
-    const chunkReductionRate =
-      totalChunksAvailable > 0 ? 1 - totalChunksUsed / totalChunksAvailable : 0;
-
-    const estimatedTokenSavings = chunkReductionRate * 0.7; // Estimate
-
-    return {
-      chunkReductionRate: (chunkReductionRate * 100).toFixed(1) + '%',
-      estimatedTokenSavings: (estimatedTokenSavings * 100).toFixed(1) + '%',
-      diffsGenerated: this.sessions.reduce(
-        (sum, s) => sum + s.optimizationMetrics.diffsGenerated,
-        0
-      ),
-      validationsPerformed: this.sessions.reduce(
-        (sum, s) => sum + s.optimizationMetrics.validationsPerformed,
-        0
-      ),
-    };
-  }
-
-  generateRecommendations(optimization) {
-    const recommendations = [];
-
-    if (parseFloat(optimization.chunkReductionRate) < 50) {
-      recommendations.push({
-        type: 'chunking',
-        message: 'Consider more aggressive chunking to reduce token usage',
-        priority: 'high',
-      });
-    }
-
-    if (parseFloat(optimization.estimatedTokenSavings) < 30) {
-      recommendations.push({
-        type: 'optimization',
-        message: 'Diff algorithm could be more selective',
-        priority: 'medium',
-      });
-    }
-
-    return recommendations;
-  }
-
-  getLastUsage() {
-    if (!this.currentSession || this.currentSession.interactions.length === 0) {
-      return null;
-    }
-
-    const lastPrompt = this.currentSession.interactions
-      .reverse()
-      .find((i) => i.type === 'prompt');
-    const lastResponse = this.currentSession.interactions
-      .reverse()
-      .find((i) => i.type === 'response');
-
-    return {
-      promptTokens: lastPrompt?.tokens || 0,
-      responseTokens: lastResponse?.tokens || 0,
-      totalTokens: (lastPrompt?.tokens || 0) + (lastResponse?.tokens || 0),
-    };
-  }
+async function analyzeTokenUsage(config: FrameworkConfig): Promise<void> {
+  const framework = new EnhancedBrowserTestFramework(config);
+  const report = framework.getTokenUsage();
+  
+  console.log('📊 Token Usage Analysis');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log(`💰 Total Cost: $${report.totalCost.toFixed(4)}`);
+  console.log(`📈 Total Tokens: ${report.totalTokens.toLocaleString()}`);
+  console.log(`⚡ Optimization: ${report.optimizationRate.toFixed(1)}% reduction`);
+  console.log(`🧩 Avg Chunks Used: ${report.avgChunksUsed}/${report.avgChunksAvailable}`);
 }
 ```
 
-## Implementation Strategy
+### 7. HTML Reporter Integration
 
-### Phase 1: Core Infrastructure (Week 1-2)
+#### Token Metrics in Reports
+```typescript
+// framework/reporters/html-reporter.ts - Extend existing reporter
+interface EnhancedTestStep extends TestStep {
+  tokenUsage?: {
+    promptTokens: number;
+    responseTokens: number;
+    totalTokens: number;
+    optimization: number;
+  };
+}
 
-1. **HTMLChunker Implementation**
-   - Semantic content segmentation
-   - Interactive element extraction
-   - Token estimation
-   - Chunk optimization
+// Add token analytics to report data
+const tokenAnalytics = {
+  totalTokens: session.steps.reduce((sum, step) => 
+    sum + (step.tokenUsage?.totalTokens || 0), 0
+  ),
+  totalCost: session.steps.reduce((sum, step) => 
+    sum + calculateStepCost(step.tokenUsage), 0
+  ),
+  optimizationSavings: session.steps.reduce((sum, step) => 
+    sum + (step.tokenUsage?.optimization || 0), 0
+  ) / session.steps.length
+};
 
-2. **DiffSnapshotManager Basic**
-   - State capture and comparison
-   - Simple diff generation
-   - Basic validation framework
+// Include in report template data
+const reportData = {
+  // ... existing data ...
+  tokenAnalytics,
+  steps: session.steps.map(step => ({
+    ...step,
+    tokenMetrics: step.tokenUsage
+  }))
+};
+```
 
-### Phase 2: Smart Diffing (Week 3-4)
+## Implementation Roadmap
 
-1. **SmartDiffer Implementation**
-   - Library integration (diff, fast-diff)
-   - Importance assessment
-   - Change summarization
-   - Performance optimization
+### Phase 1: Core Infrastructure (Weeks 1-2)
+1. **State Management Foundation**
+   - Implement `FrameworkStateManager` with snapshot capture
+   - Add differential analysis capabilities
+   - Create action validation framework
 
-2. **Validation Enhancement**
-   - Action-specific validation
-   - Multi-layered confirmation
-   - Error detection and reporting
+2. **Content Optimization Tools**
+   - Implement intelligent content chunking
+   - Create token-aware content selection
+   - Add relevance scoring algorithms
 
-### Phase 3: Context Optimization (Week 5-6)
+### Phase 2: Smart Context Building (Weeks 3-4)
+1. **Context Builder Implementation**
+   - Build prompt optimization logic
+   - Implement token budget management
+   - Create instruction-aware content prioritization
 
-1. **SmartContextBuilder**
-   - Relevance scoring algorithms
-   - Budget management
-   - Prompt optimization
-   - A/B testing framework
+2. **Framework Integration**
+   - Extend `EnhancedBrowserTestFramework` with token optimization
+   - Add configuration support
+   - Implement tool registration
 
-2. **Token Analytics**
-   - Usage tracking and reporting
-   - Cost analysis
-   - Optimization recommendations
-   - Performance monitoring
+### Phase 3: Analytics and Validation (Weeks 5-6)
+1. **Token Usage Tracking**
+   - Implement comprehensive token analytics
+   - Add cost calculation and reporting
+   - Create optimization recommendations
 
-### Phase 4: Integration & Testing (Week 7-8)
+2. **Action Validation System**
+   - Build validation checks for each action type
+   - Add retry logic for failed validations
+   - Implement feedback loops
 
-1. **Framework Integration**
-   - Backward compatibility
-   - Configuration options
-   - Performance testing
-   - User documentation
+### Phase 4: CLI and Reporting (Weeks 7-8)
+1. **CLI Integration**
+   - Add token-related command line flags
+   - Implement token analysis commands
+   - Create budget monitoring
 
-2. **Validation & Optimization**
-   - Real-world testing
-   - Performance benchmarking
-   - Token usage analysis
-   - Accuracy measurement
+2. **Enhanced Reporting**
+   - Add token metrics to HTML reports
+   - Create token usage visualizations
+   - Implement cost tracking dashboards
 
 ## Expected Benefits
 
 ### Token Reduction
-
-- **Current**: 100,000-500,000 tokens per test
-- **Optimized**: 20,000-100,000 tokens per test
-- **Savings**: 60-80% reduction
-- **Cost Impact**: $0.10-$0.50 per test (vs $0.50-$2.50)
+- **Baseline**: 100,000-500,000 tokens per test
+- **Optimized**: 15,000-75,000 tokens per test
+- **Savings**: 70-85% reduction
+- **Cost Impact**: $0.08-$0.38 per test (vs $0.50-$2.50)
 
 ### Accuracy Improvements
-
-- **Focused Context**: LLM sees only relevant content
-- **Validation Feedback**: Confirms actions were successful
-- **Error Recovery**: Retry with better context on failure
-- **Consistency**: Repeatable results with less noise
+- **Focused Context**: AI receives only relevant page content
+- **Validation Feedback**: Action success confirmation and retry logic
+- **State Awareness**: Differential updates prevent information loss
+- **Instruction Relevance**: Content prioritized by task relevance
 
 ### Performance Benefits
+- **Faster Processing**: Smaller prompts reduce AI response time
+- **Better Context Utilization**: More relevant information in token budget
+- **Memory Efficiency**: Reduced memory usage in test execution
+- **Scalability**: Cost-effective testing at scale
 
-- **Faster Processing**: Smaller prompts = faster responses
-- **Better Context**: More relevant information in context window
-- **Incremental Updates**: Only process what changed
-- **Memory Efficiency**: Reduced memory usage in CI/CD
+## Configuration Examples
 
-## Configuration Options
-
-### Framework Configuration (`endorphin.config.js`)
-
-```javascript
+### Basic Configuration
+```typescript
+// endorphin.config.ts
 export default {
-  tokenOptimization: {
+  token: {
     enabled: true,
+    budget: 4000,
+    optimization: 'balanced'
+  }
+} as FrameworkConfig;
+```
+
+### Advanced Configuration
+```typescript
+// endorphin.config.ts
+export default {
+  token: {
+    enabled: true,
+    budget: 6000,
+    model: 'gpt-4-turbo',
+    optimization: 'aggressive',
+    tracking: true,
     chunking: {
-      maxChunkSize: 2000,
-      overlapSize: 200,
-      preserveStructure: true,
-    },
-    diffing: {
-      enabled: true,
-      ignoreAttributes: ['style', 'class'],
-      importantSelectors: ['[data-testid]', '.error', '.success'],
+      maxChunkSize: 1500,
+      overlapSize: 150,
+      preserveStructure: true
     },
     validation: {
       enabled: true,
-      timeout: 5000,
-      retryAttempts: 2,
+      timeout: 3000,
+      retryAttempts: 3
     },
-    analytics: {
-      enabled: true,
-      reportPath: 'token-usage-report.json',
-    },
-  },
-};
+    priorityWeights: {
+      form: 1.0,
+      interactive: 0.9,
+      content: 0.5,
+      navigation: 0.3,
+      footer: 0.1
+    }
+  }
+} as FrameworkConfig;
 ```
 
 ### Environment Variables
-
 ```bash
 # Token optimization
-ENDORPHIN_TOKEN_OPTIMIZATION=true
-ENDORPHIN_MAX_CHUNK_SIZE=2000
-ENDORPHIN_DIFF_ENABLED=true
-ENDORPHIN_VALIDATION_ENABLED=true
-
-# Analytics
-ENDORPHIN_TRACK_TOKENS=true
-ENDORPHIN_TOKEN_BUDGET=8000
+ENDORPHIN_TOKEN_BUDGET=6000
+ENDORPHIN_TOKEN_OPTIMIZATION=aggressive
+ENDORPHIN_TOKEN_TRACKING=true
 ```
 
-## Monitoring & Analytics
-
-### Token Usage Dashboard
-
-```html
-<!-- Token usage monitoring -->
-<div class="token-dashboard">
-  <div class="metric-card">
-    <h3>Token Savings</h3>
-    <div class="metric-value">68%</div>
-    <div class="metric-trend">↓ 120K tokens saved</div>
-  </div>
-
-  <div class="metric-card">
-    <h3>Cost Reduction</h3>
-    <div class="metric-value">$1.20</div>
-    <div class="metric-trend">↓ 65% vs baseline</div>
-  </div>
-
-  <div class="metric-card">
-    <h3>Accuracy</h3>
-    <div class="metric-value">94%</div>
-    <div class="metric-trend">↑ 8% improvement</div>
-  </div>
-</div>
-```
-
-### CLI Reporting
-
-```bash
-$ endorphin analyze tokens
-
-📊 Token Usage Analysis (Last 30 days)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-💰 Cost Savings
-  Previous: $45.60 (3.2M tokens)
-  Current:  $18.20 (1.1M tokens)
-  Saved:    $27.40 (60% reduction)
-
-🧩 Chunking Effectiveness
-  Chunks used: 1,240 / 3,890 (32%)
-  Avg reduction: 68% per test
-
-🔄 Diff Efficiency
-  Diffs generated: 890
-  Avg change detection: 15%
-  False positives: 3%
-
-✅ Validation Success
-  Actions validated: 1,450
-  Success rate: 94%
-  Auto-retries: 67
-```
-
-This comprehensive token optimization system will dramatically reduce costs
-while improving test accuracy and reliability. The phased implementation
-approach ensures minimal disruption to existing functionality while delivering
-immediate benefits.
+This comprehensive token optimization system integrates seamlessly with the existing TypeScript framework architecture while providing dramatic cost savings and accuracy improvements. The modular design ensures backward compatibility and allows for gradual adoption of optimization features.
