@@ -31,6 +31,7 @@ import type {
 } from '../types/index.js';
 import { setupAgent } from './agent-setup.js';
 import { createTestSession, saveTestSession } from './test-session.js';
+import { TokenTracker } from './token-tracker.js';
 
 /**
  * Enhanced Browser Test Framework - Core Framework Class
@@ -49,6 +50,7 @@ export class EnhancedBrowserTestFramework {
   private recorderBaseDir: string;
   private isInteractiveMode: boolean = false;
   private config: FrameworkConfig;
+  private tokenTracker: TokenTracker;
 
   constructor(config: Partial<FrameworkConfig> = {}) {
     // Initialize configuration with defaults - deep merge to prevent issues
@@ -128,6 +130,9 @@ export class EnhancedBrowserTestFramework {
       recorderDir: this.recorderBaseDir,
       enableRecorderCopy: false, // Will be set to true in interactive mode
     });
+
+    // Initialize token tracker
+    this.tokenTracker = new TokenTracker(this.config.ai?.openai?.modelName || 'gpt-4o');
   }
 
   private getBrowserType() {
@@ -315,6 +320,10 @@ export class EnhancedBrowserTestFramework {
   createTestSession(testName: string, testId: string | null = null): TestSession {
     const session = createTestSession(testName, testId, this.resultBaseDir);
     this.currentTestSession = session;
+    
+    // Reset token tracker for new session
+    this.tokenTracker.reset();
+    
     return session;
   }
 
@@ -394,6 +403,59 @@ export class EnhancedBrowserTestFramework {
     }
   }
 
+  /**
+   * Invoke AI agent with token tracking
+   */
+  private async invokeAgentWithTracking(
+    messages: any,
+    config: any = {},
+    stepDescription: string = 'AI agent call'
+  ): Promise<any> {
+    // Estimate prompt tokens
+    const messageContent = typeof messages === 'object' && messages.messages 
+      ? messages.messages.map((m: any) => m.content).join(' ')
+      : JSON.stringify(messages);
+    
+    const estimatedPromptTokens = this.tokenTracker.estimateTokens(messageContent);
+    
+    console.log(`🤖 ${stepDescription} (estimated: ${estimatedPromptTokens} tokens)`);
+    
+    const startTime = Date.now();
+    const result = await this.agent.invoke(messages, config);
+    const duration = Date.now() - startTime;
+    
+    // Estimate response tokens
+    const responseContent = result.messages 
+      ? result.messages[result.messages.length - 1]?.content || ''
+      : result.content || JSON.stringify(result);
+    
+    const estimatedResponseTokens = this.tokenTracker.estimateTokens(responseContent);
+    
+    // Record token usage
+    const tokenUsage = this.tokenTracker.recordUsage(
+      estimatedPromptTokens,
+      estimatedResponseTokens,
+      this.config.ai?.openai?.modelName
+    );
+    
+    // Log token usage with enhanced formatting
+    console.log(`💰 Token Usage: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`);
+    
+    // Add token usage to current test step if exists
+    if (this.currentTestSession && this.currentTestSession.steps.length > 0) {
+      const currentStep = this.currentTestSession.steps[this.currentTestSession.steps.length - 1];
+      currentStep.tokenUsage = {
+        promptTokens: tokenUsage.promptTokens,
+        responseTokens: tokenUsage.responseTokens,
+        totalTokens: tokenUsage.totalTokens,
+        cost: tokenUsage.cost,
+        model: tokenUsage.model
+      };
+    }
+    
+    return result;
+  }
+
   finishTestSession(
     status: 'SUCCESS' | 'FAILED' = 'SUCCESS',
     finalResult: string | null = null
@@ -409,6 +471,9 @@ export class EnhancedBrowserTestFramework {
       new Date(this.currentTestSession.endTime).getTime() -
       new Date(this.currentTestSession.startTime).getTime();
 
+    // Add token summary to session
+    this.currentTestSession.tokenSummary = this.tokenTracker.getSessionSummary();
+
     // Save session data
     const summary = saveTestSession(this.currentTestSession);
 
@@ -417,6 +482,7 @@ export class EnhancedBrowserTestFramework {
 
     console.log(`📊 Test session completed: ${status}`);
     console.log(`📁 Results saved to: ${this.currentTestSession.sessionDir}`);
+    console.log(this.tokenTracker.getFormattedSummary());
 
     // Copy all results to test-recorder folder ONLY for interactive modes
     if (this.isInteractiveMode) {
@@ -481,14 +547,15 @@ To fill password: {"selector": "input[type='password']", "value": "password123"}
 
 Current Task: ${taskDescription}`;
 
-      const finalState = await this.agent.invoke(
+      const finalState = await this.invokeAgentWithTracking(
         {
           messages: [new HumanMessage(systemContext)],
         },
         {
           recursionLimit: AGENT_CONFIG.agent.recursionLimit,
           configurable: { thread_id: `session-${this.currentTestSession?.sessionId || 'default'}` },
-        }
+        },
+        `Task execution: ${taskDescription}`
       );
 
       const result = finalState.messages[finalState.messages.length - 1].content;
@@ -594,12 +661,13 @@ Current Task: ${taskDescription}`;
         );
       });
 
-      const agentPromise = this.agent.invoke(
+      const agentPromise = this.invokeAgentWithTracking(
         { messages },
         {
           recursionLimit: AGENT_CONFIG.agent.recursionLimit,
           configurable: { thread_id: `session-${this.currentTestSession!.sessionId}` },
-        }
+        },
+        `Test execution: ${test.name}`
       );
 
       await Promise.race([agentPromise, timeoutPromise]);

@@ -38,6 +38,13 @@ export interface TestSession {
   status: 'RUNNING' | 'SUCCESS' | 'FAILED';
   finalResult?: string;
   duration?: number;
+  tokenSummary?: {
+    totalTokens: number;
+    totalCost: number;
+    aiCalls: number;
+    avgTokensPerCall: number;
+    model: string;
+  };
 }
 
 
@@ -51,6 +58,13 @@ export interface TestStep {
   result?: string | null;
   status: 'SUCCESS' | 'FAILED';
   screenshots: Screenshot[];
+  tokenUsage?: {
+    promptTokens: number;
+    responseTokens: number;
+    totalTokens: number;
+    cost: number;
+    model: string;
+  };
 }
 
 export interface TestResult {
