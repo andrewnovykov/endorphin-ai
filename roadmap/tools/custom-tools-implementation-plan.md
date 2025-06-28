@@ -147,6 +147,7 @@ export function createNavigationTool(framework: EnhancedBrowserTestFramework) {
 - [ ] Validate exports
 - [ ] Test tool loading
 - [ ] Report conflicts or issues
+- [ ] Tool documentation generator: Auto-generate docs from tool schemas
 
 - [ ] **Tool listing CLI** - `endorphin list tools`
   - [ ] Show all available tools (built-in + custom)
