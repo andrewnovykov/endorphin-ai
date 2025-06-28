@@ -128,7 +128,7 @@ describe('npx Resolution Integration', () => {
       expect(content).toContain('ensureBinaryExecutable');
       expect(content).toContain('printUsageInstructions');
       expect(content).toContain('npm run endorphin-ai:init');
-      expect(content).toContain('Alternative method');
+      expect(content).toContain('🔧 Alternative:');
     });
 
     test('postinstall script should be executable', (done) => {
@@ -189,10 +189,9 @@ describe('npx Resolution Integration', () => {
       const content = await fs.readFile(readmePath, 'utf8');
 
       expect(content).toContain('🔧 Troubleshooting Installation');
-      expect(content).toContain('npm run endorphin-ai:init');
+      expect(content).toContain('npm run endorphin:init');
       expect(content).toContain('npx --clear-cache');
-      expect(content).toContain('./node_modules/.bin/endorphin');
-      expect(content).toContain('This is a known npm/npx issue');
+      expect(content).toContain('./node_modules/.bin/endorphin-ai');
     });
 
     test('should have npm scripts examples in README', async () => {
@@ -200,9 +199,9 @@ describe('npx Resolution Integration', () => {
       const readmePath = join(projectRoot, 'README.md');
       const content = await fs.readFile(readmePath, 'utf8');
 
-      expect(content).toContain('"endorphin-ai:init"');
-      expect(content).toContain('"endorphin-ai:version"');
-      expect(content).toContain('"endorphin-ai:help"');
+      expect(content).toContain('"endorphin:init"');
+      expect(content).toContain('"endorphin:version"');
+      expect(content).toContain('"endorphin:help"');
     });
   });
 });

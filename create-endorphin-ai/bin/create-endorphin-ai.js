@@ -30,7 +30,7 @@ function success(message) {
   console.log(chalk.green('✅'), message);
 }
 
-async function runCommand(command, args, options = {}) {
+function runCommand(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       stdio: 'inherit',
@@ -117,7 +117,7 @@ async function initializeProject(projectPath) {
   try {
     await runCommand('npx', ['endorphin-ai', 'init'], { cwd: projectPath });
     spinner.succeed('Project initialized successfully!');
-  } catch (err) {
+  } catch (_error) {
     spinner.fail('Failed to initialize project');
     // Try alternative method
     try {

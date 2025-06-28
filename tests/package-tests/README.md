@@ -1,6 +1,6 @@
 # Package Tests - Endorphin AI
 
-_Last Updated: June 24, 2025_
+_Last Updated: June 27, 2025_
 
 ## 🎯 Overview
 
@@ -8,6 +8,29 @@ This directory contains package-level tests that verify Endorphin AI from a
 **user's perspective** - testing the actual npm package installation, CLI
 commands, and user workflow. These tests are different from framework unit tests
 and simulate real user scenarios.
+
+## 📊 Latest Test Results
+
+**Session**: 20250627_220349  
+**Status**: 7/10 tests passing (70% success rate)  
+**Duration**: 89 seconds
+
+### Test Summary:
+- ✅ Environment Setup
+- ✅ Init Command
+- ✅ Install Playwright Browsers
+- ✅ Test Recorder Functionality
+- ✅ Test Recorder File Location
+- ✅ Basic Test Execution
+- ✅ CLI Commands
+- ❌ Console Reporter
+- ❌ HTML Reporter
+- ❌ All Reporters
+
+### Known Issues:
+The reporter tests failed due to a corrupted `.env` file that contained a duplicate
+API key on its own line, which bash interpreted as a command when the file was
+sourced. This has been fixed in the main repository.
 
 ## ⚙️ Centralized Configuration
 
@@ -100,10 +123,10 @@ development-tests/package-tests/
 # 2. Navigate to test project
 cd development-tests/package-tests/tmp/test-endorphin
 
-# 3. Run individual tests
-npx endorphin list
-npx endorphin run test USER-001
-npx endorphin run test-recorder
+# 3. Run individual tests (NOTE: Use endorphin-ai, not endorphin)
+npx endorphin-ai list
+npx endorphin-ai run test USER-001
+npx endorphin-ai run test-recorder
 
 # 4. Cleanup when done
 cd ../../..
@@ -443,8 +466,9 @@ cat results/YYYYMMDD_HHMMSS/Environment_Setup.log
 #### "Command not found: endorphin"
 
 - **Log Location**: Check `Environment_Setup.log` for installation errors
-- **Solution**: Ensure package is installed in test project
-- **Alternative**: Use `npx endorphin` instead of `endorphin`
+- **Solution**: Use `npx endorphin-ai` instead of `npx endorphin`
+- **Important**: The correct command is `endorphin-ai`, not `endorphin`
+- **Alternative**: Use npm scripts defined in package.json
 
 #### "OpenAI API key not configured"
 
@@ -470,6 +494,13 @@ cat results/YYYYMMDD_HHMMSS/Environment_Setup.log
 - **Debug**: Check session_info.txt for path information
 - **Common Cause**: Running from wrong directory
 - **Solution**: Always run from `development-tests/package-tests/`
+
+#### ".env: command not found" Error
+
+- **Symptoms**: Reporter tests fail with bash command errors
+- **Cause**: Malformed .env file with duplicate API key on its own line
+- **Solution**: Check .env file for duplicate lines without variable assignment
+- **Fix**: Remove any standalone API key lines from .env file
 
 ### Debug Mode
 
