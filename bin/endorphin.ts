@@ -22,7 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Get package info
-const packagePath = join(__dirname, '..', '..', 'package.json');
+const packagePath = join(__dirname, '..', 'package.json');
 const packageInfo = JSON.parse(readFileSync(packagePath, 'utf8'));
 
 const args = process.argv.slice(2);

@@ -8,9 +8,80 @@ import { fileURLToPath } from 'url';
 import { CustomToolDiscovery } from '../core/custom-tool-discovery.js';
 import { getConfig } from '../core/config-loader.js';
 import { CustomToolError, CustomToolErrorHandler } from '../core/custom-tool-errors.js';
+import { createGetPageContentTool, createGetSimplePageContentTool } from '../tools/content.js';
+import { createContentOptimizationTool } from '../tools/content-optimization.js';
+import { createDifferentialContentTool } from '../tools/differential-content.js';
+import { createClearFieldTool, createClickTool, createFillTool } from '../tools/interaction.js';
+import { createNavigationTool } from '../tools/navigation.js';
+import { createScreenshotTool, createWaitTool } from '../tools/utilities.js';
+import { createGetElementInfoTool, createVerifyElementTool } from '../tools/verification.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+/**
+ * Get metadata for all built-in tools by creating mock instances
+ * This ensures we always have accurate, up-to-date tool information
+ */
+function getBuiltInToolsMetadata(): Array<{ name: string; description: string }> {
+  // Create a minimal mock framework for tool metadata extraction
+  const mockFramework = {
+    frameworkConfig: {},
+    currentPage: null,
+    logTestStep: () => {},
+    takeStepScreenshot: async () => null,
+  } as any;
+
+  try {
+    // Create all built-in tools and extract their metadata
+    const toolCreators = [
+      createNavigationTool,
+      createDifferentialContentTool,
+      createGetPageContentTool,
+      createGetSimplePageContentTool,
+      createContentOptimizationTool,
+      createClickTool,
+      createFillTool,
+      createClearFieldTool,
+      createVerifyElementTool,
+      createGetElementInfoTool,
+      createWaitTool,
+      createScreenshotTool,
+    ];
+
+    return toolCreators.map(creator => {
+      try {
+        const tool = creator(mockFramework);
+        return {
+          name: tool.name,
+          description: tool.description
+        };
+      } catch (_error) {
+        // Fallback for any tools that can't be created without full framework
+        return {
+          name: 'unknown',
+          description: 'Tool metadata unavailable'
+        };
+      }
+    }).filter(tool => tool.name !== 'unknown');
+  } catch (_error) {
+    // Fallback to minimal hardcoded list if dynamic extraction fails
+    return [
+      { name: 'navigate', description: 'Navigate to a URL' },
+      { name: 'click', description: 'Click on an element' },
+      { name: 'fill', description: 'Fill in a form field' },
+      { name: 'clearField', description: 'Clear a form field' },
+      { name: 'getPageContent', description: 'Get page content with optimization' },
+      { name: 'getSimplePageContent', description: 'Get simple page content' },
+      { name: 'differential_page_content', description: 'Get page changes since last snapshot' },
+      { name: 'getOptimizedContent', description: 'Optimize content for AI processing' },
+      { name: 'verifyElement', description: 'Verify element exists and matches criteria' },
+      { name: 'getElementInfo', description: 'Get information about an element' },
+      { name: 'wait', description: 'Wait for a specified duration' },
+      { name: 'screenshot', description: 'Take a screenshot' },
+    ];
+  }
+}
 
 interface ToolTemplate {
   name: string;
@@ -22,17 +93,12 @@ const TOOL_TEMPLATES: ToolTemplate[] = [
   {
     name: 'basic',
     path: 'framework/templates/tools/basic-tool.template.txt',
-    description: 'Basic tool template with minimal structure',
+    description: 'Basic tool template with UI automation structure',
   },
   {
     name: 'ui',
     path: 'framework/templates/tools/ui-tool.template.txt',
-    description: 'UI automation tool template with Playwright integration',
-  },
-  {
-    name: 'api',
-    path: 'framework/templates/tools/api-tool.template.txt',
-    description: 'API testing tool template with HTTP request handling',
+    description: 'Advanced UI automation tool template with comprehensive examples',
   },
 ];
 
@@ -156,7 +222,7 @@ export async function handleValidateToolsCommand(): Promise<void> {
     const mockFramework = {
       config,
       logTestStep: () => {},
-      takeStepScreenshot: async () => null,
+      takeStepScreenshot: () => Promise.resolve(null),
       currentPage: null,
     } as any;
 
@@ -241,20 +307,7 @@ export async function handleListToolsCommand(options: { verbose?: boolean }): Pr
     
     // List built-in tools
     console.log('🔧 Built-in Tools:');
-    const builtInTools = [
-      { name: 'navigate', description: 'Navigate to a URL' },
-      { name: 'click', description: 'Click on an element' },
-      { name: 'fill', description: 'Fill in a form field' },
-      { name: 'clear-field', description: 'Clear a form field' },
-      { name: 'get-page-content', description: 'Get page content with optimization' },
-      { name: 'get-simple-page-content', description: 'Get simple page content' },
-      { name: 'differential-content', description: 'Get page changes since last snapshot' },
-      { name: 'content-optimization', description: 'Optimize content for AI processing' },
-      { name: 'verify-element', description: 'Verify element exists and matches criteria' },
-      { name: 'get-element-info', description: 'Get information about an element' },
-      { name: 'wait', description: 'Wait for a specified duration' },
-      { name: 'screenshot', description: 'Take a screenshot' },
-    ];
+    const builtInTools = getBuiltInToolsMetadata();
     
     for (const tool of builtInTools) {
       console.log(`   - ${tool.name}: ${tool.description}`);
@@ -268,7 +321,7 @@ export async function handleListToolsCommand(options: { verbose?: boolean }): Pr
       const mockFramework = {
         config,
         logTestStep: () => {},
-        takeStepScreenshot: async () => null,
+        takeStepScreenshot: () => Promise.resolve(null),
         currentPage: null,
       } as any;
       

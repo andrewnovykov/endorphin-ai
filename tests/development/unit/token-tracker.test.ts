@@ -88,7 +88,7 @@ describe('TokenTracker', () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
       const usage = tracker.recordUsage(1000, 500, 'unknown-model');
       
-      expect(consoleSpy).toHaveBeenCalledWith('⚠️ Unknown model pricing: unknown-model, using gpt-4o rates');
+      expect(consoleSpy).toHaveBeenCalledWith('⚠️ No pricing found for model: unknown-model, using default pricing');
       expect(usage.cost).toBeGreaterThan(0);
       
       consoleSpy.mockRestore();

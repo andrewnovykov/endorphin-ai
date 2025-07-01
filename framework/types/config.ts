@@ -4,10 +4,12 @@
 
 import type { AIConfig } from './agent';
 import type { BrowserConfig } from './browser';
+import type { PricingConfig } from '../config/pricing-config';
 
 export interface FrameworkConfig {
   browser: BrowserConfig;
   ai: AIConfig;
+  pricing?: PricingConfig; // Custom token pricing configuration
   execution?: ExecutionConfig;
   results?: ResultsConfig;
   testsDirectory: string;

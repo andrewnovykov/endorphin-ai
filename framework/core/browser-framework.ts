@@ -9,12 +9,12 @@ import { existsSync, readdirSync, rmSync, statSync } from 'fs';
 import * as path from 'path';
 import { Browser, BrowserContext, chromium, firefox, Page, webkit } from 'playwright';
 import { AGENT_CONFIG } from '../config/agent-config.js';
+import { TIMEOUTS } from '../config/constants.js';
 import { HtmlReporter } from '../reporters/html-reporter.js';
 import { TestResultsManager } from '../results/test-results-manager.js';
 import { createAllTools } from '../tools/index.js';
 import type {
   BrowserConfig,
-  BrowserTools,
   ClickParams,
   ExecutionConfig,
   FillParams,
@@ -29,10 +29,23 @@ import type {
   TestStep,
   ToolCall,
 } from '../types/index.js';
+import type { 
+  LangChainAgent, 
+  LangChainTool, 
+  AgentResponse, 
+  AgentInvokeParams 
+} from '../types/agent.js';
+import { 
+  BrowserError, 
+  AgentError, 
+  TestTimeoutError,
+  createErrorFromUnknown
+} from '../types/errors.js';
 import { setupAgent } from './agent-setup.js';
 import { createTestSession, saveTestSession } from './test-session.js';
 import { TokenTracker } from './token-tracker.js';
 import { PageSnapshotManager } from './page-snapshot.js';
+import { ResourceManager, globalResourceManager } from './resource-manager.js';
 
 /**
  * Enhanced Browser Test Framework - Core Framework Class
@@ -42,9 +55,8 @@ export class EnhancedBrowserTestFramework {
   private browser: Browser | null = null;
   private context: BrowserContext | null = null;
   private page: Page | null = null;
-  private tools: BrowserTools | null = null;
-  private agent: any = null; // LangChain agent type
-  private toolsArray: any[] = []; // Array of LangChain tools
+  private agent: LangChainAgent | null = null;
+  private toolsArray: LangChainTool[] = [];
   private resultsManager: TestResultsManager;
   private currentTestSession: TestSession | null = null;
   private resultBaseDir: string;
@@ -53,6 +65,7 @@ export class EnhancedBrowserTestFramework {
   private config: FrameworkConfig;
   private tokenTracker: TokenTracker;
   private snapshotManager: PageSnapshotManager;
+  private resourceManager: ResourceManager;
 
   constructor(config: Partial<FrameworkConfig> = {}) {
     // Initialize configuration with defaults - deep merge to prevent issues
@@ -133,11 +146,17 @@ export class EnhancedBrowserTestFramework {
       enableRecorderCopy: false, // Will be set to true in interactive mode
     });
 
-    // Initialize token tracker
-    this.tokenTracker = new TokenTracker(this.config.ai?.openai?.modelName || 'gpt-4o');
+    // Initialize token tracker with custom pricing if provided
+    this.tokenTracker = new TokenTracker(
+      this.config.ai?.openai?.modelName || 'gpt-4o',
+      this.config.pricing
+    );
     
     // Initialize page snapshot manager
     this.snapshotManager = new PageSnapshotManager();
+    
+    // Initialize resource manager for memory leak prevention
+    this.resourceManager = globalResourceManager;
   }
 
   private getBrowserType() {
@@ -194,92 +213,43 @@ export class EnhancedBrowserTestFramework {
 
     // Create tools for the AI agent
     this.toolsArray = await createAllTools(this);
-
-    // Create direct tool access object for framework use
-    this.tools = {
-      navigate: async (params: NavigateParams): Promise<string> => {
-        const stepDesc = `Navigate to: ${params.url}`;
-        console.log(`🌍 ${stepDesc}`);
-
-        try {
-          if (!this.page) throw new Error('Page not initialized');
-
-          await this.page.goto(params.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await this.takeStepScreenshot(`Page loaded: ${params.url}`);
-
-          this.logTestStep(
-            stepDesc,
-            'navigate',
-            params,
-            `Successfully navigated to: ${params.url}`,
-            true
-          );
-          return `Successfully navigated to: ${params.url}`;
-        } catch (error: any) {
-          this.logTestStep(stepDesc, 'navigate', params, error.message, false);
-          throw error;
-        }
-      },
-
-      click: async (params: ClickParams): Promise<string> => {
-        const stepDesc = `Click element: ${params.selector}`;
-        console.log(`👆 ${stepDesc}`);
-
-        try {
-          if (!this.page) throw new Error('Page not initialized');
-
-          await this.page.locator(params.selector).click();
-          await this.takeStepScreenshot(`Clicked: ${params.selector}`);
-
-          this.logTestStep(
-            stepDesc,
-            'click',
-            params,
-            `Successfully clicked: ${params.selector}`,
-            true
-          );
-          return `Successfully clicked: ${params.selector}`;
-        } catch (error: any) {
-          this.logTestStep(stepDesc, 'click', params, error.message, false);
-          throw error;
-        }
-      },
-
-      fill: async (params: FillParams): Promise<string> => {
-        const stepDesc = `Fill field: ${params.selector} with "${params.text}"`;
-        console.log(`✏️ ${stepDesc}`);
-
-        try {
-          if (!this.page) throw new Error('Page not initialized');
-
-          await this.page.locator(params.selector).fill(params.text);
-          await this.takeStepScreenshot(`Filled: ${params.selector}`);
-
-          this.logTestStep(
-            stepDesc,
-            'fill',
-            params,
-            `Successfully filled: ${params.selector}`,
-            true
-          );
-          return `Successfully filled: ${params.selector}`;
-        } catch (error: any) {
-          this.logTestStep(stepDesc, 'fill', params, error.message, false);
-          throw error;
-        }
-      },
-
-      screenshot: async (params: ScreenshotParams = {}): Promise<string> => {
-        const filename = params.filename || `screenshot-${Date.now()}.png`;
-        await this.takeStepScreenshot(filename);
-        return `Screenshot saved: ${filename}`;
-      },
-    };
   }
 
   private async setupAgent(): Promise<void> {
     console.log('🤖 Setting up AI agent...');
     this.agent = await setupAgent(this.toolsArray);
+  }
+
+  /**
+   * Helper method to call a tool from the toolsArray by name
+   */
+  private async callTool(toolName: string, params: any): Promise<string> {
+    const tool = this.toolsArray.find(t => t.name === toolName);
+    if (!tool) {
+      throw new Error(`Tool '${toolName}' not found`);
+    }
+    
+    try {
+      // LangChain tools have different invocation methods
+      let result: any;
+      if (typeof tool.call === 'function') {
+        result = await tool.call(params);
+      } else if (typeof tool.invoke === 'function') {
+        result = await tool.invoke(params);
+      } else if (typeof tool.func === 'function') {
+        result = await tool.func(params);
+      } else {
+        throw new Error(`Tool '${toolName}' does not have a callable method`);
+      }
+      
+      return typeof result === 'string' ? result : JSON.stringify(result);
+    } catch (error) {
+      const toolError = createErrorFromUnknown(error, `Tool '${toolName}' execution failed`, {
+        toolName,
+        params
+      });
+      throw toolError;
+    }
   }
 
   // Directory cleanup methods
@@ -384,6 +354,7 @@ export class EnhancedBrowserTestFramework {
         path: filepath,
         fullPage: false,
         type: 'png',
+        timeout: TIMEOUTS.SCREENSHOT_TIMEOUT,
       });
 
       const screenshot = {
@@ -402,20 +373,25 @@ export class EnhancedBrowserTestFramework {
 
       console.log(`📸 Screenshot taken: ${filename}`);
       return filepath;
-    } catch (error: any) {
-      console.error(`❌ Failed to take screenshot: ${error.message}`);
+    } catch (error: unknown) {
+      const screenshotError = createErrorFromUnknown(error, `Failed to take screenshot: ${filename}`, {
+        operation: 'screenshot',
+        filename,
+        filepath
+      });
+      console.error(`❌ ${screenshotError.message}`);
       return null;
     }
   }
 
   /**
-   * Invoke AI agent with token tracking
+   * Invoke AI agent with token tracking and resource management
    */
   private async invokeAgentWithTracking(
-    messages: any,
+    messages: AgentInvokeParams,
     config: any = {},
     stepDescription: string = 'AI agent call'
-  ): Promise<any> {
+  ): Promise<AgentResponse> {
     // Extract instruction for content optimization
     if (messages && messages.messages && messages.messages.length > 0) {
       const lastMessage = messages.messages[messages.messages.length - 1];
@@ -432,14 +408,42 @@ export class EnhancedBrowserTestFramework {
     
     console.log(`🤖 ${stepDescription} (estimated: ${estimatedPromptTokens} tokens)`);
     
+    // Create AbortController with proper cleanup to prevent EventTarget memory leak
+    const abortController = this.resourceManager.createAbortController(`agent-${Date.now()}`);
+    const enhancedConfig = {
+      ...config,
+      signal: abortController.signal
+    };
+    
     const startTime = Date.now();
-    const result = await this.agent.invoke(messages, config);
+    let result: AgentResponse;
+    
+    try {
+      if (!this.agent) {
+        throw new AgentError('Agent not initialized', { stepDescription });
+      }
+      
+      result = await this.agent.invoke(messages, enhancedConfig);
+    } catch (error) {
+      // Ensure cleanup happens even on error
+      abortController.abort();
+      
+      const frameworkError = createErrorFromUnknown(error, `Agent invocation failed: ${stepDescription}`, {
+        stepDescription,
+        estimatedPromptTokens
+      });
+      throw frameworkError;
+    }
+    
     const duration = Date.now() - startTime;
     
-    // Estimate response tokens
-    const responseContent = result.messages 
+    // Clean up the abort controller
+    abortController.abort();
+    
+    // Estimate response tokens from properly typed response
+    const responseContent = result.messages && result.messages.length > 0
       ? result.messages[result.messages.length - 1]?.content || ''
-      : result.content || JSON.stringify(result);
+      : result.content || '';
     
     const estimatedResponseTokens = this.tokenTracker.estimateTokens(responseContent);
     
@@ -506,12 +510,26 @@ export class EnhancedBrowserTestFramework {
   }
 
   async cleanup(): Promise<void> {
-    if (this.browser) {
-      await this.browser.close();
-      this.browser = null;
-      this.context = null;
-      this.page = null;
-      console.log('🧹 Browser closed successfully');
+    try {
+      // Clean up browser resources
+      if (this.browser) {
+        await this.browser.close();
+        this.browser = null;
+        this.context = null;
+        this.page = null;
+        console.log('🧹 Browser closed successfully');
+      }
+      
+      // Force cleanup of any remaining resources to prevent memory leaks
+      this.resourceManager.cleanup();
+      
+    } catch (error) {
+      const cleanupError = createErrorFromUnknown(error, 'Cleanup failed', {
+        component: 'EnhancedBrowserTestFramework',
+        operation: 'cleanup'
+      });
+      console.error('❌ Cleanup error:', cleanupError.message);
+      throw cleanupError;
     }
   }
 
@@ -629,8 +647,8 @@ Current Task: ${taskDescription}`;
 
       // Add delay between tasks
       if (i < tasks.length - 1) {
-        console.log('⏱️ Waiting 2 seconds before next task...\n');
-        await new Promise((resolve) => setTimeout(resolve, AGENT_CONFIG.execution.stepDelay));
+        console.log('⏱️ Waiting before next task...\n');
+        await new Promise((resolve) => setTimeout(resolve, TIMEOUTS.STEP_DELAY));
       }
     }
 
@@ -668,8 +686,12 @@ Current Task: ${taskDescription}`;
       // Add timeout to prevent infinite loops
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(
-          () => reject(new Error('Test execution timeout (5 minutes)')),
-          AGENT_CONFIG.agent.timeout
+          () => reject(new TestTimeoutError('Test execution timeout', {
+            testId: test.id,
+            testName: test.name,
+            timeout: TIMEOUTS.AGENT_TIMEOUT
+          })),
+          TIMEOUTS.AGENT_TIMEOUT
         );
       });
 
@@ -741,7 +763,7 @@ Current Task: ${taskDescription}`;
       });
 
       // Brief pause between tests
-      await new Promise((resolve) => setTimeout(resolve, AGENT_CONFIG.execution.stepDelay));
+      await new Promise((resolve) => setTimeout(resolve, TIMEOUTS.STEP_DELAY));
     }
 
     // Generate final report using HtmlReporter
@@ -822,35 +844,33 @@ Current Task: ${taskDescription}`;
     if (lowerCommand.includes('click')) {
       // Extract selector or button text
       const selector = this.extractSelectorFromCommand(command);
-      const result = await this.tools!.click({ selector });
+      const result = await this.callTool('click', { selector });
       return { toolUsed: 'click', params: { selector }, result };
     }
 
     if (lowerCommand.includes('fill') || lowerCommand.includes('type')) {
       // Extract field and value
       const { selector, value } = this.extractFillFromCommand(command);
-      const result = await this.tools!.fill({ selector, text: value });
+      const result = await this.callTool('fill', { selector, text: value });
       return { toolUsed: 'fill', params: { selector, value }, result };
     }
 
     if (lowerCommand.includes('navigate') || lowerCommand.includes('go to')) {
       // Extract URL
       const url = this.extractUrlFromCommand(command);
-      const result = await this.tools!.navigate({ url });
+      const result = await this.callTool('navigate', { location: url });
       return { toolUsed: 'navigate', params: { url }, result };
     }
 
     if (lowerCommand.includes('wait')) {
       // Extract time
-      const time = this.extractTimeFromCommand(command) || 2000;
-      if (this.page) {
-        await this.page.waitForTimeout(time);
-      }
-      return { toolUsed: 'wait', params: { time }, result: `Waited ${time}ms` };
+      const time = this.extractTimeFromCommand(command) || TIMEOUTS.DEFAULT_WAIT;
+      const result = await this.callTool('wait', { duration: time });
+      return { toolUsed: 'wait', params: { time }, result };
     }
 
     if (lowerCommand.includes('screenshot')) {
-      const result = await this.tools!.screenshot({});
+      const result = await this.callTool('screenshot', {});
       return { toolUsed: 'screenshot', params: {}, result };
     }
 
@@ -937,7 +957,7 @@ Current Task: ${taskDescription}`;
       }
       return num;
     }
-    return 2000; // Default 2 seconds
+    return TIMEOUTS.DEFAULT_WAIT; // Default wait time
   }
 
   /**

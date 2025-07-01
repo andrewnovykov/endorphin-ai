@@ -221,6 +221,58 @@ The project uses TypeScript path aliases that get resolved during build:
 - **Development**: TypeScript, Jest, ESLint, tsx
 - **Production**: Compiled JavaScript only (no tsx dependency)
 
+## Token Pricing Configuration
+
+### Overview
+The framework includes flexible token pricing configuration for accurate cost tracking across different AI models.
+
+### Default Pricing
+Default pricing is provided for popular models:
+- **OpenAI**: GPT-4o, GPT-4, GPT-3.5-turbo variants
+- **Anthropic**: Claude-3 variants 
+- **Google**: Gemini Pro models
+
+### Custom Pricing
+Users can override default pricing in `endorphin.config.ts`:
+
+```typescript
+// endorphin.config.ts
+export default {
+  pricing: {
+    // Override default model pricing
+    'gpt-4o': {
+      input: 0.002,   // Cost per 1K input tokens
+      output: 0.008   // Cost per 1K output tokens
+    },
+    
+    // Add custom/private models
+    'my-custom-model': {
+      input: 0.001,
+      output: 0.003
+    },
+    
+    // Local/free models
+    'local-llama': {
+      input: 0,
+      output: 0
+    }
+  }
+  // ... other config
+};
+```
+
+### Pricing Validation
+- Input/output prices must be non-negative numbers
+- Warnings for unusually high prices (>$1 per 1K tokens)
+- Warnings when output price < input price (unusual pattern)
+- Automatic fallback to defaults for invalid configurations
+
+### Token Usage Tracking
+- Real-time cost calculation during test execution
+- Per-test and session-level cost summaries
+- Console output: `💰 Token Usage: 1,234 tokens ($0.0123) in 1.2s`
+- Detailed cost breakdowns in test reports
+
 ## Code Quality Standards
 
 ### TypeScript

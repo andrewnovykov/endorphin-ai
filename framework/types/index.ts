@@ -28,7 +28,8 @@ export type {
 // Error types
 export {
   BrowserError,
-  ConfigurationError, EndorphinError,
+  ConfigurationError,
+  FrameworkError,
   TestExecutionError
 } from './errors.js';
 

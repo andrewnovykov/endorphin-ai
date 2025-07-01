@@ -54,14 +54,14 @@ export async function initProject(targetDir: string = process.cwd()): Promise<vo
     console.log('🚀 Next steps:');
     console.log('  1. Edit .env and add your OpenAI API key');
     console.log('  2. Run: npx endorphin-ai run test HEALTH-001');
-    console.log('  3. Try the API demo: npx endorphin-ai run test API-DEMO-001');
+    console.log('  3. Try the UI demo: npx endorphin-ai run test UI-DEMO-001');
     console.log('  4. Check your custom tools: npx endorphin-ai list tools');
-    console.log('  5. Try: npx endorphin-ai run generate report');
+    console.log('  5. Try: npx endorphin-ai generate report');
     console.log('  6. Try: npx endorphin-ai run test-recorder');
     console.log('');
-    console.log('🛠️ Custom Tools:');
-    console.log('  - JSONPlaceholder API tool included in tools/ directory');
-    console.log('  - Create more: npx endorphin-ai create tool my-tool');
+    console.log('🛠️ Custom UI Tools:');
+    console.log('  - Login UI tool included in tools/ directory');
+    console.log('  - Create more: npx endorphin-ai create tool my-tool --template ui');
     console.log('');
     console.log('📚 Learn more: https://github.com/andrewnovykov/endorphin-ai');
   } catch (error: any) {
@@ -99,8 +99,8 @@ async function copyExampleFiles(targetDir: string): Promise<void> {
     { src: '.env.example', dest: '.env' },
     { src: 'endorphin.config.ts', dest: 'endorphin.config.ts' },
     { src: 'tests/sample-test.ts', dest: 'tests/sample-test.ts' },
-    { src: 'tests/api-demo.yaml', dest: 'tests/api-demo.yaml' },
-    { src: 'tools/jsonplaceholder-api.ts', dest: 'tools/jsonplaceholder-api.ts' },
+    { src: 'tests/ui-demo.ts', dest: 'tests/ui-demo.ts' },
+    { src: 'tools/login-ui-tool.ts', dest: 'tools/login-ui-tool.ts' },
     { src: 'tools/README.md', dest: 'tools/README.md' },
     { src: '.gitignore.example', dest: '.gitignore' },
     { src: 'README-ENDORPHIN.md', dest: 'README-ENDORPHIN.md' },
@@ -335,10 +335,10 @@ async function createBasicCustomTools(targetDir: string): Promise<void> {
   // Create tools directory
   await fs.mkdir(path.join(targetDir, 'tools'), { recursive: true });
 
-  // Create JSONPlaceholder API tool
-  const apiToolContent = `/**
- * JSONPlaceholder API Tool
- * This tool demonstrates API testing with a real public service
+  // Create Login UI tool
+  const loginToolContent = `/**
+ * Login UI Tool
+ * This tool demonstrates UI automation for login functionality
  */
 
 import { tool } from '@langchain/core/tools';
@@ -346,56 +346,61 @@ import { z } from 'zod';
 import type { EnhancedBrowserTestFramework } from 'endorphin-ai';
 
 /**
- * Creates a JSONPlaceholder API testing tool
- * @param framework - Framework instance
- * @returns LangChain tool for testing JSONPlaceholder API
+ * Creates a Login UI automation tool
+ * @param framework - Framework instance with browser access
+ * @returns LangChain tool for login automation
  */
-export function createJsonPlaceholderApiTool(framework: EnhancedBrowserTestFramework) {
+export function createLoginTool(framework: EnhancedBrowserTestFramework) {
   return tool(
     async (params: {
-      endpoint: string;
-      method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-      data?: any;
+      email: string;
+      password: string;
+      loginLinkSelector?: string;
+      emailSelector?: string;
+      passwordSelector?: string;
+      submitSelector?: string;
     }) => {
-      const { endpoint, method = 'GET', data } = params;
-      const baseUrl = 'https://jsonplaceholder.typicode.com';
-      const url = \`$\{baseUrl}$\{endpoint.startsWith('/') ? endpoint : '/' + endpoint}\`;
+      const { 
+        email, 
+        password,
+        loginLinkSelector = 'a.nav-link[href="#/login"]',
+        emailSelector = 'input.form-control.form-control-lg[name="email"]',
+        passwordSelector = 'input.form-control.form-control-lg[name="password"]',
+        submitSelector = 'button.btn.btn-lg.btn-primary.pull-xs-right[data-cy="signin"]'
+      } = params;
       
-      const stepDesc = \`API $\{method} request to: $\{endpoint}\`;
-      console.log(\`🌐 $\{stepDesc}\`);
+      if (!framework.currentPage) {
+        throw new Error('No browser page available. Make sure a browser session is active.');
+      }
+      
+      const page = framework.currentPage;
       
       try {
-        const requestOptions: RequestInit = {
-          method,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        };
+        framework.logTestStep('Starting login process', 'login-ui-tool');
         
-        if (data && (method === 'POST' || method === 'PUT')) {
-          requestOptions.body = JSON.stringify(data);
-        }
+        // Click login link
+        await page.click(loginLinkSelector);
+        await page.waitForTimeout(2000);
         
-        const response = await fetch(url, requestOptions);
-        const responseData = await response.json();
+        framework.logTestStep('Filling login form', 'login-ui-tool');
         
-        framework.logTestStep(
-          stepDesc,
-          'jsonplaceholder-api',
-          params,
-          \`API response: $\{response.status} $\{response.statusText}\`,
-          response.ok
-        );
+        // Fill email field
+        await page.locator(emailSelector).fill(email);
         
-        if (response.ok) {
-          return \`✅ $\{method} $\{endpoint} succeeded ($\{response.status}): $\{JSON.stringify(responseData, null, 2)}\`;
-        } else {
-          throw new Error(\`API request failed: $\{response.status} $\{response.statusText}\`);
-        }
+        // Fill password field  
+        await page.locator(passwordSelector).fill(password);
+        
+        // Click sign in button
+        await page.click(submitSelector);
+        await page.waitForTimeout(3000);
+        
+        framework.logTestStep('Login completed successfully', 'login-ui-tool');
+        return \`✅ Login completed successfully for user: $\{email}\`;
+        
       } catch (error: any) {
         framework.logTestStep(
-          stepDesc,
-          'jsonplaceholder-api',
+          'Login failed',
+          'login-ui-tool',
           params,
           error.message,
           false
@@ -404,19 +409,22 @@ export function createJsonPlaceholderApiTool(framework: EnhancedBrowserTestFrame
       }
     },
     {
-      name: 'jsonplaceholder-api',
-      description: 'Make API requests to JSONPlaceholder test service (posts, users, comments, etc.)',
+      name: 'login-ui-tool',
+      description: 'UI automation tool for login functionality with customizable selectors',
       schema: z.object({
-        endpoint: z.string().describe('API endpoint (e.g., /posts/1, /users, /comments)'),
-        method: z.enum(['GET', 'POST', 'PUT', 'DELETE']).optional().describe('HTTP method (default: GET)'),
-        data: z.any().optional().describe('Request body data for POST/PUT requests'),
+        email: z.string().describe('Email address for login'),
+        password: z.string().describe('Password for login'),
+        loginLinkSelector: z.string().optional().describe('CSS selector for login link'),
+        emailSelector: z.string().optional().describe('CSS selector for email input'),
+        passwordSelector: z.string().optional().describe('CSS selector for password input'),
+        submitSelector: z.string().optional().describe('CSS selector for submit button'),
       }),
     }
   );
 }`;
 
-  await fs.writeFile(path.join(targetDir, 'tools/jsonplaceholder-api.ts'), apiToolContent);
-  console.log('📄 Created: tools/jsonplaceholder-api.ts');
+  await fs.writeFile(path.join(targetDir, 'tools/login-ui-tool.ts'), loginToolContent);
+  console.log('📄 Created: tools/login-ui-tool.ts');
 
   // Create tools README
   const toolsReadmeContent = `# Custom Tools
@@ -425,22 +433,44 @@ This directory contains custom tools for your Endorphin AI project.
 
 ## 🛠️ Available Tools
 
-### JSONPlaceholder API Tool (\`jsonplaceholder-api.ts\`)
-A working example tool that demonstrates API testing with a real public service.
+### Login UI Tool (\`login-ui-tool.ts\`)
+A working example tool that demonstrates UI automation for login functionality.
 
 **Features:**
-- Test JSONPlaceholder API endpoints (posts, users, comments, etc.)
-- Support for GET, POST, PUT, DELETE methods
-- Automatic error handling and logging
-- Real API responses for testing
+- Login automation with customizable selectors
+- Browser session integration
+- Error handling for missing elements
+- Flexible selector configuration
 
 **Usage in tests:**
 \`\`\`yaml
 steps:
-  - action: Get all posts from JSONPlaceholder API using /posts endpoint
-  - action: Get user with ID 1 using /users/1 endpoint  
-  - action: Create a new post with title "My Test Post" and body "This is a test post"
-  - action: Update post 1 with new title "Updated Post"
+  - action: Use login-ui-tool to login with email "user@example.com" and password "password123"
+  - action: Use login-ui-tool with custom selectors for your application
+\`\`\`
+
+## 🎯 Using generateData()
+
+The framework includes a built-in data generation utility. Use it OUTSIDE the test case definition:
+
+\`\`\`typescript
+import { TestCase, generateData } from 'endorphin-ai';
+
+// Generate test data outside the test case
+const userData = await generateData(framework, {
+  email: "string",
+  password: "string"
+}, "Generate realistic user credentials");
+
+export const MY_TEST: TestCase = {
+  id: 'TEST-001',
+  name: 'Example Test',
+  task: \`Login with email \${userData.email} and password \${userData.password}\`,
+  // ... other properties
+};
+
+// Token usage is logged automatically:
+// 🪙 Data generation used 156 tokens ($0.0024)
 \`\`\`
 
 ## 📝 Creating New Tools
@@ -448,13 +478,13 @@ steps:
 To create a new custom tool:
 
 \`\`\`bash
-npx endorphin create tool my-new-tool --template basic
+npx endorphin create tool my-new-tool --template ui
 \`\`\`
 
 Available templates:
 - \`basic\` - Simple tool template
 - \`ui\` - UI automation tool for browser interactions
-- \`api\` - API testing tool template
+- \`api\` - API testing tool template (Note: API tools will be built-in in future)
 
 ## 🔧 Configuration
 
@@ -472,28 +502,29 @@ export default {
 ## 📚 Learn More
 
 - [Custom Tools Guide](https://github.com/andrewnovykov/endorphin-ai#custom-tools)
-- [Tool Development Documentation](https://github.com/andrewnovykov/endorphin-ai#tool-development)
-- [API Examples](https://github.com/andrewnovykov/endorphin-ai#api-testing)`;
+- [UI Automation Best Practices](https://github.com/andrewnovykov/endorphin-ai#ui-automation)
+- [Framework Documentation](https://github.com/andrewnovykov/endorphin-ai#documentation)`;
 
   await fs.writeFile(path.join(targetDir, 'tools/README.md'), toolsReadmeContent);
   console.log('📄 Created: tools/README.md');
 
-  // Create API demo test
-  const apiDemoContent = `id: API-DEMO-001
-name: JSONPlaceholder API Demo
-description: Demonstrates API testing with custom tools
-tags:
-  - api
-  - demo
-  - custom-tools
-priority: medium
-expectedDuration: 30
-steps:
-  - action: Get all posts from JSONPlaceholder using /posts endpoint
-  - action: Get the first user details using /users/1 endpoint
-  - action: Get comments for post 1 using /posts/1/comments endpoint
-  - action: Create a new post with title "Test Post from Endorphin AI" and body "This post was created using Endorphin AI custom tools"`;
+  // Create UI demo test (TypeScript)
+  const uiDemoContent = `import type { TestCase } from 'endorphin-ai';
 
-  await fs.writeFile(path.join(targetDir, 'tests/api-demo.yaml'), apiDemoContent);
-  console.log('📄 Created: tests/api-demo.yaml');
+export const UI_DEMO: TestCase = {
+  id: 'UI-DEMO-001',
+  name: 'Login UI Demo',
+  description: 'Demonstrates UI automation with custom tools',
+  priority: 'Medium',
+  tags: ['ui', 'demo', 'login', 'custom-tools'],
+  site: 'https://realworld.io',
+  
+  task: \`
+    Navigate to the login page and use login-ui-tool to login with email "demo@example.com" and password "demopassword123".
+    After login, verify the user is successfully authenticated by checking for user profile elements.
+  \`,
+};`;
+
+  await fs.writeFile(path.join(targetDir, 'tests/ui-demo.ts'), uiDemoContent);
+  console.log('📄 Created: tests/ui-demo.ts');
 }

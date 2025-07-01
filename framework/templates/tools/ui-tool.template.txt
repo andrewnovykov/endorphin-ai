@@ -11,46 +11,73 @@ import type { EnhancedBrowserTestFramework } from 'endorphin-ai';
 
 /**
  * Creates {{TOOL_NAME}} UI automation tool
- * @param framework - Framework instance
+ * @param framework - Framework instance with browser access
  * @returns LangChain tool for UI {{TOOL_PURPOSE}}
  */
 export function create{{TOOL_NAME_PASCAL}}Tool(framework: EnhancedBrowserTestFramework) {
   return tool(
     async (params: {
-      selector: string;
+      selector?: string;
+      text?: string;
+      value?: string;
+      timeout?: number;
       // Add more UI-specific parameters as needed
     }) => {
-      const { selector } = params;
-      const stepDesc = `{{TOOL_ACTION_DESCRIPTION}}: ${selector}`;
-      console.log(`{{TOOL_EMOJI}} ${stepDesc}`);
+      const { 
+        selector, 
+        text, 
+        value, 
+        timeout = 5000 
+      } = params;
+      
+      const stepDesc = `{{TOOL_ACTION_DESCRIPTION}}: ${selector || text || 'element'}`;
+      
+      if (!framework.currentPage) {
+        throw new Error('No browser page available. Make sure a browser session is active.');
+      }
+      
+      const page = framework.currentPage;
       
       try {
-        // Get the current page from framework
-        const page = framework.currentPage;
-        if (!page) {
-          throw new Error('No page is currently open');
-        }
+        framework.logTestStep('Starting {{TOOL_NAME}} action', '{{TOOL_NAME_KEBAB}}');
         
         // TODO: Implement your UI automation logic here
-        // Example: await page.locator(selector).click();
+        // Examples:
+        
+        // Wait for element to be visible
+        // if (selector) {
+        //   await page.waitForSelector(selector, { timeout, state: 'visible' });
+        // }
+        
+        // Click element
+        // if (selector) {
+        //   await page.click(selector);
+        // }
+        
+        // Fill input field
+        // if (selector && value) {
+        //   await page.locator(selector).fill(value);
+        // }
+        
+        // Wait after action
+        await page.waitForTimeout(1000);
         
         // Take screenshot after action
-        await framework.takeStepScreenshot(`{{TOOL_NAME}} completed for ${selector}`);
+        await framework.takeStepScreenshot(`{{TOOL_NAME}} completed`);
         
-        // Log successful step
         framework.logTestStep(
-          stepDesc,
+          'UI action completed successfully',
           '{{TOOL_NAME_KEBAB}}',
           params,
-          `Successfully performed {{TOOL_NAME}} on ${selector}`,
+          `Successfully performed {{TOOL_NAME}} operation`,
           true
         );
         
-        return `{{TOOL_NAME}} completed successfully on ${selector}`;
+        return `✅ {{TOOL_NAME}} completed successfully`;
+        
       } catch (error: any) {
-        // Log failed step
         framework.logTestStep(
-          stepDesc,
+          'UI action failed',
           '{{TOOL_NAME_KEBAB}}',
           params,
           error.message,
@@ -61,9 +88,12 @@ export function create{{TOOL_NAME_PASCAL}}Tool(framework: EnhancedBrowserTestFra
     },
     {
       name: '{{TOOL_NAME_KEBAB}}',
-      description: '{{TOOL_SHORT_DESCRIPTION}}',
+      description: '{{TOOL_SHORT_DESCRIPTION}} - UI automation tool for browser interactions',
       schema: z.object({
-        selector: z.string().describe('CSS selector or text to find the element'),
+        selector: z.string().optional().describe('CSS selector to find the element'),
+        text: z.string().optional().describe('Text content to search for'),
+        value: z.string().optional().describe('Value to input (for form fields)'),
+        timeout: z.number().optional().describe('Timeout in milliseconds (default: 5000)'),
         // Add more schema definitions as needed
       }),
     }

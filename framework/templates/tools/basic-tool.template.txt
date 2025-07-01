@@ -1,7 +1,7 @@
 /**
  * {{TOOL_DESCRIPTION}}
  * 
- * This is a custom tool for Endorphin AI framework
+ * Custom tool for Endorphin AI framework
  * Generated from template
  */
 
@@ -11,32 +11,50 @@ import type { EnhancedBrowserTestFramework } from 'endorphin-ai';
 
 /**
  * Creates {{TOOL_NAME}} tool
- * @param framework - Framework instance
+ * @param framework - Framework instance with browser access
  * @returns LangChain tool for {{TOOL_PURPOSE}}
  */
 export function create{{TOOL_NAME_PASCAL}}Tool(framework: EnhancedBrowserTestFramework) {
   return tool(
-    async (params: { /* Define your parameters here */ }) => {
+    async (params: { 
+      // TODO: Define your parameters here
+      // Example: selector: string;
+      // Example: timeout?: number;
+    }) => {
       const stepDesc = `{{TOOL_ACTION_DESCRIPTION}}`;
-      console.log(`{{TOOL_EMOJI}} ${stepDesc}`);
+      
+      if (!framework.currentPage) {
+        throw new Error('No browser page available. Make sure a browser session is active.');
+      }
+      
+      const page = framework.currentPage;
       
       try {
-        // TODO: Implement your tool logic here
+        framework.logTestStep('Starting {{TOOL_NAME}} operation', '{{TOOL_NAME_KEBAB}}');
         
-        // Log successful step
+        // TODO: Implement your tool logic here
+        // Examples for UI automation:
+        // - await page.click('button');
+        // - await page.fill('input', 'value');
+        // - await page.waitForSelector('.element');
+        // - const text = await page.textContent('.element');
+        
+        // Take screenshot if needed
+        await framework.takeStepScreenshot(`{{TOOL_NAME}} operation completed`);
+        
         framework.logTestStep(
-          stepDesc,
+          'Operation completed successfully',
           '{{TOOL_NAME_KEBAB}}',
           params,
-          'Success message here',
+          '{{TOOL_NAME}} operation completed successfully',
           true
         );
         
-        return `{{TOOL_NAME}} completed successfully`;
+        return `✅ {{TOOL_NAME}} completed successfully`;
+        
       } catch (error: any) {
-        // Log failed step
         framework.logTestStep(
-          stepDesc,
+          'Operation failed',
           '{{TOOL_NAME_KEBAB}}',
           params,
           error.message,
@@ -50,7 +68,8 @@ export function create{{TOOL_NAME_PASCAL}}Tool(framework: EnhancedBrowserTestFra
       description: '{{TOOL_SHORT_DESCRIPTION}}',
       schema: z.object({
         // TODO: Define your schema here
-        // example: z.string().describe('Example parameter'),
+        // Example: selector: z.string().describe('CSS selector for the element'),
+        // Example: timeout: z.number().optional().describe('Timeout in milliseconds'),
       }),
     }
   );

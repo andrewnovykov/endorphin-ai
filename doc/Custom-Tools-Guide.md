@@ -30,11 +30,11 @@ Custom tools extend Endorphin AI's capabilities by allowing you to create your o
 
 ### Use Cases
 
-- **API Testing** - Validate REST APIs, GraphQL endpoints, webhooks
 - **Database Operations** - Query databases, validate data integrity
 - **File Operations** - Read/write files, process CSV/JSON data
 - **Custom Validations** - Business logic validation, data transformation
 - **Third-party Integrations** - Connect to external services and tools
+- **UI Automation Extensions** - Custom browser interactions and validations
 
 ## 🚀 Quick Start
 
@@ -46,7 +46,7 @@ npx endorphin-ai init
 
 # This creates:
 # ├── tools/
-# │   ├── jsonplaceholder-api.ts    # Working API tool example
+# │   ├── example-tool.ts           # Working tool example
 # │   └── README.md                 # Getting started guide
 # └── endorphin.config.ts           # Configuration with customTools enabled
 ```
@@ -58,7 +58,7 @@ npx endorphin-ai init
 npx endorphin create tool my-first-tool
 
 # Create from template
-npx endorphin create tool api-validator --template api
+npx endorphin create tool data-validator --template basic
 ```
 
 ### 3. Validate and Test
@@ -75,14 +75,14 @@ npx endorphin list tools --verbose
 
 ```typescript
 // tests/my-test.ts
-export const API_TEST: TestCase = {
-  id: 'API-001',
-  name: 'Test Custom API Tool',
+export const CUSTOM_TOOL_TEST: TestCase = {
+  id: 'TOOL-001',
+  name: 'Test Custom Tool',
   task: `
-    Use the jsonplaceholder-api tool to:
-    1. Get user data from /users/1
-    2. Validate the response contains name and email
-    3. Verify the user ID matches the request
+    Use the example-tool to:
+    1. Process test data
+    2. Validate the processing results
+    3. Verify output format is correct
   `,
 };
 ```
@@ -138,7 +138,7 @@ Tools are discovered by their function names. Use one of these patterns:
 ```typescript
 // ✅ Recommended patterns (automatically discovered)
 export function createMyTool(framework) { /* ... */ }
-export function createApiValidatorTool(framework) { /* ... */ }
+export function createDataValidatorTool(framework) { /* ... */ }
 export function createDatabaseTool(framework) { /* ... */ }
 
 // ✅ Default export (also discovered)
@@ -146,7 +146,7 @@ export default function(framework) { /* ... */ }
 
 // ❌ Not discovered (wrong naming pattern)
 export function myTool(framework) { /* ... */ }
-export function validateApi(framework) { /* ... */ }
+export function validateData(framework) { /* ... */ }
 ```
 
 ### Schema Definition
@@ -158,7 +158,7 @@ import { z } from 'zod';
 
 const schema = z.object({
   // Required string parameter
-  endpoint: z.string().describe('API endpoint to test'),
+  input: z.string().describe('Input data to process'),
   
   // Enum with default value
   method: z.enum(['GET', 'POST', 'PUT', 'DELETE']).default('GET'),
@@ -237,18 +237,18 @@ Creates a minimal tool structure with:
 - Error handling
 - Documentation comments
 
-### API Template
+### Data Processing Template
 
 ```bash
-npx endorphin create tool api-validator --template api
+npx endorphin create tool data-processor --template basic
 ```
 
-Creates an API testing tool with:
-- HTTP request handling
-- Response validation
-- Status code checking
-- JSON parsing
-- Header management
+Creates a data processing tool with:
+- Input validation
+- Data transformation
+- Error handling
+- Result formatting
+- Documentation examples
 
 ### UI Template
 
@@ -295,7 +295,7 @@ const config: FrameworkConfig = {
   
   // Specific files
   customTools: [
-    './tools/api-validator.ts',
+    './tools/data-validator.ts',
     './tools/database-helper.ts',
   ],
   
@@ -320,7 +320,7 @@ Tools are discovered automatically from configured paths:
 ```bash
 # Directory structure
 tools/
-├── api-tools.ts          # ✅ Discovered
+├── data-tools.ts         # ✅ Discovered
 ├── database/
 │   ├── postgres.ts       # ✅ Discovered (recursive)
 │   └── mongo.ts          # ✅ Discovered
@@ -370,7 +370,7 @@ npx endorphin validate tools
 
 # Output includes:
 # ✅ Successfully loaded tools:
-#    - api-validator: API endpoint validation
+#    - data-validator: Data validation and processing
 #    - database-helper: Database operations
 # 
 # 📊 Validation Summary:
@@ -395,9 +395,9 @@ npx endorphin validate tools
 #     Function: createBrokenTool
 # 
 # TOOL_CONFLICT_ERROR (1 errors):
-#   - Tool name conflict: api-validator already exists
+#   - Tool name conflict: data-validator already exists
 #     File: ./tools/duplicate-tool.ts
-#     Function: createApiValidatorTool
+#     Function: createDataValidatorTool
 ```
 
 ### Listing Tools
@@ -414,7 +414,7 @@ npx endorphin list tools
 #    - fill: Fill in a form field
 # 
 # 🔧 Custom Tools:
-#    - api-validator: Validate API responses
+#    - data-validator: Data validation and processing
 #    - database-helper: Database operations
 
 # Detailed information
@@ -533,29 +533,29 @@ export function createResilientTool(framework: EnhancedBrowserTestFramework) {
     name: 'resilient-tool',
     description: 'Tool with fallback strategies',
     schema: z.object({
-      endpoint: z.string(),
-      fallback_endpoint: z.string().optional(),
+      input: z.string(),
+      fallback_input: z.string().optional(),
     }),
-    call: async ({ endpoint, fallback_endpoint }) => {
+    call: async ({ input, fallback_input }) => {
       try {
         // Primary strategy
-        return await primaryMethod(endpoint);
+        return await primaryMethod(input);
       } catch (primaryError) {
         framework.logTestStep(`Primary method failed: ${primaryError.message}`);
         
-        if (fallback_endpoint) {
+        if (fallback_input) {
           try {
             // Fallback strategy
-            framework.logTestStep(`Trying fallback endpoint: ${fallback_endpoint}`);
-            return await fallbackMethod(fallback_endpoint);
+            framework.logTestStep(`Trying fallback input: ${fallback_input}`);
+            return await fallbackMethod(fallback_input);
           } catch (fallbackError) {
             throw new ToolExecutionError(
               `Both primary and fallback methods failed`,
               {
                 primaryError: primaryError.message,
                 fallbackError: fallbackError.message,
-                endpoint,
-                fallback_endpoint,
+                input,
+                fallback_input,
               }
             );
           }
@@ -631,7 +631,7 @@ export function createEmailValidatorTool(framework) {
 export function createUtilityTool(framework) {
   return {
     name: 'utility-tool',
-    description: 'Does everything - email, database, API, files',
+    description: 'Does everything - email, database, files, validation',
     // ... trying to do too much
   };
 }
@@ -641,7 +641,7 @@ export function createUtilityTool(framework) {
 ```typescript
 // ✅ Good - clear, descriptive names
 createDatabaseQueryTool
-createRestApiValidatorTool
+createDataValidatorTool
 createCsvFileParserTool
 
 // ❌ Bad - vague or confusing names
@@ -654,9 +654,9 @@ createStuffTool
 ```typescript
 // ✅ Good - detailed schema with descriptions
 const schema = z.object({
-  endpoint: z.string()
-    .url()
-    .describe('Full URL of the API endpoint to test'),
+  input: z.string()
+    .min(1)
+    .describe('Input data to validate or process'),
   method: z.enum(['GET', 'POST', 'PUT', 'DELETE'])
     .default('GET')
     .describe('HTTP method to use'),
@@ -676,41 +676,38 @@ const schema = z.object({
 
 **Graceful Degradation**
 ```typescript
-export function createRobustApiTool(framework: EnhancedBrowserTestFramework) {
+export function createRobustDataTool(framework: EnhancedBrowserTestFramework) {
   return {
-    name: 'robust-api-tool',
-    description: 'API tool with graceful error handling',
+    name: 'robust-data-tool',
+    description: 'Data processing tool with graceful error handling',
     schema: z.object({
-      endpoint: z.string(),
+      input: z.string(),
       timeout: z.number().default(5000),
     }),
-    call: async ({ endpoint, timeout }) => {
+    call: async ({ input, timeout }) => {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
         
-        const response = await fetch(endpoint, {
+        const result = await processData(input, {
           signal: controller.signal,
         });
         
         clearTimeout(timeoutId);
         
-        if (!response.ok) {
+        if (!result.success) {
           // Return structured error info instead of throwing
           return {
             success: false,
-            status: response.status,
-            error: `HTTP ${response.status}: ${response.statusText}`,
-            endpoint,
+            error: result.error,
+            input,
           };
         }
         
-        const data = await response.json();
         return {
           success: true,
-          status: response.status,
-          data,
-          endpoint,
+          data: result.data,
+          input,
         };
         
       } catch (error) {
@@ -718,15 +715,15 @@ export function createRobustApiTool(framework: EnhancedBrowserTestFramework) {
         if (error.name === 'AbortError') {
           return {
             success: false,
-            error: `Request timeout after ${timeout}ms`,
-            endpoint,
+            error: `Processing timeout after ${timeout}ms`,
+            input,
           };
         }
         
         return {
           success: false,
           error: error.message,
-          endpoint,
+          input,
         };
       }
     },
@@ -737,17 +734,17 @@ export function createRobustApiTool(framework: EnhancedBrowserTestFramework) {
 **Meaningful Error Messages**
 ```typescript
 // ✅ Good - specific, actionable error messages
-if (!response.ok) {
+if (!result.success) {
   throw new Error(
-    `API request failed: ${response.status} ${response.statusText}. ` +
-    `Check the endpoint URL and authentication. ` +
-    `Response: ${await response.text()}`
+    `Data processing failed: ${result.error}. ` +
+    `Check the input format and validation rules. ` +
+    `Details: ${result.details || 'No additional details'}`
   );
 }
 
 // ❌ Bad - vague error message
-if (!response.ok) {
-  throw new Error('Request failed');
+if (!result.success) {
+  throw new Error('Processing failed');
 }
 ```
 
@@ -759,25 +756,25 @@ if (!response.ok) {
 export function createParallelTool(framework: EnhancedBrowserTestFramework) {
   return {
     name: 'parallel-checker',
-    description: 'Check multiple endpoints in parallel',
+    description: 'Check multiple inputs in parallel',
     schema: z.object({
-      endpoints: z.array(z.string()),
+      inputs: z.array(z.string()),
     }),
-    call: async ({ endpoints }) => {
-      // Process all endpoints in parallel
-      const promises = endpoints.map(async (endpoint) => {
+    call: async ({ inputs }) => {
+      // Process all inputs in parallel
+      const promises = inputs.map(async (input) => {
         try {
-          const response = await fetch(endpoint);
-          return { endpoint, status: response.status, success: true };
+          const result = await processData(input);
+          return { input, result, success: true };
         } catch (error) {
-          return { endpoint, error: error.message, success: false };
+          return { input, error: error.message, success: false };
         }
       });
       
       const results = await Promise.all(promises);
       
       return {
-        total: endpoints.length,
+        total: inputs.length,
         successful: results.filter(r => r.success).length,
         results,
       };
@@ -788,14 +785,14 @@ export function createParallelTool(framework: EnhancedBrowserTestFramework) {
 // ❌ Bad - sequential operations
 export function createSequentialTool(framework: EnhancedBrowserTestFramework) {
   return {
-    name: 'sequential-checker',
-    description: 'Check endpoints one by one',
-    call: async ({ endpoints }) => {
+    name: 'sequential-processor',
+    description: 'Process data one by one',
+    call: async ({ inputs }) => {
       const results = [];
       
       // Inefficient - processes one at a time
-      for (const endpoint of endpoints) {
-        const result = await fetch(endpoint);
+      for (const input of inputs) {
+        const result = await processData(input);
         results.push(result);
       }
       
@@ -817,13 +814,13 @@ export function createResourceAwareTool(framework: EnhancedBrowserTestFramework)
   return {
     name: 'resource-aware-tool',
     description: 'Tool that manages resources efficiently',
-    call: async ({ endpoint }) => {
+    call: async ({ input }) => {
       try {
-        const response = await fetch(endpoint, {
+        const result = await processData(input, {
           agent: httpAgent, // Reuse connections
         });
         
-        return await response.json();
+        return result;
       } finally {
         // Clean up resources when needed
         // httpAgent.destroy() // Only when completely done
@@ -880,111 +877,147 @@ export const TOOL_TEST: TestCase = {
   name: 'Test Custom Tool Integration',
   description: 'Verify custom tools work in real test execution',
   task: `
-    Use the api-validator tool to test the JSONPlaceholder API:
-    1. Call GET /users/1
-    2. Verify the response contains user data
-    3. Check that the status is 200
+    Use the data-validator tool to validate test data:
+    1. Validate email format
+    2. Verify required fields are present
+    3. Check data types are correct
   `,
 };
 ```
 
 ## 🎯 Examples
 
-### Example 1: API Testing Tool
+### Example 1: Data Validation Tool
 
 ```typescript
-// tools/api-testing-tool.ts
+// tools/data-validation-tool.ts
 import { z } from 'zod';
 import type { EnhancedBrowserTestFramework } from 'endorphin-ai';
 
-export function createApiTestingTool(framework: EnhancedBrowserTestFramework) {
+export function createDataValidationTool(framework: EnhancedBrowserTestFramework) {
   return {
-    name: 'api-tester',
-    description: 'Comprehensive API testing and validation',
+    name: 'data-validator',
+    description: 'Comprehensive data validation and processing',
     schema: z.object({
-      endpoint: z.string().url().describe('API endpoint URL'),
-      method: z.enum(['GET', 'POST', 'PUT', 'DELETE']).default('GET'),
-      headers: z.record(z.string()).optional(),
-      body: z.any().optional(),
-      expected_status: z.number().default(200),
-      expected_fields: z.array(z.string()).default([]),
-      timeout: z.number().default(10000),
+      data: z.any().describe('Data to validate'),
+      validation_type: z.enum(['email', 'phone', 'json', 'csv']).describe('Type of validation'),
+      rules: z.array(z.string()).optional().describe('Custom validation rules'),
+      format_output: z.boolean().default(true).describe('Format the output'),
     }),
     call: async ({
-      endpoint,
-      method,
-      headers = {},
-      body,
-      expected_status,
-      expected_fields,
-      timeout,
+      data,
+      validation_type,
+      rules = [],
+      format_output,
     }) => {
-      framework.logTestStep(`Testing ${method} ${endpoint}`);
+      framework.logTestStep(`Validating ${validation_type} data`);
       
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        let validationResult;
         
-        const options: RequestInit = {
-          method,
-          headers: {
-            'Content-Type': 'application/json',
-            ...headers,
-          },
-          signal: controller.signal,
-        };
-        
-        if (body && method !== 'GET') {
-          options.body = JSON.stringify(body);
+        switch (validation_type) {
+          case 'email':
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            validationResult = {
+              isValid: emailRegex.test(data),
+              type: 'email',
+              value: data,
+            };
+            break;
+            
+          case 'phone':
+            const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            validationResult = {
+              isValid: phoneRegex.test(data?.replace(/\D/g, '')),
+              type: 'phone',
+              value: data,
+            };
+            break;
+            
+          case 'json':
+            try {
+              const parsed = JSON.parse(data);
+              validationResult = {
+                isValid: true,
+                type: 'json',
+                parsed,
+                keys: Object.keys(parsed),
+              };
+            } catch {
+              validationResult = {
+                isValid: false,
+                type: 'json',
+                error: 'Invalid JSON format',
+              };
+            }
+            break;
+            
+          case 'csv':
+            const lines = data.split('\n');
+            const headers = lines[0]?.split(',') || [];
+            validationResult = {
+              isValid: headers.length > 0,
+              type: 'csv',
+              headers,
+              rowCount: lines.length - 1,
+            };
+            break;
+            
+          default:
+            throw new Error(`Unknown validation type: ${validation_type}`);
         }
         
-        const response = await fetch(endpoint, options);
-        clearTimeout(timeoutId);
-        
-        const responseData = await response.json();
-        
-        // Validate status code
-        if (response.status !== expected_status) {
-          throw new Error(
-            `Expected status ${expected_status}, got ${response.status}`
-          );
-        }
-        
-        // Validate required fields
-        for (const field of expected_fields) {
-          if (!(field in responseData)) {
-            throw new Error(`Missing required field: ${field}`);
-          }
+        // Apply custom rules
+        if (rules.length > 0) {
+          validationResult.customRules = rules.map(rule => ({
+            rule,
+            passed: evaluateRule(data, rule),
+          }));
         }
         
         framework.logTestStep(
-          `✅ API test passed: ${method} ${endpoint} returned ${response.status}`
+          `✅ Data validation completed: ${validationResult.isValid ? 'VALID' : 'INVALID'}`
         );
         
         return {
           success: true,
-          status: response.status,
-          data: responseData,
-          headers: Object.fromEntries(response.headers.entries()),
-          validation: {
-            status_check: true,
-            field_checks: expected_fields.map(field => ({
-              field,
-              present: field in responseData,
-            })),
-          },
+          validation: validationResult,
+          formatted: format_output ? formatOutput(validationResult) : validationResult,
         };
         
       } catch (error) {
-        framework.logTestStep(`❌ API test failed: ${error.message}`);
-        
-        if (error.name === 'AbortError') {
-          throw new Error(`Request timeout after ${timeout}ms`);
-        }
-        
+        framework.logTestStep(`❌ Data validation failed: ${error.message}`);
         throw error;
       }
     },
+  };
+}
+
+function evaluateRule(data: any, rule: string): boolean {
+  // Simple rule evaluation - extend as needed
+  switch (rule) {
+    case 'not_empty':
+      return data && data.toString().trim().length > 0;
+    case 'is_string':
+      return typeof data === 'string';
+    case 'is_number':
+      return typeof data === 'number' && !isNaN(data);
+    default:
+      return true;
+  }
+}
+
+function formatOutput(result: any): string {
+  return JSON.stringify(result, null, 2);
+}
+
+// Helper function referenced in examples
+async function processData(input: any, options: any = {}): Promise<any> {
+  // Mock data processing - replace with actual logic
+  return {
+    success: true,
+    data: `Processed: ${input}`,
+    timestamp: new Date().toISOString(),
   };
 }
 ```
@@ -1223,7 +1256,7 @@ export function createFileOperationsTool(framework: EnhancedBrowserTestFramework
 ```typescript
 // ✅ Correct function naming patterns
 export function createMyTool(framework) { /* ... */ }  // Discovered
-export function createApiToolTool(framework) { /* ... */ }  // Discovered
+export function createDataToolTool(framework) { /* ... */ }  // Discovered
 export default function(framework) { /* ... */ }  // Discovered
 
 // ❌ Incorrect naming patterns
@@ -1258,7 +1291,7 @@ import { helper } from './helper';  // Missing .js extension
 ```typescript
 // ✅ Comprehensive schema with descriptions
 const schema = z.object({
-  endpoint: z.string().url().describe('Valid URL required'),
+  input: z.string().min(1).describe('Valid input data required'),
   timeout: z.number().min(100).max(30000).default(5000),
   retries: z.number().int().min(0).max(5).default(3),
 });
@@ -1284,18 +1317,18 @@ call: async (input) => {
 **Solutions**:
 ```typescript
 // ✅ Comprehensive error handling
-call: async ({ endpoint }) => {
+call: async ({ input }) => {
   try {
-    const response = await fetch(endpoint);
-    return await response.json();
+    const result = await processData(input);
+    return result;
   } catch (error) {
     // Handle different error types
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error(`Network error: Unable to connect to ${endpoint}`);
+    if (error instanceof TypeError && error.message.includes('processing')) {
+      throw new Error(`Processing error: Unable to process ${input}`);
     }
     
     if (error.name === 'AbortError') {
-      throw new Error(`Request timeout while connecting to ${endpoint}`);
+      throw new Error(`Processing timeout while handling ${input}`);
     }
     
     throw new Error(`Unexpected error: ${error.message}`);

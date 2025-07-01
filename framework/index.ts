@@ -34,6 +34,9 @@ export { runInteractiveRecorder, TestRecorder } from './test-recorder/index';
 // CLI
 export { initProject } from './cli/init-command.js';
 
+// Utilities
+export { generateData, generateDataWithAI, generateDataArray } from './utils/index.js';
+
 // Individual tool creators for custom setups
 export { createGetPageContentTool, createGetSimplePageContentTool } from './tools/content';
 export { createContentOptimizationTool } from './tools/content-optimization';
