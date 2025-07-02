@@ -5,7 +5,7 @@
 import { existsSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
 import { CustomToolDiscovery } from '../../../framework/core/custom-tool-discovery';
-import { ToolDiscoveryError, ToolLoadError, ToolValidationError, ToolConflictError } from '../../../framework/core/custom-tool-errors';
+import { ToolDiscoveryError, ToolLoadError, ToolValidationError } from '../../../framework/core/custom-tool-errors';
 import type { FrameworkConfig } from '../../../framework/types';
 
 describe('CustomToolDiscovery', () => {

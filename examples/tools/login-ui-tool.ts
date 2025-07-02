@@ -4,8 +4,8 @@
  */
 
 import { tool } from '@langchain/core/tools';
-import { z } from 'zod';
 import type { EnhancedBrowserTestFramework } from 'endorphin-ai';
+import { z } from 'zod';
 
 export function createLoginTool(framework: EnhancedBrowserTestFramework) {
   return tool(
@@ -30,17 +30,21 @@ export function createLoginTool(framework: EnhancedBrowserTestFramework) {
         }
 
         // Fill email field
-        const emailSelector = params.emailSelector || 'input[type="email"], input[name*="email"], #email';
+        const emailSelector =
+          params.emailSelector || 'input[type="email"], input[name*="email"], #email';
         await page.locator(emailSelector).fill(params.email);
         framework.logTestStep(`Filled email: ${params.email}`);
 
-        // Fill password field  
-        const passwordSelector = params.passwordSelector || 'input[type="password"], input[name*="password"], #password';
+        // Fill password field
+        const passwordSelector =
+          params.passwordSelector || 'input[type="password"], input[name*="password"], #password';
         await page.locator(passwordSelector).fill(params.password);
         framework.logTestStep('Filled password field');
 
         // Click submit button
-        const submitSelector = params.submitSelector || 'button[type="submit"], input[type="submit"], button:has-text("Log"), button:has-text("Sign")';
+        const submitSelector =
+          params.submitSelector ||
+          'button[type="submit"], input[type="submit"], button:has-text("Log"), button:has-text("Sign")';
         await page.locator(submitSelector).click();
         framework.logTestStep('Clicked login button');
 
@@ -64,7 +68,10 @@ export function createLoginTool(framework: EnhancedBrowserTestFramework) {
         password: z.string().describe('Password to log in with'),
         loginUrl: z.string().optional().describe('URL of the login page (optional)'),
         emailSelector: z.string().optional().describe('CSS selector for email field (optional)'),
-        passwordSelector: z.string().optional().describe('CSS selector for password field (optional)'),
+        passwordSelector: z
+          .string()
+          .optional()
+          .describe('CSS selector for password field (optional)'),
         submitSelector: z.string().optional().describe('CSS selector for submit button (optional)'),
       }),
     }

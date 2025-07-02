@@ -3,18 +3,18 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { CustomToolDiscovery } from '../core/custom-tool-discovery.js';
 import { getConfig } from '../core/config-loader.js';
+import { CustomToolDiscovery } from '../core/custom-tool-discovery.js';
 import { CustomToolError, CustomToolErrorHandler } from '../core/custom-tool-errors.js';
-import { createGetPageContentTool, createGetSimplePageContentTool } from '../tools/content.js';
-import { createContentOptimizationTool } from '../tools/content-optimization.js';
-import { createDifferentialContentTool } from '../tools/differential-content.js';
-import { createClearFieldTool, createClickTool, createFillTool } from '../tools/interaction.js';
-import { createNavigationTool } from '../tools/navigation.js';
-import { createScreenshotTool, createWaitTool } from '../tools/utilities.js';
-import { createGetElementInfoTool, createVerifyElementTool } from '../tools/verification.js';
+import { createContentOptimizationTool } from '../automation/tools/content-optimization.js';
+import { createGetPageContentTool, createGetSimplePageContentTool } from '../automation/tools/content.js';
+import { createDifferentialContentTool } from '../automation/tools/differential-content.js';
+import { createClearFieldTool, createClickTool, createFillTool } from '../automation/tools/interaction.js';
+import { createNavigationTool } from '../automation/tools/navigation.js';
+import { createScreenshotTool, createWaitTool } from '../automation/tools/utilities.js';
+import { createGetElementInfoTool, createVerifyElementTool } from '../automation/tools/verification.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,7 +29,7 @@ function getBuiltInToolsMetadata(): Array<{ name: string; description: string }>
     frameworkConfig: {},
     currentPage: null,
     logTestStep: () => {},
-    takeStepScreenshot: async () => null,
+    takeStepScreenshot: () => Promise.resolve(null),
   } as any;
 
   try {
@@ -49,22 +49,24 @@ function getBuiltInToolsMetadata(): Array<{ name: string; description: string }>
       createScreenshotTool,
     ];
 
-    return toolCreators.map(creator => {
-      try {
-        const tool = creator(mockFramework);
-        return {
-          name: tool.name,
-          description: tool.description
-        };
-      } catch (_error) {
-        // Fallback for any tools that can't be created without full framework
-        return {
-          name: 'unknown',
-          description: 'Tool metadata unavailable'
-        };
-      }
-    }).filter(tool => tool.name !== 'unknown');
-  } catch (_error) {
+    return toolCreators
+      .map((creator) => {
+        try {
+          const tool = creator(mockFramework);
+          return {
+            name: tool.name,
+            description: tool.description,
+          };
+        } catch {
+          // Fallback for any tools that can't be created without full framework
+          return {
+            name: 'unknown',
+            description: 'Tool metadata unavailable',
+          };
+        }
+      })
+      .filter((tool) => tool.name !== 'unknown');
+  } catch {
     // Fallback to minimal hardcoded list if dynamic extraction fails
     return [
       { name: 'navigate', description: 'Navigate to a URL' },
@@ -105,10 +107,10 @@ const TOOL_TEMPLATES: ToolTemplate[] = [
 /**
  * Handle create tool command
  */
-export async function handleCreateToolCommand(
+export function handleCreateToolCommand(
   toolName: string,
   options: { template?: string; path?: string }
-): Promise<void> {
+): void {
   console.log(`🛠️ Creating new custom tool: ${toolName}`);
 
   // Validate tool name
@@ -120,7 +122,7 @@ export async function handleCreateToolCommand(
   // Select template
   const templateName = options.template || 'basic';
   const template = TOOL_TEMPLATES.find((t) => t.name === templateName);
-  
+
   if (!template) {
     console.error(`❌ Unknown template: ${templateName}`);
     console.log('Available templates:', TOOL_TEMPLATES.map((t) => t.name).join(', '));
@@ -147,11 +149,11 @@ export async function handleCreateToolCommand(
   let templateContent: string;
   const possiblePaths = [
     join(process.cwd(), 'node_modules/endorphin-ai/dist', template.path), // npm installed
-    join(process.cwd(), '..', 'dist', template.path), // relative from test dir 
+    join(process.cwd(), '..', 'dist', template.path), // relative from test dir
     join(__dirname, '..', '..', template.path), // from framework/cli directory
     join(process.cwd(), 'dist', template.path), // from project root
   ];
-  
+
   let templatePath: string | null = null;
   for (const path of possiblePaths) {
     if (existsSync(path)) {
@@ -159,13 +161,13 @@ export async function handleCreateToolCommand(
       break;
     }
   }
-  
+
   if (!templatePath) {
     console.error(`❌ Template not found. Tried paths:`);
-    possiblePaths.forEach(path => console.error(`   - ${path}`));
+    possiblePaths.forEach((path) => console.error(`   - ${path}`));
     process.exit(1);
   }
-  
+
   try {
     templateContent = readFileSync(templatePath, 'utf8');
   } catch (error) {
@@ -174,9 +176,14 @@ export async function handleCreateToolCommand(
   }
 
   // Transform tool name to various cases
-  const toolNameKebab = toolName.toLowerCase().replace(/([A-Z])/g, '-$1').replace(/^-/, '');
-  const toolNamePascal = toolName.charAt(0).toUpperCase() + toolName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-  
+  const toolNameKebab = toolName
+    .toLowerCase()
+    .replace(/([A-Z])/g, '-$1')
+    .replace(/^-/, '');
+  const toolNamePascal =
+    toolName.charAt(0).toUpperCase() +
+    toolName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+
   // Replace template variables
   const toolContent = templateContent
     .replace(/\{\{TOOL_NAME\}\}/g, toolName)
@@ -185,7 +192,10 @@ export async function handleCreateToolCommand(
     .replace(/\{\{TOOL_DESCRIPTION\}\}/g, `${toolNamePascal} Tool`)
     .replace(/\{\{TOOL_PURPOSE\}\}/g, toolName.replace(/-/g, ' '))
     .replace(/\{\{TOOL_ACTION_DESCRIPTION\}\}/g, `Perform ${toolName.replace(/-/g, ' ')}`)
-    .replace(/\{\{TOOL_SHORT_DESCRIPTION\}\}/g, `Performs ${toolName.replace(/-/g, ' ')} operations`)
+    .replace(
+      /\{\{TOOL_SHORT_DESCRIPTION\}\}/g,
+      `Performs ${toolName.replace(/-/g, ' ')} operations`
+    )
     .replace(/\{\{TOOL_EMOJI\}\}/g, '🔧');
 
   // Write tool file
@@ -211,7 +221,7 @@ export async function handleValidateToolsCommand(): Promise<void> {
   try {
     // Load configuration
     const config = await getConfig({ validateAI: false });
-    
+
     if (!config.customTools || config.customTools.length === 0) {
       console.log('ℹ️ No custom tools configured in endorphin.config.ts');
       console.log('💡 Add customTools: ["./tools"] to your config to get started');
@@ -229,10 +239,10 @@ export async function handleValidateToolsCommand(): Promise<void> {
     // Use tool discovery to validate
     const discovery = new CustomToolDiscovery(config, mockFramework);
     const tools = await discovery.discoverAndLoadTools();
-    
+
     const result = discovery.getLoadResult();
     const { statistics, errors } = result;
-    
+
     console.log(`\n📊 Validation Summary:`);
     console.log(`   Configured paths: ${statistics.totalPaths}`);
     console.log(`   Files scanned: ${statistics.scannedFiles}`);
@@ -241,7 +251,7 @@ export async function handleValidateToolsCommand(): Promise<void> {
     console.log(`   Validation errors: ${statistics.validationErrors}`);
     console.log(`   Name conflicts: ${statistics.conflicts}`);
     console.log(`   Total errors: ${statistics.totalErrors}`);
-    
+
     // Display successful tools
     if (statistics.loadedTools > 0) {
       console.log(`\n✅ Successfully loaded tools:`);
@@ -253,12 +263,15 @@ export async function handleValidateToolsCommand(): Promise<void> {
     // Display errors in detail
     if (errors.length > 0) {
       console.log(`\n❌ Validation Errors:`);
-      
-      const errorsByType = errors.reduce((acc, error) => {
-        if (!acc[error.code]) acc[error.code] = [];
-        acc[error.code].push(error);
-        return acc;
-      }, {} as Record<string, CustomToolError[]>);
+
+      const errorsByType = errors.reduce(
+        (acc, error) => {
+          if (!acc[error.code]) acc[error.code] = [];
+          acc[error.code].push(error);
+          return acc;
+        },
+        {} as Record<string, CustomToolError[]>
+      );
 
       for (const [errorCode, errorList] of Object.entries(errorsByType)) {
         console.log(`\n   ${errorCode} (${errorList.length} errors):`);
@@ -282,7 +295,6 @@ export async function handleValidateToolsCommand(): Promise<void> {
       console.log('💡 Make sure your tool files export functions with names like "createMyTool"');
       process.exit(1);
     }
-    
   } catch (error: any) {
     const toolError = CustomToolErrorHandler.handleError(error, {
       phase: 'validation-command',
@@ -304,19 +316,19 @@ export async function handleListToolsCommand(options: { verbose?: boolean }): Pr
   try {
     // Load configuration
     const config = await getConfig({ validateAI: false });
-    
+
     // List built-in tools
     console.log('🔧 Built-in Tools:');
     const builtInTools = getBuiltInToolsMetadata();
-    
+
     for (const tool of builtInTools) {
       console.log(`   - ${tool.name}: ${tool.description}`);
     }
-    
+
     // List custom tools if configured
     if (config.customTools && config.customTools.length > 0) {
       console.log('\n🔧 Custom Tools:');
-      
+
       // Create mock framework
       const mockFramework = {
         config,
@@ -324,11 +336,11 @@ export async function handleListToolsCommand(options: { verbose?: boolean }): Pr
         takeStepScreenshot: () => Promise.resolve(null),
         currentPage: null,
       } as any;
-      
+
       const discovery = new CustomToolDiscovery(config, mockFramework);
       const customTools = await discovery.discoverAndLoadTools();
       const result = discovery.getLoadResult();
-      
+
       if (customTools.length > 0) {
         for (const tool of customTools) {
           console.log(`   - ${tool.name}: ${tool.description}`);
@@ -336,7 +348,7 @@ export async function handleListToolsCommand(options: { verbose?: boolean }): Pr
             console.log(`     Schema: ${JSON.stringify(tool.schema, null, 2)}`);
           }
         }
-        
+
         if (options.verbose) {
           console.log(`\n📊 Custom Tools Statistics:`);
           console.log(`   Total paths: ${result.statistics.totalPaths}`);
@@ -348,10 +360,11 @@ export async function handleListToolsCommand(options: { verbose?: boolean }): Pr
         }
       } else {
         console.log('   (No valid custom tools found)');
-        
+
         if (result.errors.length > 0 && options.verbose) {
           console.log(`\n   ⚠️ Errors encountered:`);
-          for (const error of result.errors.slice(0, 3)) { // Show first 3 errors
+          for (const error of result.errors.slice(0, 3)) {
+            // Show first 3 errors
             console.log(`     - ${error.message}`);
           }
           if (result.errors.length > 3) {
@@ -360,7 +373,7 @@ export async function handleListToolsCommand(options: { verbose?: boolean }): Pr
           console.log(`     Run 'endorphin validate tools' for full error details`);
         }
       }
-      
+
       if (options.verbose) {
         console.log('\n📁 Custom tool paths:');
         for (const path of config.customTools) {
@@ -371,12 +384,11 @@ export async function handleListToolsCommand(options: { verbose?: boolean }): Pr
       console.log('\n🔧 Custom Tools: (none configured)');
       console.log('💡 Add customTools: ["./tools"] to your endorphin.config.ts');
     }
-    
+
     console.log('\n💡 Commands:');
     console.log('   - endorphin create tool <name>  Create a new custom tool');
     console.log('   - endorphin validate tools      Validate all custom tools');
     console.log('   - endorphin list tools --verbose Show detailed information');
-    
   } catch (error: any) {
     const toolError = CustomToolErrorHandler.handleError(error, {
       phase: 'list-command',

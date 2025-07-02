@@ -27,16 +27,16 @@ export default {
   pricing: {
     // Override default model pricing
     'gpt-4o': {
-      input: 0.0025,  // Default: $0.0025 per 1K input tokens
-      output: 0.01    // Default: $0.01 per 1K output tokens
+      input: 0.0025, // Default: $0.0025 per 1K input tokens
+      output: 0.01, // Default: $0.01 per 1K output tokens
     },
-    
+
     // Add custom models
     // 'my-custom-model': {
     //   input: 0.001,
     //   output: 0.003
     // },
-    
+
     // Local/free models
     // 'local-model': {
     //   input: 0,
@@ -48,6 +48,9 @@ export default {
   customTools: [
     './tools', // Load all tools from the tools directory
   ],
+
+  // Global setup configuration (optional)
+  // globalSetup: './global-setup.ts', // Path to global setup file
 
   // Results configuration
   results: {
@@ -76,7 +79,7 @@ export default {
 };
 
 // 🎯 Configuration Tips:
-// 
+//
 // Browser Settings:
 // - Set headless: true for faster execution in CI/CD
 // - Increase timeout for slow websites
@@ -98,6 +101,12 @@ export default {
 // - Use './tools' to load all tools from directory
 // - Add specific tool files: './tools/my-tool.ts'
 // - Tools should export createXxxTool functions
+//
+// Global Setup:
+// - Optional setup script that runs before all tests
+// - Use for environment setup, authentication, data seeding
+// - Must export a default async function
+// - If setup fails, test execution is stopped
 //
 // Results:
 // - Change directory to customize output location

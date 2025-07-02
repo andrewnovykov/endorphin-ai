@@ -3,20 +3,20 @@
  * Handles discovery, loading, and validation of custom tools
  */
 
-import type { FrameworkConfig } from '@/types/index';
-import { EnhancedBrowserTestFramework } from './browser-framework';
+import type { FrameworkConfig } from '../types/index.js';
 import { existsSync, statSync } from 'fs';
 import { readdir } from 'fs/promises';
-import { resolve, join, extname } from 'path';
+import { extname, join, resolve } from 'path';
 import { pathToFileURL } from 'url';
 import { z } from 'zod';
+import { EnhancedBrowserTestFramework } from '../automation/browser/browser-framework.js';
 import {
   CustomToolError,
+  CustomToolErrorHandler,
+  ToolConflictError,
   ToolDiscoveryError,
   ToolLoadError,
   ToolValidationError,
-  ToolConflictError,
-  CustomToolErrorHandler,
 } from './custom-tool-errors';
 
 // Tool validation schema - keeping for future validation features
@@ -196,7 +196,11 @@ export class CustomToolDiscovery {
    */
   private isToolFile(filePath: string): boolean {
     const ext = extname(filePath);
-    return ['.ts', '.js', '.mjs'].includes(ext) && !filePath.includes('.test.') && !filePath.includes('.spec.');
+    return (
+      ['.ts', '.js', '.mjs'].includes(ext) &&
+      !filePath.includes('.test.') &&
+      !filePath.includes('.spec.')
+    );
   }
 
   /**
@@ -226,7 +230,7 @@ export class CustomToolDiscovery {
           }
 
           // Wait before retry (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, attempts - 1)));
+          await new Promise((resolve) => setTimeout(resolve, 100 * Math.pow(2, attempts - 1)));
         }
       }
     }
@@ -267,7 +271,7 @@ export class CustomToolDiscovery {
             phase: 'tool-creation',
           });
           this.errors.push(toolError);
-          
+
           if (toolError instanceof ToolValidationError) {
             this.statistics.validationErrors++;
           } else if (toolError instanceof ToolConflictError) {
@@ -291,10 +295,7 @@ export class CustomToolDiscovery {
 
     // Look for named exports that match the pattern create*Tool
     for (const [key, value] of Object.entries(module)) {
-      if (
-        typeof value === 'function' &&
-        (key.startsWith('create') && key.endsWith('Tool'))
-      ) {
+      if (typeof value === 'function' && key.startsWith('create') && key.endsWith('Tool')) {
         functions.push({ name: key, func: value as Function });
       }
     }
@@ -310,12 +311,16 @@ export class CustomToolDiscovery {
   /**
    * Create and validate a tool with comprehensive error handling
    */
-  private async createAndValidateTool(func: Function, functionName: string, filePath: string): Promise<any | null> {
+  private async createAndValidateTool(
+    func: Function,
+    functionName: string,
+    filePath: string
+  ): Promise<any | null> {
     // Create the tool
     let tool;
     try {
       tool = func(this.framework);
-      
+
       // Handle async tool creation
       if (tool && typeof tool.then === 'function') {
         tool = await tool;
@@ -331,12 +336,15 @@ export class CustomToolDiscovery {
     // Validate tool structure
     const validationResult = this.validateTool(tool);
     if (!validationResult.isValid) {
-      throw new ToolValidationError(`Invalid tool structure: ${validationResult.errors.join(', ')}`, {
-        filePath,
-        functionName,
-        toolName: tool?.name || 'unknown',
-        validationErrors: validationResult.errors,
-      });
+      throw new ToolValidationError(
+        `Invalid tool structure: ${validationResult.errors.join(', ')}`,
+        {
+          filePath,
+          functionName,
+          toolName: tool?.name || 'unknown',
+          validationErrors: validationResult.errors,
+        }
+      );
     }
 
     // Check for name conflicts
@@ -395,7 +403,7 @@ export class CustomToolDiscovery {
    * Check if tool name conflicts with existing tools
    */
   private hasNameConflict(name: string): boolean {
-    return this.loadedTools.some(tool => tool.name === name);
+    return this.loadedTools.some((tool) => tool.name === name);
   }
 
   /**
@@ -406,10 +414,17 @@ export class CustomToolDiscovery {
   }
 
   /**
+   * Get all loaded custom tools (alias for getLoadedTools)
+   */
+  getAllTools(): any[] {
+    return this.getLoadedTools();
+  }
+
+  /**
    * Get tool by name
    */
   getToolByName(name: string): any | undefined {
-    return this.loadedTools.find(tool => tool.name === name);
+    return this.loadedTools.find((tool) => tool.name === name);
   }
 
   /**
@@ -436,7 +451,7 @@ export class CustomToolDiscovery {
    */
   private logResults(): void {
     const { loadedTools, scannedFiles, failedLoads, validationErrors, conflicts } = this.statistics;
-    
+
     if (loadedTools > 0) {
       console.log(`✅ Successfully loaded ${loadedTools} custom tools from ${scannedFiles} files`);
     }
@@ -446,15 +461,20 @@ export class CustomToolDiscovery {
       console.log(`  - Failed loads: ${failedLoads}`);
       console.log(`  - Validation errors: ${validationErrors}`);
       console.log(`  - Name conflicts: ${conflicts}`);
-      console.log(`  - Other errors: ${this.errors.length - failedLoads - validationErrors - conflicts}`);
+      console.log(
+        `  - Other errors: ${this.errors.length - failedLoads - validationErrors - conflicts}`
+      );
     }
 
     // Log error summary for debugging
     if (this.errors.length > 0) {
-      const errorSummary = this.errors.reduce((acc, error) => {
-        acc[error.code] = (acc[error.code] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      const errorSummary = this.errors.reduce(
+        (acc, error) => {
+          acc[error.code] = (acc[error.code] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
       console.log('📊 Error summary:', errorSummary);
     }
   }

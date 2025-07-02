@@ -3,8 +3,8 @@
  * Provides interactive test recording with AI agent execution
  */
 
-import { EnhancedBrowserTestFramework } from '@/index';
-import type { FrameworkConfig } from '@/types/index';
+import { EnhancedBrowserTestFramework } from '../index.js';
+import type { FrameworkConfig } from '../types/index.js';
 import dotenv from 'dotenv';
 import readline from 'readline';
 import { TestRecorder } from './session-recorder';

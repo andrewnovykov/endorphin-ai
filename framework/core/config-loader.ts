@@ -3,7 +3,7 @@
  * Handles loading and merging of configuration from multiple sources
  */
 
-import type { AIConfig, BrowserConfig, CLIFlags, FrameworkConfig } from '@/types/index';
+import type { AIConfig, BrowserConfig, CLIFlags, FrameworkConfig } from '../types/index.js';
 import { config as loadDotenv } from 'dotenv';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
@@ -47,7 +47,7 @@ export class ConfigLoader {
       parallel: 1,
       maxRetries: 3,
       baseUrl: '',
-      
+
       // Custom Tools
       customTools: [],
     };
@@ -297,7 +297,7 @@ export class ConfigLoader {
     if (config.customTools && !Array.isArray(config.customTools)) {
       throw new Error('Invalid customTools: must be an array of paths');
     }
-    
+
     if (config.customTools) {
       for (const toolPath of config.customTools) {
         if (typeof toolPath !== 'string') {

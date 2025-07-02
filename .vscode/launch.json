@@ -21,6 +21,26 @@
       ]
     },
     {
+      "name": "Debug Endorphin CLI with Debug Mode",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/endorphin.js",
+      "args": [
+        "run",
+        "test",
+        "${input:testId}"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/examples",
+      "env": {
+        "NODE_ENV": "development",
+        "ENDORPHIN_DEBUG": "true"
+      },
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
       "name": "Debug Test Recorder",
       "type": "node",
       "request": "launch",

@@ -150,6 +150,9 @@ class TestReportViewer {
     this.updateModalField('modal-ai-calls', tokenSummary.aiCalls || 0);
     this.updateModalField('modal-model', tokenSummary.model || 'N/A');
 
+    // Populate setup and data generation results
+    this.populateSetupAndDataResults(session);
+
     // Populate steps timeline
     this.populateStepsTimeline(session.steps || []);
 
@@ -171,6 +174,78 @@ class TestReportViewer {
         element.innerHTML = value;
       } else {
         element.textContent = value;
+      }
+    }
+  }
+
+  /**
+   * Populate setup and data generation results
+   */
+  populateSetupAndDataResults(session) {
+    const setupDataSection = document.getElementById('setup-data-section');
+    const hasSetup = session.setupResult;
+    const hasDataGeneration = session.dataGenerationResult;
+    
+    // Show or hide the entire section
+    if (hasSetup || hasDataGeneration) {
+      setupDataSection.style.display = 'block';
+    } else {
+      setupDataSection.style.display = 'none';
+      return;
+    }
+
+    // Populate setup results
+    if (hasSetup) {
+      const setup = session.setupResult;
+      this.updateModalField('modal-setup-status', this.formatStatus(setup.success ? 'SUCCESS' : 'FAILED'), true);
+      this.updateModalField('modal-setup-time', `${setup.executionTime || 0}ms`);
+      this.updateModalField('modal-setup-has-data', setup.data ? 'Yes' : 'No');
+      
+      // Show/hide error row
+      const errorRow = document.getElementById('modal-setup-error-row');
+      if (!setup.success && setup.error) {
+        errorRow.style.display = 'table-row';
+        this.updateModalField('modal-setup-error', setup.error.message || setup.error);
+      } else {
+        errorRow.style.display = 'none';
+      }
+
+      // Show/hide setup data viewer
+      const dataViewer = document.getElementById('setup-data-viewer');
+      const dataContent = document.getElementById('setup-data-content');
+      if (setup.data) {
+        dataViewer.style.display = 'block';
+        dataContent.textContent = JSON.stringify(setup.data, null, 2);
+      } else {
+        dataViewer.style.display = 'none';
+      }
+    }
+
+    // Populate data generation results
+    if (hasDataGeneration) {
+      const dataGen = session.dataGenerationResult;
+      this.updateModalField('modal-data-status', this.formatStatus(dataGen.success ? 'SUCCESS' : 'FAILED'), true);
+      this.updateModalField('modal-data-time', `${dataGen.executionTime || 0}ms`);
+      this.updateModalField('modal-data-tokens', dataGen.tokenUsage ? dataGen.tokenUsage.totalTokens.toLocaleString() : 'N/A');
+      this.updateModalField('modal-data-cost', dataGen.tokenUsage ? `$${dataGen.tokenUsage.cost.toFixed(4)}` : 'N/A');
+      
+      // Show/hide error row
+      const errorRow = document.getElementById('modal-data-error-row');
+      if (!dataGen.success && dataGen.error) {
+        errorRow.style.display = 'table-row';
+        this.updateModalField('modal-data-error', dataGen.error.message || dataGen.error);
+      } else {
+        errorRow.style.display = 'none';
+      }
+
+      // Show/hide generated data viewer
+      const dataViewer = document.getElementById('generated-data-viewer');
+      const dataContent = document.getElementById('generated-data-content');
+      if (dataGen.data) {
+        dataViewer.style.display = 'block';
+        dataContent.textContent = JSON.stringify(dataGen.data, null, 2);
+      } else {
+        dataViewer.style.display = 'none';
       }
     }
   }

@@ -57,7 +57,7 @@ const FLAG_PARSERS: Record<string, FlagParser> = {
     if (nextArg && !isNaN(Number(nextArg))) {
       return { parallel: parseInt(nextArg, 10), consumed: 1 };
     }
-    return {};
+    return { parallel: 2 }; // Default to 2 workers when flag is used without value
   },
   '--model': (nextArg) => {
     if (nextArg) {
@@ -167,7 +167,7 @@ Options:
   --no-headless          Run browser with visible UI
   --viewport <WxH>       Set browser viewport (e.g., 1920x1080)
   --timeout <ms>         Set test timeout in milliseconds
-  --parallel <n>         Run tests in parallel (default: 1)
+  --parallel <n>         Run tests in parallel (default: 2)
   --model <n>         Set AI model to use (e.g., gpt-4o-mini)
   --env <environment>    Set environment (development/staging/production)
 
@@ -175,7 +175,7 @@ Examples:
   endorphin init                               # Set up new project
   endorphin run test HEALTH-001                # Run example test
   endorphin run test all --headless            # Run all tests headless
-  endorphin run test --tag smoke --parallel 3  # Run smoke tests in parallel
+  endorphin run test --tag smoke --parallel 3  # Run smoke tests with 3 workers
   endorphin run test --priority High --env staging # Run high priority tests on staging
   endorphin run test-recorder                  # Start test recorder
   endorphin list                               # Show all available tests
@@ -210,7 +210,7 @@ async function handleCleanupCommand(subcommand: string, target?: string): Promis
     console.log('🧹 Cleaning up old test results...');
     const keepCount = parseInt(target ?? '10', 10);
     const cleanup = await reporter.cleanupResults(keepCount);
-    console.log(`✅ Cleanup completed: ${cleanup.removedCount} directories removed`);
+    console.log(`✅ Cleanup completed: ${cleanup.deletedReports} reports removed`);
     process.exit(0);
   }
 
@@ -218,7 +218,7 @@ async function handleCleanupCommand(subcommand: string, target?: string): Promis
     console.log('🧹 Cleaning up old report files...');
     const maxAge = parseInt(target ?? '30', 10);
     const cleanup = await reporter.cleanupOldReports(maxAge);
-    console.log(`✅ Cleanup completed: ${cleanup.removedCount} report files removed`);
+    console.log(`✅ Cleanup completed: ${cleanup.deleted} report files removed`);
     process.exit(0);
   }
 
@@ -272,12 +272,14 @@ export async function main(): Promise<void> {
         if (subcommand === 'tool') {
           if (!target) {
             console.error('❌ Tool name is required');
-            console.log('Usage: endorphin create tool <name> [--template basic|ui|api] [--path ./path]');
+            console.log(
+              'Usage: endorphin create tool <name> [--template basic|ui|api] [--path ./path]'
+            );
             process.exit(1);
           }
           const { handleCreateToolCommand } = await import('../framework/cli/tool-commands.js');
-          const templateArg = args.find(arg => arg.startsWith('--template='))?.split('=')[1];
-          const pathArg = args.find(arg => arg.startsWith('--path='))?.split('=')[1];
+          const templateArg = args.find((arg) => arg.startsWith('--template='))?.split('=')[1];
+          const pathArg = args.find((arg) => arg.startsWith('--path='))?.split('=')[1];
           const options: { template?: string; path?: string } = {};
           if (templateArg) options.template = templateArg;
           if (pathArg) options.path = pathArg;
@@ -309,7 +311,9 @@ export async function main(): Promise<void> {
         if (subcommand === 'test-recorder') {
           await handleTestRecorderCommand(runConfig);
         } else if (subcommand === 'test') {
-          await handleTestCommand(args, target, runConfig);
+          // Extract parallel/workers option from cliFlags
+          const options = { parallel: cliFlags.parallel || 1 };
+          await handleTestCommand(args, target, runConfig, options);
         } else {
           console.error(`❌ Unknown run command: ${subcommand}`);
           console.log('Use "endorphin help" for usage information');
@@ -353,11 +357,13 @@ const isMainModule = () => {
     // For ES modules, check if the current file matches the entry point
     const currentFile = fileURLToPath(import.meta.url);
     const entryFile = process.argv[1];
-    
+
     // Handle both direct execution and symlinked npm binaries
-    return currentFile === entryFile || 
-           entryFile.includes('endorphin-ai') || 
-           entryFile.includes('endorphin');
+    return (
+      currentFile === entryFile ||
+      entryFile.includes('endorphin-ai') ||
+      entryFile.includes('endorphin')
+    );
   } catch {
     return true; // Default to running if we can't determine
   }

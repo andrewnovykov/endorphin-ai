@@ -3,9 +3,9 @@
  * Handles test result collection, storage, and processing
  */
 
-import type { TestReport, TestSession } from '@/types/index';
-import fs from 'fs';
-import path from 'path';
+import type { TestReport, TestSession } from '../types/index.js';
+import { existsSync, promises as fs } from 'node:fs';
+import * as path from 'node:path';
 
 export interface TestResultsManagerOptions {
   resultsDir?: string;
@@ -27,8 +27,14 @@ export class TestResultsManager {
     this.recorderDir = options.recorderDir || path.resolve('./test-recorder-sessions');
     this.enableRecorderCopy = options.enableRecorderCopy || false;
 
-    // Ensure directories exist
-    this.ensureDirectoriesExist();
+    // Note: Call initialize() after construction to ensure directories exist
+  }
+
+  /**
+   * Initialize the results manager by ensuring directories exist
+   */
+  async initialize(): Promise<void> {
+    await this.ensureDirectoriesExist();
   }
 
   /**
@@ -71,34 +77,35 @@ export class TestResultsManager {
   /**
    * Copy test session results to recorder directory
    */
-  copySessionToRecorder(session: TestSession): void {
+  async copySessionToRecorder(session: TestSession): Promise<void> {
     try {
       const recorderSessionDir = path.join(this.recorderDir, session.sessionName);
       const recorderScreenshotsDir = path.join(recorderSessionDir, 'screenshots');
 
       // Create recorder directories
-      fs.mkdirSync(recorderSessionDir, { recursive: true });
-      fs.mkdirSync(recorderScreenshotsDir, { recursive: true });
+      await fs.mkdir(recorderSessionDir, { recursive: true });
+      await fs.mkdir(recorderScreenshotsDir, { recursive: true });
 
       // Copy all files from session directory
-      const sourceFiles = fs.readdirSync(session.sessionDir);
+      const sourceFiles = await fs.readdir(session.sessionDir);
       for (const file of sourceFiles) {
         const sourcePath = path.join(session.sessionDir, file);
         const destPath = path.join(recorderSessionDir, file);
 
-        if (fs.statSync(sourcePath).isDirectory()) {
+        const stat = await fs.stat(sourcePath);
+        if (stat.isDirectory()) {
           // Copy screenshots directory
           if (file === 'screenshots') {
-            const screenshotFiles = fs.readdirSync(sourcePath);
+            const screenshotFiles = await fs.readdir(sourcePath);
             for (const screenshot of screenshotFiles) {
               const srcScreenshot = path.join(sourcePath, screenshot);
               const destScreenshot = path.join(recorderScreenshotsDir, screenshot);
-              fs.copyFileSync(srcScreenshot, destScreenshot);
+              await fs.copyFile(srcScreenshot, destScreenshot);
             }
           }
         } else {
           // Copy individual files
-          fs.copyFileSync(sourcePath, destPath);
+          await fs.copyFile(sourcePath, destPath);
         }
       }
 
@@ -146,11 +153,11 @@ export class TestResultsManager {
   /**
    * Generate and save a report to file
    */
-  saveReport(filename?: string): string {
+  async saveReport(filename?: string): Promise<string> {
     const report = this.generateReport();
     const reportPath = path.join(this.resultsDir, filename || `report-${Date.now()}.json`);
 
-    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+    await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
     console.log(`📊 Report saved to: ${reportPath}`);
 
     return reportPath;
@@ -159,13 +166,13 @@ export class TestResultsManager {
   /**
    * Ensure required directories exist
    */
-  private ensureDirectoriesExist(): void {
+  private async ensureDirectoriesExist(): Promise<void> {
     try {
-      if (!fs.existsSync(this.resultsDir)) {
-        fs.mkdirSync(this.resultsDir, { recursive: true });
+      if (!existsSync(this.resultsDir)) {
+        await fs.mkdir(this.resultsDir, { recursive: true });
       }
-      if (this.enableRecorderCopy && !fs.existsSync(this.recorderDir)) {
-        fs.mkdirSync(this.recorderDir, { recursive: true });
+      if (this.enableRecorderCopy && !existsSync(this.recorderDir)) {
+        await fs.mkdir(this.recorderDir, { recursive: true });
       }
     } catch (_error) {
       const message = _error instanceof Error ? _error.message : String(_error);

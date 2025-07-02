@@ -5,13 +5,13 @@
  * Create a new Endorphin AI project with one command
  */
 
+import chalk from 'chalk';
 import { spawn } from 'child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import { dirname, join, resolve } from 'path';
-import { fileURLToPath } from 'url';
-import chalk from 'chalk';
 import ora from 'ora';
+import { dirname, join, resolve } from 'path';
 import prompts from 'prompts';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -77,7 +77,7 @@ async function createProject(projectName, targetDir) {
     type: 'module',
     description: 'AI-powered E2E testing project created with Endorphin AI',
     scripts: {
-      'test': 'endorphin-ai run test all',
+      test: 'endorphin-ai run test all',
       'test:smoke': 'endorphin-ai run test --tag smoke',
       'test:record': 'endorphin-ai run test-recorder',
       'test:single': 'endorphin-ai run test',
@@ -91,17 +91,14 @@ async function createProject(projectName, targetDir) {
     keywords: ['ai', 'testing', 'e2e', 'automation', 'endorphin-ai'],
   };
 
-  writeFileSync(
-    join(projectPath, 'package.json'),
-    JSON.stringify(packageJson, null, 2)
-  );
+  writeFileSync(join(projectPath, 'package.json'), JSON.stringify(packageJson, null, 2));
 
   return projectPath;
 }
 
 async function installDependencies(projectPath) {
   const spinner = ora('Installing Endorphin AI...').start();
-  
+
   try {
     await runCommand('npm', ['install'], { cwd: projectPath });
     spinner.succeed('Dependencies installed successfully!');
@@ -113,11 +110,11 @@ async function installDependencies(projectPath) {
 
 async function initializeProject(projectPath) {
   const spinner = ora('Initializing Endorphin AI project...').start();
-  
+
   try {
     await runCommand('npx', ['endorphin-ai', 'init'], { cwd: projectPath });
     spinner.succeed('Project initialized successfully!');
-  } catch (_error) {
+  } catch {
     spinner.fail('Failed to initialize project');
     // Try alternative method
     try {
@@ -166,7 +163,7 @@ async function main() {
 
   try {
     log(`Creating new Endorphin AI project: ${chalk.yellow(projectName)}`);
-    
+
     // Step 1: Create project structure
     const projectPath = await createProject(projectName, targetDir);
     success(`Project directory created: ${projectName}/`);
@@ -193,7 +190,6 @@ async function main() {
     console.log();
     log('Documentation: https://github.com/andrewnovykov/endorphin-ai#readme');
     console.log();
-
   } catch (err) {
     error(`Failed to create project: ${err.message}`);
     process.exit(1);

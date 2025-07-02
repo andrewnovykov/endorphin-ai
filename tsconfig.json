@@ -33,8 +33,17 @@
       "@core/*": [
         "./framework/core/*"
       ],
-      "@tools/*": [
-        "./framework/tools/*"
+      "@automation/*": [
+        "./framework/automation/*"
+      ],
+      "@ai/*": [
+        "./framework/ai/*"
+      ],
+      "@execution/*": [
+        "./framework/execution/*"
+      ],
+      "@content/*": [
+        "./framework/content/*"
       ],
       "@config/*": [
         "./framework/config/*"

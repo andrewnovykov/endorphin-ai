@@ -142,9 +142,15 @@ export class CustomToolErrorHandler {
     if (retryCount === 0) {
       console.warn('⚠️ Custom tool error:', JSON.stringify(logContext, null, 2));
     } else if (retryCount < this.maxRetries) {
-      console.warn(`⚠️ Custom tool error (retry ${retryCount}):`, JSON.stringify(logContext, null, 2));
+      console.warn(
+        `⚠️ Custom tool error (retry ${retryCount}):`,
+        JSON.stringify(logContext, null, 2)
+      );
     } else {
-      console.error('❌ Custom tool error (max retries exceeded):', JSON.stringify(logContext, null, 2));
+      console.error(
+        '❌ Custom tool error (max retries exceeded):',
+        JSON.stringify(logContext, null, 2)
+      );
     }
   }
 

@@ -4,8 +4,8 @@
  */
 
 export interface ModelPricing {
-  input: number;   // Cost per 1K input tokens in USD
-  output: number;  // Cost per 1K output tokens in USD
+  input: number; // Cost per 1K input tokens in USD
+  output: number; // Cost per 1K output tokens in USD
 }
 
 export interface PricingConfig {
@@ -18,72 +18,72 @@ export interface PricingConfig {
  */
 export const DEFAULT_MODEL_PRICING: PricingConfig = {
   // OpenAI Models
-  'gpt-4o': { 
-    input: 0.0025, 
-    output: 0.01 
+  'gpt-4o': {
+    input: 0.0025,
+    output: 0.01,
   },
-  'gpt-4o-mini': { 
-    input: 0.000075, 
-    output: 0.0003 
+  'gpt-4o-mini': {
+    input: 0.000075,
+    output: 0.0003,
   },
-  'gpt-4': { 
-    input: 0.03, 
-    output: 0.06 
+  'gpt-4': {
+    input: 0.03,
+    output: 0.06,
   },
-  'gpt-4-turbo': { 
-    input: 0.01, 
-    output: 0.03 
+  'gpt-4-turbo': {
+    input: 0.01,
+    output: 0.03,
   },
-  'gpt-4-turbo-preview': { 
-    input: 0.01, 
-    output: 0.03 
+  'gpt-4-turbo-preview': {
+    input: 0.01,
+    output: 0.03,
   },
-  'gpt-3.5-turbo': { 
-    input: 0.0005, 
-    output: 0.0015 
+  'gpt-3.5-turbo': {
+    input: 0.0005,
+    output: 0.0015,
   },
-  'gpt-3.5-turbo-16k': { 
-    input: 0.003, 
-    output: 0.004 
+  'gpt-3.5-turbo-16k': {
+    input: 0.003,
+    output: 0.004,
   },
-  'gpt-3.5-turbo-instruct': { 
-    input: 0.0015, 
-    output: 0.002 
+  'gpt-3.5-turbo-instruct': {
+    input: 0.0015,
+    output: 0.002,
   },
-  
+
   // Claude Models (Anthropic)
-  'claude-3-opus': { 
-    input: 0.015, 
-    output: 0.075 
+  'claude-3-opus': {
+    input: 0.015,
+    output: 0.075,
   },
-  'claude-3-sonnet': { 
-    input: 0.003, 
-    output: 0.015 
+  'claude-3-sonnet': {
+    input: 0.003,
+    output: 0.015,
   },
-  'claude-3-haiku': { 
-    input: 0.00025, 
-    output: 0.00125 
+  'claude-3-haiku': {
+    input: 0.00025,
+    output: 0.00125,
   },
-  'claude-3.5-sonnet': { 
-    input: 0.003, 
-    output: 0.015 
+  'claude-3.5-sonnet': {
+    input: 0.003,
+    output: 0.015,
   },
-  
+
   // Gemini Models (Google)
-  'gemini-pro': { 
-    input: 0.0005, 
-    output: 0.0015 
+  'gemini-pro': {
+    input: 0.0005,
+    output: 0.0015,
   },
-  'gemini-pro-vision': { 
-    input: 0.0005, 
-    output: 0.0015 
+  'gemini-pro-vision': {
+    input: 0.0005,
+    output: 0.0015,
   },
-  
+
   // Fallback for unknown models (use GPT-4o pricing)
-  'default': { 
-    input: 0.0025, 
-    output: 0.01 
-  }
+  default: {
+    input: 0.0025,
+    output: 0.01,
+  },
 };
 
 /**
@@ -91,9 +91,9 @@ export const DEFAULT_MODEL_PRICING: PricingConfig = {
  * @param pricing - Pricing configuration to validate
  * @returns Validation result with errors if any
  */
-export function validatePricingConfig(pricing: any): { 
-  isValid: boolean; 
-  errors: string[]; 
+export function validatePricingConfig(pricing: any): {
+  isValid: boolean;
+  errors: string[];
   warnings: string[];
 } {
   const errors: string[] = [];
@@ -125,7 +125,9 @@ export function validatePricingConfig(pricing: any): {
     } else if (pricing_obj.input < 0) {
       errors.push(`Input price for model "${modelName}" must be non-negative`);
     } else if (pricing_obj.input > 1) {
-      warnings.push(`Input price for model "${modelName}" seems high ($${pricing_obj.input} per 1K tokens)`);
+      warnings.push(
+        `Input price for model "${modelName}" seems high ($${pricing_obj.input} per 1K tokens)`
+      );
     }
 
     // Validate output price
@@ -134,13 +136,17 @@ export function validatePricingConfig(pricing: any): {
     } else if (pricing_obj.output < 0) {
       errors.push(`Output price for model "${modelName}" must be non-negative`);
     } else if (pricing_obj.output > 1) {
-      warnings.push(`Output price for model "${modelName}" seems high ($${pricing_obj.output} per 1K tokens)`);
+      warnings.push(
+        `Output price for model "${modelName}" seems high ($${pricing_obj.output} per 1K tokens)`
+      );
     }
 
     // Warn if output price is lower than input price (unusual)
-    if (typeof pricing_obj.input === 'number' && 
-        typeof pricing_obj.output === 'number' && 
-        pricing_obj.output < pricing_obj.input) {
+    if (
+      typeof pricing_obj.input === 'number' &&
+      typeof pricing_obj.output === 'number' &&
+      pricing_obj.output < pricing_obj.input
+    ) {
       warnings.push(`Output price for model "${modelName}" is lower than input price (unusual)`);
     }
   }
@@ -148,7 +154,7 @@ export function validatePricingConfig(pricing: any): {
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -177,7 +183,7 @@ export function mergePricingConfig(userPricing?: PricingConfig): PricingConfig {
   // Merge user pricing with defaults (user takes precedence)
   return {
     ...DEFAULT_MODEL_PRICING,
-    ...userPricing
+    ...userPricing,
   };
 }
 
@@ -195,10 +201,10 @@ export function getModelPricing(modelName: string, pricingConfig: PricingConfig)
 
   // Try case-insensitive match
   const lowerModelName = modelName.toLowerCase();
-  const matchingKey = Object.keys(pricingConfig).find(key => 
-    key.toLowerCase() === lowerModelName
+  const matchingKey = Object.keys(pricingConfig).find(
+    (key) => key.toLowerCase() === lowerModelName
   );
-  
+
   if (matchingKey) {
     return pricingConfig[matchingKey];
   }

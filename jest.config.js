@@ -31,7 +31,10 @@ export default {
   },
 
   // Disable Babel transform for .ts files
-  transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(.*\\.mjs$))',
+    '<rootDir>/dist/',
+  ],
 
   // Use projects for different test types
   projects: [
@@ -59,7 +62,10 @@ export default {
           },
         ],
       },
-      transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))'],
+      transformIgnorePatterns: [
+        'node_modules/(?!(.*\\.mjs$))',
+        '<rootDir>/dist/',
+      ],
       testMatch: [
         '<rootDir>/tests/development/**/*.test.{js,ts}',
         '<rootDir>/tests/development/**/*.spec.{js,ts}',
@@ -76,11 +82,19 @@ export default {
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/framework/$1',
         '^@core/(.*)$': '<rootDir>/framework/core/$1',
+        '^@automation/(.*)$': '<rootDir>/framework/automation/$1',
+        '^@ai/(.*)$': '<rootDir>/framework/ai/$1',
+        '^@execution/(.*)$': '<rootDir>/framework/execution/$1',
+        '^@content/(.*)$': '<rootDir>/framework/content/$1',
         '^@tools/(.*)$': '<rootDir>/framework/tools/$1',
         '^@config/(.*)$': '<rootDir>/framework/config/$1',
         '^@types/(.*)$': '<rootDir>/framework/types/$1',
         '^@runner/(.*)$': '<rootDir>/framework/runner/$1',
         '^@reporters/(.*)$': '<rootDir>/framework/reporters/$1',
+        '^@reporting/(.*)$': '<rootDir>/framework/reporting/$1',
+        '^@managers/(.*)$': '<rootDir>/framework/managers/$1',
+        '^@results/(.*)$': '<rootDir>/framework/results/$1',
+        '^(.+)\\.js$': '$1',
       },
     },
   ],
@@ -98,16 +112,6 @@ export default {
     },
   },
 
-  // Module resolution
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/framework/$1',
-    '^@core/(.*)$': '<rootDir>/framework/core/$1',
-    '^@tools/(.*)$': '<rootDir>/framework/tools/$1',
-    '^@config/(.*)$': '<rootDir>/framework/config/$1',
-    '^@types/(.*)$': '<rootDir>/framework/types/$1',
-    '^@runner/(.*)$': '<rootDir>/framework/runner/$1',
-    '^@reporters/(.*)$': '<rootDir>/framework/reporters/$1',
-  },
 
   // Global settings
   verbose: true,

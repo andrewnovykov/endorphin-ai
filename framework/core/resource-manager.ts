@@ -3,9 +3,9 @@
  * Handles lifecycle of resources including EventTargets, AbortControllers, and other cleanup
  */
 
-import { EventEmitter } from 'events';
-import { ResourceError, MemoryError, ResourceExhaustedError } from '../types/errors.js';
+import { EventEmitter } from 'node:events';
 import { LIMITS, PERFORMANCE } from '../config/constants.js';
+import { ResourceError, ResourceExhaustedError } from '../types/errors.js';
 
 export interface ManagedResource {
   id: string;
@@ -41,18 +41,18 @@ export class ResourceManager extends EventEmitter {
    */
   createAbortController(id?: string): AbortController {
     const controllerId = id || `abort-${Date.now()}-${Math.random()}`;
-    
+
     // Clean up any existing controller with same ID
     this.disposeAbortController(controllerId);
-    
+
     const controller = new AbortController();
     this.abortControllers.set(controllerId, controller);
-    
+
     // Auto-cleanup after a reasonable timeout
     const timeout = setTimeout(() => {
       this.disposeAbortController(controllerId);
     }, PERFORMANCE.SLOW_OPERATION_THRESHOLD * 10); // 10 seconds default
-    
+
     // Clean up timeout when controller is disposed
     const originalAbort = controller.abort.bind(controller);
     controller.abort = () => {
@@ -60,7 +60,7 @@ export class ResourceManager extends EventEmitter {
       originalAbort();
       this.disposeAbortController(controllerId);
     };
-    
+
     return controller;
   }
 
@@ -88,18 +88,18 @@ export class ResourceManager extends EventEmitter {
     if (this.resources.size >= this.maxResources) {
       // Try to clean up old resources first
       this.cleanup();
-      
+
       if (this.resources.size >= this.maxResources) {
-        throw new ResourceExhaustedError(
-          `Maximum resources exceeded: ${this.maxResources}`,
-          { currentCount: this.resources.size, maxResources: this.maxResources }
-        );
+        throw new ResourceExhaustedError(`Maximum resources exceeded: ${this.maxResources}`, {
+          currentCount: this.resources.size,
+          maxResources: this.maxResources,
+        });
       }
     }
 
     this.resources.set(resource.id, resource);
     this.emit('resourceRegistered', resource);
-    
+
     return resource;
   }
 
@@ -138,8 +138,7 @@ export class ResourceManager extends EventEmitter {
    * Get all resources of a specific type
    */
   getByType<T extends ManagedResource>(type: string): T[] {
-    return Array.from(this.resources.values())
-      .filter(resource => resource.type === type) as T[];
+    return Array.from(this.resources.values()).filter((resource) => resource.type === type) as T[];
   }
 
   /**
@@ -158,7 +157,7 @@ export class ResourceManager extends EventEmitter {
       totalResources: this.resources.size,
       resourcesByType,
       oldestResource,
-      memoryUsage: process.memoryUsage()
+      memoryUsage: process.memoryUsage(),
     };
   }
 
@@ -178,7 +177,7 @@ export class ResourceManager extends EventEmitter {
 
     // Dispose old resources
     for (const id of toDispose) {
-      this.dispose(id).catch(error => {
+      this.dispose(id).catch((error) => {
         this.emit('cleanupError', error, id);
       });
     }
@@ -215,8 +214,8 @@ export class ResourceManager extends EventEmitter {
     }
 
     // Dispose all resources
-    const disposePromises = Array.from(this.resources.keys()).map(id => this.dispose(id));
-    
+    const disposePromises = Array.from(this.resources.keys()).map((id) => this.dispose(id));
+
     try {
       await Promise.allSettled(disposePromises);
     } catch (error) {
@@ -234,13 +233,13 @@ export class ResourceManager extends EventEmitter {
    */
   checkMemoryUsage(): void {
     const memoryUsage = process.memoryUsage();
-    
+
     if (memoryUsage.heapUsed > PERFORMANCE.MEMORY_WARNING_THRESHOLD) {
       const stats = this.getStats();
       this.emit('memoryWarning', {
         memoryUsage,
         resourceStats: stats,
-        message: `High memory usage detected: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`
+        message: `High memory usage detected: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
       });
 
       // Force cleanup on high memory usage
@@ -299,7 +298,7 @@ export class ManagedEventTarget implements ManagedResource {
 
   addEventListener(type: string, listener: EventListener, options?: any): void {
     this.eventTarget.addEventListener(type, listener, options);
-    
+
     // Track listeners for cleanup
     if (!this.listeners.has(type)) {
       this.listeners.set(type, []);
@@ -309,11 +308,11 @@ export class ManagedEventTarget implements ManagedResource {
 
   removeEventListener(type: string, listener: EventListener, options?: any): void {
     this.eventTarget.removeEventListener(type, listener, options);
-    
+
     // Remove from tracking
     const typeListeners = this.listeners.get(type);
     if (typeListeners) {
-      const index = typeListeners.findIndex(l => l.listener === listener);
+      const index = typeListeners.findIndex((l) => l.listener === listener);
       if (index !== -1) {
         typeListeners.splice(index, 1);
       }

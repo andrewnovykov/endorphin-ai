@@ -1,27 +1,18 @@
 /**
- * Unified HTML Reporter Module
- * Complete solution for generating interactive HTML test reports
+ * HTML Reporter
+ * Main HTML reporter class using modular components
  */
 
-import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { HtmlGenerator, type ReportOptions } from '../reporting/generators/html-generator.js';
+import { AssetManager } from '../reporting/processors/asset-manager.js';
+import { ResultsParser } from '../reporting/processors/results-parser.js';
+import type { TestSession } from '../types/index.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-interface ReportOptions {
-  filename?: string;
-  resultDirs?: string[];
-}
-
-interface ReportSummary {
-  totalTests: number;
-  passedTests: number;
-  failedTests: number;
-  successRate: number;
-  totalDuration: number;
-  timestamp: string;
+export interface HtmlReporterOptions {
+  testResultsDir?: string;
+  maxReportAge?: number;
+  maxReportsPerTest?: number;
 }
 
 /**
@@ -29,37 +20,51 @@ interface ReportSummary {
  * Generates interactive HTML reports from test-results data
  */
 export class HtmlReporter {
+  private resultsParser: ResultsParser;
+  private htmlGenerator: HtmlGenerator;
+  private assetManager: AssetManager;
   private testResultsDir: string;
   private reportsDir: string;
-  private templatesDir: string;
 
-  constructor(testResultsDir: string = './test-results') {
+  constructor(testResultsDir: string = './test-results', options: HtmlReporterOptions = {}) {
     this.testResultsDir = path.resolve(testResultsDir);
     this.reportsDir = path.join(this.testResultsDir, 'reports');
-    this.templatesDir = path.join(__dirname, '..', 'templates');
 
-    // Ensure reports directory exists - handle errors gracefully
-    try {
-      if (!fs.existsSync(this.reportsDir)) {
-        fs.mkdirSync(this.reportsDir, { recursive: true });
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`Warning: Could not create reports directory: ${message}`);
-    }
+    // Initialize components
+    this.resultsParser = new ResultsParser(this.testResultsDir);
+    this.htmlGenerator = new HtmlGenerator(this.reportsDir);
+    this.assetManager = new AssetManager({
+      reportsDir: this.reportsDir,
+      maxReportAge: options.maxReportAge || 30,
+      maxReportsPerTest: options.maxReportsPerTest || 10,
+    });
   }
 
   /**
-   * Generate HTML report from all test results
-   * @param options - Report generation options
-   * @returns Path to generated report
+   * Generate HTML report from test sessions (for testing)
    */
-  async generateReport(options: ReportOptions = {}): Promise<string> {
+  async generateReport(sessions: TestSession[]): Promise<string>;
+  /**
+   * Generate HTML report from all test results
+   */
+  async generateReport(options?: ReportOptions): Promise<string>;
+  async generateReport(optionsOrSessions: ReportOptions | TestSession[] = {}): Promise<string> {
     try {
       console.log('📊 Generating HTML test report...');
 
-      // Parse test results
-      const reportData = this.collectTestResults(options.resultDirs);
+      let reportData;
+      let options: ReportOptions = {};
+      
+      // Check if we have sessions or options
+      if (Array.isArray(optionsOrSessions)) {
+        // Handle sessions directly (for testing)
+        const sessions = optionsOrSessions as TestSession[];
+        reportData = this.resultsParser.createReportDataFromSessions(sessions);
+      } else {
+        // Handle normal options
+        options = optionsOrSessions as ReportOptions;
+        reportData = this.resultsParser.collectTestResults(options.resultDirs);
+      }
 
       if (reportData.testResults.length === 0) {
         console.log('📁 Looking for test results in:', this.testResultsDir);
@@ -70,9 +75,8 @@ export class HtmlReporter {
         throw new Error('No test results found. Run some tests first.');
       }
 
-      // Generate HTML report directly
-      const filename = options.filename || `report-${new Date().toISOString().split('T')[0]}.html`;
-      const reportPath = await this.generateHtmlReport(reportData, filename);
+      // Generate HTML report
+      const reportPath = await this.htmlGenerator.generateReport(reportData, options);
 
       console.log(`✅ Report generated: ${reportPath}`);
       console.log(`📈 Report includes ${reportData.testResults.length} test results`);
@@ -81,608 +85,282 @@ export class HtmlReporter {
       return reportPath;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('❌ Error generating report:', message);
-      throw error;
+      throw new Error(`Failed to generate report: ${message}`);
     }
   }
 
   /**
-   * Open the latest report in the default browser
-   * @param reportPath - Optional specific report path to open
-   * @returns Promise<void>
+   * Open the most recent report in browser
    */
   async openReport(reportPath: string | null = null): Promise<void> {
     try {
-      let targetPath = reportPath;
+      const targetPath = reportPath || (await this.getLatestReport());
 
       if (!targetPath) {
-        // Find the most recent report
-        const reportsFiles = fs
-          .readdirSync(this.reportsDir)
-          .filter((file) => file.endsWith('.html'))
-          .map((file) => ({
-            name: file,
-            path: path.join(this.reportsDir, file),
-            mtime: fs.statSync(path.join(this.reportsDir, file)).mtime,
-          }))
-          .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
-
-        if (reportsFiles.length === 0) {
-          throw new Error(
-            'No reports found. Generate a report first with: endorphin generate report'
-          );
-        }
-
-        targetPath = reportsFiles[0].path;
-      } else {
-        // If not an absolute path, treat as filename in reports directory
-        if (!path.isAbsolute(targetPath)) {
-          targetPath = path.join(this.reportsDir, targetPath);
-        }
+        throw new Error('No reports found. Generate a report first.');
       }
 
-      if (!fs.existsSync(targetPath)) {
-        const filename = path.basename(targetPath);
-        throw new Error(`Report file not found: ${filename}`);
+      try {
+        // Dynamically import the 'open' package if available
+        // Dynamic import to avoid bundling issues
+        const openModule = await import('open');
+        const open = openModule.default;
+        await open(targetPath);
+        console.log(`🌐 Opened report: ${targetPath}`);
+      } catch {
+        console.log(`📄 Report generated: ${targetPath}`);
+        console.log('💡 Install "open" package to automatically open reports in browser');
       }
-
-      console.log(`🌐 Opening report: ${targetPath}`);
-
-      // Open in default browser based on platform
-      const { execSync } = await import('child_process');
-      const command =
-        process.platform === 'darwin'
-          ? `open "${targetPath}"`
-          : process.platform === 'win32'
-            ? `start "${targetPath}"`
-            : `xdg-open "${targetPath}"`;
-
-      execSync(command);
-      console.log('✅ Report opened in browser');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('❌ Error opening report:', message);
-      throw error;
+      console.error(`Failed to open report: ${message}`);
+      console.log(`💡 You can manually open: ${reportPath || 'latest report'}`);
     }
   }
 
   /**
-   * Collect and parse test results from the results directory
-   * @param resultDirs - Optional specific result directories to include
-   * @returns Aggregated report data
+   * Get the latest report file
    */
-  private collectTestResults(resultDirs?: string[]): {
-    summary: ReportSummary;
-    testResults: Array<{
-      testId: string;
-      testName: string;
-      status: 'SUCCESS' | 'FAILED';
-      duration: number;
-      error?: string;
-      screenshots: string[];
-      sessionDir: string;
-    }>;
-  } {
-    const testResults: any[] = [];
-    const dirsToScan = resultDirs || this.getTestResultDirectories();
+  private async getLatestReport(): Promise<string | null> {
+    try {
+      const fs = await import('fs');
 
-    for (const dir of dirsToScan) {
-      const resultPath = path.join(this.testResultsDir, dir);
-      if (fs.existsSync(resultPath)) {
-        const result = this.parseTestResult(resultPath);
-        if (result) {
-          testResults.push(result);
-        }
+      if (!fs.existsSync(this.reportsDir)) {
+        return null;
       }
-    }
 
-    // Calculate summary
+      const files = fs
+        .readdirSync(this.reportsDir)
+        .filter((file) => file.endsWith('.html'))
+        .map((file) => ({
+          name: file,
+          path: path.join(this.reportsDir, file),
+          mtime: fs.statSync(path.join(this.reportsDir, file)).mtime,
+        }))
+        .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
+
+      return files.length > 0 ? files[0].path : null;
+    } catch (error) {
+      console.warn('Error finding latest report:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Generate custom report with specific options
+   */
+  async generateCustomReport(
+    options: ReportOptions & {
+      template?: string;
+      filters?: {
+        status?: 'SUCCESS' | 'FAILED';
+        testName?: string;
+        dateRange?: { start: string; end: string };
+      };
+    } = {}
+  ): Promise<string> {
+    try {
+      console.log('📊 Generating custom HTML report...');
+
+      // Parse test results
+      const reportData = this.resultsParser.collectTestResults(options.resultDirs);
+
+      // Apply filters if specified
+      if (options.filters) {
+        reportData.testResults = this.resultsParser.filterResults(
+          reportData.testResults,
+          options.filters
+        );
+
+        // Recalculate summary for filtered results
+        reportData.summary = this.calculateFilteredSummary(reportData.testResults);
+      }
+
+      if (reportData.testResults.length === 0) {
+        throw new Error('No test results match the specified filters.');
+      }
+
+      // Generate HTML report with custom options
+      const reportPath = await this.htmlGenerator.generateReport(reportData, options);
+
+      console.log(`✅ Custom report generated: ${reportPath}`);
+      console.log(`📈 Report includes ${reportData.testResults.length} filtered test results`);
+
+      return reportPath;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to generate custom report: ${message}`);
+    }
+  }
+
+  /**
+   * Calculate summary for filtered results
+   */
+  private calculateFilteredSummary(testResults: any[]): any {
     const totalTests = testResults.length;
-    const passedTests = testResults.filter((r) => r.status === 'SUCCESS').length;
+    const passedTests = testResults.filter((result) => result.status === 'SUCCESS').length;
     const failedTests = totalTests - passedTests;
     const successRate = totalTests > 0 ? (passedTests / totalTests) * 100 : 0;
-    const totalDuration = testResults.reduce((sum, r) => sum + r.duration, 0);
+    const totalDuration = testResults.reduce((sum, result) => sum + (result.duration || 0), 0);
 
     return {
-      summary: {
-        totalTests,
-        passedTests,
-        failedTests,
-        successRate,
-        totalDuration,
-        timestamp: new Date().toISOString(),
-      },
-      testResults,
+      totalTests,
+      passedTests,
+      failedTests,
+      successRate,
+      totalDuration,
+      timestamp: new Date().toISOString(),
     };
   }
 
   /**
-   * Get all test result directories
-   * @returns Array of directory names
-   */
-  private getTestResultDirectories(): string[] {
-    if (!fs.existsSync(this.testResultsDir)) {
-      return [];
-    }
-
-    return fs.readdirSync(this.testResultsDir).filter((item) => {
-      const itemPath = path.join(this.testResultsDir, item);
-      return fs.statSync(itemPath).isDirectory() && item !== 'reports';
-    });
-  }
-
-  /**
-   * Parse a single test result directory
-   * @param resultPath - Path to the test result directory
-   * @returns Parsed test result or null
-   */
-  private parseTestResult(resultPath: string): any | null {
-    try {
-      // Look for session.json, test-session.json, or summary.json
-      let sessionFile = path.join(resultPath, 'test-session.json');
-      if (!fs.existsSync(sessionFile)) {
-        sessionFile = path.join(resultPath, 'test-session.json');
-      }
-      if (!fs.existsSync(sessionFile)) {
-        sessionFile = path.join(resultPath, 'summary.json');
-      }
-
-      if (fs.existsSync(sessionFile)) {
-        const sessionData = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
-
-        // Get screenshots
-        const screenshotsDir = path.join(resultPath, 'screenshots');
-        const screenshotFiles = fs.existsSync(screenshotsDir)
-          ? fs
-              .readdirSync(screenshotsDir)
-              .filter((f) => f.endsWith('.png') || f.endsWith('.jpg'))
-          : [];
-        
-        // Create full paths for copying but store filenames for display
-        const screenshotsForCopying = screenshotFiles.map((f) => path.join(screenshotsDir, f));
-        const screenshotsForDisplay = screenshotFiles; // Just filenames
-
-        // Process steps to fix screenshot paths to be relative
-        const processedSteps = (sessionData.steps || []).map((step: any) => {
-          if (step.screenshots && Array.isArray(step.screenshots)) {
-            step.screenshots = step.screenshots.map((screenshot: any) => {
-              if (typeof screenshot === 'object' && screenshot.filename) {
-                // Update the screenshot object to use relative path
-                return {
-                  ...screenshot,
-                  filepath: `screenshots/${screenshot.filename}`
-                };
-              }
-              return screenshot;
-            });
-          }
-          return step;
-        });
-
-        // Calculate token metrics from steps and session
-        const stepTokens = processedSteps.reduce((total: number, step: any) => {
-          return total + (step.tokenUsage?.totalTokens || 0);
-        }, 0);
-        
-        const sessionTokens = sessionData.tokenSummary?.totalTokens || 0;
-        const totalTokens = Math.max(stepTokens, sessionTokens); // Use session total if available
-        const totalCost = sessionData.tokenSummary?.totalCost || 0;
-        const aiCalls = sessionData.tokenSummary?.aiCalls || 0;
-        const avgTokensPerCall = sessionData.tokenSummary?.avgTokensPerCall || 0;
-        const model = sessionData.tokenSummary?.model || 'gpt-4o';
-
-        // Structure the data as expected by the JavaScript
-        return {
-          session: {
-            testId: sessionData.testId || sessionData.sessionId || path.basename(resultPath),
-            testName: sessionData.testName || sessionData.sessionName || sessionData.testName,
-            status: sessionData.status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
-            duration: sessionData.duration || 0,
-            startTime: sessionData.startTime,
-            endTime: sessionData.endTime,
-            steps: processedSteps,
-            sessionId: sessionData.sessionId || path.basename(resultPath),
-            sessionName: sessionData.sessionName || sessionData.testName,
-            sessionDir: path.basename(resultPath),
-            finalResult: sessionData.finalResult || sessionData.error,
-            tokenSummary: {
-              totalTokens,
-              totalCost,
-              aiCalls,
-              avgTokensPerCall,
-              model
-            }
-          },
-          summary: {
-            status: sessionData.status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
-            duration: sessionData.duration || 0,
-            error: sessionData.error || sessionData.finalResult,
-            tokenSummary: {
-              totalTokens,
-              totalCost,
-              aiCalls,
-              avgTokensPerCall,
-              model
-            }
-          },
-          screenshots: screenshotsForDisplay,
-          screenshotsForCopying,
-          resultDir: path.basename(resultPath),
-          // Keep these for backward compatibility with table generation
-          testId: sessionData.testId || sessionData.sessionId || path.basename(resultPath),
-          testName: sessionData.testName || sessionData.sessionName || sessionData.testName,
-          status: sessionData.status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
-          duration: sessionData.duration || 0,
-          error: sessionData.error || sessionData.finalResult,
-          sessionDir: resultPath,
-        };
-      }
-    } catch {
-      console.warn(`Warning: Could not parse test result from ${resultPath}`);
-    }
-    return null;
-  }
-
-  /**
-   * Generate HTML report from report data
-   * @param reportData - Aggregated report data
-   * @param filename - Output filename
-   * @returns Path to generated report
-   */
-  private async generateHtmlReport(reportData: any, filename: string): Promise<string> {
-    try {
-      // Load HTML template
-      const templatePath = path.join(this.templatesDir, 'reporter', 'report-template.html');
-      let htmlTemplate = fs.readFileSync(templatePath, 'utf8');
-
-      // Process template with report data
-      htmlTemplate = this.processTemplate(htmlTemplate, reportData);
-
-      // Write the processed HTML
-      const outputPath = path.join(this.reportsDir, filename);
-      fs.writeFileSync(outputPath, htmlTemplate, 'utf8');
-
-      // Copy static assets (CSS, JS)
-      await this.copyStaticAssets();
-
-      // Copy screenshots for included test results
-      await this.copyScreenshots(reportData);
-
-      return outputPath;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to generate HTML report: ${message}`);
-    }
-  }
-
-  /**
-   * Process the HTML template with report data
-   */
-  private processTemplate(template: string, data: any): string {
-    let processedTemplate = template;
-
-    // Calculate token summary from all results
-    const totalTokens = data.testResults.reduce((total: number, result: any) => {
-      return total + (result.summary?.tokenSummary?.totalTokens || 0);
-    }, 0);
-    const totalCost = data.testResults.reduce((total: number, result: any) => {
-      return total + (result.summary?.tokenSummary?.totalCost || 0);
-    }, 0);
-
-    // Replace summary data - match the actual template placeholders
-    processedTemplate = processedTemplate.replace(
-      /{{totalTests}}/g,
-      data.summary.totalTests.toString()
-    );
-    processedTemplate = processedTemplate.replace(
-      /{{totalRuns}}/g,
-      data.summary.totalTests.toString()
-    );
-    processedTemplate = processedTemplate.replace(
-      /{{successfulRuns}}/g,
-      data.summary.passedTests.toString()
-    );
-    processedTemplate = processedTemplate.replace(
-      /{{failedRuns}}/g,
-      data.summary.failedTests.toString()
-    );
-    processedTemplate = processedTemplate.replace(
-      /{{successRate}}/g,
-      data.summary.successRate.toFixed(1)
-    );
-    processedTemplate = processedTemplate.replace(
-      /{{totalTokens}}/g,
-      totalTokens.toLocaleString()
-    );
-    processedTemplate = processedTemplate.replace(
-      /{{totalCost}}/g,
-      totalCost.toFixed(4)
-    );
-    processedTemplate = processedTemplate.replace(/{{generatedAt}}/g, new Date().toLocaleString());
-
-    // Generate test statistics table
-    const testStatsTable = this.generateTestStatsTable(data.testResults);
-    processedTemplate = processedTemplate.replace(/{{testStatsTable}}/g, testStatsTable);
-
-    // Generate recent results table
-    const recentResultsTable = this.generateRecentResultsTable(data.testResults);
-    processedTemplate = processedTemplate.replace(/{{recentResultsTable}}/g, recentResultsTable);
-
-    // Generate JSON data for JavaScript - pass just the test results array
-    const jsonData = JSON.stringify(data.testResults, null, 2);
-    processedTemplate = processedTemplate.replace(/{{testDataJson}}/g, jsonData);
-
-    return processedTemplate;
-  }
-
-  /**
-   * Generate HTML for test results section
-   */
-  private generateTestResultsHtml(testResults: any[]): string {
-    return testResults
-      .map((result) => {
-        const statusClass = result.status === 'SUCCESS' ? 'success' : 'failure';
-        const statusIcon = result.status === 'SUCCESS' ? '✅' : '❌';
-        const errorHtml = result.error
-          ? `<div class="error-message">${this.escapeHtml(result.error)}</div>`
-          : '';
-
-        const screenshotsHtml = result.screenshots
-          .map(
-            (screenshot: string) =>
-              `<img src="${screenshot}" alt="Screenshot" class="screenshot-thumb" onclick="openScreenshot('${screenshot}')">`
-          )
-          .join('');
-
-        return `
-        <div class="test-result ${statusClass}">
-          <div class="test-header">
-            <span class="status-icon">${statusIcon}</span>
-            <span class="test-name">${this.escapeHtml(result.testName)}</span>
-            <span class="test-id">${this.escapeHtml(result.testId)}</span>
-            <span class="duration">${this.formatDuration(result.duration)}</span>
-          </div>
-          ${errorHtml}
-          <div class="screenshots">
-            ${screenshotsHtml}
-          </div>
-        </div>
-      `;
-      })
-      .join('');
-  }
-
-  /**
-   * Generate test statistics table HTML
-   */
-  private generateTestStatsTable(testResults: any[]): string {
-    if (testResults.length === 0) {
-      return '<tr><td colspan="6" class="text-center">No test results available</td></tr>';
-    }
-
-    return testResults
-      .map((result) => {
-        const statusBadge =
-          result.status === 'SUCCESS'
-            ? '<span class="badge bg-success">✅ Passed</span>'
-            : '<span class="badge bg-danger">❌ Failed</span>';
-
-        const tokens = result.summary?.tokenSummary?.totalTokens || 0;
-        const cost = result.summary?.tokenSummary?.totalCost || 0;
-        const model = result.summary?.tokenSummary?.model || 'N/A';
-
-        return `
-          <tr>
-            <td><strong>${this.escapeHtml(result.testId)}</strong><br><small class="text-muted">${this.escapeHtml(result.testName)}</small></td>
-            <td>${statusBadge}</td>
-            <td>${this.formatDuration(result.duration)}</td>
-            <td><span class="badge bg-info">${tokens.toLocaleString()}</span></td>
-            <td><span class="badge bg-warning">$${cost.toFixed(4)}</span></td>
-            <td><small class="text-muted">${model}</small></td>
-          </tr>
-        `;
-      })
-      .join('');
-  }
-
-  /**
-   * Generate recent results table HTML
-   */
-  private generateRecentResultsTable(testResults: any[]): string {
-    if (testResults.length === 0) {
-      return '<tr><td colspan="7" class="text-center">No recent test results available</td></tr>';
-    }
-
-    // Sort by most recent first and take top 10
-    const recentResults = testResults
-      .sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime())
-      .slice(0, 10);
-
-    return recentResults
-      .map((result, index) => {
-        const statusBadge =
-          result.status === 'SUCCESS'
-            ? '<span class="badge bg-success">✅ Passed</span>'
-            : '<span class="badge bg-danger">❌ Failed</span>';
-
-        const screenshotCount = result.screenshots ? result.screenshots.length : 0;
-        const tokens = result.summary?.tokenSummary?.totalTokens || 0;
-        const cost = result.summary?.tokenSummary?.totalCost || 0;
-
-        return `
-          <tr class="test-result-row" data-result-index="${index}" style="cursor: pointer;">
-            <td><strong>${this.escapeHtml(result.testId)}</strong><br><small class="text-muted">${this.escapeHtml(result.testName)}</small></td>
-            <td>${statusBadge}</td>
-            <td>${this.formatDuration(result.duration)}</td>
-            <td><span class="badge bg-info">${tokens.toLocaleString()}</span></td>
-            <td><span class="badge bg-warning">$${cost.toFixed(4)}</span></td>
-            <td>${screenshotCount} screenshots</td>
-            <td>
-              <button class="btn btn-sm btn-outline-primary view-details-btn" data-result-index="${index}">
-                <i class="bi bi-eye"></i> View Details
-              </button>
-            </td>
-          </tr>
-        `;
-      })
-      .join('');
-  }
-
-  /**
-   * Copy static assets (CSS, JS) to output directory
-   */
-  private copyStaticAssets(): void {
-    const assetsDir = path.join(this.reportsDir, 'assets');
-    if (!fs.existsSync(assetsDir)) {
-      fs.mkdirSync(assetsDir, { recursive: true });
-    }
-
-    // Copy CSS
-    const cssSource = path.join(this.templatesDir, 'reporter', 'styles.css');
-    const cssTarget = path.join(assetsDir, 'styles.css');
-    if (fs.existsSync(cssSource)) {
-      fs.copyFileSync(cssSource, cssTarget);
-    }
-
-    // Copy JS
-    const jsSource = path.join(this.templatesDir, 'reporter', 'scripts.js');
-    const jsTarget = path.join(assetsDir, 'scripts.js');
-    if (fs.existsSync(jsSource)) {
-      fs.copyFileSync(jsSource, jsTarget);
-    }
-  }
-
-  /**
-   * Copy screenshots for test results
-   */
-  private copyScreenshots(reportData: any): void {
-    const screenshotsDir = path.join(this.reportsDir, 'screenshots');
-    if (!fs.existsSync(screenshotsDir)) {
-      fs.mkdirSync(screenshotsDir, { recursive: true });
-    }
-
-    for (const result of reportData.testResults) {
-      // Use screenshotsForCopying for actual file copying (full paths)
-      if (result.screenshotsForCopying && Array.isArray(result.screenshotsForCopying)) {
-        for (const screenshot of result.screenshotsForCopying) {
-          if (fs.existsSync(screenshot)) {
-            const filename = path.basename(screenshot);
-            const targetPath = path.join(screenshotsDir, filename);
-            try {
-              fs.copyFileSync(screenshot, targetPath);
-            } catch (error) {
-              console.warn(`Warning: Could not copy screenshot ${screenshot}:`, error);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Format duration in milliseconds to human-readable string
-   */
-  private formatDuration(duration: number): string {
-    if (duration < 1000) {
-      return `${duration}ms`;
-    } else if (duration < 60000) {
-      return `${(duration / 1000).toFixed(1)}s`;
-    } else {
-      const minutes = Math.floor(duration / 60000);
-      const seconds = Math.floor((duration % 60000) / 1000);
-      return `${minutes}m ${seconds}s`;
-    }
-  }
-
-  /**
-   * Escape HTML characters to prevent XSS
-   */
-  private escapeHtml(text: string): string {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  /**
-   * Clean up old test results
-   * @param keepPerTest - Number of results to keep per test (default: 10)
-   * @returns Cleanup summary
+   * Clean up old results keeping specified number per test
    */
   async cleanupResults(keepPerTest: number = 10): Promise<{
-    removedCount: number;
-    removedDirs: string[];
-    totalTestIds: number;
-    keptPerTest: number;
+    deletedSessions: number;
+    deletedReports: number;
+    freedSpaceMB: number;
   }> {
     try {
-      console.log('🧹 Cleaning up old test results...');
+      console.log(`🧹 Cleaning up test results (keeping ${keepPerTest} per test)...`);
 
-      const { TestResultsParser } = await import('../results/test-results-parser.js');
-      const parser = new TestResultsParser(this.testResultsDir);
-      const cleanup = parser.cleanupOldResults(keepPerTest);
+      // Clean up reports and screenshots
+      const cleanupResult = await this.assetManager.cleanupResults(keepPerTest);
 
-      if (cleanup.removedCount > 0) {
-        console.log(`✅ Cleaned up ${cleanup.removedCount} old test result directories`);
-        console.log(`📁 Keeping ${keepPerTest} most recent results per test`);
-      } else {
-        console.log('✨ No cleanup needed - all results are recent');
-      }
+      const freedSpaceMB = Math.round((cleanupResult.freedSpace / (1024 * 1024)) * 100) / 100;
 
-      return cleanup;
+      console.log(`✅ Cleanup completed:`);
+      console.log(`   📄 Deleted ${cleanupResult.deletedReports} old reports`);
+      console.log(`   🖼️  Deleted ${cleanupResult.deletedScreenshots} orphaned screenshots`);
+      console.log(`   💾 Freed ${freedSpaceMB} MB of space`);
+
+      return {
+        deletedSessions: 0, // Legacy compatibility
+        deletedReports: cleanupResult.deletedReports,
+        freedSpaceMB,
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.warn('⚠️  Warning: Could not cleanup results:', message);
-      return { removedCount: 0, removedDirs: [], totalTestIds: 0, keptPerTest: keepPerTest };
+      throw new Error(`Cleanup failed: ${message}`);
     }
   }
 
   /**
-   * Clean up old report files
-   * @param maxAge - Maximum age in days (default: 30)
-   * @returns Cleanup summary
+   * Clean up old reports by age
    */
   cleanupOldReports(maxAge: number = 30): {
-    removedCount: number;
-    removedFiles: string[];
+    deleted: number;
+    freedSpaceMB: number;
   } {
     try {
-      console.log('🧹 Cleaning up old report files...');
+      console.log(`🧹 Cleaning up reports older than ${maxAge} days...`);
 
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - maxAge);
+      const cleanupResult = this.assetManager.cleanupOldReports(maxAge);
+      const freedSpaceMB = Math.round((cleanupResult.freedSpace / (1024 * 1024)) * 100) / 100;
 
-      const reportFiles = fs
-        .readdirSync(this.reportsDir)
-        .filter(
-          (file) => file.endsWith('.html') && fs.statSync(path.join(this.reportsDir, file)).isFile()
-        );
+      console.log(`✅ Cleanup completed:`);
+      console.log(`   📄 Deleted ${cleanupResult.deletedReports} old reports`);
+      console.log(`   💾 Freed ${freedSpaceMB} MB of space`);
 
-      const removedFiles: string[] = [];
-
-      for (const file of reportFiles) {
-        const filePath = path.join(this.reportsDir, file);
-        const stats = fs.statSync(filePath);
-
-        if (stats.mtime < cutoffDate) {
-          fs.unlinkSync(filePath);
-          removedFiles.push(file);
-        }
-      }
-
-      if (removedFiles.length > 0) {
-        console.log(`✅ Cleaned up ${removedFiles.length} old report files`);
-      } else {
-        console.log('✨ No old report files to clean up');
-      }
-
-      return { removedCount: removedFiles.length, removedFiles };
+      return {
+        deleted: cleanupResult.deletedReports,
+        freedSpaceMB,
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.warn('⚠️  Warning: Could not cleanup old reports:', message);
-      return { removedCount: 0, removedFiles: [] };
+      console.error(`Cleanup failed: ${message}`);
+      return { deleted: 0, freedSpaceMB: 0 };
     }
   }
+
+  /**
+   * Get report statistics
+   */
+  getStatistics() {
+    try {
+      const assetStats = this.assetManager.getAssetStatistics();
+      const reportData = this.resultsParser.collectTestResults();
+      const testStats = this.resultsParser.getTestStatistics(reportData.testResults);
+
+      return {
+        reports: {
+          count: assetStats.reportsCount,
+          oldestReport: assetStats.oldestReport,
+          newestReport: assetStats.newestReport,
+        },
+        screenshots: {
+          count: assetStats.screenshotsCount,
+        },
+        storage: {
+          totalSizeMB: Math.round((assetStats.totalSize / (1024 * 1024)) * 100) / 100,
+        },
+        tests: testStats,
+        directories: {
+          testResults: this.testResultsDir,
+          reports: this.reportsDir,
+        },
+      };
+    } catch (error) {
+      console.warn('Error getting statistics:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Verify report integrity
+   */
+  verifyIntegrity() {
+    try {
+      return this.assetManager.verifyAssetIntegrity();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Integrity check failed: ${message}`);
+      return {
+        missingAssets: [],
+        brokenLinks: [],
+        orphanedScreenshots: [],
+      };
+    }
+  }
+
+  /**
+   * Export test results to different formats
+   */
+  exportResults(format: 'json' | 'csv' = 'json'): string {
+    try {
+      const reportData = this.resultsParser.collectTestResults();
+      return this.resultsParser.exportResults(reportData.testResults, format);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Export failed: ${message}`);
+    }
+  }
+
+  /**
+   * Get available templates
+   */
+  getAvailableTemplates(): string[] {
+    return this.htmlGenerator.getAvailableTemplates();
+  }
+
+  // Getters for accessing components
+  getResultsParser(): ResultsParser {
+    return this.resultsParser;
+  }
+
+  getHtmlGenerator(): HtmlGenerator {
+    return this.htmlGenerator;
+  }
+
+  getAssetManager(): AssetManager {
+    return this.assetManager;
+  }
 }
+
+// Re-export types for backward compatibility
+export type { ReportOptions } from '../reporting/generators/html-generator.js';
+export type {
+  ParsedTestResult,
+  ReportData,
+  ReportSummary,
+} from '../reporting/processors/results-parser.js';

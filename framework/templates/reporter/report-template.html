@@ -291,6 +291,72 @@
             </div>
           </div>
 
+          <!-- Setup & Data Generation Results -->
+          <div class="row mb-3" id="setup-data-section" style="display: none;">
+            <div class="col-md-6">
+              <h6>Setup Results</h6>
+              <div id="setup-results-card" class="card">
+                <div class="card-body">
+                  <table class="table table-sm mb-0">
+                    <tr>
+                      <td><strong>Status:</strong></td>
+                      <td id="modal-setup-status"></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Execution Time:</strong></td>
+                      <td id="modal-setup-time"></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Has Data:</strong></td>
+                      <td id="modal-setup-has-data"></td>
+                    </tr>
+                    <tr id="modal-setup-error-row" style="display: none;">
+                      <td><strong>Error:</strong></td>
+                      <td id="modal-setup-error" class="text-danger"></td>
+                    </tr>
+                  </table>
+                  <div id="setup-data-viewer" class="mt-2" style="display: none;">
+                    <strong>Setup Data:</strong>
+                    <pre class="bg-light p-2 mt-1 small"><code id="setup-data-content"></code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6>Data Generation Results</h6>
+              <div id="data-generation-results-card" class="card">
+                <div class="card-body">
+                  <table class="table table-sm mb-0">
+                    <tr>
+                      <td><strong>Status:</strong></td>
+                      <td id="modal-data-status"></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Execution Time:</strong></td>
+                      <td id="modal-data-time"></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Tokens Used:</strong></td>
+                      <td id="modal-data-tokens"></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Cost:</strong></td>
+                      <td id="modal-data-cost"></td>
+                    </tr>
+                    <tr id="modal-data-error-row" style="display: none;">
+                      <td><strong>Error:</strong></td>
+                      <td id="modal-data-error" class="text-danger"></td>
+                    </tr>
+                  </table>
+                  <div id="generated-data-viewer" class="mt-2" style="display: none;">
+                    <strong>Generated Data:</strong>
+                    <pre class="bg-light p-2 mt-1 small"><code id="generated-data-content"></code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Steps Timeline -->
           <div class="row">
             <div class="col-12">

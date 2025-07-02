@@ -23,7 +23,7 @@ describe('Token Tracking Integration', () => {
         { prompt: 'Verify user dashboard is displayed', response: 'Dashboard is displayed with user information' },
       ];
 
-      testScenarios.forEach((scenario, index) => {
+      testScenarios.forEach((scenario, _index) => {
         const promptTokens = tokenTracker.estimateTokens(scenario.prompt);
         const responseTokens = tokenTracker.estimateTokens(scenario.response);
         
@@ -233,7 +233,7 @@ describe('Token Tracking Integration', () => {
         tokenTracker.recordUsage(300, 150),
       ];
       
-      usages.forEach(usage => {
+      usages.forEach(_usage => {
         const formattedCost = tokenTracker.getFormattedCost();
         expect(formattedCost).toMatch(/^\$\d+\.\d{4}$/);
       });
