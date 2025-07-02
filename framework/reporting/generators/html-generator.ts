@@ -5,10 +5,38 @@
 
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import type { ParsedTestResult, ReportData } from '../processors/results-parser.js';
 
-// Use relative path instead of __dirname for Jest compatibility
-const templatesDir = path.join(process.cwd(), 'framework', 'templates');
+/**
+ * Get templates directory - works both in development and when installed as package
+ */
+function getTemplatesDir(): string {
+  // Get the directory path of the current file (ES modules compatible)
+  const currentFileUrl = import.meta.url;
+  const currentFilePath = fileURLToPath(currentFileUrl);
+  const currentDir = path.dirname(currentFilePath);
+
+  // Try multiple possible paths for templates
+  const possiblePaths = [
+    // When running from source (development)
+    path.join(process.cwd(), 'framework', 'templates'),
+    // When installed as npm package (from node_modules)
+    path.join(currentDir, '..', '..', 'templates'),
+    // When running from dist (built version)
+    path.join(currentDir, '..', 'templates'),
+    // Fallback: relative to this file
+    path.resolve(currentDir, '../../templates'),
+  ];
+
+  for (const templatePath of possiblePaths) {
+    if (fs.existsSync(path.join(templatePath, 'reporter', 'report-template.html'))) {
+      return templatePath;
+    }
+  }
+
+  throw new Error(`Templates directory not found. Searched paths: ${possiblePaths.join(', ')}`);
+}
 
 export interface ReportOptions {
   filename?: string;
@@ -28,7 +56,7 @@ export class HtmlGenerator {
 
   constructor(reportsDir: string) {
     this.reportsDir = reportsDir;
-    this.templatesDir = templatesDir;
+    this.templatesDir = getTemplatesDir();
 
     // Ensure reports directory exists
     try {

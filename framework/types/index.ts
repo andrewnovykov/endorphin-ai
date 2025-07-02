@@ -49,6 +49,7 @@ export type {
   TestCase,
   TestConfig,
   TestDataFunction,
+  TestTaskFunction,
   TestResult,
   TestSession,
   TestSetupFunction,

@@ -28,6 +28,12 @@ export interface TestSetupResult {
 export type TestDataFunction = () => Promise<any>;
 
 /**
+ * Test task function signature
+ * Executes with generated data and setup data, returns task description
+ */
+export type TestTaskFunction = (data?: any, setupData?: any) => Promise<string> | string;
+
+/**
  * Test data generation execution result
  */
 export interface DataGenerationResult {
@@ -55,7 +61,7 @@ export interface TestConfig {
   testData?: Record<string, any>; // Keep for backward compatibility
   data?: TestDataFunction | Record<string, any>; // New async data generation or static data
   setup?: TestSetupFunction; // Optional test-level setup function
-  task: string;
+  task: string | TestTaskFunction; // Support both string and function-based tasks
 }
 
 // Test Case interface for test recorder generated files

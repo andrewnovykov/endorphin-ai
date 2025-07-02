@@ -241,7 +241,9 @@ export const HEALTH_001 = {
   priority: 'High',
   tags: ['health', 'smoke'],
   site: 'https://example.com',
-  testData: {},
+  data: async () => {
+    return {};
+  },
   task: 'Navigate to the homepage and verify that the page loads successfully. Check that the page title contains "Example Domain" and that there are no console errors.',
 };`;
 

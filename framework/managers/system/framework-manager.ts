@@ -212,6 +212,29 @@ export class FrameworkManager {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
+    // Generate final report using the shared method
+    return await this.generateTestReport(results);
+  }
+
+  /**
+   * Generate test report from results
+   */
+  async generateTestReport(results: Array<{
+    testId: string;
+    testName: string;
+    success: boolean;
+    error?: string;
+    session?: any;
+  }>): Promise<{
+    results: Array<{
+      testId: string;
+      testName: string;
+      success: boolean;
+      error?: string;
+      session?: any;
+    }>;
+    report: TestReport;
+  }> {
     // Generate final report using HtmlReporter
     const htmlReporter = new HtmlReporter(this.resultBaseDir);
     const reportPath = await htmlReporter.generateReport();

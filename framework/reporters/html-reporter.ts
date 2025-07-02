@@ -103,8 +103,8 @@ export class HtmlReporter {
       try {
         // Dynamically import the 'open' package if available
         // Dynamic import to avoid bundling issues
-        const openModule = await import('open');
-        const open = openModule.default;
+        const openModule = await import('open' as any);
+        const open = openModule.default || openModule;
         await open(targetPath);
         console.log(`🌐 Opened report: ${targetPath}`);
       } catch {

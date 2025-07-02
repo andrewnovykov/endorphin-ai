@@ -49,7 +49,7 @@ export class TestDiscoverer {
   }
 
   /**
-   * Discover and load all test files from tests/ directory
+   * Discover and load all test files from configured tests directory
    */
   async discoverTests(): Promise<TestDiscoveryResult> {
     const startTime = Date.now();
@@ -57,29 +57,37 @@ export class TestDiscoverer {
     let totalFiles = 0;
 
     try {
-      // Check if tests directory exists
-      try {
-        await stat(this.testsDirectory);
-      } catch {
-        console.log(`📁 Tests directory not found: ${this.testsDirectory}`);
-        console.log('💡 Create a "tests/" directory and add your test files there.');
-        return {
-          tests: this.tests,
-          totalTests: 0,
-          totalFiles: 0,
-          errors: [],
-          duration: Date.now() - startTime,
-        };
+      // Use only the configured tests directory
+      const searchDirectories = [
+        this.testsDirectory
+      ];
+
+      const allTestFiles: { file: string, directory: string }[] = [];
+
+      // Search in configured directories
+      for (const directory of searchDirectories) {
+        try {
+          await stat(directory);
+          console.log(`🔍 Discovering tests in: ${directory}`);
+          
+          const files = await readdir(directory);
+          const testFiles = files.filter((file) => this.isTestFile(file));
+          
+          testFiles.forEach(file => {
+            allTestFiles.push({ file, directory });
+          });
+          
+          console.log(`📋 Found ${testFiles.length} test file(s) in ${directory}:`);
+          testFiles.forEach(file => console.log(`   📄 ${file}`));
+        } catch {
+          console.log(`📁 Directory not found: ${directory}`);
+        }
       }
 
-      console.log(`🔍 Discovering tests in: ${this.testsDirectory}`);
+      totalFiles = allTestFiles.length;
 
-      const files = await readdir(this.testsDirectory);
-      const testFiles = files.filter((file) => this.isTestFile(file));
-      totalFiles = testFiles.length;
-
-      if (testFiles.length === 0) {
-        console.log('📝 No test files found in tests/ directory');
+      if (allTestFiles.length === 0) {
+        console.log(`📝 No test files found in ${this.testsDirectory} directory`);
         console.log('💡 Add .js, .mjs, or .ts files with exported test objects');
         return {
           tests: this.tests,
@@ -90,10 +98,10 @@ export class TestDiscoverer {
         };
       }
 
-      console.log(`📋 Found ${testFiles.length} test file(s):`);
+      console.log(`📋 Found ${allTestFiles.length} test file(s) total`);
 
       // Load files concurrently with limited concurrency
-      const results = await this.loadTestFilesConcurrently(testFiles);
+      const results = await this.loadTestFilesConcurrentlyFromMultipleDirs(allTestFiles);
 
       // Collect errors
       results.forEach((result) => {
@@ -155,6 +163,35 @@ export class TestDiscoverer {
   }
 
   /**
+   * Load test files from multiple directories concurrently with limited concurrency
+   */
+  private async loadTestFilesConcurrentlyFromMultipleDirs(testFiles: { file: string, directory: string }[]): Promise<TestFileResult[]> {
+    const results: TestFileResult[] = [];
+    const maxConcurrency = this.config.maxConcurrency || 5;
+
+    for (let i = 0; i < testFiles.length; i += maxConcurrency) {
+      const batch = testFiles.slice(i, i + maxConcurrency);
+      const batchPromises = batch.map((fileInfo) => this.loadTestFileWithResultFromDir(fileInfo.file, fileInfo.directory));
+      const batchResults = await Promise.allSettled(batchPromises);
+
+      batchResults.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          results.push(result.value);
+        } else {
+          results.push({
+            filename: batch[index].file,
+            tests: [],
+            success: false,
+            error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+          });
+        }
+      });
+    }
+
+    return results;
+  }
+
+  /**
    * Load a specific test file and return result
    */
   private async loadTestFileWithResult(filename: string): Promise<TestFileResult> {
@@ -179,10 +216,51 @@ export class TestDiscoverer {
   }
 
   /**
+   * Load a specific test file from a specific directory and return result
+   */
+  private async loadTestFileWithResultFromDir(filename: string, directory: string): Promise<TestFileResult> {
+    try {
+      console.log(`   📄 ${filename} (from ${directory})`);
+      const tests = await this.loadTestFileFromDir(filename, directory);
+      return {
+        filename,
+        tests,
+        success: true,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`❌ Error loading ${filename}:`, message);
+      return {
+        filename,
+        tests: [],
+        success: false,
+        error: message,
+      };
+    }
+  }
+
+  /**
    * Load a specific test file and extract test objects
    */
   async loadTestFile(filename: string): Promise<DiscoveredTest[]> {
     const filePath = join(this.testsDirectory, filename);
+    const testsFound: DiscoveredTest[] = [];
+
+    // Handle TypeScript files by checking if tsx is available and using it
+    if (filename.endsWith('.ts') && this.config.enableTypeScript) {
+      await this.loadTypeScriptFile(filePath, filename, testsFound);
+    } else {
+      await this.loadJavaScriptFile(filePath, filename, testsFound);
+    }
+
+    return testsFound;
+  }
+
+  /**
+   * Load a specific test file from a specific directory and extract test objects
+   */
+  async loadTestFileFromDir(filename: string, directory: string): Promise<DiscoveredTest[]> {
+    const filePath = join(directory, filename);
     const testsFound: DiscoveredTest[] = [];
 
     // Handle TypeScript files by checking if tsx is available and using it
@@ -255,8 +333,23 @@ export class TestDiscoverer {
     filename: string,
     testsFound: DiscoveredTest[]
   ): void {
+    // Check default export first
+    if (module.default && this.isValidTest(module.default)) {
+      const test = module.default as TestConfig;
+      const discoveredTest: DiscoveredTest = {
+        ...test,
+        sourceFile: filename,
+        exportName: 'default',
+      };
+
+      this.tests.set(test.id, discoveredTest);
+      testsFound.push(discoveredTest);
+      console.log(`   ✓ ${test.id}: ${test.name}`);
+    }
+
+    // Check named exports
     for (const [exportName, exportValue] of Object.entries(module)) {
-      if (this.isValidTest(exportValue)) {
+      if (exportName !== 'default' && this.isValidTest(exportValue)) {
         const test = exportValue as TestConfig;
         const discoveredTest: DiscoveredTest = {
           ...test,

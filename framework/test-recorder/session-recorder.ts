@@ -116,9 +116,12 @@ export class TestRecorder {
     // Create step folder
     await fs.mkdir(stepPath, { recursive: true });
 
-    // Take BEFORE screenshot
+    // Take BEFORE screenshot using the framework's browser manager
     const beforeScreenshot = path.join(stepPath, 'before.png');
-    await this.framework.currentPage?.screenshot({ path: beforeScreenshot, fullPage: true });
+    const browserManager = this.framework.getBrowserManager();
+    if (browserManager) {
+      await browserManager.takeScreenshot({ path: beforeScreenshot, fullPage: true });
+    }
 
     // Record step info
     const stepInfo: StepInfo = {
@@ -135,7 +138,9 @@ export class TestRecorder {
     // Take AFTER screenshot (small delay to ensure DOM updates)
     await new Promise((resolve) => setTimeout(resolve, 500));
     const afterScreenshot = path.join(stepPath, 'after.png');
-    await this.framework.currentPage?.screenshot({ path: afterScreenshot, fullPage: true });
+    if (browserManager) {
+      await browserManager.takeScreenshot({ path: afterScreenshot, fullPage: true });
+    }
 
     // Save step data
     const stepDataPath = path.join(stepPath, 'step-data.json');
@@ -316,7 +321,9 @@ export const ${exportName}: TestCase = {
   "priority": "${this.testData.priority || 'Medium'}",
   "tags": ${JSON.stringify(tags, null, 4)},
   "site": "${this.testData.site}",
-  "testData": ${JSON.stringify(this.testData.testData || {}, null, 4)},
+  "data": async () => {
+    return ${JSON.stringify(this.testData.testData || {}, null, 6)};
+  },
   "task": "${taskSteps} STOP - test completed.",
   "recordingId": "${this.recordingId}",
   "recordedSteps": ${this.stepCounter}

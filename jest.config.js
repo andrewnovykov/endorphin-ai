@@ -67,11 +67,11 @@ export default {
         '<rootDir>/dist/',
       ],
       testMatch: [
-        '<rootDir>/tests/development/**/*.test.{js,ts}',
-        '<rootDir>/tests/development/**/*.spec.{js,ts}',
+        '<rootDir>/dev-tests/development/**/*.test.{js,ts}',
+        '<rootDir>/dev-tests/development/**/*.spec.{js,ts}',
       ],
-      setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-      testTimeout: 30000,
+      setupFilesAfterEnv: ['<rootDir>/dev-tests/jest-setup.js'],
+      testTimeout: 180000, // 3 minutes for integration tests
       collectCoverageFrom: [
         '<rootDir>/framework/**/*.{js,ts}',
         '!<rootDir>/framework/**/*.d.ts',
@@ -101,7 +101,7 @@ export default {
 
   // Global coverage configuration
   collectCoverage: true,
-  coverageDirectory: 'tests/development/coverage',
+  coverageDirectory: 'dev-tests/development/coverage',
   coverageReporters: ['text', 'lcov', 'html', 'json'],
   coverageThreshold: {
     global: {
@@ -124,7 +124,8 @@ export default {
     '<rootDir>/dist/',
     '<rootDir>/development-tests/',
     '<rootDir>/examples/',
-    '<rootDir>/tests/archive/**',
-    '<rootDir>/tests/package-tests/tmp/**',
+    '<rootDir>/tests/',
+    '<rootDir>/dev-tests/archive/**',
+    '<rootDir>/dev-tests/package-tests/tmp/**',
   ],
 };

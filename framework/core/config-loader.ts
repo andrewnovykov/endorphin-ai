@@ -3,11 +3,11 @@
  * Handles loading and merging of configuration from multiple sources
  */
 
-import type { AIConfig, BrowserConfig, CLIFlags, FrameworkConfig } from '../types/index.js';
 import { config as loadDotenv } from 'dotenv';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { pathToFileURL } from 'url';
+import type { AIConfig, BrowserConfig, CLIFlags, FrameworkConfig } from '../types/index.js';
 
 export class ConfigLoader {
   private defaultConfig: FrameworkConfig;

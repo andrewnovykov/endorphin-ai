@@ -42,7 +42,10 @@ export class EnhancedBrowserTestFramework {
    * Run a single task
    */
   async runTask(taskDescription: string, testName: string | null = null): Promise<TaskResult> {
-    return await this.frameworkManager.runTask(taskDescription, testName);
+    if (!this.browserEngine) {
+      throw new Error('Framework not initialized. Call initialize() first.');
+    }
+    return await this.browserEngine.runTask(taskDescription, testName);
   }
 
   /**
@@ -51,7 +54,28 @@ export class EnhancedBrowserTestFramework {
   async runMultipleTasks(
     tasks: Array<{ name?: string; description: string }>
   ): Promise<TaskResult[]> {
-    return await this.frameworkManager.runMultipleTasks(tasks);
+    if (!this.browserEngine) {
+      throw new Error('Framework not initialized. Call initialize() first.');
+    }
+
+    console.log(`\n🚀 Running ${tasks.length} tasks sequentially...\n`);
+
+    const results: TaskResult[] = [];
+    for (let i = 0; i < tasks.length; i++) {
+      const task = tasks[i];
+      const taskName = task.name || `Task-${i + 1}`;
+
+      const result = await this.browserEngine.runTask(task.description, taskName);
+      results.push(result);
+
+      // Add delay between tasks
+      if (i < tasks.length - 1) {
+        console.log('⏱️ Waiting before next task...\n');
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+
+    return results;
   }
 
   /**
@@ -60,7 +84,10 @@ export class EnhancedBrowserTestFramework {
   async runSingleTest(
     test: TestConfig
   ): Promise<{ success: boolean; session?: any; error?: string }> {
-    return await this.frameworkManager.runSingleTest(test);
+    if (!this.browserEngine) {
+      throw new Error('Framework not initialized. Call initialize() first.');
+    }
+    return await this.browserEngine.runSingleTest(test);
   }
 
   /**
@@ -76,7 +103,33 @@ export class EnhancedBrowserTestFramework {
     }>;
     report: TestReport;
   }> {
-    return await this.frameworkManager.runMultipleTests(tests);
+    if (!this.browserEngine) {
+      throw new Error('Framework not initialized. Call initialize() first.');
+    }
+
+    console.log(`\n🎯 Running ${tests.length} tests with enhanced result tracking...`);
+    const results: Array<{
+      testId: string;
+      testName: string;
+      success: boolean;
+      error?: string;
+      session?: any;
+    }> = [];
+
+    for (const test of tests) {
+      const result = await this.browserEngine.runSingleTest(test);
+      results.push({
+        testId: test.id,
+        testName: test.name,
+        ...result,
+      });
+
+      // Brief pause between tests
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    // Use framework manager for report generation only
+    return await this.frameworkManager.generateTestReport(results);
   }
 
   /**

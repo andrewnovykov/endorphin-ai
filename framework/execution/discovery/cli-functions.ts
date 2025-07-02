@@ -45,6 +45,106 @@ function safeExit(code: number): never {
 }
 
 /**
+ * Find a single test without full discovery (optimized for single test runs)
+ */
+async function findSingleTest(testId: string, config: FrameworkConfig | null = null): Promise<DiscoveredTest | null> {
+  const testsDirectory = resolve(process.cwd(), config?.testsDirectory || 'tests');
+  
+  try {
+    // Try to find the test file by common naming patterns
+    const possibleFiles = [
+      `${testId}.ts`,
+      `${testId}.js`,
+      `${testId.toLowerCase()}.ts`,
+      `${testId.toLowerCase()}.js`,
+    ];
+    
+    const { readdir } = await import('fs/promises');
+    const files = await readdir(testsDirectory);
+    
+    // First try exact file matches
+    for (const possibleFile of possibleFiles) {
+      if (files.includes(possibleFile)) {
+        console.log(`🔍 Loading test from: ${possibleFile}`);
+        return await loadSingleTestFile(possibleFile, testsDirectory, testId);
+      }
+    }
+    
+    // If not found by filename, scan all test files for the testId
+    console.log(`🔍 Scanning for test ID: ${testId}`);
+    const testFiles = files.filter(file => file.endsWith('.ts') || file.endsWith('.js'));
+    
+    for (const file of testFiles) {
+      const test = await loadSingleTestFile(file, testsDirectory, testId);
+      if (test) {
+        return test;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`❌ Error searching for test ${testId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Load a single test file and check if it contains the target test ID
+ */
+async function loadSingleTestFile(filename: string, testsDirectory: string, targetTestId: string): Promise<DiscoveredTest | null> {
+  try {
+    const filePath = resolve(testsDirectory, filename);
+    const { pathToFileURL } = await import('url');
+    
+    // Load the file
+    const fileUrl = pathToFileURL(filePath).href;
+    const module = await import(`${fileUrl}?t=${Date.now()}`);
+    
+    // Check default export
+    if (module.default && isValidTestObject(module.default) && module.default.id === targetTestId) {
+      console.log(`   ✓ Found ${targetTestId}: ${module.default.name}`);
+      return {
+        ...module.default,
+        sourceFile: filename,
+        exportName: 'default',
+      };
+    }
+    
+    // Check named exports
+    for (const [exportName, exportValue] of Object.entries(module)) {
+      if (exportName !== 'default' && isValidTestObject(exportValue) && (exportValue as any).id === targetTestId) {
+        console.log(`   ✓ Found ${targetTestId}: ${(exportValue as any).name}`);
+        return {
+          ...(exportValue as any),
+          sourceFile: filename,
+          exportName,
+        };
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    // Silently skip files that can't be loaded when scanning
+    return null;
+  }
+}
+
+/**
+ * Validate if an object is a test configuration
+ */
+function isValidTestObject(obj: unknown): boolean {
+  return (
+    obj !== null &&
+    typeof obj === 'object' &&
+    typeof (obj as any).id === 'string' &&
+    typeof (obj as any).name === 'string' &&
+    (typeof (obj as any).task === 'string' || 
+     typeof (obj as any).task === 'function' || 
+     typeof (obj as any).execute === 'function')
+  );
+}
+
+/**
  * Ensure discovery instance is created and tests are discovered
  */
 async function ensureDiscovery(config: FrameworkConfig | null = null): Promise<TestDiscoverer> {
@@ -66,23 +166,48 @@ async function ensureDiscovery(config: FrameworkConfig | null = null): Promise<T
 }
 
 /**
+ * Execute global setup once per CLI session if configured
+ */
+let globalSetupExecuted = false;
+
+async function executeGlobalSetupOnce(config: FrameworkConfig | null): Promise<void> {
+  // Skip if already executed or not configured
+  if (globalSetupExecuted || !config?.globalSetup) {
+    return;
+  }
+
+  console.log('🌍 Executing global setup...');
+  
+  try {
+    const { GlobalSetupManager } = await import('../../core/global-setup-manager.js');
+    const globalSetupManager = new GlobalSetupManager();
+    const result = await globalSetupManager.loadAndExecute(config.globalSetup);
+    
+    if (!result.success) {
+      throw new Error(`Global setup failed: ${result.error?.message || 'Unknown error'}`);
+    }
+    
+    globalSetupExecuted = true;
+    console.log(`✅ Global setup completed successfully in ${result.executionTime}ms`);
+  } catch (error: any) {
+    console.error('❌ Global setup failed:', error.message);
+    throw error; // Re-throw to fail the test session
+  }
+}
+
+/**
  * Run a single test by ID
  */
 export async function runSingleTestById(
   testId: string,
   config: FrameworkConfig | null = null
 ): Promise<DiscoveryResult> {
-  const discovery = await ensureDiscovery(config);
-  
-  // Debug: Log discovery details in test environment
-  if (isTestEnvironment()) {
-    console.log(`[DEBUG] Looking for test: ${testId}`);
-    console.log(`[DEBUG] Tests directory: ${discovery.testsDirectory}`);
-    console.log(`[DEBUG] Found tests:`, discovery.getAllTests().map(t => t.id));
-  }
-  
-  const test = discovery.getTest(testId);
+  // Execute global setup first, before any test discovery or framework initialization
+  await executeGlobalSetupOnce(config);
 
+  // For single test execution, try to find and load the specific test file first
+  const test = await findSingleTest(testId, config);
+  
   if (!test) {
     console.error(`❌ Test not found: ${testId}`);
     console.log('💡 Use "endorphin list" to see available tests');
@@ -118,6 +243,9 @@ export async function runTestsByTag(
   config: FrameworkConfig | null = null,
   options: { parallel?: number } = {}
 ): Promise<DiscoveryResult> {
+  // Execute global setup first, before any test discovery or framework initialization
+  await executeGlobalSetupOnce(config);
+
   const discovery = await ensureDiscovery(config);
   const allTests = discovery.getTestsByTag(tag);
 
@@ -172,6 +300,9 @@ export async function runTestsByPriority(
   config: FrameworkConfig | null = null,
   options: { parallel?: number } = {}
 ): Promise<DiscoveryResult> {
+  // Execute global setup first, before any test discovery or framework initialization
+  await executeGlobalSetupOnce(config);
+
   const discovery = await ensureDiscovery(config);
   const allTests = discovery.getTestsByPriority(priority);
 
@@ -225,6 +356,9 @@ export async function runAllTests(
   config: FrameworkConfig | null = null,
   options: { parallel?: number } = {}
 ): Promise<DiscoveryResult> {
+  // Execute global setup first, before any test discovery or framework initialization
+  await executeGlobalSetupOnce(config);
+
   const discovery = await ensureDiscovery(config);
   const allTests = discovery.getAllTests();
 
@@ -319,6 +453,13 @@ export async function getDiscoveryStatistics(config: FrameworkConfig | null = nu
  */
 export function clearDiscoveryCache(): void {
   discoveryInstance = null;
+}
+
+/**
+ * Clear global setup state (for testing purposes)
+ */
+export function clearGlobalSetupState(): void {
+  globalSetupExecuted = false;
 }
 
 /**

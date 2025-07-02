@@ -1,48 +1,31 @@
-# Endorphin AI - Test artifacts (should be in tmp/ or user projects only)
-test-results/
-test-recorder/
-
-# Environment and config files
-.env
-.env.*
-endorphin.config.js
-endorphin.config.ts
-
-# Temporary test artifacts in main root (should not be committed)
-/endorphin.config.*
-/test-results/
-/test-recorder/
-
-# Build artifacts and distribution files
-dist/
-*.tgz
-endorphin-ai-*.tgz
-
-# Test coverage reports  
-tests/development/coverage/
-coverage/
-.nyc_output
-
-# Package test results
-tests/package-tests/results/
-tests/package-tests/tmp/
-
 # Dependencies
 node_modules/
-package-lock.json
+
+# Environment variables
+.env
+
+# Test results
+test-results/
+test-recorder/
 
 # Logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
 
 # Runtime data
 pids
 *.pid
 *.seed
-*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+dev-tests/development/coverage/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # OS generated files
 .DS_Store
@@ -52,25 +35,3 @@ pids
 .Trashes
 ehthumbs.db
 Thumbs.db
-
-# Temporary directories
-tmp/
-temp/
-.tmp/
-.temp/
-
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Playwright
-test-results/
-playwright-report/
-playwright/.cache/
-
-# Local testing artifacts
-/test-install-*/
-/endorphin-test-*/

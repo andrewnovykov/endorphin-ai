@@ -252,10 +252,10 @@ export class TestRunner {
   /**
    * Run tests with specified options
    */
-  runTests(
+  async runTests(
     tests: DiscoveredTest[],
     options: TestExecutionOptions = {}
-  ): DiscoveryResult {
+  ): Promise<DiscoveryResult> {
     const { parallel = false, workers = 2, timeout = 30000, retries: _retries = 0 } = options;
 
     // Apply timeout if specified
@@ -272,16 +272,16 @@ export class TestRunner {
     }
 
     if (parallel && workers > 1) {
-      return this.runTestsInParallel(tests, workers);
+      return await this.runTestsInParallel(tests, workers);
     } else {
-      return this.runTestsSequentially(tests);
+      return await this.runTestsSequentially(tests);
     }
   }
 
   /**
    * Run tests by specific criteria
    */
-  runTestsByCriteria(
+  async runTestsByCriteria(
     allTests: DiscoveredTest[],
     criteria: {
       tags?: string[];
@@ -291,7 +291,7 @@ export class TestRunner {
       pattern?: string;
     },
     options: TestExecutionOptions = {}
-  ): DiscoveryResult {
+  ): Promise<DiscoveryResult> {
     let filteredTests = allTests;
 
     // Filter by test IDs
@@ -339,7 +339,7 @@ export class TestRunner {
     });
     console.log('');
 
-    return this.runTests(filteredTests, options);
+    return await this.runTests(filteredTests, options);
   }
 
   /**

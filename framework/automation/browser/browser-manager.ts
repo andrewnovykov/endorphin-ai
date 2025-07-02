@@ -26,6 +26,12 @@ export class BrowserManager {
    * Initialize browser, context, and page
    */
   async initialize(): Promise<void> {
+    // Skip if already initialized
+    if (this.browser && this.context && this.page) {
+      this.logger.debug('Browser already initialized, reusing existing instance');
+      return;
+    }
+
     this.logger.info('Initializing browser');
 
     const browserType = this.getBrowserType();
@@ -115,11 +121,19 @@ export class BrowserManager {
     try {
       const screenshotOptions: any = {
         fullPage: options?.fullPage ?? true,
-        quality: options?.quality ?? 90,
       };
 
       if (options?.path) {
         screenshotOptions.path = options.path;
+        // Only set quality for JPEG images (PNG doesn't support quality)
+        const isJpeg = options.path.toLowerCase().includes('.jpg') || options.path.toLowerCase().includes('.jpeg');
+        if (isJpeg && options?.quality) {
+          screenshotOptions.quality = options.quality;
+        }
+      } else if (options?.quality) {
+        // Default to JPEG when quality is specified but no path
+        screenshotOptions.quality = options.quality;
+        screenshotOptions.type = 'jpeg';
       }
 
       const screenshot = await page.screenshot(screenshotOptions);
@@ -171,6 +185,8 @@ export class BrowserManager {
   async closePage(): Promise<void> {
     if (this.page) {
       this.logger.debug('Closing page');
+      // Remove event listeners before closing
+      this.removePageEventHandlers(this.page);
       await this.page.close();
       this.page = null;
       this.logger.debug('Page closed');
@@ -183,6 +199,10 @@ export class BrowserManager {
   async closeContext(): Promise<void> {
     if (this.context) {
       this.logger.debug('Closing browser context');
+      // Clean up page event listeners if page still exists
+      if (this.page) {
+        this.removePageEventHandlers(this.page);
+      }
       await this.context.close();
       this.context = null;
       this.page = null;
@@ -322,6 +342,9 @@ export class BrowserManager {
     const targetPage = page || this.page;
     if (!targetPage) return;
 
+    // Clear existing listeners first to prevent duplicates
+    this.removePageEventHandlers(targetPage);
+
     // Handle console messages
     targetPage.on('console', (msg) => {
       const level = msg.type();
@@ -358,5 +381,19 @@ export class BrowserManager {
         });
       }
     });
+  }
+
+  /**
+   * Remove page event handlers to prevent memory leaks
+   */
+  private removePageEventHandlers(page: Page): void {
+    try {
+      page.removeAllListeners('console');
+      page.removeAllListeners('pageerror');
+      page.removeAllListeners('requestfailed');
+      page.removeAllListeners('response');
+    } catch (error) {
+      // Ignore errors when removing listeners (page might be closed)
+    }
   }
 }

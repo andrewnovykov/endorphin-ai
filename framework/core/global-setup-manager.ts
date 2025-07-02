@@ -61,14 +61,21 @@ export class GlobalSetupManager {
     }
 
     const startTime = Date.now();
-    log.info('Executing global setup...');
+    log.info('🚀 Executing global setup...');
+    if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
+      console.log('🔧 Global setup starting execution...');
+    }
 
     try {
       // Execute the setup function
       await this.setupFunction();
 
       const executionTime = Date.now() - startTime;
-      log.info(`Global setup completed successfully in ${executionTime}ms`);
+      log.info(`✅ Global setup completed successfully in ${executionTime}ms`);
+      if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
+        console.log(`✅ Global setup completed successfully!`);
+        console.log(`⏱️ Execution time: ${executionTime}ms`);
+      }
 
       return {
         success: true,
@@ -77,7 +84,12 @@ export class GlobalSetupManager {
       } as GlobalSetupResult;
     } catch (error: any) {
       const executionTime = Date.now() - startTime;
-      log.error(`Global setup failed after ${executionTime}ms`, error);
+      log.error(`❌ Global setup failed after ${executionTime}ms`, error);
+      if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
+        console.error(`❌ Global setup failed!`);
+        console.error(`⏱️ Failed after: ${executionTime}ms`);
+        console.error(`💥 Error:`, error);
+      }
 
       return {
         success: false,

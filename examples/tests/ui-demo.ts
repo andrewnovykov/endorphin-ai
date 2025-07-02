@@ -10,7 +10,7 @@ const uiDemoTest: TestCase = {
   id: 'UI-DEMO-001',
   name: 'Custom Tools Demo',
   description: 'Demonstrates using custom tools and AI-generated test data',
-  priority: 'medium',
+  priority: 'Medium',
   tags: ['demo', 'custom-tools', 'ui'],
 
   // Setup function - runs before test execution
@@ -44,18 +44,18 @@ const uiDemoTest: TestCase = {
     };
   },
 
-  task: `
-    Navigate to https://qafromla.herokuapp.com/
+  task: async (data, setupData) => {
+    return `
+      Navigate to ${setupData?.testUrl || 'https://qafromla.herokuapp.com/'}
 
-    Click on login button 
-    
-    Use the generated test credentials for login:
-    - Use the email from generated data
-    - Use the password from generated data
-    
-    Click on sign in button 
-    Verify the username from generated data is visible 
-  `,
+      Click on login button 
+      
+      Log into a website using email: ${data?.credentials?.email || 'test@example.com'} and password: ${data?.credentials?.password || 'password123'}
+      
+      Click on sign in button 
+      Verify the username ${data?.credentials?.username || 'test user'} from generated data is visible 
+    `;
+  },
 };
 
 export default uiDemoTest;

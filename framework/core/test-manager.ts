@@ -329,7 +329,9 @@ export default {
   priority: "${testData.priority || 'Medium'}",
   tags: ${JSON.stringify(testData.tags || ['general'])},
   site: "${testData.site || 'https://qafromla.herokuapp.com/'}",
-  ${testData.testData ? `testData: ${JSON.stringify(testData.testData, null, 2)},` : ''}
+  data: async () => {
+    return ${JSON.stringify(testData.testData || {}, null, 4)};
+  },
   task: \`${testData.task}\`
 };`;
 

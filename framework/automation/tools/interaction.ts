@@ -36,13 +36,32 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
 
       const stepDesc = `Click ${selector} using ${strategy} strategy`;
       console.log(`🔘 ${stepDesc}`);
+      
+      // Debug logging for custom tool calls
+      if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
+        console.log(`🔧 Custom tool called! Name: click, Parameters:`, {
+          selector,
+          strategy,
+          timeout,
+          force
+        });
+      }
 
       try {
         let locator;
 
         switch (strategy) {
           case 'text':
-            locator = framework.currentPage!.getByText(selector, { exact: false });
+            // First try to find a button with this text to avoid strict mode violations
+            const buttonLocator = framework.currentPage!.locator('button').filter({ hasText: selector });
+            const buttonCount = await buttonLocator.count();
+            if (buttonCount > 0) {
+              console.log(`🎯 Found ${buttonCount} button(s) with text "${selector}", using button strategy`);
+              locator = buttonLocator.first();
+            } else {
+              // Fallback to general text search
+              locator = framework.currentPage!.getByText(selector, { exact: false });
+            }
             break;
           case 'exact-text':
             locator = framework.currentPage!.getByText(selector, { exact: true });
@@ -94,6 +113,12 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
           result,
           true
         );
+        
+        // Debug logging for successful tool completion
+        if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
+          console.log(`✅ Custom tool completed! Name: click, Result: ${result}`);
+        }
+        
         return result;
       } catch (error: any) {
         await framework.takeStepScreenshot(`Failed to click ${selector}`);
@@ -104,6 +129,12 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
           error.message,
           false
         );
+        
+        // Debug logging for failed tool execution
+        if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
+          console.error(`❌ Custom tool failed! Name: click, Error: ${error.message}`);
+        }
+        
         return `❌ Error clicking ${selector}: ${error.message}`;
       }
     },
@@ -152,44 +183,100 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
       console.log(`📝 ${stepDesc}`);
 
       try {
-        await framework.currentPage!.waitForSelector(selector, {
+        // Try multiple strategies for common field types
+        let finalSelector = selector;
+        let locator;
+        
+        // For email fields, try multiple selectors
+        if (selector.includes('email')) {
+          const emailSelectors = [
+            'input[type="email"]',
+            'input[name*="email"]', 
+            'input[placeholder*="email"]',
+            '#email',
+            '.email-input',
+            selector // original selector as fallback
+          ];
+          
+          for (const sel of emailSelectors) {
+            try {
+              locator = framework.currentPage!.locator(sel);
+              if (await locator.count() > 0) {
+                finalSelector = sel;
+                console.log(`📧 Found email field using selector: ${sel}`);
+                break;
+              }
+            } catch {}
+          }
+        }
+        // For password fields, try multiple selectors  
+        else if (selector.includes('password')) {
+          const passwordSelectors = [
+            'input[type="password"]',
+            'input[name*="password"]',
+            'input[placeholder*="password"]', 
+            '#password',
+            '.password-input',
+            selector // original selector as fallback
+          ];
+          
+          for (const sel of passwordSelectors) {
+            try {
+              locator = framework.currentPage!.locator(sel);
+              if (await locator.count() > 0) {
+                finalSelector = sel;
+                console.log(`🔒 Found password field using selector: ${sel}`);
+                break;
+              }
+            } catch {}
+          }
+        }
+
+        await framework.currentPage!.waitForSelector(finalSelector, {
           state: 'visible',
           timeout: 10000,
         });
 
         if (clearFirst) {
-          // Focus and clear the field properly
-          await framework.currentPage!.focus(selector);
-          await framework.currentPage!.keyboard.press('Control+a');
-          await framework.currentPage!.keyboard.press('Delete');
-
-          // Wait a moment for the field to clear
-          await framework.currentPage!.waitForTimeout(100);
+          // Use the more reliable locator-based clearing approach
+          const locator = framework.currentPage!.locator(finalSelector);
+          await locator.clear();
+          
+          // Wait a moment for the field to clear and verify it's empty
+          await framework.currentPage!.waitForTimeout(200);
+          
+          // Double-check clearing worked by trying alternative method if needed
+          const currentValue = await locator.inputValue();
+          if (currentValue && currentValue.length > 0) {
+            console.log(`⚠️ Field still contains "${currentValue}", trying alternative clearing...`);
+            await locator.fill(''); // Force empty
+            await framework.currentPage!.waitForTimeout(100);
+          }
         }
 
         if (strategy === 'type') {
-          await framework.currentPage!.type(selector, value, { delay: 50 });
+          await framework.currentPage!.type(finalSelector, value, { delay: 50 });
         } else {
-          await framework.currentPage!.fill(selector, value);
+          await framework.currentPage!.fill(finalSelector, value);
         }
 
         if (pressEnter) {
           await framework.currentPage!.keyboard.press('Enter');
         }
 
-        await framework.takeStepScreenshot(`After filling ${selector}`);
+        await framework.takeStepScreenshot(`After filling ${finalSelector}`);
 
         // Verify the value was set correctly
-        const actualValue = await framework.currentPage!.locator(selector).inputValue();
+        const actualValue = await framework.currentPage!.locator(finalSelector).inputValue();
         const success = actualValue === value;
         const result = success
-          ? `Successfully filled ${selector} with "${value}"`
-          : `Filled ${selector} but value is "${actualValue}" instead of "${value}"`;
+          ? `Successfully filled ${finalSelector} with "${value}"`
+          : `Filled ${finalSelector} but value is "${actualValue}" instead of "${value}"`;
 
         framework.logTestStep(
           stepDesc,
           'fill',
-          { selector, value, strategy, clearFirst, pressEnter },
+          { selector: finalSelector, value, strategy, clearFirst, pressEnter },
           result,
           success
         );

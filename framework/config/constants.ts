@@ -9,7 +9,7 @@ export const TIMEOUTS = {
   LONG_WAIT: 5000,
   ELEMENT_WAIT: 30000,
   PAGE_LOAD: 60000,
-  AGENT_TIMEOUT: 300000, // 5 minutes
+  AGENT_TIMEOUT: 900000, // 15 minutes - allow more time for step-by-step execution
   NETWORK_TIMEOUT: 30000,
   FILE_OPERATION_TIMEOUT: 10000,
   SCREENSHOT_TIMEOUT: 5000,

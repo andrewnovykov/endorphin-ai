@@ -4,6 +4,10 @@
  * Endorphin AI CLI - E2E Testing Reinvented with AI
  */
 
+// Configure Node.js event system to handle more listeners (prevents memory leak warnings)
+import { EventEmitter } from 'node:events';
+EventEmitter.defaultMaxListeners = 50;
+
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';

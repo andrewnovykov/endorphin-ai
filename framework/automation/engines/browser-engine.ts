@@ -13,6 +13,7 @@ import { PageSnapshotManager } from '../../managers/content/snapshot-manager.js'
 import { ResourceManager, globalResourceManager } from '../../core/resource-manager.js';
 import { createTestSession, saveTestSession } from '../../core/test-session.js';
 import { TokenTracker } from '../../core/token-tracker.js';
+import { GlobalSetupManager } from '../../core/global-setup-manager.js';
 import { createAllTools } from '../tools/index.js';
 import type {
   AgentInvokeParams,
@@ -26,10 +27,15 @@ import type {
   TaskResult,
   TestConfig,
   TestSession,
+  TestTaskFunction,
   ToolCall,
 } from '../../types/index.js';
 import { DirectoryManager } from '../../utils/directory-manager.js';
 import { TestHelpers } from '../../utils/test-helpers.js';
+import { EventEmitter } from 'node:events';
+
+// Increase max listeners to prevent memory leak warnings during test execution
+EventEmitter.defaultMaxListeners = 30;
 
 /**
  * Browser Test Engine Configuration
@@ -59,6 +65,8 @@ export class BrowserEngine {
   private snapshotManager: PageSnapshotManager;
   private resourceManager: ResourceManager;
   private frameworkInstance: any; // Reference to EnhancedBrowserTestFramework
+  private globalSetupManager: GlobalSetupManager;
+  private globalSetupExecuted: boolean = false;
 
   constructor(config: BrowserEngineConfig) {
     this.config = config.framework;
@@ -81,6 +89,9 @@ export class BrowserEngine {
 
     // Initialize resource manager for memory leak prevention
     this.resourceManager = globalResourceManager;
+
+    // Initialize global setup manager
+    this.globalSetupManager = new GlobalSetupManager();
   }
 
   /**
@@ -207,12 +218,7 @@ export class BrowserEngine {
 
     console.log(`🤖 ${stepDescription} (estimated: ${estimatedPromptTokens} tokens)`);
 
-    // Create AbortController with proper cleanup to prevent EventTarget memory leak
-    const abortController = this.resourceManager.createAbortController(`agent-${Date.now()}`);
-    const enhancedConfig = {
-      ...config,
-      signal: abortController.signal,
-    };
+    // No AbortController - let the agent run naturally without forced interruption
 
     const startTime = Date.now();
     let result: AgentResponse;
@@ -222,10 +228,9 @@ export class BrowserEngine {
         throw new AgentError('Agent not initialized', { stepDescription });
       }
 
-      result = await this.agent.invoke(messages, enhancedConfig);
+      result = await this.agent.invoke(messages, config);
     } catch (error) {
-      // Ensure cleanup happens even on error
-      abortController.abort();
+      // Handle error without AbortController cleanup
 
       const frameworkError = createErrorFromUnknown(
         error,
@@ -240,8 +245,8 @@ export class BrowserEngine {
 
     const duration = Date.now() - startTime;
 
-    // Clean up the abort controller
-    abortController.abort();
+    // Clean up the abort controller without aborting (just for memory cleanup)
+    // Only abort in error cases, not on successful completion
 
     // Estimate response tokens from properly typed response
     const responseContent =
@@ -383,8 +388,50 @@ export class BrowserEngine {
         true
       );
 
+      // Global setup is now executed at CLI level before framework initialization
+
+      // Execute setup function if present
+      let setupData: any = null;
+      if (test.setup && typeof test.setup === 'function') {
+        if (useDetailedLogs) {
+          console.log(`🔧 Executing test setup...`);
+        }
+        setupData = await test.setup();
+        this.logTestStep('Test setup completed', null, null, 'Setup data generated', true);
+      }
+
+      // Execute data generation function if present
+      let generatedData: any = null;
+      if (test.data) {
+        if (typeof test.data === 'function') {
+          if (useDetailedLogs) {
+            console.log(`📊 Generating test data...`);
+          }
+          generatedData = await test.data();
+          this.logTestStep('Test data generated', null, null, 'Data generation completed', true);
+        } else {
+          generatedData = test.data;
+        }
+      }
+
+      // Process task - support both string and function
+      let taskDescription: string;
+      if (typeof test.task === 'function') {
+        if (useDetailedLogs) {
+          console.log(`🎯 Executing task function with generated data...`);
+        }
+        taskDescription = await test.task(generatedData, setupData);
+        this.logTestStep('Task function executed', null, null, 'Task description generated', true);
+      } else {
+        taskDescription = test.task;
+      }
+
+      if (useDetailedLogs) {
+        console.log(`📝 Final task description: ${taskDescription}`);
+      }
+
       // Execute the test task with timeout
-      const messages = [new HumanMessage(test.task)];
+      const messages = [new HumanMessage(taskDescription)];
 
       // Add timeout to prevent infinite loops
       const timeoutPromise = new Promise((_, reject) => {
@@ -509,7 +556,10 @@ export class BrowserEngine {
       await this.browserManager.cleanup();
 
       // Force cleanup of any remaining resources to prevent memory leaks
-      this.resourceManager.cleanup();
+      await this.resourceManager.disposeAll();
+      
+      // Reset global setup flag for future tests
+      this.globalSetupExecuted = false;
     } catch (error) {
       const cleanupError = createErrorFromUnknown(error, 'Cleanup failed', {
         component: 'BrowserEngine',
@@ -547,5 +597,31 @@ export class BrowserEngine {
 
   getSnapshotManager(): PageSnapshotManager {
     return this.snapshotManager;
+  }
+
+  /**
+   * Execute global setup if configured and not already executed
+   */
+  private async executeGlobalSetupIfNeeded(): Promise<void> {
+    // Skip if already executed or not configured
+    if (this.globalSetupExecuted || !this.config.globalSetup) {
+      return;
+    }
+
+    console.log('🌍 Executing global setup...');
+    
+    try {
+      const result = await this.globalSetupManager.loadAndExecute(this.config.globalSetup);
+      
+      if (!result.success) {
+        throw new Error(`Global setup failed: ${result.error?.message || 'Unknown error'}`);
+      }
+      
+      this.globalSetupExecuted = true;
+      console.log(`✅ Global setup completed successfully in ${result.executionTime}ms`);
+    } catch (error: any) {
+      console.error('❌ Global setup failed:', error.message);
+      throw error; // Re-throw to fail the test
+    }
   }
 }

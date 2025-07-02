@@ -7,7 +7,7 @@ import { EnhancedBrowserTestFramework } from '../index.js';
 import type { FrameworkConfig } from '../types/index.js';
 import dotenv from 'dotenv';
 import readline from 'readline';
-import { TestRecorder } from './session-recorder';
+import { TestRecorder } from './session-recorder.js';
 
 // Load environment variables
 dotenv.config();
@@ -70,37 +70,22 @@ async function collectTestData(): Promise<TestData | null> {
   const site = await askQuestion(`Site URL [${defaultSite}]: `);
   testData.site = site || defaultSite;
 
-  // Collect test data object
-  console.log('\n🔧 Test Data (for form filling, login, etc.)');
-  console.log('Press Enter to skip any field');
+  // Collect test data object - only key-value pairs
+  console.log('\n🔧 Test Data (key=value format)');
+  console.log('Enter key=value pairs, or press Enter to finish');
 
   const testDataObj: Record<string, any> = {};
 
-  const uid = await askQuestion('User ID: ');
-  if (uid) testDataObj.uid = uid;
-
-  const email = await askQuestion('Email: ');
-  if (email) testDataObj.email = email;
-
-  const password = await askQuestion('Password: ');
-  if (password) testDataObj.password = password;
-
-  const firstName = await askQuestion('First Name: ');
-  if (firstName) testDataObj.firstName = firstName;
-
-  const lastName = await askQuestion('Last Name: ');
-  if (lastName) testDataObj.lastName = lastName;
-
-  // Add any additional custom fields
-  console.log('\nAdd custom fields (key=value format, or press Enter to finish):');
   while (true) {
-    const customField = await askQuestion('Custom field (key=value): ');
+    const customField = await askQuestion('Key=value (or Enter to finish): ');
     if (!customField) break;
 
     const [key, ...valueParts] = customField.split('=');
     const value = valueParts.join('=');
     if (key && value) {
       testDataObj[key.trim()] = value.trim();
+    } else {
+      console.log('⚠️ Invalid format. Use: key=value');
     }
   }
 
@@ -154,16 +139,16 @@ export async function runInteractiveRecorder(config: Partial<FrameworkConfig> = 
     // Start recording
     await recorder.startRecording();
 
-    // Navigate to the site using the tools
+    // Navigate to the site using the framework's runTask method
     console.log(`\n🌐 Navigating to: ${testData.site}`);
-    await framework.currentPage?.goto(testData.site);
+    const navResult = await framework.runTask(`Navigate to ${testData.site}`, 'navigation');
 
     // Record the navigation step
     await recorder.recordStep(
       `Navigate to ${testData.site}`,
       'navigate',
       { url: testData.site },
-      'Navigation completed'
+      navResult.result || 'Navigation completed'
     );
 
     console.log('\n💬 Ready for interactive commands!');

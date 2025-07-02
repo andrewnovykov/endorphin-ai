@@ -98,7 +98,7 @@
     "**/node_modules/**",
     "**/*.min.js",
     "**/templates/scripts.js",
-    "tests/package-tests/tmp/**",
+    "dev-tests/package-tests/tmp/**",
     "examples/endorphin.config.js",
     "examples/tests/sample-test.js"
   ],
