@@ -7,6 +7,7 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { AGENT_CONFIG } from './config/agent-config.js';
+import { trackAICall } from './agent-setup.js';
 /**
  * Validation Agent - Analyzes test execution to determine pass/fail
  */
@@ -74,24 +75,39 @@ Provide your analysis in the specified JSON format.`;
                 const promptTokens = this.tokenTracker.estimateTokens(systemPrompt + prompt);
                 console.log(`🧠 Validation Agent: Estimated ${promptTokens} input tokens`);
             }
+            const startTime = Date.now();
             const response = await this.model.invoke([
                 systemMessage,
                 humanMessage,
             ]);
+            const duration = Date.now() - startTime;
             const content = response.content;
-            // Record actual token usage if available in response metadata
+            // Record token usage and track in agent history
+            let tokenUsage;
             if (this.tokenTracker && response.usage_metadata) {
                 const usage = response.usage_metadata;
-                const tokenUsage = this.tokenTracker.recordUsage(usage.input_tokens || 0, usage.output_tokens || 0, 'gpt-4o');
-                console.log(`💰 Validation Agent used ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)})`);
+                tokenUsage = this.tokenTracker.recordUsage(usage.input_tokens || 0, usage.output_tokens || 0, 'gpt-4o');
             }
             else if (this.tokenTracker) {
                 // Fallback: estimate tokens if usage metadata not available
                 const promptTokens = this.tokenTracker.estimateTokens(systemPrompt + prompt);
                 const responseTokens = this.tokenTracker.estimateTokens(content);
-                const tokenUsage = this.tokenTracker.recordUsage(promptTokens, responseTokens, 'gpt-4o');
-                console.log(`💰 Validation Agent used ~${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) [estimated]`);
+                tokenUsage = this.tokenTracker.recordUsage(promptTokens, responseTokens, 'gpt-4o');
             }
+            else {
+                // Create basic token usage if no tracker
+                const estimatedPrompt = Math.ceil((systemPrompt + prompt).length / 4);
+                const estimatedResponse = Math.ceil(content.length / 4);
+                tokenUsage = {
+                    promptTokens: estimatedPrompt,
+                    responseTokens: estimatedResponse,
+                    totalTokens: estimatedPrompt + estimatedResponse,
+                    cost: (estimatedPrompt * 0.005 + estimatedResponse * 0.015) / 1000,
+                    model: 'gpt-4o'
+                };
+            }
+            // Track this AI call in agent history
+            trackAICall('Validation Agent', systemPrompt + '\n\n' + prompt, content, tokenUsage, duration, 'Test result validation and analysis');
             // Parse JSON response
             const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (jsonMatch) {

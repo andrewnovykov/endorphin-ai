@@ -135,7 +135,13 @@ export class BrowserEngine {
    */
   private async setupAgent(): Promise<void> {
     console.log('🤖 Setting up AI agent...');
+    const { setupAgent, setCurrentTestSession } = await import('../../ai/agent-setup.js');
     this.agent = await setupAgent(this.toolsArray);
+    
+    // Set the current session for token tracking
+    if (this.currentTestSession) {
+      setCurrentTestSession(this.currentTestSession);
+    }
   }
 
   /**
@@ -147,6 +153,10 @@ export class BrowserEngine {
 
     // Reset token tracker for new session
     this.tokenTracker.reset();
+
+    // Set the current session for agent token tracking
+    const { setCurrentTestSession } = await import('../../ai/agent-setup.js');
+    setCurrentTestSession(session);
 
     return session;
   }
@@ -169,6 +179,8 @@ export class BrowserEngine {
       isSuccess,
       this.currentTestSession || undefined
     );
+
+    // Token usage tracking is now handled by the centralized trackAICall system
 
     // Add tool call tracking if needed
     if (toolName && this.currentTestSession) {
@@ -271,17 +283,7 @@ export class BrowserEngine {
       `💰 Token Usage: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`
     );
 
-    // Add token usage to current test step if exists
-    if (this.currentTestSession && this.currentTestSession.steps.length > 0) {
-      const currentStep = this.currentTestSession.steps[this.currentTestSession.steps.length - 1];
-      currentStep.tokenUsage = {
-        promptTokens: tokenUsage.promptTokens,
-        responseTokens: tokenUsage.responseTokens,
-        totalTokens: tokenUsage.totalTokens,
-        cost: tokenUsage.cost,
-        model: tokenUsage.model,
-      };
-    }
+    // Agent history tracking is now handled by the centralized trackAICall system in agent-setup.ts
 
     return result;
   }
@@ -304,11 +306,8 @@ export class BrowserEngine {
       // Log initial step
       this.logTestStep('Test started', null, null, `Starting task: ${taskDescription}`, true);
       
-      // Skip screenshots in interactive recorder mode to avoid duplicates
-      const isInteractiveMode = name.includes('Interactive-Step-');
-      if (!isInteractiveMode) {
-        await this.takeStepScreenshot('Initial page state');
-      }
+      // Always take screenshot for first step (important evidence)
+      await this.takeStepScreenshot('Initial page state');
 
       // Create enhanced context message for the agent
       const systemContext = createSystemContext(taskDescription);
@@ -329,10 +328,8 @@ export class BrowserEngine {
       // Log final step
       this.logTestStep('Test completed', null, null, result, true);
       
-      // Skip screenshots in interactive recorder mode to avoid duplicates
-      if (!isInteractiveMode) {
-        await this.takeStepScreenshot('Final page state');
-      }
+      // Always take screenshot for last step (important evidence)
+      await this.takeStepScreenshot('Final page state');
 
       // Finish session
       await this.finishTestSession('SUCCESS', result);

@@ -81,6 +81,7 @@ export interface TestSession {
   screenshotsDir: string;
   steps: TestStep[];
   toolCalls: ToolCall[];
+  agentHistory: AgentHistoryEntry[]; // AI decision process tracking
   stepCounter: number;
   screenshotCounter: number;
   status: 'RUNNING' | 'SUCCESS' | 'FAILED';
@@ -96,6 +97,23 @@ export interface TestSession {
   };
   setupResult?: TestSetupResult; // Test setup execution result
   dataGenerationResult?: DataGenerationResult; // Test data generation execution result
+}
+
+export interface AgentHistoryEntry {
+  historyId: number;
+  timestamp: string;
+  thinking: string; // What the agent was thinking about
+  prompt: string; // The actual prompt sent to the AI
+  response: string; // The AI's response
+  tokenUsage: {
+    promptTokens: number;
+    responseTokens: number;
+    totalTokens: number;
+    cost: number;
+    model: string;
+  };
+  duration: number; // How long the AI call took
+  context?: string; // Additional context about what triggered this AI call
 }
 
 export interface TestStep {

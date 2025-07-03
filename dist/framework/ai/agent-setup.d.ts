@@ -17,6 +17,21 @@
  * - Supports both positive (test passed) and negative (test failed) scenarios
  * - Prevents premature test termination after individual step completion
  */
+import type { TestSession } from '../types/test.js';
+/**
+ * Set the current test session for token tracking
+ */
+export declare function setCurrentTestSession(session: TestSession | null): void;
+/**
+ * Global function to track any AI call in the agent history
+ */
+export declare function trackAICall(callType: string, prompt: string, response: string, tokenUsage: {
+    promptTokens: number;
+    responseTokens: number;
+    totalTokens: number;
+    cost: number;
+    model: string;
+}, duration: number, context?: string): void;
 interface AgentWorkflow {
     invoke(input: any, config?: {
         configurable?: {

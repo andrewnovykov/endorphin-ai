@@ -173,6 +173,62 @@ body {
   font-size: 0.75rem;
 }
 
+.timeline-token-usage {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: #e3f2fd;
+  border-left: 3px solid #2196f3;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  color: #0d47a1;
+}
+
+/* Agent History Timeline Styles */
+.agent-history-item {
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: 1.5rem;
+  border-left: 2px solid #9c27b0;
+}
+
+.agent-history-item::before {
+  content: '🧠';
+  position: absolute;
+  left: -0.8rem;
+  top: 0.5rem;
+  background: white;
+  border-radius: 50%;
+  padding: 0.3rem;
+  font-size: 1rem;
+  box-shadow: 0 0 0 2px #9c27b0;
+}
+
+.agent-history-content {
+  background: #f3e5f5;
+  border: 1px solid #ce93d8;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.agent-thinking {
+  background-color: #fce4ec;
+  border-left: 3px solid #e91e63;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  border-radius: 0.25rem;
+  font-style: italic;
+}
+
+.agent-token-info {
+  background-color: #fff3e0;
+  border-left: 3px solid #ff9800;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+}
+
 /* Screenshots Gallery */
 .screenshots-gallery {
   display: flex;

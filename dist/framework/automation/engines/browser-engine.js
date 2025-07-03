@@ -6,7 +6,6 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { AGENT_CONFIG } from '../../ai/config/agent-config.js';
 import { TIMEOUTS } from '../../config/constants.js';
 import { createSystemContext } from '../../config/system-context.js';
-import { setupAgent } from '../../ai/agent-setup.js';
 import { BrowserManager } from '../browser/browser-manager.js';
 import { PageSnapshotManager } from '../../managers/content/snapshot-manager.js';
 import { globalResourceManager } from '../../core/resource-manager.js';
@@ -89,7 +88,12 @@ export class BrowserEngine {
      */
     async setupAgent() {
         console.log('🤖 Setting up AI agent...');
+        const { setupAgent, setCurrentTestSession } = await import('../../ai/agent-setup.js');
         this.agent = await setupAgent(this.toolsArray);
+        // Set the current session for token tracking
+        if (this.currentTestSession) {
+            setCurrentTestSession(this.currentTestSession);
+        }
     }
     /**
      * Create a new test session
@@ -99,6 +103,9 @@ export class BrowserEngine {
         this.currentTestSession = session;
         // Reset token tracker for new session
         this.tokenTracker.reset();
+        // Set the current session for agent token tracking
+        const { setCurrentTestSession } = await import('../../ai/agent-setup.js');
+        setCurrentTestSession(session);
         return session;
     }
     /**
@@ -106,6 +113,7 @@ export class BrowserEngine {
      */
     logTestStep(stepDescription, toolName = null, toolArgs = null, result = null, isSuccess = true) {
         TestHelpers.logTestStep(stepDescription, toolName, toolArgs, result || '', isSuccess, this.currentTestSession || undefined);
+        // Token usage tracking is now handled by the centralized trackAICall system
         // Add tool call tracking if needed
         if (toolName && this.currentTestSession) {
             const toolCall = {
@@ -171,17 +179,7 @@ export class BrowserEngine {
         const tokenUsage = this.tokenTracker.recordUsage(estimatedPromptTokens, estimatedResponseTokens, this.config.ai?.openai?.modelName);
         // Log token usage with enhanced formatting
         console.log(`💰 Token Usage: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`);
-        // Add token usage to current test step if exists
-        if (this.currentTestSession && this.currentTestSession.steps.length > 0) {
-            const currentStep = this.currentTestSession.steps[this.currentTestSession.steps.length - 1];
-            currentStep.tokenUsage = {
-                promptTokens: tokenUsage.promptTokens,
-                responseTokens: tokenUsage.responseTokens,
-                totalTokens: tokenUsage.totalTokens,
-                cost: tokenUsage.cost,
-                model: tokenUsage.model,
-            };
-        }
+        // Agent history tracking is now handled by the centralized trackAICall system in agent-setup.ts
         return result;
     }
     /**
@@ -198,11 +196,8 @@ export class BrowserEngine {
         try {
             // Log initial step
             this.logTestStep('Test started', null, null, `Starting task: ${taskDescription}`, true);
-            // Skip screenshots in interactive recorder mode to avoid duplicates
-            const isInteractiveMode = name.includes('Interactive-Step-');
-            if (!isInteractiveMode) {
-                await this.takeStepScreenshot('Initial page state');
-            }
+            // Always take screenshot for first step (important evidence)
+            await this.takeStepScreenshot('Initial page state');
             // Create enhanced context message for the agent
             const systemContext = createSystemContext(taskDescription);
             const finalState = await this.invokeAgentWithTracking({
@@ -214,10 +209,8 @@ export class BrowserEngine {
             const result = finalState.messages?.[finalState.messages.length - 1]?.content || 'Task completed';
             // Log final step
             this.logTestStep('Test completed', null, null, result, true);
-            // Skip screenshots in interactive recorder mode to avoid duplicates
-            if (!isInteractiveMode) {
-                await this.takeStepScreenshot('Final page state');
-            }
+            // Always take screenshot for last step (important evidence)
+            await this.takeStepScreenshot('Final page state');
             // Finish session
             await this.finishTestSession('SUCCESS', result);
             console.log(`\n✅ Task "${name}" completed successfully!`);

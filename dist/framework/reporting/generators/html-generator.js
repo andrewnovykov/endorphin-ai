@@ -332,6 +332,7 @@ export class HtmlGenerator {
                 finalResult: result.finalResult,
                 conclusion: result.conclusion,
                 steps: result.steps,
+                agentHistory: result.agentHistory,
                 tokenSummary: result.tokenSummary,
                 setupResult: result.setupResult,
                 dataGenerationResult: result.dataGenerationResult

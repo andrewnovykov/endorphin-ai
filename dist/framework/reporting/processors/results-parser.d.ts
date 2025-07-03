@@ -21,6 +21,7 @@ export interface ParsedTestResult {
     finalResult?: string;
     conclusion?: string;
     steps: any[];
+    agentHistory: any[];
     screenshots: string[];
     sessionDir: string;
     tokenSummary?: any;

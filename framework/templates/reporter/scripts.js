@@ -184,6 +184,7 @@ class TestReportViewer {
 
     // Populate steps timeline
     this.populateStepsTimeline(session.steps || []);
+    this.populateAgentHistoryTimeline(session.agentHistory || []);
 
     // Populate screenshots gallery
     this.populateScreenshotsGallery(result);
@@ -298,6 +299,115 @@ class TestReportViewer {
       const stepElement = this.createStepElement(step, index);
       timeline.appendChild(stepElement);
     });
+  }
+
+  /**
+   * Populate the agent history timeline
+   */
+  populateAgentHistoryTimeline(agentHistory) {
+    const timeline = document.getElementById('agent-history-timeline');
+    if (!timeline) return;
+
+    timeline.innerHTML = '';
+
+    if (!agentHistory || agentHistory.length === 0) {
+      timeline.innerHTML = '<div class="text-muted text-center">No agent decisions recorded</div>';
+      return;
+    }
+
+    agentHistory.forEach((entry, index) => {
+      const historyElement = this.createAgentHistoryElement(entry, index);
+      timeline.appendChild(historyElement);
+    });
+  }
+
+  /**
+   * Create an agent history element for the timeline
+   */
+  createAgentHistoryElement(entry, index) {
+    const historyDiv = document.createElement('div');
+    
+    // Determine the type of AI call for styling
+    const isToolSelection = entry.thinking?.includes('Tool Selection');
+    const isDataGeneration = entry.thinking?.includes('Data Generation');
+    const isValidation = entry.thinking?.includes('Validation Agent');
+    const isReasoning = entry.thinking?.includes('Agent Reasoning');
+    
+    // Set appropriate styling based on call type
+    let borderColor = 'border-primary';
+    let icon = '🤖';
+    let badgeClass = 'bg-primary';
+    let callType = 'Agent Decision';
+    
+    if (isToolSelection) {
+      borderColor = 'border-success';
+      icon = '🔧';
+      badgeClass = 'bg-success';
+      callType = 'Tool Selection';
+    } else if (isDataGeneration) {
+      borderColor = 'border-info';
+      icon = '📊';
+      badgeClass = 'bg-info';
+      callType = 'Data Generation';
+    } else if (isValidation) {
+      borderColor = 'border-warning';
+      icon = '🔍';
+      badgeClass = 'bg-warning';
+      callType = 'Validation';
+    } else if (isReasoning) {
+      borderColor = 'border-secondary';
+      icon = '💭';
+      badgeClass = 'bg-secondary';
+      callType = 'Reasoning';
+    }
+    
+    historyDiv.className = `agent-history-item border-start border-3 ${borderColor} mb-3`;
+
+    historyDiv.innerHTML = `
+      <div class="agent-history-content p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="mb-0">
+            ${icon} ${callType} #${entry.historyId}
+            <span class="badge ${badgeClass} ms-2 small">${entry.tokenUsage?.totalTokens || 0} tokens</span>
+          </h6>
+          <small class="text-muted">${this.formatDateTime(entry.timestamp)}</small>
+        </div>
+        
+        <div class="agent-thinking">
+          <strong>🎯 Context:</strong> ${this.escapeHtml(entry.context || entry.thinking)}
+        </div>
+        
+        <div class="mt-2">
+          <strong>📨 Input:</strong>
+          <div class="bg-light p-2 mt-1 small" style="border-radius: 4px; max-height: 100px; overflow-y: auto;">
+            ${this.escapeHtml(entry.prompt)}
+          </div>
+        </div>
+        
+        <div class="mt-2">
+          <strong>🤖 Response:</strong>
+          <div class="bg-light p-2 mt-1 small" style="border-radius: 4px; max-height: 100px; overflow-y: auto;">
+            ${this.escapeHtml(entry.response)}
+          </div>
+        </div>
+        
+        <div class="agent-token-info mt-2">
+          <strong>💰 Token Usage:</strong> ${entry.tokenUsage.totalTokens.toLocaleString()} tokens 
+          (${entry.tokenUsage.promptTokens} prompt + ${entry.tokenUsage.responseTokens} response) 
+          • Cost: $${entry.tokenUsage.cost.toFixed(4)} 
+          • Model: ${entry.tokenUsage.model}
+          • Duration: ${entry.duration}ms
+        </div>
+        
+        ${entry.context ? `
+          <div class="mt-2">
+            <small class="text-muted"><strong>Context:</strong> ${this.escapeHtml(entry.context)}</small>
+          </div>
+        ` : ''}
+      </div>
+    `;
+
+    return historyDiv;
   }
 
   /**

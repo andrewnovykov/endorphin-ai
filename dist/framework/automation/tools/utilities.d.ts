@@ -35,12 +35,12 @@ export declare function createScreenshotTool(framework: EnhancedBrowserTestFrame
     selector: z.ZodOptional<z.ZodString>;
     fullPage: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    selector?: string | undefined;
     name?: string | undefined;
+    selector?: string | undefined;
     fullPage?: boolean | undefined;
 }, {
-    selector?: string | undefined;
     name?: string | undefined;
+    selector?: string | undefined;
     fullPage?: boolean | undefined;
 }>>;
 //# sourceMappingURL=utilities.d.ts.map

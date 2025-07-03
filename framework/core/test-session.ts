@@ -53,6 +53,7 @@ export async function createTestSession(
     screenshotsDir,
     steps: [],
     toolCalls: [],
+    agentHistory: [],
     stepCounter: 0,
     screenshotCounter: 0,
     status: 'RUNNING',

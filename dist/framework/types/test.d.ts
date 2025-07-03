@@ -71,6 +71,7 @@ export interface TestSession {
     screenshotsDir: string;
     steps: TestStep[];
     toolCalls: ToolCall[];
+    agentHistory: AgentHistoryEntry[];
     stepCounter: number;
     screenshotCounter: number;
     status: 'RUNNING' | 'SUCCESS' | 'FAILED';
@@ -86,6 +87,22 @@ export interface TestSession {
     };
     setupResult?: TestSetupResult;
     dataGenerationResult?: DataGenerationResult;
+}
+export interface AgentHistoryEntry {
+    historyId: number;
+    timestamp: string;
+    thinking: string;
+    prompt: string;
+    response: string;
+    tokenUsage: {
+        promptTokens: number;
+        responseTokens: number;
+        totalTokens: number;
+        cost: number;
+        model: string;
+    };
+    duration: number;
+    context?: string;
 }
 export interface TestStep {
     stepNumber: number;

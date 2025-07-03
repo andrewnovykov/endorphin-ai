@@ -20,8 +20,39 @@
 import { Annotation, StateGraph, MemorySaver } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
+import { AIMessage } from '@langchain/core/messages';
 import { AGENT_CONFIG } from './config/agent-config.js';
 // import { parseSteps } from '../utils/step-parser.js'; // Currently unused
+// Global variables to track session and token tracking
+let currentSession = null;
+let agentCallCounter = 0;
+/**
+ * Set the current test session for token tracking
+ */
+export function setCurrentTestSession(session) {
+    currentSession = session;
+    agentCallCounter = 0;
+}
+/**
+ * Global function to track any AI call in the agent history
+ */
+export function trackAICall(callType, prompt, response, tokenUsage, duration, context) {
+    if (!currentSession)
+        return;
+    agentCallCounter++;
+    const agentEntry = {
+        historyId: currentSession.agentHistory.length + 1,
+        timestamp: new Date().toISOString(),
+        thinking: `${callType} ${agentCallCounter}`,
+        prompt: prompt.substring(0, 500) + (prompt.length > 500 ? '...' : ''),
+        response: response.substring(0, 500) + (response.length > 500 ? '...' : ''),
+        tokenUsage,
+        duration,
+        context: context || `${callType} #${agentCallCounter}`,
+    };
+    currentSession.agentHistory.push(agentEntry);
+    console.log(`💰 ${callType} ${agentCallCounter}: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`);
+}
 // Simplified State Annotation for Proper Memory Management
 const TestState = Annotation.Root({
     messages: Annotation({
@@ -93,8 +124,8 @@ export function setupAgent(tools, config) {
     function shouldContinue(state) {
         const { messages } = state;
         const lastMessage = messages[messages.length - 1];
-        // Debug logging
-        console.log(`🔍 Agent decision - Message count: ${messages.length}`);
+        // Debug logging (simplified to avoid confusion with tracking)
+        console.log(`🔍 Decision logic - Message count: ${messages.length}`);
         console.log(`🔍 Last message content: "${lastMessage.content || 'no content'}"`);
         console.log(`🔍 Tool calls: ${lastMessage.tool_calls?.length || 0}`);
         const content = typeof lastMessage.content === 'string' ? lastMessage.content.toLowerCase() : '';
@@ -151,7 +182,7 @@ export function setupAgent(tools, config) {
         return '__end__';
     }
     async function callModel(state) {
-        const response = await model.invoke(state.messages);
+        const startTime = Date.now();
         // Simple context initialization on first run
         let newTestContext = state.testContext || {};
         if (!newTestContext.startTime) {
@@ -163,6 +194,60 @@ export function setupAgent(tools, config) {
         }
         // Log conversation progress
         console.log(`💬 Agent processing message ${state.messages.length + 1} - Memory persisted via thread_id`);
+        const response = await model.invoke(state.messages);
+        const duration = Date.now() - startTime;
+        // Track EVERY agent call - including individual tool selections
+        if (response instanceof AIMessage) {
+            const hasToolCalls = response.tool_calls && response.tool_calls.length > 0;
+            const hasContent = response.content && response.content.length > 0;
+            // Extract conversation context for better understanding
+            const lastHumanMessage = state.messages
+                .filter(m => m._getType() === 'human')
+                .slice(-1)[0];
+            const conversationHistory = state.messages.slice(-3).map(m => typeof m.content === 'string' ? m.content.substring(0, 100) : '').join(' | ');
+            const prompt = lastHumanMessage?.content || 'Agent processing conversation';
+            const responseContent = typeof response.content === 'string' ? response.content : '';
+            // Classify the type of decision
+            let callType = 'Agent Decision';
+            let contextInfo = 'General agent processing';
+            if (hasToolCalls && response.tool_calls) {
+                // This is a tool selection decision
+                const toolNames = response.tool_calls.map(tc => tc.name || 'unknown');
+                callType = 'Tool Selection';
+                contextInfo = `Selected tools: ${toolNames.join(', ')}`;
+                // Add reasoning if there's content along with tool calls
+                if (responseContent && responseContent.length > 10) {
+                    contextInfo += ` | Reasoning: ${responseContent.substring(0, 100)}`;
+                }
+            }
+            else if (hasContent && responseContent.length > 10) {
+                // This is a reasoning/conclusion decision
+                callType = 'Agent Reasoning';
+                contextInfo = 'Agent analysis and conclusion';
+            }
+            else {
+                // Skip very short or empty responses
+                return {
+                    messages: [response],
+                    testContext: newTestContext,
+                };
+            }
+            // Estimate tokens for this specific decision
+            const promptText = typeof prompt === 'string' ? prompt : JSON.stringify(prompt);
+            const estimatedPromptTokens = Math.ceil(promptText.length / 4);
+            const estimatedResponseTokens = Math.ceil((responseContent + JSON.stringify(response.tool_calls || [])).length / 4);
+            const totalTokens = estimatedPromptTokens + estimatedResponseTokens;
+            // Calculate cost (GPT-4o pricing)
+            const cost = (estimatedPromptTokens * 0.005 + estimatedResponseTokens * 0.015) / 1000;
+            const tokenUsage = {
+                promptTokens: estimatedPromptTokens,
+                responseTokens: estimatedResponseTokens,
+                totalTokens,
+                cost,
+                model: 'gpt-4o',
+            };
+            trackAICall(callType, promptText, responseContent + (hasToolCalls ? ` | Tools: ${JSON.stringify(response.tool_calls)}` : ''), tokenUsage, duration, contextInfo);
+        }
         return {
             messages: [response],
             testContext: newTestContext,

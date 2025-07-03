@@ -117,7 +117,7 @@ describe('CLI Functionality Integration Tests', () => {
         }
 
         expect(errorThrown).toBe(true);
-        expect(errorOutput).toMatch(/not found|No tests found|Error/i);
+        expect(errorOutput.toLowerCase()).toContain('test not found');
 
       } catch (error) {
         throw new Error(`CLI run command validation failed: ${error instanceof Error ? error.message : String(error)}`);

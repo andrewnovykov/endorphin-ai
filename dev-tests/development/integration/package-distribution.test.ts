@@ -49,10 +49,10 @@ describe('Package Distribution Integration Tests', () => {
 
         // Check for essential distribution files
         const essentialFiles = [
-          'index.js',
-          'templates/reporter/report-template.html',
-          'automation/browser/browser-manager.js',
-          'reporters/html-reporter.js'
+          'framework/index.js',
+          'framework/templates/reporter/report-template.html',
+          'framework/automation/browser/browser-manager.js',
+          'framework/reporters/html-reporter.js'
         ];
 
         for (const file of essentialFiles) {
@@ -206,8 +206,8 @@ try {
     id: 'test-session',
     testId: 'TEST-001',
     testName: 'Template Test',
-    startTime: new Date().toISOString(),
-    endTime: new Date().toISOString(),
+    startTime: new Date(),
+    endTime: new Date(),
     status: 'SUCCESS',
     duration: 1000,
     steps: [],

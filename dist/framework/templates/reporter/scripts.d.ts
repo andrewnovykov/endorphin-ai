@@ -35,6 +35,14 @@ export class TestReportViewer {
      */
     populateStepsTimeline(steps: any): void;
     /**
+     * Populate the agent history timeline
+     */
+    populateAgentHistoryTimeline(agentHistory: any): void;
+    /**
+     * Create an agent history element for the timeline
+     */
+    createAgentHistoryElement(entry: any, index: any): HTMLDivElement;
+    /**
      * Create a step element for the timeline
      */
     createStepElement(step: any, index: any): HTMLDivElement;

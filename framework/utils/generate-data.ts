@@ -7,6 +7,7 @@ import { ChatOpenAI } from '@langchain/openai';
 import { AGENT_CONFIG } from '../ai/config/agent-config.js';
 import { TokenTracker } from '../core/token-tracker.js';
 import { globalResourceManager } from '../core/resource-manager.js';
+import { trackAICall } from '../ai/agent-setup.js';
 import { EventEmitter } from 'node:events';
 
 // Increase default max listeners to prevent memory leak warnings
@@ -127,12 +128,14 @@ Example response format:
       return generateFallbackData(schema);
     }
 
-    // Log token usage and cost
-    console.log(
-      `✅ Data generated: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`
-    );
-    console.log(
-      `📊 Token breakdown: ${tokenUsage.promptTokens} prompt + ${tokenUsage.responseTokens} response`
+    // Track AI call in agent history
+    trackAICall(
+      'Data Generation',
+      prompt,
+      content,
+      tokenUsage,
+      duration,
+      'AI-powered test data generation'
     );
 
       return generatedData;

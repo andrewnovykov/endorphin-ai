@@ -26,6 +26,7 @@ export interface ParsedTestResult {
   finalResult?: string;
   conclusion?: string;
   steps: any[];
+  agentHistory: any[];
   screenshots: string[];
   sessionDir: string;
   tokenSummary?: any;
@@ -151,6 +152,7 @@ export class ResultsParser {
         totalSteps: sessionData.totalSteps || sessionData.steps?.length || 0,
         successfulSteps: sessionData.successfulSteps || sessionData.steps?.filter((s: any) => s.status === 'SUCCESS').length || 0,
         steps: sessionData.steps || [],
+        agentHistory: sessionData.agentHistory || [],
         screenshots: this.extractScreenshotPaths(sessionData.steps || []),
         sessionDir: path.dirname(sessionFile),
         tokenSummary: sessionData.tokenSummary,
@@ -389,10 +391,11 @@ export class ResultsParser {
         testId: session.testId || 'TEST-001',
         status: session.status === 'completed' ? 'SUCCESS' : 'FAILED',
         duration: session.duration || 0,
-        startTime: session.startTime?.toISOString() || new Date().toISOString(),
-        endTime: session.endTime?.toISOString(),
+        startTime: session.startTime || new Date().toISOString(),
+        endTime: session.endTime,
         finalResult: session.status === 'completed' ? 'Test completed successfully' : 'Test failed',
         steps: session.steps || [],
+        agentHistory: session.agentHistory || [],
         screenshots: [],
         sessionDir: 'test-session',
         tokenSummary: session.tokenSummary,
