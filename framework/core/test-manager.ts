@@ -3,7 +3,7 @@
  * Manages individual test files in the tests/ folder
  */
 
-import type { TaskResult, TestConfig } from '@/types/index';
+import type { TaskResult, TestConfig } from '../types/index.js';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
@@ -11,8 +11,17 @@ import { fileURLToPath } from 'url';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Handle Jest environment where import.meta.url might not be available
+let __filename: string = '';
+let __dirname: string = process.cwd();
+
+try {
+  __filename = fileURLToPath(import.meta.url);
+  __dirname = path.dirname(__filename);
+} catch {
+  // Fallback for Jest or other environments without import.meta
+  __dirname = process.cwd();
+}
 
 interface LoadedTest extends TestConfig {
   filename: string;
@@ -329,7 +338,9 @@ export default {
   priority: "${testData.priority || 'Medium'}",
   tags: ${JSON.stringify(testData.tags || ['general'])},
   site: "${testData.site || 'https://qafromla.herokuapp.com/'}",
-  ${testData.testData ? `testData: ${JSON.stringify(testData.testData, null, 2)},` : ''}
+  data: async () => {
+    return ${JSON.stringify(testData.testData || {}, null, 4)};
+  },
   task: \`${testData.task}\`
 };`;
 

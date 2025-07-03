@@ -4,47 +4,55 @@
  */
 
 // Agent and AI types
-export type {
-  AIConfig,
-  BrowserTool, NaturalLanguageResult, ToolCall, ToolParams
-} from './agent.js';
+export type { AIConfig, BrowserTool, LangChainTool, ToolCall, ToolParams } from '../ai/types/agent.js';
 
 // Browser types
 export type {
-  BrowserConfig, BrowserTools, ClickParams,
-  FillParams, NavigateParams, Screenshot, ScreenshotParams, ViewportSize
+  BrowserConfig,
+  BrowserTools,
+  ClickParams,
+  FillParams,
+  NavigateParams,
+  Screenshot,
+  ScreenshotParams,
+  ViewportSize,
 } from './browser.js';
 
 // CLI types
-export type {
-  CLIFlags
-} from './cli.js';
+export type { CLIFlags } from './cli.js';
 
 // Configuration types
 export type {
-  ExecutionConfig, FrameworkConfig, ResultsConfig
+  ExecutionConfig,
+  FrameworkConfig,
+  GlobalSetupFunction,
+  GlobalSetupModule,
+  GlobalSetupResult,
+  ResultsConfig,
 } from './config.js';
 
 // Error types
-export {
-  BrowserError,
-  ConfigurationError, EndorphinError,
-  TestExecutionError
-} from './errors.js';
+export { BrowserError, ConfigurationError, FrameworkError, TestExecutionError } from './errors.js';
 
 // Recorder types
-export type {
-  RecorderCommand, RecorderSession
-} from './recorder.js';
+export type { RecorderCommand, RecorderSession } from './recorder.js';
 
 // Reporter types
-export type {
-  ReportOptions, TestReport, TestSummary
-} from './reporter.js';
+export type { ReportOptions, TestReport, TestSummary } from './reporter.js';
 
 // Test types
 export type {
-  DiscoveryResult, TaskResult, TestCase, TestConfig, TestResult, TestSession,
-  TestStep
+  DataGenerationResult,
+  DiscoveryResult,
+  NaturalLanguageResult,
+  TaskResult,
+  TestCase,
+  TestConfig,
+  TestDataFunction,
+  TestTaskFunction,
+  TestResult,
+  TestSession,
+  TestSetupFunction,
+  TestSetupResult,
+  TestStep,
 } from './test.js';
-

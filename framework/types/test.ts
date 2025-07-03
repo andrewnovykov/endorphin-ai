@@ -2,8 +2,53 @@
  * Test configuration and test-related types
  */
 
-import type { ToolCall } from './agent';
+import type { ToolCall } from '../ai/types/agent.js';
 import type { Screenshot } from './browser';
+
+/**
+ * Test setup function signature
+ * Executes before the test case, can return data for the test
+ */
+export type TestSetupFunction = () => Promise<any>;
+
+/**
+ * Test setup execution result
+ */
+export interface TestSetupResult {
+  success: boolean;
+  data?: any;
+  error?: Error;
+  executionTime: number;
+}
+
+/**
+ * Test data generation function signature
+ * Executes to generate test data, returns generated data
+ */
+export type TestDataFunction = () => Promise<any>;
+
+/**
+ * Test task function signature
+ * Executes with generated data and setup data, returns task description
+ */
+export type TestTaskFunction = (data?: any, setupData?: any) => Promise<string> | string;
+
+/**
+ * Test data generation execution result
+ */
+export interface DataGenerationResult {
+  success: boolean;
+  data?: any;
+  error?: Error;
+  executionTime: number;
+  tokenUsage?: {
+    promptTokens: number;
+    responseTokens: number;
+    totalTokens: number;
+    cost: number;
+    model: string;
+  };
+}
 
 export interface TestConfig {
   id: string;
@@ -11,9 +56,12 @@ export interface TestConfig {
   description: string;
   priority: 'High' | 'Medium' | 'Low';
   tags: string[];
-  site: string;
-  testData?: Record<string, any>;
-  task: string;
+  url?: string; // Optional URL for navigation
+  site?: string; // Keep for backward compatibility
+  testData?: Record<string, any>; // Keep for backward compatibility
+  data?: TestDataFunction | Record<string, any>; // New async data generation or static data
+  setup?: TestSetupFunction; // Optional test-level setup function
+  task: string | TestTaskFunction; // Support both string and function-based tasks
 }
 
 // Test Case interface for test recorder generated files
@@ -33,10 +81,12 @@ export interface TestSession {
   screenshotsDir: string;
   steps: TestStep[];
   toolCalls: ToolCall[];
+  agentHistory: AgentHistoryEntry[]; // AI decision process tracking
   stepCounter: number;
   screenshotCounter: number;
   status: 'RUNNING' | 'SUCCESS' | 'FAILED';
   finalResult?: string;
+  conclusion?: string;
   duration?: number;
   tokenSummary?: {
     totalTokens: number;
@@ -45,9 +95,26 @@ export interface TestSession {
     avgTokensPerCall: number;
     model: string;
   };
+  setupResult?: TestSetupResult; // Test setup execution result
+  dataGenerationResult?: DataGenerationResult; // Test data generation execution result
 }
 
-
+export interface AgentHistoryEntry {
+  historyId: number;
+  timestamp: string;
+  thinking: string; // What the agent was thinking about
+  prompt: string; // The actual prompt sent to the AI
+  response: string; // The AI's response
+  tokenUsage: {
+    promptTokens: number;
+    responseTokens: number;
+    totalTokens: number;
+    cost: number;
+    model: string;
+  };
+  duration: number; // How long the AI call took
+  context?: string; // Additional context about what triggered this AI call
+}
 
 export interface TestStep {
   stepNumber: number;
@@ -79,14 +146,17 @@ export interface TestResult {
 }
 
 export interface TaskResult {
-  testName: string;
-  task: string;
-  timestamp: string;
-  status: 'SUCCESS' | 'FAILED';
+  testName?: string;
+  task?: string;
+  timestamp?: string;
+  status?: 'SUCCESS' | 'FAILED';
   result?: string;
   error?: string;
   duration: number;
-  sessionDir: string;
+  sessionDir?: string;
+  success?: boolean;
+  report?: any;
+  tokenUsage?: any;
 }
 
 export interface DiscoveryResult {
@@ -98,4 +168,12 @@ export interface DiscoveryResult {
   passed?: number;
   failed?: number;
   total?: number;
+  skipped?: number | boolean;
+}
+
+export interface NaturalLanguageResult {
+  result: string;
+  error?: string;
+  duration: number;
+  tokenUsage?: any;
 }

@@ -35,7 +35,8 @@ instead of `npx` commands to avoid binary linking issues.
 
 ## TypeScript-First Experience
 
-🎯 **Major Change**: Endorphin AI now provides a **TypeScript-first user experience**:
+🎯 **Major Change**: Endorphin AI now provides a **TypeScript-first user
+experience**:
 
 - ✅ Users write `endorphin.config.ts` (TypeScript configuration)
 - ✅ Users write `tests/my-test.ts` (TypeScript test files)
@@ -72,6 +73,7 @@ npm run pack:local
 This creates `dist/endorphin-ai-0.5.0.tgz` with the current development code.
 
 **🔧 Why `dist/` is still needed:**
+
 - Package distribution requires compiled JavaScript
 - CLI binary points to `dist/bin/endorphin.js`
 - npm package main entry is `dist/framework/index.js`
@@ -100,7 +102,8 @@ access issues.
 
 ```bash
 # Install from local tarball
-npm install ../../dist/endorphin-ai-0.5.0.tgz
+
+npm install ../dist/endorphin-ai-0.8.0.tgz
 
 # Verify installation using direct node execution
 node node_modules/endorphin-ai/dist/bin/endorphin.js --version
@@ -145,6 +148,7 @@ node node_modules/endorphin-ai/dist/bin/endorphin.js list
 ```
 
 **✅ TypeScript Magic Happens Here:**
+
 - Framework automatically detects `.ts` files
 - Uses `tsx` to compile TypeScript on-the-fly
 - No build step required for users
@@ -191,7 +195,8 @@ first.
 
 ### Step 10: Test Interactive Test Recorder
 
-The test recorder is a key feature that allows users to create tests interactively. Test it thoroughly:
+The test recorder is a key feature that allows users to create tests
+interactively. Test it thoroughly:
 
 ```bash
 # Start the interactive test recorder
@@ -201,6 +206,7 @@ node node_modules/endorphin-ai/dist/bin/endorphin.js run test-recorder
 **Expected Interactive Flow:**
 
 1. **Test Data Collection Phase:**
+
    ```
    📋 Test Data Collection
    ════════════════════════════════════════
@@ -210,17 +216,18 @@ node node_modules/endorphin-ai/dist/bin/endorphin.js run test-recorder
    Priority (High/Medium/Low) [Medium]: High
    Tags (comma-separated): recorder, interactive
    Site URL [https://qafromla.herokuapp.com/]: https://demo.playwright.dev/todomvc
-   
+
    🔧 Test Data (for form filling, login, etc.)
    Press Enter to skip any field
-   User ID: 
-   Email: 
-   Password: 
-   First Name: 
-   Last Name: 
+   User ID:
+   Email:
+   Password:
+   First Name:
+   Last Name:
    ```
 
 2. **Framework Initialization:**
+
    ```
    🚀 Initializing browser...
    🛠️ Setting up browser automation tools...
@@ -229,18 +236,19 @@ node node_modules/endorphin-ai/dist/bin/endorphin.js run test-recorder
    ```
 
 3. **Interactive Command Phase:**
+
    ```
    🌐 Navigating to: https://demo.playwright.dev/todomvc
-   
+
    💬 Ready for interactive commands!
    Type your commands or "done" to finish recording.
-   
+
    🎬 Next step: add a todo item "Test recording"
    🤖 Processing: "add a todo item "Test recording""
-   
+
    🎬 Next step: mark the todo as completed
    🤖 Processing: "mark the todo as completed"
-   
+
    🎬 Next step: done
    🛑 Stopping recording...
    ```
@@ -260,15 +268,17 @@ node node_modules/endorphin-ai/dist/bin/endorphin.js run test-recorder
 ✅ **Recording**: Steps are recorded with proper metadata  
 ✅ **File Generation**: Test file is created in test-recorder directory  
 ✅ **Error Handling**: Graceful handling of invalid commands  
-✅ **Exit**: Clean exit when typing "done"  
+✅ **Exit**: Clean exit when typing "done"
 
 **Testing Without API Key:**
+
 ```bash
 # Test recorder behavior without API key
 # Should fail gracefully with clear error message about missing OPENAI_API_KEY
 ```
 
 **Verify Generated Test File:**
+
 ```bash
 # Check that test file was created
 ls test-recorder/
@@ -276,6 +286,7 @@ cat test-recorder/TEST-RECORDER-001.ts
 ```
 
 **Expected Generated Test Structure:**
+
 ```typescript
 export const TEST_RECORDER_001 = {
   id: 'TEST-RECORDER-001',
@@ -314,6 +325,7 @@ Source Code (framework/)     Distribution (dist/)      User Experience
 ```
 
 **Key Points:**
+
 1. **Framework Development**: Write TypeScript in `framework/` folder
 2. **Distribution**: Build compiles to `dist/` for npm package
 3. **User Experience**: Users write TypeScript, framework handles compilation
@@ -359,22 +371,26 @@ This runs the same tests that validate the package before release.
 
 ### Directory Access Errors
 
-**Symptoms:** `getcwd: cannot access parent directories: No such file or directory` or `Error: ENOENT: no such file or directory, uv_cwd`
+**Symptoms:**
+`getcwd: cannot access parent directories: No such file or directory` or
+`Error: ENOENT: no such file or directory, uv_cwd`
 
-**Cause:** The test directory was deleted while you're still in it (often by cleanup scripts).
+**Cause:** The test directory was deleted while you're still in it (often by
+cleanup scripts).
 
 **Solutions:**
 
 1. **Navigate back and recreate:**
+
    ```bash
    # Return to main project
    cd /Users/papapin777/Documents/CODE/AI/endorphin-ai
-   
+
    # Remove and recreate test directory
    rm -rf tmp/manual-test
    mkdir -p tmp/manual-test
    cd tmp/manual-test
-   
+
    # Reinitialize
    npm init -y
    npm pkg set type="module"
@@ -386,7 +402,8 @@ This runs the same tests that validate the package before release.
 
 ### TypeScript Loading Errors
 
-**Symptoms:** `Error: Unknown file extension ".ts"` or `Cannot find module 'tsx'`
+**Symptoms:** `Error: Unknown file extension ".ts"` or
+`Cannot find module 'tsx'`
 
 **Solutions:**
 
@@ -400,22 +417,27 @@ This runs the same tests that validate the package before release.
    rm -f endorphin.config.* tests/*.ts
    node node_modules/endorphin-ai/dist/bin/endorphin.js init
    ```
-3. **Check package build:** Ensure `npm run pack:local` was run with latest TypeScript support
-4. **Fallback test:** Framework should gracefully fallback if TypeScript loading fails
+3. **Check package build:** Ensure `npm run pack:local` was run with latest
+   TypeScript support
+4. **Fallback test:** Framework should gracefully fallback if TypeScript loading
+   fails
 
 ### Test Recorder Issues
 
-**Symptoms:** Test recorder hangs, doesn't respond, or crashes during interaction
+**Symptoms:** Test recorder hangs, doesn't respond, or crashes during
+interaction
 
 **Solutions:**
 
 1. **Check API Key:** Ensure OPENAI_API_KEY is set in .env file
+
    ```bash
    # Verify API key is present
    grep OPENAI_API_KEY .env
    ```
 
 2. **Browser Launch Issues:** If browser doesn't launch
+
    ```bash
    # Install Playwright browsers
    npx playwright install
@@ -427,12 +449,14 @@ This runs the same tests that validate the package before release.
    - Ensure stdin/stdout are properly connected
 
 4. **AI Agent Timeout:** If commands take too long to process
+
    ```bash
    # Run with shorter timeout
    node node_modules/endorphin-ai/dist/bin/endorphin.js run test-recorder --timeout 30000
    ```
 
 5. **File Generation Fails:** If test file isn't created
+
    ```bash
    # Check if test-recorder directory exists and is writable
    ls -la test-recorder/
@@ -446,6 +470,7 @@ This runs the same tests that validate the package before release.
    ```
 
 **Expected Behavior Validation:**
+
 - ✅ Prompts appear and accept input
 - ✅ Browser launches in visible mode
 - ✅ Navigation to specified URL works
@@ -485,27 +510,28 @@ When making changes to the framework:
    npm run test:local
    ```
 3. **Manual verification:**
+
    ```bash
    # Navigate to project root first
    cd /path/to/endorphin-ai
-   
+
    # Rebuild and repack
    npm run pack:local
-   
+
    # Recreate clean test environment
    rm -rf tmp/manual-test
    mkdir -p tmp/manual-test
    cd tmp/manual-test
-   
+
    # Setup and install
    npm init -y
    npm pkg set type="module"
    npm install ../../dist/endorphin-ai-0.5.0.tgz
-   
+
    # Test your changes using direct execution
    node node_modules/endorphin-ai/dist/bin/endorphin.js init
    node node_modules/endorphin-ai/dist/bin/endorphin.js list
-   
+
    # Test the interactive recorder (requires API key)
    echo "OPENAI_API_KEY=your-key-here" > .env
    node node_modules/endorphin-ai/dist/bin/endorphin.js run test-recorder
@@ -544,7 +570,7 @@ For development testing without an OpenAI API key:
 ✅ **Test Recorder:** Interactive recorder launches and accepts commands  
 ✅ **File Generation:** Recorder creates valid TypeScript test files  
 ✅ **Error Handling:** Clear error messages for missing API key, etc.  
-✅ **No User Build:** Users never need to run build commands  
+✅ **No User Build:** Users never need to run build commands
 
 ## Framework Distribution Model
 

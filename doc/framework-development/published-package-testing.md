@@ -1,6 +1,7 @@
 # Published Package Testing Guide
 
-This guide is for testing the **published** Endorphin AI package from npm registry.
+This guide is for testing the **published** Endorphin AI package from npm
+registry.
 
 ## Prerequisites
 
@@ -69,6 +70,7 @@ npx endorphin init
 ```
 
 **Expected Results:**
+
 - ✅ Creates `endorphin.config.js`
 - ✅ Creates `tests/sample-test.js`
 - ✅ Creates `.env`, `.gitignore`, `README-ENDORPHIN.md`
@@ -84,6 +86,7 @@ code .env
 ```
 
 Replace `your_openai_api_key_here` with your actual API key:
+
 ```
 OPENAI_API_KEY=sk-your-actual-key-here
 ```
@@ -96,6 +99,7 @@ npx endorphin list
 ```
 
 **Expected Output:**
+
 ```
 📋 Available Tests:
 ══════════════════════════════════════
@@ -114,6 +118,7 @@ npx endorphin run test HEALTH-001 --headless
 ```
 
 **Expected Behavior:**
+
 - Browser launches in headless mode
 - Navigates to example.com
 - Verifies page loads correctly
@@ -175,10 +180,11 @@ npx endorphin list  # Should show your recorded test
 ### Test with Different Models
 
 Edit `endorphin.config.js`:
+
 ```javascript
 export default {
   ai: {
-    model: 'gpt-4o',    // or 'gpt-3.5-turbo'
+    model: 'gpt-4o', // or 'gpt-3.5-turbo'
     temperature: 0.1,
     maxRetries: 3,
   },
@@ -250,7 +256,7 @@ mv endorphin.config.js.backup endorphin.config.js
 ✅ **Recording:** Interactive test recorder works and creates new tests  
 ✅ **CLI Commands:** All commands work with proper help/error messages  
 ✅ **Configuration:** Config files load and environment variables work  
-✅ **Error Handling:** Clear error messages for common issues  
+✅ **Error Handling:** Clear error messages for common issues
 
 ## Troubleshooting
 
@@ -295,6 +301,7 @@ npx endorphin run test HEALTH-001  # (remove --headless)
 ## Performance Benchmarks
 
 Expected performance for `HEALTH-001` test:
+
 - **Execution Time:** 15-30 seconds
 - **Memory Usage:** <500MB
 - **Browser Launch:** <5 seconds
@@ -303,9 +310,10 @@ Expected performance for `HEALTH-001` test:
 
 ## Reporting Issues
 
-When reporting issues, please include:
+When reporting issues, please in`clude:
 
 1. **Environment:**
+
    ```bash
    node --version
    npm --version
@@ -316,7 +324,8 @@ When reporting issues, please include:
 
 3. **Full Error Output:** Complete command and error messages
 
-4. **Configuration Files:** Contents of `endorphin.config.js` and `.env` (without API key)
+4. **Configuration Files:** Contents of `endorphin.config.js` and `.env`
+   (without API key)
 
 5. **Reproduction Steps:** Exact commands that cause the issue
 

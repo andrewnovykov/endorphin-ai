@@ -2,7 +2,7 @@
  * Test recorder types
  */
 
-import type { ToolParams } from './agent';
+import type { ToolParams } from '../ai/types/agent.js';
 
 export interface RecorderSession {
   id: string;

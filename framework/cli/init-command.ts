@@ -5,6 +5,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { execSync } from 'child_process';
 
 // Get the framework root directory by going up from this file's location
 // This works both in compiled JS and during testing
@@ -13,6 +14,17 @@ const getFrameworkRoot = (): string => {
   const possibleRoots = [
     // When installed as package: look in node_modules/endorphin-ai
     path.resolve(process.cwd(), 'node_modules/endorphin-ai'),
+    // When installed as package: try alternative paths
+    path.resolve(process.cwd(), 'node_modules/endorphin-ai/dist'),
+    // Try to resolve via require.resolve
+    (() => {
+      try {
+        const packagePath = require.resolve('endorphin-ai/package.json');
+        return path.dirname(packagePath);
+      } catch {
+        return null;
+      }
+    })(),
     // If running from project root (development)
     process.cwd(),
     // If __dirname is available (compiled JS), go up from framework/cli
@@ -54,8 +66,9 @@ export async function initProject(targetDir: string = process.cwd()): Promise<vo
     console.log('🚀 Next steps:');
     console.log('  1. Edit .env and add your OpenAI API key');
     console.log('  2. Run: npx endorphin-ai run test HEALTH-001');
-    console.log('  3. Try: npx endorphin-ai run generate report');
-    console.log('  4. Try: npx endorphin-ai run test-recorder');
+    console.log('  3. Try the UI demo: npx endorphin-ai run test UI-DEMO-001');
+    console.log('  4. Try: npx endorphin-ai generate report');
+    console.log('  5. Try: npx endorphin-ai run test-recorder');
     console.log('');
     console.log('📚 Learn more: https://github.com/andrewnovykov/endorphin-ai');
   } catch (error: any) {
@@ -92,7 +105,10 @@ async function copyExampleFiles(targetDir: string): Promise<void> {
   const files = [
     { src: '.env.example', dest: '.env' },
     { src: 'endorphin.config.ts', dest: 'endorphin.config.ts' },
-    { src: 'tests/sample-test.ts', dest: 'tests/sample-test.ts' },
+    { src: 'tests/SAMPLE-001.ts', dest: 'tests/SAMPLE-001.ts' },
+    { src: 'tests/HEALTH-001.ts', dest: 'tests/HEALTH-001.ts' },
+    { src: 'tests/HEALTH-002.ts', dest: 'tests/HEALTH-002.ts' },
+    { src: 'tests/QUARANTINE-001.ts', dest: 'tests/QUARANTINE-001.ts' },
     { src: '.gitignore.example', dest: '.gitignore' },
     { src: 'README-ENDORPHIN.md', dest: 'README-ENDORPHIN.md' },
   ];
@@ -161,6 +177,38 @@ async function fileExists(filePath: string): Promise<boolean> {
 }
 
 async function createBasicFiles(targetDir: string): Promise<void> {
+  // Initialize npm package.json first
+  try {
+    console.log('📦 Initializing npm package...');
+    execSync('npm init -y', { 
+      cwd: targetDir,
+      stdio: 'pipe' // Suppress output
+    });
+    console.log('📄 Created: package.json');
+    
+    // Add endorphin-ai dependency
+    const packageJsonPath = path.join(targetDir, 'package.json');
+    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
+    
+    packageJson.type = 'module';
+    
+    packageJson.dependencies = {
+      'endorphin-ai': '^0.8.0',
+      ...packageJson.dependencies
+    };
+    
+    packageJson.devDependencies = {
+      '@types/node': '^20.0.0',
+      'typescript': '^5.0.0',
+      ...packageJson.devDependencies
+    };
+    
+    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    console.log('📄 Updated: package.json (added dependencies)');
+  } catch (error: any) {
+    console.warn(`⚠️  Could not create package.json: ${error.message}`);
+  }
+
   // Create basic .env file
   const envContent = `OPENAI_API_KEY=your_openai_api_key_here
 
@@ -227,7 +275,9 @@ export const HEALTH_001 = {
   priority: 'High',
   tags: ['health', 'smoke'],
   site: 'https://example.com',
-  testData: {},
+  data: async () => {
+    return {};
+  },
   task: 'Navigate to the homepage and verify that the page loads successfully. Check that the page title contains "Example Domain" and that there are no console errors.',
 };`;
 
@@ -312,4 +362,7 @@ Happy testing! 🚀`;
 
   await fs.writeFile(path.join(targetDir, 'README-ENDORPHIN.md'), readmeContent);
   console.log('📄 Created: README-ENDORPHIN.md');
+
+  // No custom tools needed - functionality removed
 }
+

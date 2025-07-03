@@ -3,7 +3,8 @@
  * Records user interactions and generates test files
  */
 
-import type { EnhancedBrowserTestFramework } from '@core/browser-framework';
+import type { EnhancedBrowserTestFramework } from '../automation/browser/browser-framework.js';
+import { DirectoryManager } from '../utils/directory-manager.js';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -81,8 +82,13 @@ export class TestRecorder {
     const timestamp = Date.now();
     this.recordingId = `${this.testData.id || 'REC'}-${timestamp}`;
 
+    // Clean up previous recordings first
+    const testRecorderBaseDir = path.join(process.cwd(), 'test-recorder');
+    console.log('🧹 Cleaning up previous recordings...');
+    await DirectoryManager.cleanupRecorderDirectory(testRecorderBaseDir);
+
     // Create recording directories in USER project (not framework)
-    this.recordingPath = path.join(process.cwd(), 'test-recorder', this.recordingId);
+    this.recordingPath = path.join(testRecorderBaseDir, this.recordingId);
     this.stepsPath = path.join(this.recordingPath, 'steps');
 
     await fs.mkdir(this.recordingPath, { recursive: true });
@@ -116,9 +122,12 @@ export class TestRecorder {
     // Create step folder
     await fs.mkdir(stepPath, { recursive: true });
 
-    // Take BEFORE screenshot
+    // Take BEFORE screenshot using the framework's browser manager
     const beforeScreenshot = path.join(stepPath, 'before.png');
-    await this.framework.currentPage?.screenshot({ path: beforeScreenshot, fullPage: true });
+    const browserManager = this.framework.getBrowserManager();
+    if (browserManager) {
+      await browserManager.takeScreenshot({ path: beforeScreenshot, fullPage: true });
+    }
 
     // Record step info
     const stepInfo: StepInfo = {
@@ -135,7 +144,9 @@ export class TestRecorder {
     // Take AFTER screenshot (small delay to ensure DOM updates)
     await new Promise((resolve) => setTimeout(resolve, 500));
     const afterScreenshot = path.join(stepPath, 'after.png');
-    await this.framework.currentPage?.screenshot({ path: afterScreenshot, fullPage: true });
+    if (browserManager) {
+      await browserManager.takeScreenshot({ path: afterScreenshot, fullPage: true });
+    }
 
     // Save step data
     const stepDataPath = path.join(stepPath, 'step-data.json');
@@ -287,11 +298,10 @@ export class TestRecorder {
 
     // Build task from recorded steps
     const taskSteps = this.steps
-      .map((step) => {
-        // For now, use generic descriptions until we implement proper task building
-        return step.description;
+      .map((step, index) => {
+        return `STEP ${index + 1}: ${step.description}`;
       })
-      .join(' ');
+      .join('\n      ');
 
     // Add "recorded" tag if not already present
     const tags = this.testData.tags || [];
@@ -299,7 +309,14 @@ export class TestRecorder {
       tags.push('recorded');
     }
 
-    const exportName = testId.replace(/-/g, '_');
+    // Generate test data object with proper structure
+    const testDataObj = this.testData.testData || {};
+    const hasTestData = Object.keys(testDataObj).length > 0;
+    
+    // Format test data as proper object for the data function
+    const testDataStr = hasTestData 
+      ? JSON.stringify(testDataObj, null, 6).replace(/^/gm, '    ')
+      : '{}';
 
     const testContent = `// ${testId}: ${this.testData.name}
 // Description: ${this.testData.description}
@@ -309,18 +326,29 @@ export class TestRecorder {
 
 import type { TestCase } from 'endorphin-ai';
 
-export const ${exportName}: TestCase = {
-  "id": "${testId}",
-  "name": "${this.testData.name}",
-  "description": "${this.testData.description}",
-  "priority": "${this.testData.priority || 'Medium'}",
-  "tags": ${JSON.stringify(tags, null, 4)},
-  "site": "${this.testData.site}",
-  "testData": ${JSON.stringify(this.testData.testData || {}, null, 4)},
-  "task": "${taskSteps} STOP - test completed.",
-  "recordingId": "${this.recordingId}",
-  "recordedSteps": ${this.stepCounter}
+const recordedTest: TestCase = {
+  id: '${testId}',
+  name: '${this.testData.name}',
+  description: '${this.testData.description}',
+  priority: '${this.testData.priority || 'Medium'}',
+  tags: ${JSON.stringify(tags, null, 2)},
+  data: async () => {
+    console.log('Using recorded test data...');
+    return ${testDataStr};
+  },
+
+  task: async (data, setupData) => {
+    return \`
+      ${taskSteps}
+      STEP ${this.stepCounter + 1}: Verify the test completed successfully
+    \`;
+  },
+  // Recording metadata
+  recordingId: '${this.recordingId}',
+  recordedSteps: ${this.stepCounter}
 };
+
+export default recordedTest;
 `;
 
     await fs.writeFile(testPath, testContent);

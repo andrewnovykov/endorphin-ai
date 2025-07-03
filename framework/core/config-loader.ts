@@ -3,11 +3,11 @@
  * Handles loading and merging of configuration from multiple sources
  */
 
-import type { AIConfig, BrowserConfig, CLIFlags, FrameworkConfig } from '@/types/index';
 import { config as loadDotenv } from 'dotenv';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { pathToFileURL } from 'url';
+import type { AIConfig, BrowserConfig, CLIFlags, FrameworkConfig } from '../types/index.js';
 
 export class ConfigLoader {
   private defaultConfig: FrameworkConfig;
@@ -47,6 +47,9 @@ export class ConfigLoader {
       parallel: 1,
       maxRetries: 3,
       baseUrl: '',
+
+      // Custom Tools
+      customTools: [],
     };
   }
 
@@ -288,6 +291,19 @@ export class ConfigLoader {
       throw new Error(
         'OpenAI API key is required. Set OPENAI_API_KEY environment variable or provide in config.'
       );
+    }
+
+    // Validate customTools
+    if (config.customTools && !Array.isArray(config.customTools)) {
+      throw new Error('Invalid customTools: must be an array of paths');
+    }
+
+    if (config.customTools) {
+      for (const toolPath of config.customTools) {
+        if (typeof toolPath !== 'string') {
+          throw new Error('Invalid customTools: each path must be a string');
+        }
+      }
     }
   }
 

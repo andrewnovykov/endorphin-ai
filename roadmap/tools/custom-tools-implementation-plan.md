@@ -5,8 +5,78 @@ _Created: June 22, 2025_ _Status: Planning Phase_
 ## 🎯 Overview
 
 Implementation plan for adding custom tools capability to Endorphin AI
-framework. This will allow users to create their own tools that integrate
-seamlessly with the AI agent for specialized testing needs.
+framework. This will allow users to create their own tools (functions in
+typescript ) that integrate seamlessly with the AI agent for specialized testing
+needs.
+
+##Tool Example
+
+```typescript
+/**
+ * Navigation Tools for Browser Automation
+ * Provides LangChain tools for page navigation
+ */
+
+import { tool } from '@langchain/core/tools';
+import { z } from 'zod';
+import { EnhancedBrowserTestFramework } from '../core/browser-framework.js';
+
+/**
+ * Creates a navigation tool for the framework
+ * @param framework - Framework instance
+ * @returns LangChain tool for navigation
+ */
+export function createNavigationTool(framework: EnhancedBrowserTestFramework) {
+  return tool(
+    async (params: {
+      location: string;
+      waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | undefined;
+    }) => {
+      const location = params.location;
+      const waitUntil = params.waitUntil ?? 'domcontentloaded';
+
+      const stepDesc = `Navigate to: ${location}`;
+      console.log(`🌍 ${stepDesc}`);
+
+      try {
+        await framework.currentPage!.goto(location, {
+          waitUntil,
+          timeout: 60000,
+        });
+        await framework.takeStepScreenshot(`Page loaded: ${location}`);
+
+        framework.logTestStep(
+          stepDesc,
+          'navigate',
+          { location, waitUntil },
+          `Successfully navigated to: ${location}`,
+          true
+        );
+        return `Successfully navigated to: ${location}`;
+      } catch (error: any) {
+        framework.logTestStep(
+          stepDesc,
+          'navigate',
+          { location, waitUntil },
+          error.message,
+          false
+        );
+        throw error;
+      }
+    },
+    {
+      name: 'navigate',
+      description: 'Navigate to a URL with enhanced options.',
+      schema: z.object({
+        location: z.string().describe('URL to navigate to'),
+        waitUntil: z
+          .enum(['load', 'domcontentloaded', 'networkidle'])
+          .optional(),
+      }),
+    }
+  );
+}
+```
 
 ## 📋 Implementation Checklist
 
@@ -28,10 +98,10 @@ seamlessly with the AI agent for specialized testing needs.
 #### 1.2 Tool Discovery System
 
 - [ ] **Create tool discovery module** -
-      `framework/core/custom-tool-discovery.js`
+      `framework/core/custom-tool-discovery.ts`
   - [ ] Directory scanning functionality
   - [ ] File import and validation
-  - [ ] ES module loading with cache busting
+  - [ ] module loading with cache busting
   - [ ] Error handling for malformed tools
   - [ ] Recursive directory traversal
 
@@ -40,6 +110,7 @@ seamlessly with the AI agent for specialized testing needs.
   - [ ] Check required exports (createXxxTool functions)
   - [ ] Validate tool metadata (name, description, schema)
   - [ ] Check for name conflicts with built-in tools
+  - [ ] Use zod schama for tool
 
 #### 1.3 Tool Loading Integration
 
@@ -49,33 +120,34 @@ seamlessly with the AI agent for specialized testing needs.
   - [ ] Merge custom and built-in tools
   - [ ] Handle tool initialization errors
 
-- [ ] **Framework integration** - Update browser-framework.js
+- [ ] **Framework integration** - Update framework
   - [ ] Pass custom tools to AI agent
   - [ ] Ensure framework instance is available to custom tools
   - [ ] Add logging for custom tool loading
+  - [ ] Log amount of avalible tools before run
 
 ### Phase 2: Tool Development Support 🔧
 
 #### 2.1 Tool Template System
 
-- [ ] **Create tool templates** - `framework/templates/`
-  - [ ] Basic tool template
-  - [ ] API tool template
-  - [ ] File operation tool template
-  - [ ] Database tool template
+- [ ] **Create tool templates / Examples ** - `framework/templates/`
+  - [ ] Basic tool template - UI Playwright
+  - [ ] API tool template - API Playwright
+  - [ ] File operation tool template - Plane TS
 
-- [ ] **CLI command for tool creation** - `endorphin create tool [name]`
-  - [ ] Generate tool file from template
-  - [ ] Add to config automatically
-  - [ ] Create basic test file
+- [ ] **CLI command for tool creation** - `endorphin-ai create tool [name]`
+  - [ ] Generate tool file from template / Example
+  - [ ] Generate from scratch ()
+  - [ ] Name and description and imports only in scafolded version
 
 #### 2.2 Development Tools
 
 - [ ] **Tool validation CLI** - `endorphin validate tools`
-  - [ ] Check tool syntax
-  - [ ] Validate exports
-  - [ ] Test tool loading
-  - [ ] Report conflicts or issues
+- [ ] Check tool syntax
+- [ ] Validate exports
+- [ ] Test tool loading
+- [ ] Report conflicts or issues
+- [ ] Tool documentation generator: Auto-generate docs from tool schemas
 
 - [ ] **Tool listing CLI** - `endorphin list tools`
   - [ ] Show all available tools (built-in + custom)
@@ -135,7 +207,6 @@ seamlessly with the AI agent for specialized testing needs.
   - [ ] Simple API tool
   - [ ] File manipulation tool
   - [ ] Environment variable tool
-  - [ ] Database mock tool
 
 - [ ] **Example test files**
   - [ ] Tests that use custom tools
@@ -186,14 +257,14 @@ framework/
 
 ### Configuration Schema
 
-```javascript
-// endorphin.config.js
+```typescript
+// endorphin.config.ts
 export default {
   // ...existing config
   customTools: [
     './tools', // Directory path
     './custom-tools', // Another directory
-    './integrations/api-tools.js', // Individual file
+    './api-tools', // Individual file
   ],
 };
 ```
@@ -206,7 +277,7 @@ export default {
    - Distinguish between files and directories
 
 2. **Directory Scanning**
-   - Recursively scan directories for .js files
+   - Recursively scan directories for .ts files
    - Filter for files with createXxxTool exports
    - Build file list for import
 
@@ -218,13 +289,13 @@ export default {
 
 4. **Integration**
    - Merge with built-in tools
-   - Check for name conflicts
+   - Check for name and description conflicts
    - Register with AI agent
    - Log loading results
 
 ### Error Handling Strategy
 
-```javascript
+```typescript
 // Example error handling in tool discovery
 try {
   const customToolModule = await import(toolPath);
@@ -275,7 +346,7 @@ try {
 ### Test Files to Create
 
 ```
-dev-tests/
+tests/
 ├── custom-tool-discovery.test.js    # Tool discovery logic
 ├── custom-tool-integration.test.js  # Framework integration
 ├── custom-tool-config.test.js       # Configuration handling
@@ -315,9 +386,9 @@ dev-tests/
 
 ## 🔍 Key Implementation Files
 
-### 1. `framework/core/custom-tool-discovery.js`
+### 1. `framework/core/custom-tool-discovery`
 
-```javascript
+```typescript
 // Main tool discovery and loading logic
 export class CustomToolDiscovery {
   constructor(config, framework) {
@@ -332,9 +403,9 @@ export class CustomToolDiscovery {
 }
 ```
 
-### 2. Updated `framework/core/config-loader.js`
+### 2. Updated `framework/core/config-loader`
 
-```javascript
+```typescript
 // Add customTools validation
 const configSchema = {
   // ...existing schema
@@ -346,9 +417,9 @@ const configSchema = {
 };
 ```
 
-### 3. Updated `framework/tools/index.js`
+### 3. Updated `framework/tools/index`
 
-```javascript
+```typescript
 export async function createAllTools(framework) {
   const builtInTools = [
     // ...existing built-in tools
@@ -382,7 +453,7 @@ export async function createAllTools(framework) {
 
 ## ✅ Acceptance Criteria
 
-- [ ] Users can configure custom tools in endorphin.config.js
+- [ ] Users can configure custom tools in endorphin.config.ts
 - [ ] Framework automatically discovers and loads custom tools
 - [ ] Custom tools work seamlessly with AI agent
 - [ ] Error handling prevents custom tools from breaking framework

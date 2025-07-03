@@ -3,8 +3,8 @@
  * Handles creation, tracking, and saving of test session data
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import { promises as fs } from 'node:fs';
+import * as path from 'node:path';
 import type { TestSession } from '../types/test.js';
 
 interface SessionSummary {
@@ -28,11 +28,11 @@ interface SessionSummary {
  * @param resultBaseDir - Base directory for test results
  * @returns Test session object
  */
-export function createTestSession(
+export async function createTestSession(
   testName: string,
   testId: string | null = null,
   resultBaseDir: string
-): TestSession {
+): Promise<TestSession> {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const sessionId = testId || `test-${Date.now()}`;
   const sessionName = `${sessionId}_${timestamp}`;
@@ -40,8 +40,8 @@ export function createTestSession(
   const screenshotsDir = path.join(sessionDir, 'screenshots');
 
   // Create directories
-  fs.mkdirSync(sessionDir, { recursive: true });
-  fs.mkdirSync(screenshotsDir, { recursive: true });
+  await fs.mkdir(sessionDir, { recursive: true });
+  await fs.mkdir(screenshotsDir, { recursive: true });
 
   const session: TestSession = {
     sessionId,
@@ -53,6 +53,7 @@ export function createTestSession(
     screenshotsDir,
     steps: [],
     toolCalls: [],
+    agentHistory: [],
     stepCounter: 0,
     screenshotCounter: 0,
     status: 'RUNNING',
@@ -98,15 +99,15 @@ export function generateSessionSummary(session: TestSession): SessionSummary {
  * @param session - Test session object
  * @returns Session summary
  */
-export function saveTestSession(session: TestSession): SessionSummary {
+export async function saveTestSession(session: TestSession): Promise<SessionSummary> {
   // Save complete session data
   const sessionFile = path.join(session.sessionDir, 'test-session.json');
-  fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2));
+  await fs.writeFile(sessionFile, JSON.stringify(session, null, 2));
 
   // Save summary
   const summary = generateSessionSummary(session);
   const summaryFile = path.join(session.sessionDir, 'summary.json');
-  fs.writeFileSync(summaryFile, JSON.stringify(summary, null, 2));
+  await fs.writeFile(summaryFile, JSON.stringify(summary, null, 2));
 
   console.log(`💾 Session data saved to: ${session.sessionDir}`);
   return summary;

@@ -16,8 +16,10 @@ framework is designed for extensibility, maintainability, and ease of testing.
 - ✅ **Path Aliases**: Clean imports with `@core/`, `@tools/`, `@types/`
 - ✅ **Comprehensive Testing**: Multi-tier testing strategy
 - ✅ **Production Ready**: No development dependencies at runtime
-- ✅ **TestCase Type**: Exported TestCase interface for test recorder integration
-- ✅ **Interactive HTML Reports**: Fully functional screenshot display and filtering
+- ✅ **TestCase Type**: Exported TestCase interface for test recorder
+  integration
+- ✅ **Interactive HTML Reports**: Fully functional screenshot display and
+  filtering
 
 ## 📁 Directory Structure
 
@@ -436,26 +438,6 @@ Session End → Resource Cleanup → Report Generation → File Storage
 ```
 
 ## 🔌 Extension Points
-
-### Custom Tools (TypeScript)
-
-Add new browser automation tools by implementing the typed tool interface:
-
-```typescript
-import type { Page } from 'playwright';
-import type { TestSession } from '@types/test.js';
-
-export class CustomTool {
-  constructor(
-    private page: Page,
-    private session: TestSession
-  ) {}
-
-  async execute(action: string): Promise<void> {
-    // Custom tool implementation with type safety
-  }
-}
-```
 
 ### Custom Reporters (TypeScript)
 

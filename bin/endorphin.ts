@@ -4,6 +4,10 @@
  * Endorphin AI CLI - E2E Testing Reinvented with AI
  */
 
+// Configure Node.js event system to handle more listeners (prevents memory leak warnings)
+import { EventEmitter } from 'node:events';
+EventEmitter.defaultMaxListeners = 50;
+
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -22,7 +26,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Get package info
-const packagePath = join(__dirname, '..', '..', 'package.json');
+const packagePath = join(__dirname, '..', 'package.json');
 const packageInfo = JSON.parse(readFileSync(packagePath, 'utf8'));
 
 const args = process.argv.slice(2);
@@ -57,7 +61,7 @@ const FLAG_PARSERS: Record<string, FlagParser> = {
     if (nextArg && !isNaN(Number(nextArg))) {
       return { parallel: parseInt(nextArg, 10), consumed: 1 };
     }
-    return {};
+    return { parallel: 2 }; // Default to 2 workers when flag is used without value
   },
   '--model': (nextArg) => {
     if (nextArg) {
@@ -152,6 +156,7 @@ Commands:
   run test --priority <level>    Run tests by priority (High, Medium, Low)
   run test-recorder              Start interactive test recorder
   list                           List all available tests
+  list tools                     List all available built-in tools
   generate report                Generate HTML test report
   generate report --summary      Generate lightweight summary report
   open report [file]             Open latest (or specific) test report in browser
@@ -164,7 +169,7 @@ Options:
   --no-headless          Run browser with visible UI
   --viewport <WxH>       Set browser viewport (e.g., 1920x1080)
   --timeout <ms>         Set test timeout in milliseconds
-  --parallel <n>         Run tests in parallel (default: 1)
+  --parallel <n>         Run tests in parallel (default: 2)
   --model <n>         Set AI model to use (e.g., gpt-4o-mini)
   --env <environment>    Set environment (development/staging/production)
 
@@ -172,10 +177,11 @@ Examples:
   endorphin init                               # Set up new project
   endorphin run test HEALTH-001                # Run example test
   endorphin run test all --headless            # Run all tests headless
-  endorphin run test --tag smoke --parallel 3  # Run smoke tests in parallel
+  endorphin run test --tag smoke --parallel 3  # Run smoke tests with 3 workers
   endorphin run test --priority High --env staging # Run high priority tests on staging
   endorphin run test-recorder                  # Start test recorder
   endorphin list                               # Show all available tests
+  endorphin list tools                         # Show all available built-in tools
   endorphin generate report                    # Generate interactive HTML report
   endorphin generate report --summary          # Generate lightweight summary report
   endorphin generate report --file custom.html # Generate report with custom filename
@@ -203,7 +209,7 @@ async function handleCleanupCommand(subcommand: string, target?: string): Promis
     console.log('🧹 Cleaning up old test results...');
     const keepCount = parseInt(target ?? '10', 10);
     const cleanup = await reporter.cleanupResults(keepCount);
-    console.log(`✅ Cleanup completed: ${cleanup.removedCount} directories removed`);
+    console.log(`✅ Cleanup completed: ${cleanup.deletedReports} reports removed`);
     process.exit(0);
   }
 
@@ -211,7 +217,7 @@ async function handleCleanupCommand(subcommand: string, target?: string): Promis
     console.log('🧹 Cleaning up old report files...');
     const maxAge = parseInt(target ?? '30', 10);
     const cleanup = await reporter.cleanupOldReports(maxAge);
-    console.log(`✅ Cleanup completed: ${cleanup.removedCount} report files removed`);
+    console.log(`✅ Cleanup completed: ${cleanup.deleted} report files removed`);
     process.exit(0);
   }
 
@@ -253,7 +259,12 @@ export async function main(): Promise<void> {
       case 'list': {
         // List command doesn't need AI validation
         const listConfig = await getConfig({ cwd: process.cwd(), cliFlags, validateAI: false });
-        await handleListCommand(listConfig);
+        if (subcommand === 'tools') {
+          const { handleListToolsCommand } = await import('../framework/cli/builtin-tools-command.js');
+          await handleListToolsCommand({ verbose: args.includes('--verbose') });
+        } else {
+          await handleListCommand(listConfig);
+        }
         break;
       }
       case 'run': {
@@ -265,7 +276,9 @@ export async function main(): Promise<void> {
         if (subcommand === 'test-recorder') {
           await handleTestRecorderCommand(runConfig);
         } else if (subcommand === 'test') {
-          await handleTestCommand(args, target, runConfig);
+          // Extract parallel/workers option from cliFlags
+          const options = { parallel: cliFlags.parallel || 1 };
+          await handleTestCommand(args, target, runConfig, options);
         } else {
           console.error(`❌ Unknown run command: ${subcommand}`);
           console.log('Use "endorphin help" for usage information');
@@ -309,11 +322,13 @@ const isMainModule = () => {
     // For ES modules, check if the current file matches the entry point
     const currentFile = fileURLToPath(import.meta.url);
     const entryFile = process.argv[1];
-    
+
     // Handle both direct execution and symlinked npm binaries
-    return currentFile === entryFile || 
-           entryFile.includes('endorphin-ai') || 
-           entryFile.includes('endorphin');
+    return (
+      currentFile === entryFile ||
+      entryFile.includes('endorphin-ai') ||
+      entryFile.includes('endorphin')
+    );
   } catch {
     return true; // Default to running if we can't determine
   }
