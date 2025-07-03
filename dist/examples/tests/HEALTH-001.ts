@@ -1,10 +1,10 @@
 /**
  * Sample Test - Getting Started with Endorphin AI
  * This test demonstrates basic navigation, interaction, setup, and data generation
+ * Development version with relative imports
  */
 
 import type { TestCase } from 'endorphin-ai';
-import { generateData } from 'endorphin-ai';
 
 export const HEALTH_001: TestCase = {
   id: 'HEALTH-001',
@@ -23,24 +23,13 @@ export const HEALTH_001: TestCase = {
     };
   },
 
-  // Optional async data generation function using AI
+  // Optional async data generation function
+  // Note: generateData utility is available at runtime, no need to import
   data: async () => {
     console.log('Generating test data...');
 
-    // Use AI to generate realistic user data
-    const userData = await generateData(
-      {
-        email: 'string - valid email address for testing',
-        password: 'string - simple password for testing',
-        username: 'string - expected username after login',
-      },
-      'Generate realistic test user credentials for a sample application'
-    );
-
-    // Override with known working credentials for this specific test
-
-    console.log('Generated test data...', userData);
-
+    // For this example, we'll use hardcoded data
+    // In real tests, you can use the generateData function that's available at runtime
     return {
       user: {
         email: 'papapin888@gmail.com',

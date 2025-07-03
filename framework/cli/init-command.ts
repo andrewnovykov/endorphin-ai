@@ -14,6 +14,17 @@ const getFrameworkRoot = (): string => {
   const possibleRoots = [
     // When installed as package: look in node_modules/endorphin-ai
     path.resolve(process.cwd(), 'node_modules/endorphin-ai'),
+    // When installed as package: try alternative paths
+    path.resolve(process.cwd(), 'node_modules/endorphin-ai/dist'),
+    // Try to resolve via require.resolve
+    (() => {
+      try {
+        const packagePath = require.resolve('endorphin-ai/package.json');
+        return path.dirname(packagePath);
+      } catch {
+        return null;
+      }
+    })(),
     // If running from project root (development)
     process.cwd(),
     // If __dirname is available (compiled JS), go up from framework/cli
@@ -94,8 +105,10 @@ async function copyExampleFiles(targetDir: string): Promise<void> {
   const files = [
     { src: '.env.example', dest: '.env' },
     { src: 'endorphin.config.ts', dest: 'endorphin.config.ts' },
-    { src: 'tests/sample-test.ts', dest: 'tests/sample-test.ts' },
-    { src: 'tests/ui-demo.ts', dest: 'tests/ui-demo.ts' },
+    { src: 'tests/SAMPLE-001.ts', dest: 'tests/SAMPLE-001.ts' },
+    { src: 'tests/HEALTH-001.ts', dest: 'tests/HEALTH-001.ts' },
+    { src: 'tests/HEALTH-002.ts', dest: 'tests/HEALTH-002.ts' },
+    { src: 'tests/QUARANTINE-001.ts', dest: 'tests/QUARANTINE-001.ts' },
     { src: '.gitignore.example', dest: '.gitignore' },
     { src: 'README-ENDORPHIN.md', dest: 'README-ENDORPHIN.md' },
   ];

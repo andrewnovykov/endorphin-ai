@@ -6,6 +6,44 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 /**
+ * Get possible package template paths when installed via npm
+ */
+function getPackageTemplatePaths() {
+    const packagePaths = [];
+    try {
+        // Try to resolve the package's main module
+        const packageRoot = require.resolve('endorphin-ai/package.json');
+        if (packageRoot) {
+            const packageDir = path.dirname(packageRoot);
+            packagePaths.push(path.join(packageDir, 'dist', 'framework', 'templates'), path.join(packageDir, 'framework', 'templates'), path.join(packageDir, 'templates'));
+        }
+    }
+    catch {
+        // Package not found via require.resolve, try alternative methods
+    }
+    try {
+        // Try to find via node_modules resolution
+        const nodeModulesPath = require.resolve('endorphin-ai');
+        if (nodeModulesPath) {
+            const modulePath = path.dirname(nodeModulesPath);
+            packagePaths.push(path.join(modulePath, '..', 'framework', 'templates'), path.join(modulePath, '..', 'dist', 'framework', 'templates'), path.join(modulePath, 'framework', 'templates'), path.join(modulePath, 'templates'));
+        }
+    }
+    catch {
+        // Module not found via require.resolve
+    }
+    // Try common npm installation paths
+    const cwd = process.cwd();
+    packagePaths.push(
+    // Local node_modules
+    path.join(cwd, 'node_modules', 'endorphin-ai', 'dist', 'framework', 'templates'), path.join(cwd, 'node_modules', 'endorphin-ai', 'framework', 'templates'), path.join(cwd, 'node_modules', 'endorphin-ai', 'templates'), 
+    // Alternative paths for tarballs and packages with flattened structure
+    path.join(cwd, 'node_modules', 'endorphin-ai', 'dist', 'templates'), path.join(cwd, 'node_modules', 'endorphin-ai', 'dist', 'dist', 'framework', 'templates'), 
+    // Global node_modules (common paths)
+    path.join(process.env.HOME || '/', '.npm', 'node_modules', 'endorphin-ai', 'dist', 'framework', 'templates'), path.join('/usr/local/lib/node_modules', 'endorphin-ai', 'dist', 'framework', 'templates'));
+    return packagePaths.filter(p => p); // Remove any undefined/null paths
+}
+/**
  * Get templates directory - works both in development and when installed as package
  */
 function getTemplatesDir() {
@@ -43,6 +81,8 @@ function getTemplatesDir() {
         path.resolve(currentDir, '../../../framework/templates'),
         // Direct path in distribution
         path.join(currentDir, 'templates'),
+        // NEW: When installed as npm package, find via require.resolve
+        ...getPackageTemplatePaths(),
     ];
     for (const templatePath of possiblePaths) {
         if (fs.existsSync(path.join(templatePath, 'reporter', 'report-template.html'))) {

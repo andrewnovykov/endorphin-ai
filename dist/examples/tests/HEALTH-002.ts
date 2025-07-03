@@ -1,14 +1,14 @@
 /**
  * Sample Test - Getting Started with Endorphin AI
  * This test demonstrates basic navigation, interaction, setup, and data generation
+ * Development version with relative imports
  */
 
 import type { TestCase } from 'endorphin-ai';
-import { generateData } from 'endorphin-ai';
 
-export const HEALTH_001: TestCase = {
-  id: 'HEALTH-001',
-  name: 'Sample Health Check Test',
+export const HEALTH_002: TestCase = {
+  id: 'HEALTH-002',
+  name: 'Second Health Check Test',
   description: 'A simple test to verify the framework is working correctly',
   priority: 'High',
   tags: ['health-check', 'sample'],
@@ -23,29 +23,13 @@ export const HEALTH_001: TestCase = {
     };
   },
 
-  // Optional async data generation function using AI
+  // Optional async data generation function
   data: async () => {
     console.log('Generating test data...');
-
-    // Use AI to generate realistic user data
-    const userData = await generateData(
-      {
-        email: 'string - valid email address for testing',
-        password: 'string - simple password for testing',
-        username: 'string - expected username after login',
-      },
-      'Generate realistic test user credentials for a sample application'
-    );
-
-    // Override with known working credentials for this specific test
-
-    console.log('Generated test data...', userData);
-
     return {
       user: {
         email: 'papapin888@gmail.com',
         password: 'lalalend',
-        expectedUsername: 'Andrew',
       },
     };
   },
@@ -59,7 +43,7 @@ export const HEALTH_001: TestCase = {
       STEP 5: Enter "${data?.user?.password}" in the password field
       STEP 6: Click "Sign In" button
       STEP 7: Wait 3 seconds for page load
-      STEP 8: Verify login was successful by checking username ${data?.user?.expectedUsername || 'Andrew'} is visible
+      STEP 8: Verify login was successful by checking username MAXIMUS is visible
     `;
   },
 };

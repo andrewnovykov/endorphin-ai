@@ -57,8 +57,6 @@ export default {
     directory: './test-results',
   },
 
-  globalSetup: './global.setup.js',
-
   // Execution configuration
   execution: {
     timeout: 30000,

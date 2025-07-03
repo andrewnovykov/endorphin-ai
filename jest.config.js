@@ -31,10 +31,7 @@ export default {
   },
 
   // Disable Babel transform for .ts files
-  transformIgnorePatterns: [
-    'node_modules/(?!(.*\\.mjs$))',
-    '<rootDir>/dist/',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))', '<rootDir>/dist/'],
 
   // Use projects for different test types
   projects: [
@@ -62,10 +59,7 @@ export default {
           },
         ],
       },
-      transformIgnorePatterns: [
-        'node_modules/(?!(.*\\.mjs$))',
-        '<rootDir>/dist/',
-      ],
+      transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))', '<rootDir>/dist/'],
       testMatch: [
         '<rootDir>/dev-tests/development/**/*.test.{js,ts}',
         '<rootDir>/dev-tests/development/**/*.spec.{js,ts}',
@@ -112,7 +106,6 @@ export default {
     },
   },
 
-
   // Global settings
   verbose: true,
   clearMocks: true,
@@ -128,4 +121,7 @@ export default {
     '<rootDir>/dev-tests/archive/**',
     '<rootDir>/dev-tests/package-tests/tmp/**',
   ],
+  watchman: false,
+  watch: false,
+  watchAll: false,
 };
