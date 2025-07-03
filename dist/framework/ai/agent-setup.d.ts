@@ -34,6 +34,6 @@ interface AgentWorkflow {
  */
 export declare function setupAgent(tools: any[], config?: {
     thread_id?: string;
-}): Promise<AgentWorkflow>;
+}): AgentWorkflow;
 export {};
 //# sourceMappingURL=agent-setup.d.ts.map

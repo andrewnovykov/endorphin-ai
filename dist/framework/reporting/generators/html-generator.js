@@ -10,19 +10,39 @@ import { fileURLToPath } from 'url';
  */
 function getTemplatesDir() {
     // Get the directory path of the current file (ES modules compatible)
-    const currentFileUrl = import.meta.url;
-    const currentFilePath = fileURLToPath(currentFileUrl);
-    const currentDir = path.dirname(currentFilePath);
+    // Handle Jest environment where import.meta.url might not be available
+    let currentDir;
+    // Use dynamic evaluation to avoid Jest parse errors
+    try {
+        // This technique avoids Jest parse errors with import.meta
+        const importMeta = (0, eval)('import.meta');
+        if (importMeta && importMeta.url) {
+            const currentFileUrl = importMeta.url;
+            const currentFilePath = fileURLToPath(currentFileUrl);
+            currentDir = path.dirname(currentFilePath);
+        }
+        else {
+            currentDir = process.cwd();
+        }
+    }
+    catch {
+        // Fallback for Jest or other environments
+        currentDir = process.cwd();
+    }
     // Try multiple possible paths for templates
     const possiblePaths = [
         // When running from source (development)
         path.join(process.cwd(), 'framework', 'templates'),
-        // When installed as npm package (from node_modules)
-        path.join(currentDir, '..', '..', 'templates'),
-        // When running from dist (built version)
+        // When installed as npm package - templates in dist/framework/templates
         path.join(currentDir, '..', 'templates'),
-        // Fallback: relative to this file
+        // When installed as npm package - alternative path
+        path.join(currentDir, '..', '..', 'templates'),
+        // When running from compiled dist/framework/reporting/generators
         path.resolve(currentDir, '../../templates'),
+        // When running from node_modules/endorphin-ai/dist/framework/reporting/generators
+        path.resolve(currentDir, '../../../framework/templates'),
+        // Direct path in distribution
+        path.join(currentDir, 'templates'),
     ];
     for (const templatePath of possiblePaths) {
         if (fs.existsSync(path.join(templatePath, 'reporter', 'report-template.html'))) {

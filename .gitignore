@@ -5,8 +5,9 @@ node_modules/
 .env
 
 # Test results
-test-results/
-test-recorder/
+test-results/*
+test-recorder/*
+test-reports/*
 
 # Logs
 *.log
@@ -17,9 +18,12 @@ pids
 *.pid
 *.seed
 
-# Coverage directory used by tools like istanbul
+# Coverage directory used by tools 
 coverage/
 dev-tests/development/coverage/
+dev-tests/package-tests/results/*
+dev-tests/package-tests/tmp/*
+tmp/*
 
 # IDE files
 .vscode/

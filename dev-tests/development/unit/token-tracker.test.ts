@@ -65,8 +65,8 @@ describe('TokenTracker', () => {
   describe('Cost Calculation', () => {
     it('should calculate GPT-4o costs correctly', () => {
       const usage = tracker.recordUsage(1000, 500, 'gpt-4o');
-      // GPT-4o: $0.0025 input, $0.01 output per 1K tokens
-      const expectedCost = (1000 / 1000) * 0.0025 + (500 / 1000) * 0.01;
+      // GPT-4o: $0.002187 input, $0.008747 output per 1K tokens (updated July 2025)
+      const expectedCost = (1000 / 1000) * 0.002187 + (500 / 1000) * 0.008747;
       expect(usage.cost).toBeCloseTo(expectedCost, 6);
     });
 

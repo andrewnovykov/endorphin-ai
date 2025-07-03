@@ -72,7 +72,7 @@ done
 
 # Test if example test is valid
 echo "🧪 Validating example test..."
-if [ -f "./tests/sample-test.ts" ] && (grep -q "HEALTH_001\|export const" "./tests/sample-test.ts"); then
+if [ -f "./tests/sample-test.ts" ] && (grep -q "HEALTH-001\|export const\|export default" "./tests/sample-test.ts"); then
   echo "✅ Example test syntax valid"
 else
   echo "❌ Example test has syntax errors"

@@ -61,7 +61,7 @@ export class TestResultsManager {
   /**
    * Process a completed test session
    */
-  async processCompletedSession(session: TestSession): Promise<any> {
+  processCompletedSession(session: TestSession): any {
     // This would be called from saveTestSession in test-session.ts
     // Add to results collection
     this.addTestResult(session);

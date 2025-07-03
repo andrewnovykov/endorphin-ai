@@ -65,7 +65,7 @@ describe('Critical Runtime Integration Tests', () => {
         expect(reportContent).toContain('<!DOCTYPE html>');
         expect(reportContent).toContain('Test Report');
       } catch (error) {
-        fail(`Template path resolution failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Template path resolution failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     });
   });
@@ -230,7 +230,7 @@ export const TEST_001: TestCase = {
       const content = await fs.readFile(testFilePath, 'utf8');
       
       // Should have new format
-      expect(content).toContain('data: async () => {');
+      expect(content).toContain('"data": async () => {');
       expect(content).toContain('return {');
       
       // Should NOT have old format
@@ -258,7 +258,7 @@ export const TEST_001: TestCase = {
         expect(typeof HtmlReporter).toBe('function');
         
       } catch (error) {
-        fail(`Module import resolution failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Module import resolution failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     });
   });

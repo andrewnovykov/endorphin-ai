@@ -62,7 +62,7 @@ describe('Package Distribution Integration Tests', () => {
         }
 
       } catch (error) {
-        fail(`Build process failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Build process failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 120000); // 2 minute timeout for build
   });
@@ -92,7 +92,7 @@ describe('Package Distribution Integration Tests', () => {
         expect(packageExists).toBe(true);
 
       } catch (error) {
-        fail(`Package creation failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Package creation failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 120000);
   });
@@ -159,7 +159,7 @@ try {
         expect(testOutput).toContain('SUCCESS');
 
       } catch (error) {
-        fail(`Installed package test failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Installed package test failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 180000); // 3 minute timeout for full package test
   });
@@ -244,7 +244,7 @@ try {
         expect(testOutput).toContain('SUCCESS');
 
       } catch (error) {
-        fail(`Template resolution test failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Template resolution test failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 180000);
   });

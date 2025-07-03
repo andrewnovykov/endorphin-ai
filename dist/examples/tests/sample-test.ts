@@ -49,8 +49,8 @@ const sampleTest: TestCase = {
       STEP 1: Navigate to ${setupData?.testUrl || 'https://qafromla.herokuapp.com/'}
       STEP 2: Click on "Log In" button
       STEP 3: Wait 2 seconds for page load
-      STEP 4: Enter "${data?.user?.email || 'user@example.com'}" in the email field
-      STEP 5: Enter "password123" in the password field
+      STEP 4: Enter "${data?.user?.email}" in the email field
+      STEP 5: Enter "${data?.user?.password}" in the password field
       STEP 6: Click "Sign In" button
       STEP 7: Wait 3 seconds for page load
       STEP 8: Verify login was successful by checking page content

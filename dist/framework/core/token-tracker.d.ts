@@ -2,7 +2,7 @@
  * Token Usage Tracker for Endorphin AI
  * Tracks AI token usage and costs for test sessions with configurable pricing
  */
-import { ModelPricing, PricingConfig } from '../config/pricing-config';
+import { ModelPricing, PricingConfig } from '../config/pricing-config.js';
 export interface TokenUsage {
     promptTokens: number;
     responseTokens: number;

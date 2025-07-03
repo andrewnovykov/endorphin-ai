@@ -2,7 +2,7 @@
  * Token Usage Tracker for Endorphin AI
  * Tracks AI token usage and costs for test sessions with configurable pricing
  */
-import { getModelPricing, mergePricingConfig, } from '../config/pricing-config';
+import { getModelPricing, mergePricingConfig, } from '../config/pricing-config.js';
 export class TokenTracker {
     tokenUsage = [];
     currentModel = 'gpt-4o';

@@ -34,9 +34,12 @@ describe('CLI Functionality Integration Tests', () => {
       const projectDir = path.join(testDir, 'test-init-project');
       
       try {
-        // Test the init command
-        const initOutput = execSync(`npx tsx bin/endorphin.ts init ${projectDir}`, {
-          cwd: originalCwd,
+        // Create project directory and cd into it
+        await fs.mkdir(projectDir, { recursive: true });
+        
+        // Test the init command from within the project directory
+        const initOutput = execSync(`npx tsx ${path.join(originalCwd, 'bin/endorphin.ts')} init`, {
+          cwd: projectDir,
           encoding: 'utf8',
           timeout: 30000
         });
@@ -64,11 +67,11 @@ describe('CLI Functionality Integration Tests', () => {
 
         // Verify sample test uses new data format
         const sampleTest = await fs.readFile(path.join(projectDir, 'tests/sample-test.ts'), 'utf8');
-        expect(sampleTest).toContain('data: async () => {');
+        expect(sampleTest).toMatch(/["']?data["']?\s*:\s*async\s*\(\)\s*=>/);
         expect(sampleTest).not.toContain('testData: {');
 
       } catch (error) {
-        fail(`CLI init command failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`CLI init command failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 60000);
   });
@@ -90,7 +93,7 @@ describe('CLI Functionality Integration Tests', () => {
         expect(helpOutput).toContain('generate');
 
       } catch (error) {
-        fail(`CLI help command failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`CLI help command failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 30000);
   });
@@ -103,7 +106,7 @@ describe('CLI Functionality Integration Tests', () => {
         let errorOutput = '';
         
         try {
-          execSync('npx tsx bin/endorphin.ts run test NONEXISTENT-001', {
+          execSync(`npx tsx ${path.join(originalCwd, 'bin/endorphin.ts')} run test NONEXISTENT-001`, {
             cwd: originalCwd,
             encoding: 'utf8',
             timeout: 15000
@@ -117,7 +120,7 @@ describe('CLI Functionality Integration Tests', () => {
         expect(errorOutput).toMatch(/not found|No tests found|Error/i);
 
       } catch (error) {
-        fail(`CLI run command validation failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`CLI run command validation failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 30000);
   });
@@ -142,7 +145,7 @@ describe('CLI Functionality Integration Tests', () => {
         expect(output).toMatch(/No test results|Report generated|Run some tests first/i);
 
       } catch (error) {
-        fail(`CLI generate report command failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`CLI generate report command failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 30000);
   });
@@ -184,7 +187,7 @@ describe('CLI Functionality Integration Tests', () => {
         expect(combinedOutput).toMatch(/Interactive Test Recorder|Test Data Collection|Initializing/i);
 
       } catch (error) {
-        fail(`CLI test recorder validation failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`CLI test recorder validation failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 30000);
   });
@@ -210,7 +213,7 @@ describe('CLI Functionality Integration Tests', () => {
         expect(errorOutput).toMatch(/Unknown command|Invalid command|help/i);
 
       } catch (error) {
-        fail(`CLI error handling test failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`CLI error handling test failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 30000);
   });
@@ -226,10 +229,10 @@ describe('CLI Functionality Integration Tests', () => {
         });
 
         expect(versionOutput).toBeDefined();
-        expect(versionOutput.trim()).toMatch(/^\d+\.\d+\.\d+/); // Version format
+        expect(versionOutput.trim()).toMatch(/Endorphin AI v\d+\.\d+\.\d+/); // Full version format
 
       } catch (error) {
-        fail(`CLI environment validation failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`CLI environment validation failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, 30000);
   });

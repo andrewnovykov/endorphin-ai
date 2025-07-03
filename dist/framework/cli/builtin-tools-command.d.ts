@@ -13,7 +13,7 @@ export interface BuiltinTool {
  */
 export declare function handleListToolsCommand(options?: {
     verbose?: boolean;
-}): Promise<void>;
+}): void;
 /**
  * Get tool count by category
  */

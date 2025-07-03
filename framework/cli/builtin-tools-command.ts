@@ -101,7 +101,7 @@ const BUILTIN_TOOLS: BuiltinTool[] = [
 /**
  * Handle list tools command - shows all built-in tools
  */
-export async function handleListToolsCommand(options: { verbose?: boolean } = {}): Promise<void> {
+export function handleListToolsCommand(options: { verbose?: boolean } = {}): void {
   console.log('🛠️ Built-in Browser Automation Tools\n');
 
   // Group tools by category

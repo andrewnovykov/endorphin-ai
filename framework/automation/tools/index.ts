@@ -23,7 +23,7 @@ import { createGetElementInfoTool, createVerifyElementTool } from './verificatio
  * @param framework - Framework instance
  * @returns Array of all configured LangChain tools
  */
-export async function createAllTools(framework: EnhancedBrowserTestFramework): Promise<any[]> {
+export function createAllTools(framework: EnhancedBrowserTestFramework): any[] {
   // Built-in browser automation tools
   const builtInTools = [
     // Navigation tools

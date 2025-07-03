@@ -13,8 +13,8 @@ import type {
 
 // Re-export for backward compatibility
 export type { OptimizationContext } from '../types/optimization-types.js';
-import { estimateTokens, formatForAI } from '../utils/formatting-utils';
-import { calculateScores, deduplicateChunks, selectOptimalChunks } from '../utils/scoring-utils';
+import { estimateTokens, formatForAI } from '../utils/formatting-utils.js';
+import { calculateScores, deduplicateChunks, selectOptimalChunks } from '../utils/scoring-utils.js';
 
 // Simple console logging to avoid circular dependencies
 const log = {

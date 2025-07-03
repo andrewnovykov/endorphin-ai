@@ -325,7 +325,7 @@ export class BrowserManager {
     /**
      * Determine if a console message should be filtered out
      */
-    shouldFilterConsoleMessage(text, level) {
+    shouldFilterConsoleMessage(text, _level) {
         const lowerText = text.toLowerCase();
         // Filter out mirror-related errors (CodeMirror, text editors, etc.)
         const mirrorPatterns = [

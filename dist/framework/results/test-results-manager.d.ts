@@ -36,7 +36,7 @@ export declare class TestResultsManager {
     /**
      * Process a completed test session
      */
-    processCompletedSession(session: TestSession): Promise<any>;
+    processCompletedSession(session: TestSession): any;
     /**
      * Generate a test report from collected results
      */

@@ -94,8 +94,8 @@ export class BrowserEngine {
     // Initialize global setup manager
     this.globalSetupManager = new GlobalSetupManager();
     
-    // Initialize validation agent
-    this.validationAgent = new ValidationAgent();
+    // Initialize validation agent with token tracker
+    this.validationAgent = new ValidationAgent(this.tokenTracker);
   }
 
   /**
@@ -646,7 +646,7 @@ export class BrowserEngine {
         status: validationResult.status,
         conclusion: validationResult.conclusion
       };
-    } catch (error) {
+    } catch {
       console.error('Validation agent failed, falling back to pattern analysis');
       return this.analyzeTestResult(finalState);
     }

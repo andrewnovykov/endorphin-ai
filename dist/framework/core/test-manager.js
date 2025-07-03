@@ -7,8 +7,17 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 dotenv.config();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Handle Jest environment where import.meta.url might not be available
+let __filename = '';
+let __dirname = process.cwd();
+try {
+    __filename = fileURLToPath(import.meta.url);
+    __dirname = path.dirname(__filename);
+}
+catch {
+    // Fallback for Jest or other environments without import.meta
+    __dirname = process.cwd();
+}
 export class TestManager {
     framework = null; // Framework instance (if needed)
     testsDir;

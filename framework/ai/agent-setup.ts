@@ -23,7 +23,7 @@ import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
 import { BaseMessage, AIMessage } from '@langchain/core/messages';
 import { AGENT_CONFIG } from './config/agent-config.js';
-import { parseSteps } from '../utils/step-parser.js';
+// import { parseSteps } from '../utils/step-parser.js'; // Currently unused
 
 // Simplified State Annotation for Proper Memory Management
 const TestState = Annotation.Root({
@@ -61,7 +61,7 @@ const memorySaver = new MemorySaver();
  * @param config - Optional configuration with thread_id for memory persistence
  * @returns Compiled agent workflow
  */
-export async function setupAgent(tools: any[], config?: { thread_id?: string }): Promise<AgentWorkflow> {
+export function setupAgent(tools: any[], config?: { thread_id?: string }): AgentWorkflow {
   console.log('🤖 Configuring AI agent with tools...');
   
   // Log memory configuration

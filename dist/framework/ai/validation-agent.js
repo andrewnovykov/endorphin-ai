@@ -12,7 +12,9 @@ import { AGENT_CONFIG } from './config/agent-config.js';
  */
 export class ValidationAgent {
     model;
-    constructor() {
+    tokenTracker;
+    constructor(tokenTracker) {
+        this.tokenTracker = tokenTracker;
         if (!AGENT_CONFIG.openai.apiKey) {
             throw new Error('OpenAI API key is required for validation agent');
         }
@@ -64,11 +66,32 @@ Remember: The test task was: ${testTask}
 
 Provide your analysis in the specified JSON format.`;
         try {
+            // Track token usage if tracker is available
+            const systemMessage = new SystemMessage(systemPrompt);
+            const humanMessage = new HumanMessage(prompt);
+            // Estimate token usage before making the call
+            if (this.tokenTracker) {
+                const promptTokens = this.tokenTracker.estimateTokens(systemPrompt + prompt);
+                console.log(`🧠 Validation Agent: Estimated ${promptTokens} input tokens`);
+            }
             const response = await this.model.invoke([
-                new SystemMessage(systemPrompt),
-                new HumanMessage(prompt),
+                systemMessage,
+                humanMessage,
             ]);
             const content = response.content;
+            // Record actual token usage if available in response metadata
+            if (this.tokenTracker && response.usage_metadata) {
+                const usage = response.usage_metadata;
+                const tokenUsage = this.tokenTracker.recordUsage(usage.input_tokens || 0, usage.output_tokens || 0, 'gpt-4o');
+                console.log(`💰 Validation Agent used ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)})`);
+            }
+            else if (this.tokenTracker) {
+                // Fallback: estimate tokens if usage metadata not available
+                const promptTokens = this.tokenTracker.estimateTokens(systemPrompt + prompt);
+                const responseTokens = this.tokenTracker.estimateTokens(content);
+                const tokenUsage = this.tokenTracker.recordUsage(promptTokens, responseTokens, 'gpt-4o');
+                console.log(`💰 Validation Agent used ~${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) [estimated]`);
+            }
             // Parse JSON response
             const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (jsonMatch) {

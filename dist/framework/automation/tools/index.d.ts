@@ -8,5 +8,5 @@ import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
  * @param framework - Framework instance
  * @returns Array of all configured LangChain tools
  */
-export declare function createAllTools(framework: EnhancedBrowserTestFramework): Promise<any[]>;
+export declare function createAllTools(framework: EnhancedBrowserTestFramework): any[];
 //# sourceMappingURL=index.d.ts.map

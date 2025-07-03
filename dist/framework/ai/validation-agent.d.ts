@@ -5,6 +5,7 @@
  * to determine if tests passed or failed based on the execution history
  */
 import { BaseMessage } from '@langchain/core/messages';
+import type { TokenTracker } from '../core/token-tracker.js';
 export interface ValidationResult {
     status: 'SUCCESS' | 'FAILED';
     conclusion: string;
@@ -16,7 +17,8 @@ export interface ValidationResult {
  */
 export declare class ValidationAgent {
     private model;
-    constructor();
+    private tokenTracker;
+    constructor(tokenTracker?: TokenTracker);
     /**
      * Analyze test execution messages to determine result
      */

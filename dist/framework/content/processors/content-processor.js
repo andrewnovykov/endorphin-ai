@@ -1,8 +1,8 @@
 /**
  * Content processor for page optimization
  */
-import { estimateTokens, formatForAI } from '../utils/formatting-utils';
-import { calculateScores, deduplicateChunks, selectOptimalChunks } from '../utils/scoring-utils';
+import { estimateTokens, formatForAI } from '../utils/formatting-utils.js';
+import { calculateScores, deduplicateChunks, selectOptimalChunks } from '../utils/scoring-utils.js';
 // Simple console logging to avoid circular dependencies
 const log = {
     info: (msg, data) => console.log(`[ContentProcessor] ${msg}`, data || ''),

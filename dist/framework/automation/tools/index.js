@@ -14,7 +14,7 @@ import { createGetElementInfoTool, createVerifyElementTool } from './verificatio
  * @param framework - Framework instance
  * @returns Array of all configured LangChain tools
  */
-export async function createAllTools(framework) {
+export function createAllTools(framework) {
     // Built-in browser automation tools
     const builtInTools = [
         // Navigation tools

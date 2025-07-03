@@ -8,7 +8,7 @@ import {
   mergePricingConfig,
   ModelPricing,
   PricingConfig,
-} from '../config/pricing-config';
+} from '../config/pricing-config.js';
 
 export interface TokenUsage {
   promptTokens: number;

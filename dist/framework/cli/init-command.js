@@ -4,6 +4,7 @@
  */
 import fs from 'fs/promises';
 import path from 'path';
+import { execSync } from 'child_process';
 // Get the framework root directory by going up from this file's location
 // This works both in compiled JS and during testing
 const getFrameworkRoot = () => {
@@ -46,13 +47,8 @@ export async function initProject(targetDir = process.cwd()) {
         console.log('  1. Edit .env and add your OpenAI API key');
         console.log('  2. Run: npx endorphin-ai run test HEALTH-001');
         console.log('  3. Try the UI demo: npx endorphin-ai run test UI-DEMO-001');
-        console.log('  4. Check your custom tools: npx endorphin-ai list tools');
-        console.log('  5. Try: npx endorphin-ai generate report');
-        console.log('  6. Try: npx endorphin-ai run test-recorder');
-        console.log('');
-        console.log('🛠️ Custom UI Tools:');
-        console.log('  - Login UI tool included in tools/ directory');
-        console.log('  - Create more: npx endorphin-ai create tool my-tool --template ui');
+        console.log('  4. Try: npx endorphin-ai generate report');
+        console.log('  5. Try: npx endorphin-ai run test-recorder');
         console.log('');
         console.log('📚 Learn more: https://github.com/andrewnovykov/endorphin-ai');
     }
@@ -62,7 +58,7 @@ export async function initProject(targetDir = process.cwd()) {
     }
 }
 async function createDirectories(targetDir) {
-    const dirs = ['tests', 'test-results', 'test-recorder', 'tools'];
+    const dirs = ['tests', 'test-results', 'test-recorder'];
     for (const dir of dirs) {
         const dirPath = path.join(targetDir, dir);
         await fs.mkdir(dirPath, { recursive: true });
@@ -88,8 +84,6 @@ async function copyExampleFiles(targetDir) {
         { src: 'endorphin.config.ts', dest: 'endorphin.config.ts' },
         { src: 'tests/sample-test.ts', dest: 'tests/sample-test.ts' },
         { src: 'tests/ui-demo.ts', dest: 'tests/ui-demo.ts' },
-        { src: 'tools/login-ui-tool.ts', dest: 'tools/login-ui-tool.ts' },
-        { src: 'tools/README.md', dest: 'tools/README.md' },
         { src: '.gitignore.example', dest: '.gitignore' },
         { src: 'README-ENDORPHIN.md', dest: 'README-ENDORPHIN.md' },
     ];
@@ -151,6 +145,33 @@ async function fileExists(filePath) {
     }
 }
 async function createBasicFiles(targetDir) {
+    // Initialize npm package.json first
+    try {
+        console.log('📦 Initializing npm package...');
+        execSync('npm init -y', {
+            cwd: targetDir,
+            stdio: 'pipe' // Suppress output
+        });
+        console.log('📄 Created: package.json');
+        // Add endorphin-ai dependency
+        const packageJsonPath = path.join(targetDir, 'package.json');
+        const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
+        packageJson.type = 'module';
+        packageJson.dependencies = {
+            'endorphin-ai': '^0.8.0',
+            ...packageJson.dependencies
+        };
+        packageJson.devDependencies = {
+            '@types/node': '^20.0.0',
+            'typescript': '^5.0.0',
+            ...packageJson.devDependencies
+        };
+        await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
+        console.log('📄 Updated: package.json (added dependencies)');
+    }
+    catch (error) {
+        console.warn(`⚠️  Could not create package.json: ${error.message}`);
+    }
     // Create basic .env file
     const envContent = `OPENAI_API_KEY=your_openai_api_key_here
 
@@ -193,11 +214,6 @@ export default {
   // Test Settings
   testsDirectory: 'tests',
   environment: 'development',
-
-  // Custom tools configuration
-  customTools: [
-    './tools', // Load all tools from the tools directory
-  ],
 };
 
 // 🎯 Configuration Tips:
@@ -300,198 +316,6 @@ Welcome to your new Endorphin AI testing project! 🎯
 Happy testing! 🚀`;
     await fs.writeFile(path.join(targetDir, 'README-ENDORPHIN.md'), readmeContent);
     console.log('📄 Created: README-ENDORPHIN.md');
-    // Create custom tools
-    await createBasicCustomTools(targetDir);
-}
-async function createBasicCustomTools(targetDir) {
-    // Create tools directory
-    await fs.mkdir(path.join(targetDir, 'tools'), { recursive: true });
-    // Create Login UI tool
-    const loginToolContent = `/**
- * Login UI Tool
- * This tool demonstrates UI automation for login functionality
- */
-
-import { tool } from '@langchain/core/tools';
-import { z } from 'zod';
-import type { EnhancedBrowserTestFramework } from 'endorphin-ai';
-
-/**
- * Creates a Login UI automation tool
- * @param framework - Framework instance with browser access
- * @returns LangChain tool for login automation
- */
-export function createLoginTool(framework: EnhancedBrowserTestFramework) {
-  return tool(
-    async (params: {
-      email: string;
-      password: string;
-      loginLinkSelector?: string;
-      emailSelector?: string;
-      passwordSelector?: string;
-      submitSelector?: string;
-    }) => {
-      const { 
-        email, 
-        password,
-        loginLinkSelector = 'a.nav-link[href="#/login"]',
-        emailSelector = 'input.form-control.form-control-lg[name="email"]',
-        passwordSelector = 'input.form-control.form-control-lg[name="password"]',
-        submitSelector = 'button.btn.btn-lg.btn-primary.pull-xs-right[data-cy="signin"]'
-      } = params;
-      
-      if (!framework.currentPage) {
-        throw new Error('No browser page available. Make sure a browser session is active.');
-      }
-      
-      const page = framework.currentPage;
-      
-      try {
-        framework.logTestStep('Starting login process', 'login-ui-tool');
-        
-        // Click login link
-        await page.click(loginLinkSelector);
-        await page.waitForTimeout(2000);
-        
-        framework.logTestStep('Filling login form', 'login-ui-tool');
-        
-        // Fill email field
-        await page.locator(emailSelector).fill(email);
-        
-        // Fill password field  
-        await page.locator(passwordSelector).fill(password);
-        
-        // Click sign in button
-        await page.click(submitSelector);
-        await page.waitForTimeout(3000);
-        
-        framework.logTestStep('Login completed successfully', 'login-ui-tool');
-        return \`✅ Login completed successfully for user: $\{email}\`;
-        
-      } catch (error: any) {
-        framework.logTestStep(
-          'Login failed',
-          'login-ui-tool',
-          params,
-          error.message,
-          false
-        );
-        throw error;
-      }
-    },
-    {
-      name: 'login-ui-tool',
-      description: 'UI automation tool for login functionality with customizable selectors',
-      schema: z.object({
-        email: z.string().describe('Email address for login'),
-        password: z.string().describe('Password for login'),
-        loginLinkSelector: z.string().optional().describe('CSS selector for login link'),
-        emailSelector: z.string().optional().describe('CSS selector for email input'),
-        passwordSelector: z.string().optional().describe('CSS selector for password input'),
-        submitSelector: z.string().optional().describe('CSS selector for submit button'),
-      }),
-    }
-  );
-}`;
-    await fs.writeFile(path.join(targetDir, 'tools/login-ui-tool.ts'), loginToolContent);
-    console.log('📄 Created: tools/login-ui-tool.ts');
-    // Create tools README
-    const toolsReadmeContent = `# Custom Tools
-
-This directory contains custom tools for your Endorphin AI project.
-
-## 🛠️ Available Tools
-
-### Login UI Tool (\`login-ui-tool.ts\`)
-A working example tool that demonstrates UI automation for login functionality.
-
-**Features:**
-- Login automation with customizable selectors
-- Browser session integration
-- Error handling for missing elements
-- Flexible selector configuration
-
-**Usage in tests:**
-\`\`\`yaml
-steps:
-  - action: Use login-ui-tool to login with email "user@example.com" and password "password123"
-  - action: Use login-ui-tool with custom selectors for your application
-\`\`\`
-
-## 🎯 Using generateData()
-
-The framework includes a built-in data generation utility. Use it OUTSIDE the test case definition:
-
-\`\`\`typescript
-import { TestCase, generateData } from 'endorphin-ai';
-
-// Generate test data outside the test case
-const userData = await generateData(framework, {
-  email: "string",
-  password: "string"
-}, "Generate realistic user credentials");
-
-export const MY_TEST: TestCase = {
-  id: 'TEST-001',
-  name: 'Example Test',
-  task: \`Login with email \${userData.email} and password \${userData.password}\`,
-  // ... other properties
-};
-
-// Token usage is logged automatically:
-// 🪙 Data generation used 156 tokens ($0.0024)
-\`\`\`
-
-## 📝 Creating New Tools
-
-To create a new custom tool:
-
-\`\`\`bash
-npx endorphin create tool my-new-tool --template ui
-\`\`\`
-
-Available templates:
-- \`basic\` - Simple tool template
-- \`ui\` - UI automation tool for browser interactions
-- \`api\` - API testing tool template (Note: API tools will be built-in in future)
-
-## 🔧 Configuration
-
-Your tools are automatically loaded because they're configured in \`endorphin.config.ts\`:
-
-\`\`\`typescript
-export default {
-  // ... other config
-  customTools: [
-    './tools'  // This directory
-  ],
-};
-\`\`\`
-
-## 📚 Learn More
-
-- [Custom Tools Guide](https://github.com/andrewnovykov/endorphin-ai#custom-tools)
-- [UI Automation Best Practices](https://github.com/andrewnovykov/endorphin-ai#ui-automation)
-- [Framework Documentation](https://github.com/andrewnovykov/endorphin-ai#documentation)`;
-    await fs.writeFile(path.join(targetDir, 'tools/README.md'), toolsReadmeContent);
-    console.log('📄 Created: tools/README.md');
-    // Create UI demo test (TypeScript)
-    const uiDemoContent = `import type { TestCase } from 'endorphin-ai';
-
-export const UI_DEMO: TestCase = {
-  id: 'UI-DEMO-001',
-  name: 'Login UI Demo',
-  description: 'Demonstrates UI automation with custom tools',
-  priority: 'Medium',
-  tags: ['ui', 'demo', 'login', 'custom-tools'],
-  site: 'https://realworld.io',
-  
-  task: \`
-    Navigate to the login page and use login-ui-tool to login with email "demo@example.com" and password "demopassword123".
-    After login, verify the user is successfully authenticated by checking for user profile elements.
-  \`,
-};`;
-    await fs.writeFile(path.join(targetDir, 'tests/ui-demo.ts'), uiDemoContent);
-    console.log('📄 Created: tests/ui-demo.ts');
+    // No custom tools needed - functionality removed
 }
 //# sourceMappingURL=init-command.js.map

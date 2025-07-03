@@ -389,7 +389,7 @@ export class BrowserManager {
   /**
    * Determine if a console message should be filtered out
    */
-  private shouldFilterConsoleMessage(text: string, level: string): boolean {
+  private shouldFilterConsoleMessage(text: string, _level: string): boolean {
     const lowerText = text.toLowerCase();
     
     // Filter out mirror-related errors (CodeMirror, text editors, etc.)

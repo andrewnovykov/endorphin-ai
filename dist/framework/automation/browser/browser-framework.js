@@ -17,6 +17,11 @@ export class EnhancedBrowserTestFramework {
      * Initialize framework
      */
     async initialize() {
+        // Only initialize if not already initialized
+        if (this.browserEngine) {
+            console.log('⚡ Framework already initialized, reusing existing instance');
+            return;
+        }
         console.log('🚀 Initializing Enhanced Browser Test Framework...');
         // Create and initialize browser engine
         this.browserEngine = this.frameworkManager.createBrowserEngine(this);

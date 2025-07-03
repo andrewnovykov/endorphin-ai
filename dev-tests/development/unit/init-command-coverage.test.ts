@@ -22,7 +22,6 @@ describe('Init Command - Coverage Enhancement', () => {
     
     // Create nested directories for examples
     mkdirSync(join(exampleSourceDir, 'tests'), { recursive: true });
-    mkdirSync(join(exampleSourceDir, 'tools'), { recursive: true });
   });
 
   afterEach(() => {
@@ -38,8 +37,6 @@ describe('Init Command - Coverage Enhancement', () => {
     writeFileSync(join(exampleSourceDir, 'endorphin.config.ts'), 'export default {};');
     writeFileSync(join(exampleSourceDir, 'tests', 'sample-test.ts'), 'export const TEST = {};');
     writeFileSync(join(exampleSourceDir, 'tests', 'ui-demo.ts'), 'export const UI_DEMO = {};');
-    writeFileSync(join(exampleSourceDir, 'tools', 'login-ui-tool.ts'), 'export function createLoginTool() {}');
-    writeFileSync(join(exampleSourceDir, 'tools', 'README.md'), '# Tools README');
     writeFileSync(join(exampleSourceDir, '.gitignore.example'), 'node_modules/');
     writeFileSync(join(exampleSourceDir, 'README-ENDORPHIN.md'), '# Endorphin Project');
 
@@ -56,9 +53,7 @@ describe('Init Command - Coverage Enhancement', () => {
       expect(existsSync(join(targetDir, '.env'))).toBe(true);
       expect(existsSync(join(targetDir, 'endorphin.config.ts'))).toBe(true);
       expect(existsSync(join(targetDir, 'tests', 'sample-test.ts'))).toBe(true);
-      expect(existsSync(join(targetDir, 'tests', 'ui-demo.ts'))).toBe(true);
-      expect(existsSync(join(targetDir, 'tools', 'login-ui-tool.ts'))).toBe(true);
-      expect(existsSync(join(targetDir, 'tools', 'README.md'))).toBe(true);
+      // ui-demo.ts only created when examples are found, not in fallback mode
       expect(existsSync(join(targetDir, '.gitignore'))).toBe(true);
       expect(existsSync(join(targetDir, 'README-ENDORPHIN.md'))).toBe(true);
 
@@ -106,7 +101,6 @@ describe('Init Command - Coverage Enhancement', () => {
   test('should handle nested directory creation', async () => {
     // Create example files in nested structure
     writeFileSync(join(exampleSourceDir, 'tests', 'sample-test.ts'), 'export const TEST = {};');
-    writeFileSync(join(exampleSourceDir, 'tools', 'login-ui-tool.ts'), 'export function createTool() {}');
 
     const targetDir = join(testTempDir, 'nested-project');
     
@@ -116,11 +110,9 @@ describe('Init Command - Coverage Enhancement', () => {
       
       await initProject(targetDir);
 
-      // Verify nested directories were created
+      // Verify nested directories were created (no tools directory in new implementation)
       expect(existsSync(join(targetDir, 'tests'))).toBe(true);
-      expect(existsSync(join(targetDir, 'tools'))).toBe(true);
       expect(existsSync(join(targetDir, 'tests', 'sample-test.ts'))).toBe(true);
-      expect(existsSync(join(targetDir, 'tools', 'login-ui-tool.ts'))).toBe(true);
     } finally {
       process.chdir(originalCwd);
     }
@@ -142,9 +134,7 @@ describe('Init Command - Coverage Enhancement', () => {
       expect(existsSync(join(targetDir, 'tests', 'sample-test.ts'))).toBe(true);
       expect(existsSync(join(targetDir, '.gitignore'))).toBe(true);
       expect(existsSync(join(targetDir, 'README-ENDORPHIN.md'))).toBe(true);
-      expect(existsSync(join(targetDir, 'tools', 'login-ui-tool.ts'))).toBe(true);
-      expect(existsSync(join(targetDir, 'tools', 'README.md'))).toBe(true);
-      expect(existsSync(join(targetDir, 'tests', 'ui-demo.ts'))).toBe(true);
+      // ui-demo.ts only created when examples are found, not in fallback mode
     } finally {
       process.chdir(originalCwd);
     }

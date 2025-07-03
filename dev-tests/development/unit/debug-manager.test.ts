@@ -34,8 +34,7 @@ const mockFramework = {
     ]),
     getToolStats: jest.fn().mockReturnValue({
       total: 3,
-      builtIn: 2,
-      custom: 1,
+      builtIn: 3, // All tools are now built-in
       toolNames: ['navigate', 'click', 'customTool']
     }),
     getCustomToolDiscovery: jest.fn().mockReturnValue({
@@ -129,7 +128,7 @@ describe('DebugManager', () => {
       expect(debugObj.session).toBeNull();
       expect(debugObj.config).toBeDefined();
       expect(debugObj.tools).toBeDefined();
-      expect(debugObj.customTools).toBeDefined();
+      // customTools no longer exists since custom tools functionality was removed
       expect(debugObj.utils).toBeDefined();
       expect(debugObj.version).toBeDefined();
       expect(debugObj.isDebugMode).toBe(true);
@@ -189,19 +188,17 @@ describe('DebugManager', () => {
     it('should update tools in debug object', () => {
       const frameworkTools = [
         { name: 'navigate', description: 'Navigate to URL', schema: {} },
-        { name: 'click', description: 'Click element', schema: {} }
-      ];
-      const customTools = [
+        { name: 'click', description: 'Click element', schema: {} },
         { name: 'customTool', description: 'Custom tool', schema: {} }
       ];
-
-      debugManager.updateTools(frameworkTools, customTools);
+      // All tools are now framework tools
+      debugManager.updateTools(frameworkTools, []);
 
       const debugObj = (globalThis as any).endorphinDebug;
-      expect(debugObj.tools).toHaveLength(2);
-      expect(debugObj.customTools).toHaveLength(1);
+      // All tools are now framework tools, custom tools functionality removed
+      expect(debugObj.tools).toHaveLength(3); // navigate, click, customTool all treated as framework tools
       expect(debugObj.tools[0].name).toBe('navigate');
-      expect(debugObj.customTools[0].name).toBe('customTool');
+      // customTools property no longer exists
     });
   });
 
@@ -318,12 +315,11 @@ describe('DebugManager', () => {
       // First update tools to populate the debug object
       const frameworkTools = [
         { name: 'navigate', description: 'Navigate to URL', schema: {} },
-        { name: 'click', description: 'Click element', schema: {} }
-      ];
-      const customTools = [
+        { name: 'click', description: 'Click element', schema: {} },
         { name: 'customTool', description: 'Custom tool', schema: {} }
       ];
-      debugManager.updateTools(frameworkTools, customTools);
+      // All tools are now framework tools
+      debugManager.updateTools(frameworkTools, []);
 
       const debugObj = (globalThis as any).endorphinDebug;
       const toolsInfo = debugObj.utils.inspectTools();
@@ -338,7 +334,7 @@ describe('DebugManager', () => {
 
       const customTool = toolsInfo.find((t: any) => t.name === 'customTool');
       expect(customTool).toBeDefined();
-      expect(customTool.type).toBe('custom');
+      expect(customTool.type).toBe('framework'); // All tools are now framework tools
       expect(customTool.isLoaded).toBe(true);
     });
 
@@ -377,16 +373,15 @@ describe('DebugManager', () => {
 
       const toolStats = debugObj.utils.getToolStats();
       expect(toolStats.total).toBe(3);
-      expect(toolStats.builtIn).toBe(2);
-      expect(toolStats.custom).toBe(1);
+      expect(toolStats.builtIn).toBe(3); // All tools are now built-in tools
+      // custom field no longer exists
 
       const tool = debugObj.utils.getToolByName('navigate');
       expect(tool).toBeDefined();
       expect(tool.name).toBe('navigate');
 
-      const customToolInfo = debugObj.utils.getCustomToolDiscoveryInfo();
-      expect(customToolInfo.hasCustomTools).toBe(true);
-      expect(customToolInfo.totalLoaded).toBe(1);
+      // Custom tools functionality was removed
+      // All tools are now framework tools
     });
   });
 

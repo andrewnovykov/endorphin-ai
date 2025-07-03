@@ -88,7 +88,7 @@ const BUILTIN_TOOLS = [
 /**
  * Handle list tools command - shows all built-in tools
  */
-export async function handleListToolsCommand(options = {}) {
+export function handleListToolsCommand(options = {}) {
     console.log('🛠️ Built-in Browser Automation Tools\n');
     // Group tools by category
     const categories = [...new Set(BUILTIN_TOOLS.map(tool => tool.category))];

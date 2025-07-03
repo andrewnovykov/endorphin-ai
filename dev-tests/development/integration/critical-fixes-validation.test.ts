@@ -286,9 +286,9 @@ describe('Critical Fixes Validation Tests', () => {
         // Read generated test file
         const testContent = await fs.readFile(result!.testFilePath, 'utf8');
         
-        // Should have NEW format
+        // Should have NEW format  
         expect(testContent).toContain('data: async () => {');
-        expect(testContent).toContain('return {');
+        expect(testContent).toMatch(/return\s+\{/);
         
         // Should NOT have OLD format
         expect(testContent).not.toContain('testData: {');
