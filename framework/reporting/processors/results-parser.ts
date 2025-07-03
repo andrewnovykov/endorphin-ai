@@ -24,12 +24,15 @@ export interface ParsedTestResult {
   startTime: string;
   endTime?: string;
   finalResult?: string;
+  conclusion?: string;
   steps: any[];
   screenshots: string[];
   sessionDir: string;
   tokenSummary?: any;
   setupResult?: any;
   dataGenerationResult?: any;
+  totalSteps?: number;
+  successfulSteps?: number;
 }
 
 export interface ReportData {
@@ -144,6 +147,9 @@ export class ResultsParser {
         startTime: sessionData.startTime,
         endTime: sessionData.endTime,
         finalResult: sessionData.finalResult,
+        conclusion: sessionData.conclusion,
+        totalSteps: sessionData.totalSteps || sessionData.steps?.length || 0,
+        successfulSteps: sessionData.successfulSteps || sessionData.steps?.filter((s: any) => s.status === 'SUCCESS').length || 0,
         steps: sessionData.steps || [],
         screenshots: this.extractScreenshotPaths(sessionData.steps || []),
         sessionDir: path.dirname(sessionFile),

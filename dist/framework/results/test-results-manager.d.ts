@@ -38,10 +38,6 @@ export declare class TestResultsManager {
      */
     processCompletedSession(session: TestSession): Promise<any>;
     /**
-     * Copy test session results to recorder directory
-     */
-    copySessionToRecorder(session: TestSession): Promise<void>;
-    /**
      * Generate a test report from collected results
      */
     generateReport(): TestReport;

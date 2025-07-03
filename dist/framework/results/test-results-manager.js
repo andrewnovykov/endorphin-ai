@@ -49,51 +49,12 @@ export class TestResultsManager {
         // This would be called from saveTestSession in test-session.ts
         // Add to results collection
         this.addTestResult(session);
-        // Copy to recorder if enabled
-        if (this.enableRecorderCopy) {
-            await this.copySessionToRecorder(session);
-        }
+        // Note: Recorder data is stored directly in test-recorder directory during recording
+        // No need to copy from test-results to avoid duplication
         return session;
     }
-    /**
-     * Copy test session results to recorder directory
-     */
-    async copySessionToRecorder(session) {
-        try {
-            const recorderSessionDir = path.join(this.recorderDir, session.sessionName);
-            const recorderScreenshotsDir = path.join(recorderSessionDir, 'screenshots');
-            // Create recorder directories
-            await fs.mkdir(recorderSessionDir, { recursive: true });
-            await fs.mkdir(recorderScreenshotsDir, { recursive: true });
-            // Copy all files from session directory
-            const sourceFiles = await fs.readdir(session.sessionDir);
-            for (const file of sourceFiles) {
-                const sourcePath = path.join(session.sessionDir, file);
-                const destPath = path.join(recorderSessionDir, file);
-                const stat = await fs.stat(sourcePath);
-                if (stat.isDirectory()) {
-                    // Copy screenshots directory
-                    if (file === 'screenshots') {
-                        const screenshotFiles = await fs.readdir(sourcePath);
-                        for (const screenshot of screenshotFiles) {
-                            const srcScreenshot = path.join(sourcePath, screenshot);
-                            const destScreenshot = path.join(recorderScreenshotsDir, screenshot);
-                            await fs.copyFile(srcScreenshot, destScreenshot);
-                        }
-                    }
-                }
-                else {
-                    // Copy individual files
-                    await fs.copyFile(sourcePath, destPath);
-                }
-            }
-            console.log(`📼 Results recorded in: ${recorderSessionDir}`);
-        }
-        catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            console.error(`❌ Error copying results to recorder: ${message}`);
-        }
-    }
+    // REMOVED: copySessionToRecorder method to prevent duplicate storage
+    // Test recorder now stores data only in test-recorder directory during recording
     /**
      * Generate a test report from collected results
      */

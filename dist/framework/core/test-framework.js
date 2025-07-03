@@ -450,8 +450,12 @@ export class TestFramework {
     async executeTest(testConfig, _session) {
         const startTime = Date.now();
         try {
+            // Handle both string and function tasks
+            const taskInstruction = typeof testConfig.task === 'string'
+                ? testConfig.task
+                : await testConfig.task();
             // Execute test instructions
-            const result = await this.executeNaturalLanguageInstruction(testConfig.task);
+            const result = await this.executeNaturalLanguageInstruction(taskInstruction);
             const duration = Date.now() - startTime;
             const taskResult = {
                 success: result.success,

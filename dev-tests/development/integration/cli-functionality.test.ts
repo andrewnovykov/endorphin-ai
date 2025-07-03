@@ -24,7 +24,7 @@ describe('CLI Functionality Integration Tests', () => {
     process.chdir(originalCwd);
     try {
       await fs.rm(testDir, { recursive: true, force: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });
@@ -125,7 +125,6 @@ describe('CLI Functionality Integration Tests', () => {
   describe('CLI Generate Report Command', () => {
     it('should handle empty test results gracefully', async () => {
       try {
-        let errorThrown = false;
         let output = '';
         
         try {
@@ -135,7 +134,7 @@ describe('CLI Functionality Integration Tests', () => {
             timeout: 15000
           });
         } catch (error: any) {
-          errorThrown = true;
+          // Mark that we caught an error
           output = error.stdout || error.stderr || error.message;
         }
 

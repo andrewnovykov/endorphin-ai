@@ -105,4 +105,9 @@ export class ReportUtils {
      */
     static generateColor(index: any): string;
 }
+/**
+ * Global function to show test details by sessionId
+ * Called by View Details buttons in the report
+ */
+export function showTestDetails(sessionId: any): void;
 //# sourceMappingURL=scripts.d.ts.map

@@ -6,6 +6,7 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
+import { TIMEOUTS } from '../../config/constants.js';
 
 /**
  * Creates a verify element tool for the framework
@@ -21,7 +22,7 @@ export function createVerifyElementTool(framework: EnhancedBrowserTestFramework)
     }) => {
       const selector = params.selector;
       const state = params.state ?? 'visible';
-      const timeout = params.timeout ?? 10000;
+      const timeout = params.timeout ?? TIMEOUTS.VERIFICATION_TIMEOUT;
       const stepDesc = `Verify ${selector} is ${state}`;
       console.log(`🔍 ${stepDesc}`);
 
@@ -74,7 +75,7 @@ export function createGetElementInfoTool(framework: EnhancedBrowserTestFramework
       console.log(`🔍 ${stepDesc}`);
 
       try {
-        await framework.currentPage!.waitForSelector(selector, { timeout: 5000 });
+        await framework.currentPage!.waitForSelector(selector, { timeout: TIMEOUTS.VERIFICATION_TIMEOUT });
 
         const elementInfo = await framework.currentPage!.locator(selector).evaluate((el: any) => ({
           tagName: el.tagName,

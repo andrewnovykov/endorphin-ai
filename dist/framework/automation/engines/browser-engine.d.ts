@@ -32,6 +32,9 @@ export declare class BrowserEngine {
     private snapshotManager;
     private resourceManager;
     private frameworkInstance;
+    private globalSetupManager;
+    private globalSetupExecuted;
+    private validationAgent;
     constructor(config: BrowserEngineConfig);
     /**
      * Initialize the browser engine
@@ -100,5 +103,17 @@ export declare class BrowserEngine {
     get frameworkConfig(): FrameworkConfig;
     getBrowserManager(): BrowserManager;
     getSnapshotManager(): PageSnapshotManager;
+    /**
+     * Analyze test result with validation agent
+     */
+    private analyzeTestResultWithValidation;
+    /**
+     * Analyze the final agent state to determine test result and extract conclusion
+     */
+    private analyzeTestResult;
+    /**
+     * Execute global setup if configured and not already executed
+     */
+    private executeGlobalSetupIfNeeded;
 }
 //# sourceMappingURL=browser-engine.d.ts.map

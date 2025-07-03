@@ -77,7 +77,7 @@ export class TestDiscoverer {
                     duration: Date.now() - startTime,
                 };
             }
-            console.log(`📋 Found ${allTestFiles.length} test file(s) total`);
+            console.log(`📋 Found ${allTestFiles.length} test file(s) to load`);
             // Load files concurrently with limited concurrency
             const results = await this.loadTestFilesConcurrentlyFromMultipleDirs(allTestFiles);
             // Collect errors
@@ -86,7 +86,20 @@ export class TestDiscoverer {
                     errors.push({ file: result.filename, error: result.error });
                 }
             });
-            console.log(`✅ Loaded ${this.tests.size} test(s) total\n`);
+            const successCount = this.tests.size;
+            const failureCount = allTestFiles.length - successCount;
+            if (failureCount > 0) {
+                console.log(`⚠️ Successfully loaded ${successCount} test(s), ${failureCount} failed to load`);
+                // Show which files failed to load with detailed errors
+                console.log('📋 Failed test files:');
+                errors.forEach(error => {
+                    console.log(`   ❌ ${error.file}: ${error.error}`);
+                });
+            }
+            else {
+                console.log(`✅ Successfully loaded ${successCount} test(s)`);
+            }
+            console.log('');
             return {
                 tests: this.tests,
                 totalTests: this.tests.size,
@@ -190,6 +203,7 @@ export class TestDiscoverer {
         try {
             console.log(`   📄 ${filename} (from ${directory})`);
             const tests = await this.loadTestFileFromDir(filename, directory);
+            console.log(`   ✅ ${filename} loaded successfully with ${tests.length} test(s)`);
             return {
                 filename,
                 tests,
@@ -199,6 +213,7 @@ export class TestDiscoverer {
         catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             console.error(`❌ Error loading ${filename}:`, message);
+            console.error(`❌ Full error:`, error);
             return {
                 filename,
                 tests: [],
@@ -363,7 +378,9 @@ export class TestDiscoverer {
             typeof obj === 'object' &&
             typeof obj.id === 'string' &&
             typeof obj.name === 'string' &&
-            (typeof obj.task === 'string' || typeof obj.execute === 'function'));
+            (typeof obj.task === 'string' ||
+                typeof obj.task === 'function' ||
+                typeof obj.execute === 'function'));
     }
     /**
      * Get test by ID

@@ -17,7 +17,6 @@ export interface FrameworkConfig {
     parallel: number;
     maxRetries: number;
     baseUrl?: string;
-    customTools?: string[];
     globalSetup?: string;
     [key: string]: any;
 }

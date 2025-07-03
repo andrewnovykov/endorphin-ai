@@ -90,6 +90,21 @@ export class TestHelpers {
 
       if (session) {
         session.screenshotCounter = stepNumber;
+        
+        // Add screenshot to the current step if one exists
+        if (session.steps.length > 0) {
+          const currentStep = session.steps[session.steps.length - 1];
+          if (!currentStep.screenshots) {
+            currentStep.screenshots = [];
+          }
+          currentStep.screenshots.push({
+            filename,
+            filepath: `screenshots/${filename}`,
+            description: description || `Step ${stepNumber} screenshot`,
+            timestamp: new Date().toISOString(),
+            stepNumber
+          });
+        }
       }
 
       const logDescription = description

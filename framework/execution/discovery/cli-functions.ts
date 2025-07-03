@@ -123,7 +123,7 @@ async function loadSingleTestFile(filename: string, testsDirectory: string, targ
     }
     
     return null;
-  } catch (error) {
+  } catch {
     // Silently skip files that can't be loaded when scanning
     return null;
   }

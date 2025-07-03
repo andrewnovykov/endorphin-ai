@@ -5,9 +5,9 @@
  */
 
 import type { TestCase } from '../framework/types/index.js';
-import { generateData } from '../framework/utils/index.js';
+// import { generateData } from '../framework/utils/index.js';
 
-const sampleTest: TestCase = {
+export const HEALTH_001: TestCase = {
   id: 'HEALTH-001',
   name: 'Sample Health Check Test',
   description: 'A simple test to verify the framework is working correctly',
@@ -27,17 +27,6 @@ const sampleTest: TestCase = {
   // Optional async data generation function
   data: async () => {
     console.log('Generating test data...');
-
-    // Example of AI-powered data generation
-    const userData = await generateData(
-      {
-        name: 'string',
-        email: 'string',
-        age: 'number',
-      },
-      'Generate realistic user data for testing'
-    );
-    console.log('Generated test data :', userData);
     return {
       user: {
         email: 'papapin888@gmail.com',
@@ -59,5 +48,3 @@ const sampleTest: TestCase = {
     `;
   },
 };
-
-export default sampleTest;

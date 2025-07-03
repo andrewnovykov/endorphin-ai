@@ -24,7 +24,7 @@ describe('Package Distribution Integration Tests', () => {
     process.chdir(originalCwd);
     try {
       await fs.rm(testDir, { recursive: true, force: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });
@@ -74,7 +74,7 @@ describe('Package Distribution Integration Tests', () => {
         execSync('npm run build', { cwd: originalCwd, timeout: 60000 });
 
         // Create the package
-        const packOutput = execSync('npm pack --pack-destination ' + testDir, {
+        const packOutput = execSync(`npm pack --pack-destination ${testDir}`, {
           cwd: originalCwd,
           encoding: 'utf8',
           timeout: 30000
@@ -102,7 +102,7 @@ describe('Package Distribution Integration Tests', () => {
       try {
         // Build and pack
         execSync('npm run build', { cwd: originalCwd, timeout: 60000 });
-        execSync('npm pack --pack-destination ' + testDir, { cwd: originalCwd, timeout: 30000 });
+        execSync(`npm pack --pack-destination ${testDir}`, { cwd: originalCwd, timeout: 30000 });
 
         // Create a test project
         const testProjectDir = path.join(testDir, 'test-project');
@@ -169,7 +169,7 @@ try {
       try {
         // Build and pack
         execSync('npm run build', { cwd: originalCwd, timeout: 60000 });
-        execSync('npm pack --pack-destination ' + testDir, { cwd: originalCwd, timeout: 30000 });
+        execSync(`npm pack --pack-destination ${testDir}`, { cwd: originalCwd, timeout: 30000 });
 
         // Create test project and install package
         const testProjectDir = path.join(testDir, 'template-test-project');

@@ -30,7 +30,6 @@ export interface DebugUtils {
     takeScreenshot: () => Promise<string>;
     getToolStats: () => any;
     getToolByName: (name: string) => any;
-    getCustomToolDiscoveryInfo: () => any;
 }
 /**
  * Main debug object interface
@@ -40,7 +39,6 @@ export interface EndorphinDebugObject {
     session: TestSession | null;
     config: FrameworkConfig;
     tools: LangChainTool[];
-    customTools: LangChainTool[];
     utils: DebugUtils;
     version: string;
     isDebugMode: boolean;

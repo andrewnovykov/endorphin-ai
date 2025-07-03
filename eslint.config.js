@@ -107,6 +107,8 @@ export default [
       '**/*.spec.ts',
       '**/tests/**/*.js',
       '**/tests/**/*.ts',
+      '**/dev-tests/**/*.js',
+      '**/dev-tests/**/*.ts',
       '**/development-tests/**/*.js',
     ],
     languageOptions: {
@@ -198,6 +200,8 @@ export default [
       '**/*.spec.ts',
       'tests/**/*.js',
       'tests/**/*.ts',
+      'dev-tests/**/*.js',
+      'dev-tests/**/*.ts',
     ],
     rules: {
       'no-unused-expressions': 'off',

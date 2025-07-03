@@ -2,6 +2,9 @@
 /**
  * Endorphin AI CLI - E2E Testing Reinvented with AI
  */
+// Configure Node.js event system to handle more listeners (prevents memory leak warnings)
+import { EventEmitter } from 'node:events';
+EventEmitter.defaultMaxListeners = 50;
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -122,9 +125,7 @@ Commands:
   run test --priority <level>    Run tests by priority (High, Medium, Low)
   run test-recorder              Start interactive test recorder
   list                           List all available tests
-  list tools                     List all available tools (built-in + custom)
-  create tool <name>             Create a new custom tool from template
-  validate tools                 Validate custom tools configuration
+  list tools                     List all available built-in tools
   generate report                Generate HTML test report
   generate report --summary      Generate lightweight summary report
   open report [file]             Open latest (or specific) test report in browser
@@ -149,10 +150,7 @@ Examples:
   endorphin run test --priority High --env staging # Run high priority tests on staging
   endorphin run test-recorder                  # Start test recorder
   endorphin list                               # Show all available tests
-  endorphin list tools                         # Show all available tools
-  endorphin create tool my-api-tool            # Create custom tool from basic template
-  endorphin create tool payment-ui --template ui # Create UI automation tool
-  endorphin validate tools                     # Check custom tools configuration
+  endorphin list tools                         # Show all available built-in tools
   endorphin generate report                    # Generate interactive HTML report
   endorphin generate report --summary          # Generate lightweight summary report
   endorphin generate report --file custom.html # Generate report with custom filename
@@ -221,47 +219,11 @@ export async function main() {
                 // List command doesn't need AI validation
                 const listConfig = await getConfig({ cwd: process.cwd(), cliFlags, validateAI: false });
                 if (subcommand === 'tools') {
-                    const { handleListToolsCommand } = await import('../framework/cli/tool-commands.js');
+                    const { handleListToolsCommand } = await import('../framework/cli/builtin-tools-command.js');
                     await handleListToolsCommand({ verbose: args.includes('--verbose') });
                 }
                 else {
                     await handleListCommand(listConfig);
-                }
-                break;
-            }
-            case 'create': {
-                if (subcommand === 'tool') {
-                    if (!target) {
-                        console.error('❌ Tool name is required');
-                        console.log('Usage: endorphin create tool <name> [--template basic|ui|api] [--path ./path]');
-                        process.exit(1);
-                    }
-                    const { handleCreateToolCommand } = await import('../framework/cli/tool-commands.js');
-                    const templateArg = args.find((arg) => arg.startsWith('--template='))?.split('=')[1];
-                    const pathArg = args.find((arg) => arg.startsWith('--path='))?.split('=')[1];
-                    const options = {};
-                    if (templateArg)
-                        options.template = templateArg;
-                    if (pathArg)
-                        options.path = pathArg;
-                    await handleCreateToolCommand(target, options);
-                }
-                else {
-                    console.error(`❌ Unknown create command: ${subcommand}`);
-                    console.log('Available: create tool <name>');
-                    process.exit(1);
-                }
-                break;
-            }
-            case 'validate': {
-                if (subcommand === 'tools') {
-                    const { handleValidateToolsCommand } = await import('../framework/cli/tool-commands.js');
-                    await handleValidateToolsCommand();
-                }
-                else {
-                    console.error(`❌ Unknown validate command: ${subcommand}`);
-                    console.log('Available: validate tools');
-                    process.exit(1);
                 }
                 break;
             }

@@ -19,12 +19,15 @@ export interface ParsedTestResult {
     startTime: string;
     endTime?: string;
     finalResult?: string;
+    conclusion?: string;
     steps: any[];
     screenshots: string[];
     sessionDir: string;
     tokenSummary?: any;
     setupResult?: any;
     dataGenerationResult?: any;
+    totalSteps?: number;
+    successfulSteps?: number;
 }
 export interface ReportData {
     summary: ReportSummary;

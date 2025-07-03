@@ -65,7 +65,9 @@
   "git.enableSmartCommit": true,
   // Testing
   "jest.jestCommandLine": "npm test",
-  "jest.autoRun": "off",
+  "jest.runMode": "on-demand",
+  "jest.watch": false,
+  "jest.enableCodeLens": false,
   // Playwright
   "playwright.showTrace": false,
   "playwright.reuseBrowser": false,

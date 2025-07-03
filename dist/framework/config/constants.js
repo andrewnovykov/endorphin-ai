@@ -6,13 +6,14 @@
 export const TIMEOUTS = {
     DEFAULT_WAIT: 2000,
     LONG_WAIT: 5000,
-    ELEMENT_WAIT: 30000,
+    ELEMENT_WAIT: 45000, // Extended from 30s to 45s for verification operations
     PAGE_LOAD: 60000,
-    AGENT_TIMEOUT: 300000, // 5 minutes
+    AGENT_TIMEOUT: 900000, // 15 minutes - allow more time for step-by-step execution
     NETWORK_TIMEOUT: 30000,
     FILE_OPERATION_TIMEOUT: 10000,
     SCREENSHOT_TIMEOUT: 5000,
     STEP_DELAY: 1000,
+    VERIFICATION_TIMEOUT: 60000, // New: 60 seconds specifically for verification operations
 };
 // Resource limits
 export const LIMITS = {

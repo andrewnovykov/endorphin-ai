@@ -65,7 +65,13 @@ export { generateData, generateDataArray } from './utils/index.js';
 export { createGetPageContentTool, createGetSimplePageContentTool } from './automation/tools/content.js';
 export { createContentOptimizationTool } from './automation/tools/content-optimization.js';
 export { createDifferentialContentTool } from './automation/tools/differential-content.js';
-export { createClearFieldTool, createClickTool, createFillTool } from './automation/tools/interaction.js';
+export { 
+  createClearFieldTool, 
+  createClickTool, 
+  createFillTool, 
+  createDescribeTool, 
+  createPressSequentiallyTool 
+} from './automation/tools/interaction.js';
 export { createNavigationTool } from './automation/tools/navigation.js';
 export { createScreenshotTool, createWaitTool } from './automation/tools/utilities.js';
 export { createGetElementInfoTool, createVerifyElementTool } from './automation/tools/verification.js';

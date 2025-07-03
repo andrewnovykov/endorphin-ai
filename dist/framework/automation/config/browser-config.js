@@ -21,9 +21,10 @@ export const BROWSER_CONFIG = {
     // Default timeouts (in milliseconds)
     timeouts: {
         navigation: 60000,
-        element: 10000,
+        element: 45000, // Extended from 10s to 45s for verification operations
         screenshot: 5000,
         testExecution: 5 * 60 * 1000, // 5 minutes
+        verification: 60000, // New: 60 seconds for verification operations
     },
     // Screenshot options
     screenshot: {

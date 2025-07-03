@@ -2,7 +2,7 @@
  * Browser Test Engine
  * Core engine for browser-based test execution
  */
-import { HumanMessage } from '@langchain/core/messages';
+import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { AGENT_CONFIG } from '../../ai/config/agent-config.js';
 import { TIMEOUTS } from '../../config/constants.js';
 import { createSystemContext } from '../../config/system-context.js';
@@ -12,10 +12,15 @@ import { PageSnapshotManager } from '../../managers/content/snapshot-manager.js'
 import { globalResourceManager } from '../../core/resource-manager.js';
 import { createTestSession, saveTestSession } from '../../core/test-session.js';
 import { TokenTracker } from '../../core/token-tracker.js';
+import { GlobalSetupManager } from '../../core/global-setup-manager.js';
 import { createAllTools } from '../tools/index.js';
 import { AgentError, TestTimeoutError, createErrorFromUnknown } from '../../types/errors.js';
 import { DirectoryManager } from '../../utils/directory-manager.js';
 import { TestHelpers } from '../../utils/test-helpers.js';
+import { EventEmitter } from 'node:events';
+import { ValidationAgent } from '../../ai/validation-agent.js';
+// Increase max listeners to prevent memory leak warnings during test execution
+EventEmitter.defaultMaxListeners = 30;
 /**
  * Browser Test Engine
  * Handles core browser test execution logic
@@ -33,6 +38,9 @@ export class BrowserEngine {
     snapshotManager;
     resourceManager;
     frameworkInstance; // Reference to EnhancedBrowserTestFramework
+    globalSetupManager;
+    globalSetupExecuted = false;
+    validationAgent;
     constructor(config) {
         this.config = config.framework;
         this.resultBaseDir = config.resultBaseDir;
@@ -47,14 +55,17 @@ export class BrowserEngine {
         this.snapshotManager = new PageSnapshotManager();
         // Initialize resource manager for memory leak prevention
         this.resourceManager = globalResourceManager;
+        // Initialize global setup manager
+        this.globalSetupManager = new GlobalSetupManager();
+        // Initialize validation agent
+        this.validationAgent = new ValidationAgent();
     }
     /**
      * Initialize the browser engine
      */
     async initialize() {
         console.log('🚀 Initializing Browser Test Engine...');
-        // Clean up directories before starting
-        await DirectoryManager.cleanupDirectories(this.resultBaseDir);
+        // Note: Directory cleanup is now handled at the test session level, not per-test
         // Ensure directories exist
         await DirectoryManager.ensureDirectory(this.resultBaseDir);
         await DirectoryManager.ensureDirectory(this.recorderBaseDir);
@@ -131,23 +142,17 @@ export class BrowserEngine {
             : JSON.stringify(messages);
         const estimatedPromptTokens = this.tokenTracker.estimateTokens(messageContent);
         console.log(`🤖 ${stepDescription} (estimated: ${estimatedPromptTokens} tokens)`);
-        // Create AbortController with proper cleanup to prevent EventTarget memory leak
-        const abortController = this.resourceManager.createAbortController(`agent-${Date.now()}`);
-        const enhancedConfig = {
-            ...config,
-            signal: abortController.signal,
-        };
+        // No AbortController - let the agent run naturally without forced interruption
         const startTime = Date.now();
         let result;
         try {
             if (!this.agent) {
                 throw new AgentError('Agent not initialized', { stepDescription });
             }
-            result = await this.agent.invoke(messages, enhancedConfig);
+            result = await this.agent.invoke(messages, config);
         }
         catch (error) {
-            // Ensure cleanup happens even on error
-            abortController.abort();
+            // Handle error without AbortController cleanup
             const frameworkError = createErrorFromUnknown(error, `Agent invocation failed: ${stepDescription}`, {
                 stepDescription,
                 estimatedPromptTokens,
@@ -155,8 +160,8 @@ export class BrowserEngine {
             throw frameworkError;
         }
         const duration = Date.now() - startTime;
-        // Clean up the abort controller
-        abortController.abort();
+        // Clean up the abort controller without aborting (just for memory cleanup)
+        // Only abort in error cases, not on successful completion
         // Estimate response tokens from properly typed response
         const responseContent = result.messages && result.messages.length > 0
             ? result.messages[result.messages.length - 1]?.content || ''
@@ -193,11 +198,15 @@ export class BrowserEngine {
         try {
             // Log initial step
             this.logTestStep('Test started', null, null, `Starting task: ${taskDescription}`, true);
-            await this.takeStepScreenshot('Initial page state');
+            // Skip screenshots in interactive recorder mode to avoid duplicates
+            const isInteractiveMode = name.includes('Interactive-Step-');
+            if (!isInteractiveMode) {
+                await this.takeStepScreenshot('Initial page state');
+            }
             // Create enhanced context message for the agent
             const systemContext = createSystemContext(taskDescription);
             const finalState = await this.invokeAgentWithTracking({
-                messages: [new HumanMessage(systemContext)],
+                messages: [new SystemMessage(systemContext)],
             }, {
                 recursionLimit: AGENT_CONFIG.agent.recursionLimit,
                 configurable: { thread_id: `session-${this.currentTestSession?.sessionId || 'default'}` },
@@ -205,7 +214,10 @@ export class BrowserEngine {
             const result = finalState.messages?.[finalState.messages.length - 1]?.content || 'Task completed';
             // Log final step
             this.logTestStep('Test completed', null, null, result, true);
-            await this.takeStepScreenshot('Final page state');
+            // Skip screenshots in interactive recorder mode to avoid duplicates
+            if (!isInteractiveMode) {
+                await this.takeStepScreenshot('Final page state');
+            }
             // Finish session
             await this.finishTestSession('SUCCESS', result);
             console.log(`\n✅ Task "${name}" completed successfully!`);
@@ -255,6 +267,7 @@ export class BrowserEngine {
         await this.createTestSession(test.name, test.id);
         try {
             this.logTestStep(`Starting test execution: ${test.name}`, null, null, `Test ID: ${test.id}`, true);
+            // Global setup is now executed at CLI level before framework initialization
             // Execute setup function if present
             let setupData = null;
             if (test.setup && typeof test.setup === 'function') {
@@ -307,14 +320,16 @@ export class BrowserEngine {
                 recursionLimit: AGENT_CONFIG.agent.recursionLimit,
                 configurable: { thread_id: `session-${this.currentTestSession.sessionId}` },
             }, `Test execution: ${test.name}`);
-            await Promise.race([agentPromise, timeoutPromise]);
-            this.logTestStep('Test execution completed successfully', null, null, 'All steps completed', true);
-            // Finish the test session
-            const session = await this.finishTestSession('SUCCESS', 'Test completed successfully');
+            const finalState = await Promise.race([agentPromise, timeoutPromise]);
+            // Analyze the final conversation state for test result
+            const testResult = await this.analyzeTestResultWithValidation(finalState, taskDescription);
+            this.logTestStep(`Test execution ${testResult.status.toLowerCase()}`, null, null, testResult.conclusion, testResult.status === 'SUCCESS');
+            // Finish the test session with proper analysis
+            const session = await this.finishTestSession(testResult.status, testResult.conclusion);
             if (useDetailedLogs) {
-                console.log(`✅ Test ${test.id} completed successfully!`);
+                console.log(`✅ Test ${test.id} ${testResult.status.toLowerCase()}!`);
             }
-            return { success: true, session };
+            return { success: testResult.status === 'SUCCESS', session };
         }
         catch (error) {
             if (useDetailedLogs) {
@@ -335,6 +350,10 @@ export class BrowserEngine {
         this.currentTestSession.status = status;
         if (finalResult !== null) {
             this.currentTestSession.finalResult = finalResult;
+            // Always save the final result as conclusion for detailed reporting
+            if (typeof finalResult === 'string' && finalResult.trim().length > 0) {
+                this.currentTestSession.conclusion = finalResult.trim();
+            }
         }
         this.currentTestSession.duration =
             new Date(this.currentTestSession.endTime).getTime() -
@@ -382,7 +401,9 @@ export class BrowserEngine {
             // Clean up browser resources
             await this.browserManager.cleanup();
             // Force cleanup of any remaining resources to prevent memory leaks
-            this.resourceManager.cleanup();
+            await this.resourceManager.disposeAll();
+            // Reset global setup flag for future tests
+            this.globalSetupExecuted = false;
         }
         catch (error) {
             const cleanupError = createErrorFromUnknown(error, 'Cleanup failed', {
@@ -414,6 +435,145 @@ export class BrowserEngine {
     }
     getSnapshotManager() {
         return this.snapshotManager;
+    }
+    /**
+     * Analyze test result with validation agent
+     */
+    async analyzeTestResultWithValidation(finalState, testTask) {
+        const messages = finalState?.messages || [];
+        // First try quick validation
+        const quickResult = this.validationAgent.quickValidate(messages);
+        // If we have high confidence, use quick result
+        if (quickResult.confidence >= 0.8) {
+            return {
+                status: quickResult.status,
+                conclusion: quickResult.conclusion
+            };
+        }
+        // Otherwise, do full analysis with validation agent
+        try {
+            const validationResult = await this.validationAgent.analyzeTestExecution(messages, testTask);
+            return {
+                status: validationResult.status,
+                conclusion: validationResult.conclusion
+            };
+        }
+        catch (error) {
+            console.error('Validation agent failed, falling back to pattern analysis');
+            return this.analyzeTestResult(finalState);
+        }
+    }
+    /**
+     * Analyze the final agent state to determine test result and extract conclusion
+     */
+    analyzeTestResult(finalState) {
+        const messages = finalState?.messages || [];
+        if (messages.length === 0) {
+            return {
+                status: 'FAILED',
+                conclusion: 'No agent response received'
+            };
+        }
+        const lastMessage = messages[messages.length - 1];
+        const content = typeof lastMessage.content === 'string' ? lastMessage.content : '';
+        const trimmedContent = content.trim().toLowerCase();
+        // Check for validation failure patterns first
+        const validationFailurePatterns = [
+            'verification failed',
+            'unable to verify',
+            'verification step was looking for the wrong',
+            'expected.*not visible',
+            'not found on the page',
+            'timeout.*exceeded',
+            'element not found',
+            'wrong username',
+            'incorrect.*displayed',
+            'login was not successful',
+            'authentication failed'
+        ];
+        const hasValidationFailure = validationFailurePatterns.some(pattern => {
+            const regex = new RegExp(pattern, 'i');
+            return regex.test(trimmedContent);
+        });
+        if (hasValidationFailure) {
+            return {
+                status: 'FAILED',
+                conclusion: content || 'Test failed due to validation failure'
+            };
+        }
+        // Check for explicit test failure patterns
+        const testFailPatterns = [
+            'test failed',
+            'test execution failed',
+            'e2e test failed',
+            'test completed with failures',
+            'cannot continue with test execution',
+            'test aborted due to error',
+            'critical error in test execution',
+            'maximum retries exceeded - test failed',
+            'step failed after 3 attempts',
+            'unable to complete all steps'
+        ];
+        const hasTestFailure = testFailPatterns.some(pattern => trimmedContent.includes(pattern));
+        if (hasTestFailure) {
+            return {
+                status: 'FAILED',
+                conclusion: content || 'Test execution failed'
+            };
+        }
+        // Check for successful completion patterns
+        const testPassPatterns = [
+            'test completed successfully',
+            'all test steps completed successfully',
+            'e2e test passed',
+            'test execution finished successfully',
+            'all steps have been completed and the test passed',
+            'all numbered steps completed successfully',
+            'final step completed - test passed',
+            'step completion confirmed - test successful'
+        ];
+        const hasTestSuccess = testPassPatterns.some(pattern => trimmedContent.includes(pattern));
+        if (hasTestSuccess) {
+            return {
+                status: 'SUCCESS',
+                conclusion: content || 'Test completed successfully'
+            };
+        }
+        // If no clear completion pattern, check if we have a meaningful conclusion
+        if (content.length > 50) {
+            // Default to FAILED if we can't determine success explicitly
+            // This is conservative - tests should explicitly indicate success
+            return {
+                status: 'FAILED',
+                conclusion: content || 'Test completed but success could not be verified'
+            };
+        }
+        return {
+            status: 'FAILED',
+            conclusion: 'Test completed with unclear result'
+        };
+    }
+    /**
+     * Execute global setup if configured and not already executed
+     */
+    async executeGlobalSetupIfNeeded() {
+        // Skip if already executed or not configured
+        if (this.globalSetupExecuted || !this.config.globalSetup) {
+            return;
+        }
+        console.log('🌍 Executing global setup...');
+        try {
+            const result = await this.globalSetupManager.loadAndExecute(this.config.globalSetup);
+            if (!result.success) {
+                throw new Error(`Global setup failed: ${result.error?.message || 'Unknown error'}`);
+            }
+            this.globalSetupExecuted = true;
+            console.log(`✅ Global setup completed successfully in ${result.executionTime}ms`);
+        }
+        catch (error) {
+            console.error('❌ Global setup failed:', error.message);
+            throw error; // Re-throw to fail the test
+        }
     }
 }
 //# sourceMappingURL=browser-engine.js.map

@@ -1,1 +1,1 @@
-{"version":3,"file":"browser-config.d.ts","sourceRoot":"","sources":["../../../../framework/automation/config/browser-config.ts"],"names":[],"mappings":"AAAA;;;GAGG;AAOH;;GAEG;AACH,eAAO,MAAM,cAAc;;;;;;;;;;;;;;;;;;;;;;CA4BjB,CAAC;AAEX,eAAe,cAAc,CAAC"}
+{"version":3,"file":"browser-config.d.ts","sourceRoot":"","sources":["../../../../framework/automation/config/browser-config.ts"],"names":[],"mappings":"AAAA;;;GAGG;AAOH;;GAEG;AACH,eAAO,MAAM,cAAc;;;;;;;;;;;;;;;;;;;;;;;CA6BjB,CAAC;AAEX,eAAe,cAAc,CAAC"}

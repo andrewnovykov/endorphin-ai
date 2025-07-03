@@ -5,13 +5,14 @@
 export declare const TIMEOUTS: {
     readonly DEFAULT_WAIT: 2000;
     readonly LONG_WAIT: 5000;
-    readonly ELEMENT_WAIT: 30000;
+    readonly ELEMENT_WAIT: 45000;
     readonly PAGE_LOAD: 60000;
-    readonly AGENT_TIMEOUT: 300000;
+    readonly AGENT_TIMEOUT: 900000;
     readonly NETWORK_TIMEOUT: 30000;
     readonly FILE_OPERATION_TIMEOUT: 10000;
     readonly SCREENSHOT_TIMEOUT: 5000;
     readonly STEP_DELAY: 1000;
+    readonly VERIFICATION_TIMEOUT: 60000;
 };
 export declare const LIMITS: {
     readonly MAX_CONTENT_LENGTH: 8000;

@@ -2,45 +2,54 @@
  * Endorphin e2e AI test framework
  * Copyright (C) 2025 Redstudio Agency
  *
- * AI Agent Setup - TypeScript Migration
+ * AI Agent Setup - Proper LangGraph Memory Implementation
+ * 
+ * 🧠 Memory Strategy:
+ * - Uses LangGraph's MemorySaver for conversation persistence
+ * - Agent naturally remembers previous actions through message history
+ * - No manual step tracking - let conversation flow handle progress
+ * - thread_id provides session-based memory across tool calls
+ * - Simplified state management focused on message continuity
+ * 
+ * 🎯 E2E Test Completion Logic:
+ * - Only ends test when ALL numbered steps are completed
+ * - Ignores partial completion phrases like "login completed"
+ * - Supports both positive (test passed) and negative (test failed) scenarios
+ * - Prevents premature test termination after individual step completion
  */
 
-import { Annotation, MessagesAnnotation, StateGraph, MemorySaver } from '@langchain/langgraph';
+import { Annotation, StateGraph, MemorySaver } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { ChatOpenAI } from '@langchain/openai';
 import { BaseMessage, AIMessage } from '@langchain/core/messages';
 import { AGENT_CONFIG } from './config/agent-config.js';
 import { parseSteps } from '../utils/step-parser.js';
 
-// Enhanced State Annotation for Test Execution
+// Simplified State Annotation for Proper Memory Management
 const TestState = Annotation.Root({
   messages: Annotation<BaseMessage[]>({
     reducer: (x, y) => x.concat(y),
   }),
-  currentStep: Annotation<number>({
-    reducer: (x, y) => y ?? x ?? 1,
-  }),
-  totalSteps: Annotation<number>({
-    reducer: (x, y) => y ?? x ?? 0,
-  }),
-  stepStatus: Annotation<Record<number, 'pending' | 'in_progress' | 'completed' | 'failed'>>({
+  // Let conversation memory handle the rest naturally
+  testContext: Annotation<{
+    sessionId?: string;
+    testName?: string;
+    startTime?: number;
+  }>({
     reducer: (x, y) => ({ ...x, ...y }),
-  }),
-  stepAttempts: Annotation<Record<number, number>>({
-    reducer: (x, y) => ({ ...x, ...y }),
-  }),
-  testStartTime: Annotation<number>({
-    reducer: (x, y) => y ?? x,
-  }),
-  isComplete: Annotation<boolean>({
-    reducer: (x, y) => y ?? x ?? false,
   }),
 });
 
 type TestStateType = typeof TestState.State;
 
 interface AgentWorkflow {
-  invoke(input: any, config?: any): Promise<any>;
+  invoke(input: any, config?: { 
+    configurable?: { 
+      thread_id?: string;
+      [key: string]: any;
+    };
+    [key: string]: any; 
+  }): Promise<any>;
 }
 
 // Global memory saver instance
@@ -54,9 +63,13 @@ const memorySaver = new MemorySaver();
  */
 export async function setupAgent(tools: any[], config?: { thread_id?: string }): Promise<AgentWorkflow> {
   console.log('🤖 Configuring AI agent with tools...');
-
-  // Small delay to ensure async behavior
-  await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  
+  // Log memory configuration
+  if (config?.thread_id) {
+    console.log(`🧠 Memory persistence enabled with thread_id: ${config.thread_id}`);
+  } else {
+    console.log(`🧠 Using session-based memory (no thread_id specified)`);
+  }
 
   const toolNode = new ToolNode(tools);
 
@@ -68,62 +81,117 @@ export async function setupAgent(tools: any[], config?: { thread_id?: string }):
     modelName: AGENT_CONFIG.openai.modelName,
   }).bindTools(tools);
 
+  function isSimilarMessage(msg1: string, msg2: string): boolean {
+    // Remove whitespace and normalize
+    const normalized1 = msg1.toLowerCase().replace(/\s+/g, ' ');
+    const normalized2 = msg2.toLowerCase().replace(/\s+/g, ' ');
+    
+    // Check for exact match
+    if (normalized1 === normalized2) return true;
+    
+    // Check for 90% similarity (accounting for minor variations)
+    const similarity = calculateSimilarity(normalized1, normalized2);
+    return similarity > 0.9;
+  }
+
+  function calculateSimilarity(str1: string, str2: string): number {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    
+    if (longer.length === 0) return 1.0;
+    
+    const distance = levenshteinDistance(longer, shorter);
+    return (longer.length - distance) / longer.length;
+  }
+
+  function levenshteinDistance(str1: string, str2: string): number {
+    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    
+    for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
+    for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
+    
+    for (let j = 1; j <= str2.length; j++) {
+      for (let i = 1; i <= str1.length; i++) {
+        const substitutionCost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[j][i] = Math.min(
+          matrix[j][i - 1] + 1,
+          matrix[j - 1][i] + 1,
+          matrix[j - 1][i - 1] + substitutionCost
+        );
+      }
+    }
+    
+    return matrix[str2.length][str1.length];
+  }
+
   function shouldContinue(state: TestStateType): string {
-    const { messages, currentStep, totalSteps } = state;
+    const { messages } = state;
     const lastMessage = messages[messages.length - 1] as AIMessage;
 
     // Debug logging
     console.log(`🔍 Agent decision - Message count: ${messages.length}`);
     console.log(`🔍 Last message content: "${lastMessage.content || 'no content'}"`);
     console.log(`🔍 Tool calls: ${lastMessage.tool_calls?.length || 0}`);
-    console.log(`🔍 Current step: ${currentStep}/${totalSteps}`);
     
-    const content = typeof lastMessage.content === 'string' ? lastMessage.content : '';
+    const content = typeof lastMessage.content === 'string' ? lastMessage.content.toLowerCase() : '';
     
-    // Check for test completion patterns
-    const trimmedContent = content.trim().toLowerCase();
-    const isTestComplete = trimmedContent.endsWith('test completed successfully') ||
-                          trimmedContent === 'test completed successfully' ||
-                          content.includes('login process was successfully completed');
-    
-    // Check for infinite loop patterns (legacy fallback)
-    if (messages.length > 10) {
-      const recentMessages = messages.slice(-5).map(m => m.content || '').join(' ').toLowerCase();
-      const hasInfiniteLoop = recentMessages.includes('need help') || 
-                             recentMessages.includes('further assistance') ||
-                             recentMessages.includes('more tasks');
-      if (hasInfiniteLoop) {
-        console.log(`⚠️ Detected infinite loop pattern, forcing completion`);
-        return '__end__';
-      }
-      
-      // Check for completion-indicating phrases (legacy)
-      const hasCompletionPhrase = recentMessages.includes('login process was successfully completed') ||
-                                 recentMessages.includes('confirming that the login was successful') ||
-                                 recentMessages.includes('login was successful') ||
-                                 recentMessages.includes('successfully completed');
-      
-      if (hasCompletionPhrase && messages.length > 15) {
-        console.log(`🎯 Detected test completion but agent not saying magic phrase, forcing end`);
-        return '__end__';
-      }
-      
-      // Check for exact message repetition
-      if (messages.length > 5) {
-        const lastContent = lastMessage.content || '';
-        const secondLastContent = messages[messages.length - 2]?.content || '';
-        const thirdLastContent = messages[messages.length - 3]?.content || '';
-        
-        if (lastContent === secondLastContent && secondLastContent === thirdLastContent && lastContent.length > 20) {
-          console.log(`🔄 Detected identical message repetition, forcing end`);
-          return '__end__';
-        }
-      }
+    // Check for explicit stop conditions in the message content (from original working version)
+    const hasStopPhrase = AGENT_CONFIG.agent.stopPhrases.some((phrase: string) =>
+      content.includes(phrase.toLowerCase())
+    );
+
+    if (hasStopPhrase) {
+      console.log(`🛑 Stop condition detected: ${content}`);
+      return '__end__';
     }
 
-    if (isTestComplete) {
-      console.log(`🛑 Test completion detected: ${content}`);
+    // Advanced infinite loop protection
+    if (messages.length > 30) {
+      console.log(`⚠️ Maximum conversation length reached, ending test`);
       return '__end__';
+    }
+
+    // Enhanced loop detection - check for repeated actions
+    if (messages.length >= 8) {
+      const lastContent = content.trim();
+      const recentMessages = messages.slice(-6).map(m => 
+        typeof m.content === 'string' ? m.content.trim() : ''
+      );
+      
+      // Check if last 3 messages are identical (ignoring small variations)
+      const identicalCount = recentMessages.filter(msg => 
+        msg.length > 20 && isSimilarMessage(lastContent, msg)
+      ).length;
+      
+      if (identicalCount >= 3) {
+        console.log(`🔄 Message repetition detected, agent stuck in loop - FAILING test`);
+        console.log(`🔄 Repeated message: "${lastContent.substring(0, 100)}..."`);
+        return '__end__';
+      }
+      
+      // Check for repeated tool calls (same tool used many times)
+      const recentToolCalls = messages.slice(-8)
+        .filter(m => (m as any).tool_calls && (m as any).tool_calls.length > 0)
+        .flatMap(m => (m as any).tool_calls?.map((tc: any) => tc.function?.name) || [])
+        .filter(name => name) as string[];
+        
+      if (recentToolCalls.length >= 6) {
+        const toolCounts = recentToolCalls.reduce((acc, tool) => {
+          acc[tool] = (acc[tool] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        
+        const toolCountValues = Object.values(toolCounts);
+        if (toolCountValues.length > 0) {
+          const maxToolCount = Math.max(...toolCountValues);
+          const repeatedTool = Object.keys(toolCounts).find(tool => toolCounts[tool] === maxToolCount);
+          
+          if (maxToolCount >= 4) {
+            console.log(`🔄 Tool repetition detected: "${repeatedTool}" used ${maxToolCount} times recently - FAILING test`);
+            return '__end__';
+          }
+        }
+      }
     }
 
     // Continue if there are tool calls to make
@@ -132,50 +200,31 @@ export async function setupAgent(tools: any[], config?: { thread_id?: string }):
       return 'tools';
     }
     
-    // Continue agent execution
-    console.log(`🔄 Continuing agent execution`);
-    return 'agent';
+    // KEY BEHAVIOR FROM ORIGINAL: If no tool calls, end the test
+    console.log(`🏁 No tool calls remaining - ending test`);
+    return '__end__';
   }
 
   async function callModel(state: TestStateType): Promise<Partial<TestStateType>> {
     const response = await model.invoke(state.messages);
     
-    // Initialize step tracking from first message if not set
-    let newCurrentStep = state.currentStep;
-    let newTotalSteps = state.totalSteps;
-    let newStepStatus = state.stepStatus || {};
-    let newStepAttempts = state.stepAttempts || {};
-    let newTestStartTime = state.testStartTime;
+    // Simple context initialization on first run
+    let newTestContext = state.testContext || {};
     
-    if (!newTestStartTime) {
-      newTestStartTime = Date.now();
+    if (!newTestContext.startTime) {
+      newTestContext = {
+        ...newTestContext,
+        startTime: Date.now(),
+      };
+      console.log(`🚀 Test session started - conversation memory will track progress naturally`);
     }
     
-    if (!newCurrentStep) {
-      newCurrentStep = 1;
-    }
-    
-    // Try to extract step information from the first message (task description)
-    if (!newTotalSteps && state.messages.length > 0) {
-      const firstMessage = state.messages[0];
-      if (firstMessage && typeof firstMessage.content === 'string') {
-        const stepParseResult = parseSteps(firstMessage.content);
-        if (stepParseResult.hasValidSteps) {
-          newTotalSteps = stepParseResult.totalSteps;
-          console.log(`📊 Initialized step tracking: ${newTotalSteps} total steps`);
-        }
-      }
-    }
-    
-    console.log(`🔍 Agent state - Step ${newCurrentStep}/${newTotalSteps}`);
+    // Log conversation progress
+    console.log(`💬 Agent processing message ${state.messages.length + 1} - Memory persisted via thread_id`);
     
     return {
       messages: [response],
-      currentStep: newCurrentStep,
-      totalSteps: newTotalSteps,
-      stepStatus: newStepStatus,
-      stepAttempts: newStepAttempts,
-      testStartTime: newTestStartTime,
+      testContext: newTestContext,
     };
   }
 
@@ -188,7 +237,6 @@ export async function setupAgent(tools: any[], config?: { thread_id?: string }):
 
   const agent = workflow.compile({
     checkpointer: memorySaver,
-    recursionLimit: AGENT_CONFIG.agent.recursionLimit,
   });
 
   console.log('✅ AI agent configured successfully');

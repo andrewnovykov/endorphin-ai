@@ -211,7 +211,7 @@ export class FrameworkManager {
         this.resultsManager = new TestResultsManager({
             resultsDir: this.resultBaseDir,
             recorderDir: this.recorderBaseDir,
-            enableRecorderCopy: true,
+            enableRecorderCopy: false,
         });
     }
     /**

@@ -1,6 +1,6 @@
 /**
  * Token Pricing Configuration for AI Models
- * Prices are per 1,000 tokens (as of 2024)
+ * Prices are per 1,000 tokens (updated July 2025 based on actual usage data)
  */
 export interface ModelPricing {
     input: number;

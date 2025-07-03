@@ -63,17 +63,23 @@ export function createScreenshotTool(framework) {
             // Create a temporary session for screenshot if none exists
             framework.createTestSession('manual-screenshot');
         }
-        const filename = name || `manual-screenshot-${Date.now()}.png`;
+        const filename = name || `manual-screenshot-${Date.now()}`;
         const stepDesc = `Take screenshot: ${filename}`;
         console.log(`📸 ${stepDesc}`);
         try {
             let filePath;
-            if (framework.activeTestSession) {
-                filePath = path.join(framework.activeTestSession.screenshotsDir, filename);
+            if (framework.activeTestSession && framework.activeTestSession.screenshotsDir) {
+                filePath = path.join(framework.activeTestSession.screenshotsDir, `${filename}.png`);
             }
             else {
-                filePath = filename;
+                // Fallback to a simple filename in current directory
+                filePath = `${filename}.png`;
             }
+            // Ensure we have a valid filename
+            if (!filePath || filePath === 'null' || filePath.includes('null')) {
+                filePath = `screenshot-${Date.now()}.png`;
+            }
+            console.log(`🔧 Screenshot path: ${filePath}`);
             if (selector) {
                 await framework.currentPage.locator(selector).screenshot({ path: filePath });
             }

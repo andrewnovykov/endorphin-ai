@@ -75,6 +75,7 @@ export interface TestSession {
     screenshotCounter: number;
     status: 'RUNNING' | 'SUCCESS' | 'FAILED';
     finalResult?: string;
+    conclusion?: string;
     duration?: number;
     tokenSummary?: {
         totalTokens: number;

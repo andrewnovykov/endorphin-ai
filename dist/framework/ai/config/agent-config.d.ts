@@ -13,7 +13,7 @@ export declare const AGENT_CONFIG: {
     readonly agent: {
         readonly recursionLimit: 150;
         readonly timeout: number;
-        readonly stopPhrases: readonly ["test completed", "verification complete", "login successful", "test finished", "done", "stop", "stop - test completed"];
+        readonly stopPhrases: readonly ["test completed successfully", "verification complete", "test finished successfully", "all steps completed", "task finished", "stop", "stop - test completed"];
     };
     readonly execution: {
         readonly stepDelay: 2000;

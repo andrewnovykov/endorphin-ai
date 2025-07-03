@@ -1,17 +1,15 @@
 /**
  * Tool Manager
- * Handles tool setup, loading, and management
+ * Handles built-in tool setup, loading, and management
  */
 import type { FrameworkConfig, LangChainTool } from '../types/index.js';
-import { CustomToolDiscovery } from './custom-tool-discovery.js';
 export declare class ToolManager {
     private toolsArray;
-    private customToolDiscovery;
     private config;
     private logger;
     constructor(config: FrameworkConfig);
     /**
-     * Setup and load all tools (built-in + custom)
+     * Setup and load all built-in tools
      */
     setupTools(framework: any): Promise<LangChainTool[]>;
     /**
@@ -40,21 +38,12 @@ export declare class ToolManager {
     getToolStats(): {
         total: number;
         builtIn: number;
-        custom: number;
         toolNames: string[];
     };
-    /**
-     * Get custom tool discovery instance
-     */
-    getCustomToolDiscovery(): CustomToolDiscovery | null;
     /**
      * Load built-in tools
      */
     private loadBuiltInTools;
-    /**
-     * Load custom tools
-     */
-    private loadCustomTools;
     /**
      * Reload tools (useful for development)
      */

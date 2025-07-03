@@ -51,6 +51,7 @@ cd my-ai-tests
 ```
 
 **Or manual setup:**
+
 ```bash
 # 1. Create your project
 mkdir my-ai-tests && cd my-ai-tests
@@ -63,6 +64,7 @@ npx endorphin-ai init
 ```
 
 **What you get:**
+
 - ✅ Sample test ready to run
 - ✅ Configuration files
 - ✅ Project structure
@@ -75,7 +77,7 @@ npx endorphin-ai init
 echo "OPENAI_API_KEY=your-openai-api-key-here" > .env
 ```
 
-*Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)*
+_Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)_
 
 ### ▶️ Run Your First Test
 
@@ -88,6 +90,7 @@ npx endorphin-ai generate report && npx endorphin-ai open report
 ```
 
 **🎉 That's it!** You now have:
+
 - A working AI-powered test
 - Interactive HTML reports with screenshots
 - Complete project structure for scaling
@@ -114,7 +117,9 @@ npm install -g endorphin-ai
 endorphin-ai init
 ```
 
-**Why this happens:** This is a known npm/npx issue with local binary resolution, not a problem with Endorphin AI. The npm scripts above always work regardless of npx behavior.
+**Why this happens:** This is a known npm/npx issue with local binary
+resolution, not a problem with Endorphin AI. The npm scripts above always work
+regardless of npx behavior.
 
 ### Manual Setup (Alternative)
 
@@ -182,7 +187,7 @@ If you prefer manual setup:
      "scripts": {
        "test": "endorphin-ai run test all",
        "test:smoke": "endorphin-ai run test --tag smoke",
-       "test:auth": "endorphin-ai run test --tag authentication", 
+       "test:auth": "endorphin-ai run test --tag authentication",
        "test:single": "endorphin-ai run test",
        "test:record": "endorphin-ai run test-recorder",
        "endorphin:init": "./node_modules/.bin/endorphin-ai init",
@@ -194,18 +199,23 @@ If you prefer manual setup:
 ## 🎯 Core Features
 
 ### 🤖 AI-Powered Testing
+
 - **Write tests in plain English** - No complex selectors needed
-- **Intelligent element detection** - AI finds buttons, forms, and content automatically
+- **Intelligent element detection** - AI finds buttons, forms, and content
+  automatically
 - **Self-healing tests** - Adapts to UI changes without breaking
-- **Smart error recovery** - Automatically retries failed actions with different strategies
+- **Smart error recovery** - Automatically retries failed actions with different
+  strategies
 
 ### 📊 Beautiful Reports
+
 - **Interactive HTML reports** with screenshots and step-by-step execution
 - **Real-time filtering and search** to quickly find issues
 - **Visual debugging** with click-to-zoom screenshots
 - **Export capabilities** for sharing with your team
 
 ### 🛠️ Developer Experience
+
 - **Zero configuration** - Works out of the box
 - **TypeScript support** with full type definitions
 - **Custom tools** - Extend testing capabilities with your own AI-powered tools
@@ -214,6 +224,7 @@ If you prefer manual setup:
 - **Hot reload** for rapid test development
 
 ### 🎮 Interactive Tools
+
 - **Test Recorder** - Create tests by clicking through your app
 - **Live debugging** - See exactly what the AI is doing
 - **Custom test creation** with guided prompts
@@ -237,9 +248,12 @@ npx endorphin-ai --help
 ```
 
 ### What's New in v0.8.0
-- ✅ **Custom Tools Support** - Extend testing capabilities with your own AI-powered tools
+
+- ✅ **Custom Tools Support** - Extend testing capabilities with your own
+  AI-powered tools
 - ✅ **CLI Tool Management** - Create, validate, and list custom tools
-- ✅ **Template System** - Quick tool creation with built-in templates (basic, API, UI)
+- ✅ **Template System** - Quick tool creation with built-in templates (basic,
+  API, UI)
 - ✅ **Comprehensive Error Handling** - Robust error classification and recovery
 - ✅ **Auto-Discovery** - Automatic tool loading with detailed validation
 - ✅ **TypeScript-First** - Full type safety and IntelliSense for custom tools
@@ -261,7 +275,7 @@ The `init` command creates:
 - ✅ `test-recorder/` for recorded tests
 - ✅ `.env` file with API key placeholder
 - ✅ `endorphin.config.ts` with optimized TypeScript settings
-- ✅ `tools/` directory with working custom tool examples
+
 - ✅ `tsconfig.json` for TypeScript compilation
 - ✅ `.gitignore` with Endorphin-specific patterns
 - ✅ `README-ENDORPHIN.md` quick start guide
@@ -531,7 +545,7 @@ export const LOGIN_TEST: TestCase = {
 
 export const LOGOUT_TEST: TestCase = {
   id: 'AUTH-002',
-  name: 'User Logout Test', 
+  name: 'User Logout Test',
   description: 'Test user logout functionality',
   tags: ['authentication'],
   priority: 'Medium',
@@ -542,11 +556,13 @@ export const LOGOUT_TEST: TestCase = {
 
 ## 🔧 Custom Tools
 
-Endorphin AI supports custom tools that extend the framework's capabilities with your own AI-powered functionality.
+Endorphin AI supports custom tools that extend the framework's capabilities with
+your own AI-powered functionality.
 
 ### 🚀 Quick Start with Custom Tools
 
-When you run `npx endorphin-ai init`, you automatically get a working custom tool example:
+When you run `npx endorphin-ai init`, you automatically get a working custom
+tool example:
 
 ```bash
 npx endorphin-ai init
@@ -564,7 +580,7 @@ npx endorphin create tool my-custom-tool
 # Create an API testing tool
 npx endorphin create tool api-validator --template api
 
-# Create a UI automation tool  
+# Create a UI automation tool
 npx endorphin create tool ui-helper --template ui
 ```
 
@@ -603,14 +619,14 @@ export function createApiTool(framework: EnhancedBrowserTestFramework) {
     }),
     call: async ({ endpoint, method, expectedStatus }) => {
       framework.logTestStep(`Testing ${method} ${endpoint}`);
-      
+
       const response = await fetch(endpoint, { method });
       const data = await response.json();
-      
+
       if (response.status !== expectedStatus) {
         throw new Error(`Expected ${expectedStatus}, got ${response.status}`);
       }
-      
+
       return {
         status: response.status,
         data,
@@ -632,14 +648,14 @@ import type { FrameworkConfig } from 'endorphin-ai';
 const config: FrameworkConfig = {
   // Enable custom tools from the tools directory
   customTools: ['./tools'],
-  
+
   // Or specify individual files
   customTools: [
     './tools/api-tool.ts',
     './tools/database-tool.ts',
     './my-custom-tools/',
   ],
-  
+
   // Other configuration...
 };
 
@@ -648,7 +664,8 @@ export default config;
 
 ### 📖 Custom Tools Guide
 
-For detailed documentation on creating, configuring, and using custom tools, see:
+For detailed documentation on creating, configuring, and using custom tools,
+see:
 
 **[📖 Custom Tools Development Guide](./doc/Custom-Tools-Guide.md)**
 
@@ -709,7 +726,7 @@ export const QE002: TestCase = {
 ### 🎯 TypeScript Benefits
 
 - ✅ **Full type safety** for test configuration
-- ✅ **IntelliSense support** in your IDE  
+- ✅ **IntelliSense support** in your IDE
 - ✅ **Compile-time error checking**
 - ✅ **Auto-completion** for test properties
 - ✅ **Refactoring support** across your test suite
@@ -765,30 +782,35 @@ utilities.
 ## 💡 Common Use Cases
 
 ### 🔐 Authentication Testing
+
 ```bash
 # Test login flows across different user types
 npx endorphin run test --tag authentication
 ```
 
-### 🛒 E-commerce Workflows  
+### 🛒 E-commerce Workflows
+
 ```bash
 # Test complete purchase flows
 npx endorphin run test --tag checkout
 ```
 
 ### 📱 Responsive Testing
+
 ```bash
 # Test mobile, tablet, and desktop layouts
 npx endorphin run test --tag responsive
 ```
 
 ### 🔍 Search & Navigation
+
 ```bash
 # Test site search and menu navigation
 npx endorphin run test --tag navigation
 ```
 
 ### 📊 Form Validation
+
 ```bash
 # Test form submissions and validation
 npx endorphin run test --tag forms
@@ -800,14 +822,14 @@ npx endorphin run test --tag forms
 
 ### Traditional E2E Testing vs Endorphin AI
 
-| Traditional Testing | Endorphin AI |
-|-------------------|-------------|
-| ❌ Brittle CSS selectors | ✅ AI finds elements intelligently |
-| ❌ Breaks with UI changes | ✅ Self-healing tests |
-| ❌ Complex setup | ✅ Zero configuration |
-| ❌ Hard to maintain | ✅ Plain English test descriptions |
-| ❌ Basic reporting | ✅ Interactive HTML reports |
-| ❌ Manual debugging | ✅ Visual debugging with screenshots |
+| Traditional Testing       | Endorphin AI                         |
+| ------------------------- | ------------------------------------ |
+| ❌ Brittle CSS selectors  | ✅ AI finds elements intelligently   |
+| ❌ Breaks with UI changes | ✅ Self-healing tests                |
+| ❌ Complex setup          | ✅ Zero configuration                |
+| ❌ Hard to maintain       | ✅ Plain English test descriptions   |
+| ❌ Basic reporting        | ✅ Interactive HTML reports          |
+| ❌ Manual debugging       | ✅ Visual debugging with screenshots |
 
 ### 🚀 Production Ready
 
@@ -1028,7 +1050,7 @@ npx endorphin-ai --version
 
 ### Version History & Features
 
-- **v0.8.0** *(Latest)*: Custom tools support with CLI management and templates
+- **v0.8.0** _(Latest)_: Custom tools support with CLI management and templates
 - **v0.6.1**: Fixed npx resolution issues, enhanced user experience
 - **v0.6.0**: Enhanced CLI, security-first publishing, cross-platform CI/CD
 - **v0.5.0**: Advanced HTML reporting with interactive features
@@ -1053,29 +1075,41 @@ Update with confidence - your existing tests won't break!
 ## 🤝 Support & Community
 
 ### 📚 Documentation
+
 - **[Quick Start Guide](./README.md)** - Get up and running quickly
-- **[Custom Tools Development Guide](./doc/Custom-Tools-Guide.md)** - Create and manage custom tools
-- **[HTML Reporter Guide](./doc/user-guide/HTML-Reporter-Guide.md)** - Interactive reporting
-- **[Framework Architecture](./doc/Framework-Architecture.md)** - Technical deep dive
+- **[Custom Tools Development Guide](./doc/Custom-Tools-Guide.md)** - Create and
+  manage custom tools
+- **[HTML Reporter Guide](./doc/user-guide/HTML-Reporter-Guide.md)** -
+  Interactive reporting
+- **[Framework Architecture](./doc/Framework-Architecture.md)** - Technical deep
+  dive
 
 ### 🐛 Issues & Feature Requests
-Found a bug or have a feature idea? [Open an issue](https://github.com/andrewnovykov/endorphin-ai/issues) on GitHub.
+
+Found a bug or have a feature idea?
+[Open an issue](https://github.com/andrewnovykov/endorphin-ai/issues) on GitHub.
 
 ### 💬 Getting Help
+
 - Check the **[documentation](./doc/)** first
-- Search **[existing issues](https://github.com/andrewnovykov/endorphin-ai/issues)**
-- Create a **[new issue](https://github.com/andrewnovykov/endorphin-ai/issues/new)** with details
+- Search
+  **[existing issues](https://github.com/andrewnovykov/endorphin-ai/issues)**
+- Create a
+  **[new issue](https://github.com/andrewnovykov/endorphin-ai/issues/new)** with
+  details
 
 ---
 
 ## 📄 License
 
-Endorphin AI is licensed under the **GNU Affero General Public License v3.0** (AGPLv3).
+Endorphin AI is licensed under the **GNU Affero General Public License v3.0**
+(AGPLv3).
 
 **For Open Source Projects**: Free to use under AGPLv3  
 **For Commercial Projects**: Commercial licenses available
 
-📧 Contact: [iam@andrewnovykov.com](mailto:iam@andrewnovykov.com) for licensing questions
+📧 Contact: [iam@andrewnovykov.com](mailto:iam@andrewnovykov.com) for licensing
+questions
 
 ---
 

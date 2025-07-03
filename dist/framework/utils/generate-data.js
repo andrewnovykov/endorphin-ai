@@ -5,6 +5,10 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { AGENT_CONFIG } from '../ai/config/agent-config.js';
 import { TokenTracker } from '../core/token-tracker.js';
+import { globalResourceManager } from '../core/resource-manager.js';
+import { EventEmitter } from 'node:events';
+// Increase default max listeners to prevent memory leak warnings
+EventEmitter.defaultMaxListeners = 20;
 /**
  * Generate realistic test data using AI based on a schema
  * @param schema - The data schema (JSON Schema, TypeScript interface, or description)
@@ -19,13 +23,21 @@ export async function generateData(schema, context) {
         prompt += `\n\nAdditional context: ${context}`;
     }
     prompt += `\n\nRequirements:
-- Generate realistic, diverse data that exactly matches the schema
+- Generate realistic data for a SINGLE object that exactly matches the schema
 - Use appropriate data types (strings, numbers, booleans, arrays, objects)
 - For strings: use realistic values, not placeholders
 - For numbers: use reasonable values within expected ranges
 - For dates: use ISO format or as specified
-- Return ONLY valid JSON that matches the schema structure
-- Do not include any explanation or markdown formatting`;
+- Return ONLY a single valid JSON object (not an array) that matches the schema structure
+- Do not include any explanation, markdown formatting, or additional text
+- The response must be a valid JSON object that can be parsed directly
+
+Example response format:
+{
+  "name": "John Smith",
+  "email": "john.smith@example.com",
+  "age": 25
+}`;
     try {
         // Check if OpenAI API key is available
         if (!AGENT_CONFIG.openai.apiKey) {
@@ -36,7 +48,9 @@ export async function generateData(schema, context) {
         const tokenTracker = new TokenTracker(AGENT_CONFIG.openai.modelName);
         // Estimate prompt tokens
         const estimatedPromptTokens = tokenTracker.estimateTokens(prompt);
-        // Create OpenAI client
+        // Create OpenAI client with AbortSignal to prevent memory leaks
+        const controllerId = `data-gen-${Date.now()}-${Math.random()}`;
+        const abortController = globalResourceManager.createAbortController(controllerId);
         const model = new ChatOpenAI({
             openAIApiKey: AGENT_CONFIG.openai.apiKey,
             modelName: AGENT_CONFIG.openai.modelName,
@@ -44,38 +58,71 @@ export async function generateData(schema, context) {
         });
         console.log(`🤖 Generating test data with AI (estimated: ${estimatedPromptTokens} tokens)...`);
         const startTime = Date.now();
-        // Generate the data using OpenAI
-        const response = await model.invoke(prompt);
-        const content = response.content?.toString() || '';
-        const duration = Date.now() - startTime;
-        // Estimate response tokens
-        const estimatedResponseTokens = tokenTracker.estimateTokens(content);
-        // Record token usage
-        const tokenUsage = tokenTracker.recordUsage(estimatedPromptTokens, estimatedResponseTokens, AGENT_CONFIG.openai.modelName);
-        // Extract JSON from response
-        let generatedData;
-        // Try to find JSON in the response
-        const jsonMatch = content.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-        if (jsonMatch) {
-            try {
-                generatedData = JSON.parse(jsonMatch[0]);
+        try {
+            // Generate the data using OpenAI with abort signal
+            const response = await model.invoke(prompt, { signal: abortController.signal });
+            const content = response.content?.toString() || '';
+            const duration = Date.now() - startTime;
+            // Estimate response tokens
+            const estimatedResponseTokens = tokenTracker.estimateTokens(content);
+            // Record token usage
+            const tokenUsage = tokenTracker.recordUsage(estimatedPromptTokens, estimatedResponseTokens, AGENT_CONFIG.openai.modelName);
+            // Extract JSON from response
+            let generatedData;
+            // Try to find JSON in the response (prioritize objects over arrays)
+            const objectMatch = content.match(/\{[\s\S]*\}/);
+            const arrayMatch = content.match(/\[[\s\S]*\]/);
+            if (objectMatch) {
+                try {
+                    generatedData = JSON.parse(objectMatch[0]);
+                    // If we got an array when we wanted a single object, take the first element
+                    if (Array.isArray(generatedData) && generatedData.length > 0) {
+                        console.warn('⚠️ AI returned array instead of single object, using first element');
+                        generatedData = generatedData[0];
+                    }
+                }
+                catch {
+                    console.warn('⚠️ Failed to parse AI response as JSON, using fallback');
+                    return generateFallbackData(schema);
+                }
             }
-            catch {
-                console.warn('⚠️ Failed to parse AI response as JSON, using fallback');
+            else if (arrayMatch) {
+                try {
+                    const arrayData = JSON.parse(arrayMatch[0]);
+                    if (Array.isArray(arrayData) && arrayData.length > 0) {
+                        console.warn('⚠️ AI returned array instead of single object, using first element');
+                        generatedData = arrayData[0];
+                    }
+                    else {
+                        console.warn('⚠️ Empty array returned, using fallback');
+                        return generateFallbackData(schema);
+                    }
+                }
+                catch {
+                    console.warn('⚠️ Failed to parse AI response as JSON, using fallback');
+                    return generateFallbackData(schema);
+                }
+            }
+            else {
+                console.warn('⚠️ No valid JSON found in AI response, using fallback');
                 return generateFallbackData(schema);
             }
+            // Log token usage and cost
+            console.log(`✅ Data generated: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`);
+            console.log(`📊 Token breakdown: ${tokenUsage.promptTokens} prompt + ${tokenUsage.responseTokens} response`);
+            return generatedData;
         }
-        else {
-            console.warn('⚠️ No valid JSON found in AI response, using fallback');
+        catch (error) {
+            console.warn(`⚠️ Data generation failed: ${error.message}, using fallback`);
             return generateFallbackData(schema);
         }
-        // Log token usage and cost
-        console.log(`✅ Data generated: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`);
-        console.log(`📊 Token breakdown: ${tokenUsage.promptTokens} prompt + ${tokenUsage.responseTokens} response`);
-        return generatedData;
+        finally {
+            // Clean up abort controller to prevent memory leaks
+            globalResourceManager.disposeAbortController(controllerId);
+        }
     }
     catch (error) {
-        console.warn(`⚠️ Data generation failed: ${error.message}, using fallback`);
+        console.warn(`⚠️ Data generation setup failed: ${error.message}, using fallback`);
         return generateFallbackData(schema);
     }
 }

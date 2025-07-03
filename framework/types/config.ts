@@ -19,7 +19,6 @@ export interface FrameworkConfig {
   parallel: number;
   maxRetries: number;
   baseUrl?: string;
-  customTools?: string[]; // Array of paths to custom tool files or directories
   globalSetup?: string; // Path to global setup file
   [key: string]: any; // Allow dynamic access
 }

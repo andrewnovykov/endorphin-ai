@@ -1,16 +1,14 @@
 /**
  * Tool Manager
- * Handles tool setup, loading, and management
+ * Handles built-in tool setup, loading, and management
  */
 
 import type { FrameworkConfig, LangChainTool } from '../types/index.js';
 import { createAllTools } from '../automation/tools/index.js';
-import { CustomToolDiscovery } from './custom-tool-discovery.js';
 import { globalLogger } from './logger.js';
 
 export class ToolManager {
   private toolsArray: LangChainTool[] = [];
-  private customToolDiscovery: CustomToolDiscovery | null = null;
   private config: FrameworkConfig;
   private logger = globalLogger.createChild('ToolManager');
 
@@ -19,19 +17,16 @@ export class ToolManager {
   }
 
   /**
-   * Setup and load all tools (built-in + custom)
+   * Setup and load all built-in tools
    */
   async setupTools(framework: any): Promise<LangChainTool[]> {
-    this.logger.info('Setting up tools');
+    this.logger.info('Setting up built-in tools');
 
     try {
       // Load built-in tools
       await this.loadBuiltInTools(framework);
 
-      // Load custom tools if configured
-      await this.loadCustomTools(framework);
-
-      this.logger.info(`Tools setup completed: ${this.toolsArray.length} tools loaded`);
+      this.logger.info(`Tools setup completed: ${this.toolsArray.length} built-in tools loaded`);
 
       return this.getTools();
     } catch (error: any) {
@@ -82,23 +77,11 @@ export class ToolManager {
    * Get tool statistics
    */
   getToolStats() {
-    const builtInCount =
-      this.toolsArray.length - (this.customToolDiscovery?.getLoadedTools().length || 0);
-    const customCount = this.customToolDiscovery?.getLoadedTools().length || 0;
-
     return {
       total: this.toolsArray.length,
-      builtIn: builtInCount,
-      custom: customCount,
+      builtIn: this.toolsArray.length,
       toolNames: this.toolsArray.map((tool) => tool.name),
     };
-  }
-
-  /**
-   * Get custom tool discovery instance
-   */
-  getCustomToolDiscovery(): CustomToolDiscovery | null {
-    return this.customToolDiscovery;
   }
 
   /**
@@ -120,59 +103,15 @@ export class ToolManager {
     }
   }
 
-  /**
-   * Load custom tools
-   */
-  private async loadCustomTools(framework: any): Promise<void> {
-    if (!this.config.customTools || this.config.customTools.length === 0) {
-      this.logger.debug('No custom tools configured');
-      return;
-    }
-
-    this.logger.debug('Loading custom tools', {
-      paths: this.config.customTools,
-    });
-
-    try {
-      this.customToolDiscovery = new CustomToolDiscovery(this.config, framework);
-      const customTools = await this.customToolDiscovery.discoverAndLoadTools();
-
-      if (customTools.length > 0) {
-        this.toolsArray.push(...customTools);
-        this.logger.info(`Loaded ${customTools.length} custom tools`, {
-          tools: customTools.map((tool) => tool.name),
-        });
-      } else {
-        this.logger.warn('No custom tools loaded');
-      }
-
-      // Log any errors encountered during custom tool loading
-      const loadResult = this.customToolDiscovery.getLoadResult();
-      if (loadResult.errors.length > 0) {
-        this.logger.warn(`Custom tool loading completed with ${loadResult.errors.length} errors`);
-        loadResult.errors.forEach((error) => {
-          this.logger.warn(`Custom tool error: ${error.message}`, {
-            code: error.code,
-            context: error.context,
-          });
-        });
-      }
-    } catch (error: any) {
-      this.logger.error('Failed to load custom tools', error);
-      // Don't throw here - allow framework to continue with built-in tools only
-      this.logger.warn('Continuing with built-in tools only');
-    }
-  }
 
   /**
    * Reload tools (useful for development)
    */
   async reloadTools(framework: any): Promise<void> {
-    this.logger.info('Reloading all tools');
+    this.logger.info('Reloading all built-in tools');
 
     // Clear existing tools
     this.toolsArray = [];
-    this.customToolDiscovery = null;
 
     // Reload all tools
     await this.setupTools(framework);
@@ -240,6 +179,5 @@ export class ToolManager {
   clearTools(): void {
     this.logger.debug('Clearing all tools');
     this.toolsArray = [];
-    this.customToolDiscovery = null;
   }
 }

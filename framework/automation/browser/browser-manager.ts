@@ -350,9 +350,12 @@ export class BrowserManager {
       const level = msg.type();
       const text = msg.text();
 
-      if (level === 'error') {
+      // Filter out useless mirror errors and other noise
+      const isUselessError = this.shouldFilterConsoleMessage(text, level);
+      
+      if (level === 'error' && !isUselessError) {
         this.logger.warn(`Browser console error: ${text}`);
-      } else if (level === 'warning') {
+      } else if (level === 'warning' && !isUselessError) {
         this.logger.debug(`Browser console warning: ${text}`);
       }
     });
@@ -384,6 +387,34 @@ export class BrowserManager {
   }
 
   /**
+   * Determine if a console message should be filtered out
+   */
+  private shouldFilterConsoleMessage(text: string, level: string): boolean {
+    const lowerText = text.toLowerCase();
+    
+    // Filter out mirror-related errors (CodeMirror, text editors, etc.)
+    const mirrorPatterns = [
+      'mirror',
+      'codemirror',
+      'cm-',
+      'editor mirror',
+      'text mirror'
+    ];
+    
+    // Filter out other common useless errors from automation tools
+    const uselessPatterns = [
+      'playwright',
+      'injected script',
+      'automation',
+      'non-critical'
+    ];
+    
+    const allPatterns = [...mirrorPatterns, ...uselessPatterns];
+    
+    return allPatterns.some(pattern => lowerText.includes(pattern));
+  }
+
+  /**
    * Remove page event handlers to prevent memory leaks
    */
   private removePageEventHandlers(page: Page): void {
@@ -392,7 +423,7 @@ export class BrowserManager {
       page.removeAllListeners('pageerror');
       page.removeAllListeners('requestfailed');
       page.removeAllListeners('response');
-    } catch (error) {
+    } catch {
       // Ignore errors when removing listeners (page might be closed)
     }
   }

@@ -106,7 +106,7 @@ async function loadSingleTestFile(filename, testsDirectory, targetTestId) {
         }
         return null;
     }
-    catch (error) {
+    catch {
         // Silently skip files that can't be loaded when scanning
         return null;
     }
@@ -142,9 +142,36 @@ async function ensureDiscovery(config = null) {
     return discoveryInstance;
 }
 /**
+ * Execute global setup once per CLI session if configured
+ */
+let globalSetupExecuted = false;
+async function executeGlobalSetupOnce(config) {
+    // Skip if already executed or not configured
+    if (globalSetupExecuted || !config?.globalSetup) {
+        return;
+    }
+    console.log('🌍 Executing global setup...');
+    try {
+        const { GlobalSetupManager } = await import('../../core/global-setup-manager.js');
+        const globalSetupManager = new GlobalSetupManager();
+        const result = await globalSetupManager.loadAndExecute(config.globalSetup);
+        if (!result.success) {
+            throw new Error(`Global setup failed: ${result.error?.message || 'Unknown error'}`);
+        }
+        globalSetupExecuted = true;
+        console.log(`✅ Global setup completed successfully in ${result.executionTime}ms`);
+    }
+    catch (error) {
+        console.error('❌ Global setup failed:', error.message);
+        throw error; // Re-throw to fail the test session
+    }
+}
+/**
  * Run a single test by ID
  */
 export async function runSingleTestById(testId, config = null) {
+    // Execute global setup first, before any test discovery or framework initialization
+    await executeGlobalSetupOnce(config);
     // For single test execution, try to find and load the specific test file first
     const test = await findSingleTest(testId, config);
     if (!test) {
@@ -174,6 +201,8 @@ export async function runSingleTestById(testId, config = null) {
  * Run tests by tag
  */
 export async function runTestsByTag(tag, config = null, options = {}) {
+    // Execute global setup first, before any test discovery or framework initialization
+    await executeGlobalSetupOnce(config);
     const discovery = await ensureDiscovery(config);
     const allTests = discovery.getTestsByTag(tag);
     if (allTests.length === 0) {
@@ -216,6 +245,8 @@ export async function runTestsByTag(tag, config = null, options = {}) {
  * Run tests by priority
  */
 export async function runTestsByPriority(priority, config = null, options = {}) {
+    // Execute global setup first, before any test discovery or framework initialization
+    await executeGlobalSetupOnce(config);
     const discovery = await ensureDiscovery(config);
     const allTests = discovery.getTestsByPriority(priority);
     if (allTests.length === 0) {
@@ -258,6 +289,8 @@ export async function runTestsByPriority(priority, config = null, options = {}) 
  * Run all tests
  */
 export async function runAllTests(config = null, options = {}) {
+    // Execute global setup first, before any test discovery or framework initialization
+    await executeGlobalSetupOnce(config);
     const discovery = await ensureDiscovery(config);
     const allTests = discovery.getAllTests();
     if (allTests.length === 0) {
@@ -342,6 +375,12 @@ export async function getDiscoveryStatistics(config = null) {
  */
 export function clearDiscoveryCache() {
     discoveryInstance = null;
+}
+/**
+ * Clear global setup state (for testing purposes)
+ */
+export function clearGlobalSetupState() {
+    globalSetupExecuted = false;
 }
 /**
  * Get current discovery instance (for testing)

@@ -39,6 +39,10 @@ export declare class HtmlGenerator {
      */
     generateTestResultsHtml(testResults: ParsedTestResult[]): string;
     /**
+     * Format test data for JavaScript template consumption
+     */
+    private formatTestDataForTemplate;
+    /**
      * Copy static assets (CSS, JS) to reports directory
      */
     private copyStaticAssets;

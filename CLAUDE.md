@@ -1,10 +1,15 @@
 # CLAUDE.md - AI Assistant Instructions
 
-This file contains instructions for AI assistants (like Claude) working on the Endorphin AI project.
+This file contains instructions for AI assistants (like Claude) working on the
+Endorphin AI project.
 
 ## Project Overview
 
-Endorphin AI is a **TypeScript-first browser automation testing framework** that uses AI agents to execute natural language test instructions. The framework is built with modern TypeScript, compiles to JavaScript for distribution, provides interactive HTML reports, and supports custom tools for extending testing capabilities.
+Endorphin AI is a **TypeScript-first browser automation testing framework** that
+uses AI agents to execute natural language test instructions. The framework is
+built with modern TypeScript, compiles to JavaScript for distribution, provides
+interactive HTML reports, and supports custom tools for extending testing
+capabilities.
 
 ## Architecture Summary
 
@@ -20,7 +25,7 @@ Endorphin AI is a **TypeScript-first browser automation testing framework** that
 ```bash
 # Development workflow
 npm test                    # Run all Jest tests (108 tests)
-npm run build              # Compile TypeScript to JavaScript  
+npm run build              # Compile TypeScript to JavaScript
 npm run lint               # ESLint with TypeScript rules
 npm run type-check         # TypeScript type checking
 
@@ -48,12 +53,10 @@ framework/                 # TypeScript source code
 │   ├── index.ts          # Main type exports (includes TestCase)
 │   ├── test.ts           # Test execution types
 │   └── ...
-├── core/                 # Core framework components
-│   ├── custom-tool-discovery.ts  # Custom tool loading system
-│   └── custom-tool-errors.ts     # Error handling for custom tools
+├──
 ├── tools/                # Browser automation tools
 ├── cli/                  # CLI command handlers
-│   └── tool-commands.ts  # Custom tool CLI commands
+│
 ├── reporters/            # Report generation
 │   └── html-reporter.ts  # Interactive HTML reports
 ├── templates/            # HTML report templates
@@ -71,6 +74,7 @@ doc/                      # Documentation
 ## Important TypeScript Types
 
 ### TestCase Interface
+
 ```typescript
 // framework/types/test.ts
 export interface TestCase extends TestConfig {
@@ -83,67 +87,57 @@ export type { TestCase } from './test.js';
 ```
 
 This type is used by the test recorder and must be importable as:
+
 ```typescript
 import { TestCase } from 'endorphin-ai';
 ```
 
-## Custom Tools System
+## Built-in Tools System
 
 ### Overview
-The framework supports custom tools that extend testing capabilities with user-defined AI-powered functionality. Custom tools are TypeScript functions that integrate with LangChain and the testing framework.
 
-### Key Components
-- **Tool Discovery**: `framework/core/custom-tool-discovery.ts` - Automatic loading and validation
-- **Error Handling**: `framework/core/custom-tool-errors.ts` - Comprehensive error management  
-- **CLI Commands**: `framework/cli/tool-commands.ts` - Tool creation and management
-- **Templates**: `framework/templates/tools/` - Tool creation templates
+Endorphin AI provides 12 comprehensive built-in browser automation tools that
+cover all testing needs. These tools are automatically available in every test
+without any configuration.
 
-### Configuration
-```typescript
-// endorphin.config.ts
-export default {
-  customTools: ['./tools'], // Array of paths to tool files/directories
-  // Other config...
-};
-```
+### Tool Categories
 
-### Tool Structure
-```typescript
-// tools/my-tool.ts
-import { z } from 'zod';
-import type { EnhancedBrowserTestFramework } from 'endorphin-ai';
-
-export function createMyTool(framework: EnhancedBrowserTestFramework) {
-  return {
-    name: 'my-tool',
-    description: 'Tool description',
-    schema: z.object({
-      input: z.string().describe('Input parameter'),
-    }),
-    call: async ({ input }) => {
-      framework.logTestStep(`Executing tool with: ${input}`);
-      return { result: 'Tool executed successfully' };
-    },
-  };
-}
-```
+- **Navigation** (1 tool): `navigate` - URL navigation and routing
+- **Content Analysis** (4 tools): `getDifferentialContent`, `getPageContent`,
+  `getSimplePageContent`, `optimizeContent`
+- **Interaction** (3 tools): `click`, `fill`, `clearField` - User interactions
+- **Verification** (2 tools): `verifyElement`, `getElementInfo` - Element
+  validation
+- **Utilities** (2 tools): `wait`, `screenshot` - Test helpers
 
 ### CLI Commands
+
 ```bash
-npx endorphin create tool my-tool --template api
-npx endorphin validate tools
-npx endorphin list tools --verbose
+npx endorphin list tools              # Show all built-in tools
+npx endorphin list tools --verbose    # Detailed tool information
+```
+
+### Usage in Tests
+
+All tools are automatically available in test instructions:
+
+```typescript
+// Example test task
+task: 'Navigate to login page, fill username and password, click submit, verify success';
 ```
 
 ## HTML Reporter System
 
 ### Components
-- **HTML Template**: `framework/templates/reporter/report-template.html` 
+
+- **HTML Template**: `framework/templates/reporter/report-template.html`
 - **Styling**: `framework/templates/reporter/styles.css` (Bootstrap-based)
-- **Interactivity**: `framework/templates/reporter/scripts.js` (Vanilla JavaScript)
+- **Interactivity**: `framework/templates/reporter/scripts.js` (Vanilla
+  JavaScript)
 - **Generator**: `framework/reporters/html-reporter.ts` (TypeScript)
 
 ### Data Flow
+
 1. Test execution generates `test-session.json` with screenshots
 2. HTML Reporter parses results and creates nested data structure
 3. Template processing embeds data as JSON script tag
@@ -151,6 +145,7 @@ npx endorphin list tools --verbose
 5. Screenshots copied to `reports/screenshots/` directory
 
 ### Key Features
+
 - Real-time search by test ID/name
 - Status filtering (All/Passed/Failed)
 - Modal dialogs for detailed test views
@@ -161,16 +156,19 @@ npx endorphin list tools --verbose
 ## Build Process
 
 ### TypeScript Compilation
+
 ```bash
 npm run build
 # 1. tsc - Compile TypeScript to JavaScript
-# 2. scripts/fix-imports.js - Fix path aliases 
+# 2. scripts/fix-imports.js - Fix path aliases
 # 3. Copy templates to dist/
 # 4. Set executable permissions
 ```
 
 ### Path Aliases
+
 The project uses TypeScript path aliases that get resolved during build:
+
 - `@core/*` → `./framework/core/*`
 - `@tools/*` → `./framework/tools/*`
 - `@types/*` → `./framework/types/*`
@@ -179,11 +177,14 @@ The project uses TypeScript path aliases that get resolved during build:
 ## Testing Strategy
 
 ### Test Types
-1. **Development Tests** (`tests/development/`): Jest tests for TypeScript source
+
+1. **Development Tests** (`tests/development/`): Jest tests for TypeScript
+   source
 2. **Pre-release Tests** (`tests/pre-release/`): Validation of compiled package
 3. **Post-install Tests** (`tests/post-install/`): NPM package verification
 
 ### Running Tests
+
 - All tests use Jest framework
 - Run with `npm test` (currently 108/108 passing)
 - TypeScript source is tested directly with tsx
@@ -192,12 +193,14 @@ The project uses TypeScript path aliases that get resolved during build:
 ## Common Development Tasks
 
 ### Adding New Types
+
 1. Define in appropriate `framework/types/*.ts` file
 2. Export from `framework/types/index.ts`
 3. Update documentation
 4. Add tests
 
 ### Fixing HTML Reporter Issues
+
 1. **Template issues**: Edit `framework/templates/reporter/report-template.html`
 2. **Styling issues**: Edit `framework/templates/reporter/styles.css`
 3. **Interactive issues**: Edit `framework/templates/reporter/scripts.js`
@@ -205,6 +208,7 @@ The project uses TypeScript path aliases that get resolved during build:
 5. **Always test**: Generate real report and verify functionality
 
 ### Working with Screenshots
+
 - Screenshots stored in test result directories
 - HTML reporter copies them to `reports/screenshots/`
 - JavaScript expects relative paths like `screenshots/filename.png`
@@ -213,10 +217,12 @@ The project uses TypeScript path aliases that get resolved during build:
 ## Environment Setup
 
 ### Required Files
+
 - `.env` file with `OPENAI_API_KEY=your_key_here`
 - `endorphin.config.ts` for project configuration
 
 ### Dependencies
+
 - **Runtime**: Node.js, Playwright, OpenAI, LangChain
 - **Development**: TypeScript, Jest, ESLint, tsx
 - **Production**: Compiled JavaScript only (no tsx dependency)
@@ -224,15 +230,20 @@ The project uses TypeScript path aliases that get resolved during build:
 ## Token Pricing Configuration
 
 ### Overview
-The framework includes flexible token pricing configuration for accurate cost tracking across different AI models.
+
+The framework includes flexible token pricing configuration for accurate cost
+tracking across different AI models.
 
 ### Default Pricing
+
 Default pricing is provided for popular models:
+
 - **OpenAI**: GPT-4o, GPT-4, GPT-3.5-turbo variants
-- **Anthropic**: Claude-3 variants 
+- **Anthropic**: Claude-3 variants
 - **Google**: Gemini Pro models
 
 ### Custom Pricing
+
 Users can override default pricing in `endorphin.config.ts`:
 
 ```typescript
@@ -241,33 +252,35 @@ export default {
   pricing: {
     // Override default model pricing
     'gpt-4o': {
-      input: 0.002,   // Cost per 1K input tokens
-      output: 0.008   // Cost per 1K output tokens
+      input: 0.002, // Cost per 1K input tokens
+      output: 0.008, // Cost per 1K output tokens
     },
-    
+
     // Add custom/private models
     'my-custom-model': {
       input: 0.001,
-      output: 0.003
+      output: 0.003,
     },
-    
+
     // Local/free models
     'local-llama': {
       input: 0,
-      output: 0
-    }
-  }
+      output: 0,
+    },
+  },
   // ... other config
 };
 ```
 
 ### Pricing Validation
+
 - Input/output prices must be non-negative numbers
 - Warnings for unusually high prices (>$1 per 1K tokens)
 - Warnings when output price < input price (unusual pattern)
 - Automatic fallback to defaults for invalid configurations
 
 ### Token Usage Tracking
+
 - Real-time cost calculation during test execution
 - Per-test and session-level cost summaries
 - Console output: `💰 Token Usage: 1,234 tokens ($0.0123) in 1.2s`
@@ -276,17 +289,20 @@ export default {
 ## Code Quality Standards
 
 ### TypeScript
+
 - Strict mode enabled
 - Use interfaces over types for object shapes
 - Prefer path aliases for imports
 - Include JSDoc comments for public APIs
 
 ### Testing
+
 - Comprehensive Jest test coverage
 - Mock external dependencies (Playwright, OpenAI)
 - Test both TypeScript source and compiled output
 
 ### Linting
+
 - ESLint with TypeScript rules
 - Fix errors before commits
 - Warnings acceptable for non-critical issues
@@ -294,17 +310,20 @@ export default {
 ## Known Issues & Quirks
 
 ### HTML Reporter
+
 - JavaScript must use template literals (prefer-template ESLint rule)
 - Bootstrap 5.3.0 used for styling
 - Screenshots paths must be relative to report HTML file
 - Filter functionality checks exact badge text ("Passed"/"Failed")
 
 ### TypeScript Compilation
+
 - Path aliases require post-build fix-imports script
 - Templates must be manually copied during build
 - Type definitions included in distribution
 
 ### Testing
+
 - Some tests timeout on slower systems (increase Jest timeout if needed)
 - Browser tests are mocked - real browser testing via CLI commands
 - OpenAI API key required for real test execution
@@ -332,10 +351,12 @@ open test-results/reports/report-*.html
 ## Git Workflow
 
 ### Current Branch
+
 - **Main development**: `develop` branch
 - **Current branch**: `lint` (working on linting fixes)
 
 ### Commit Best Practices
+
 - Run `npm test` before committing
 - Fix critical lint errors
 - Update documentation for user-facing changes
@@ -343,4 +364,5 @@ open test-results/reports/report-*.html
 
 ---
 
-This guide should help AI assistants understand the project structure and contribute effectively to Endorphin AI development.
+This guide should help AI assistants understand the project structure and
+contribute effectively to Endorphin AI development.

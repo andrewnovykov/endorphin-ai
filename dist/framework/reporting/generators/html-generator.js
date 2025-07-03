@@ -57,7 +57,16 @@ export class HtmlGenerator {
      */
     async generateReport(reportData, options = {}) {
         try {
-            const filename = options.filename || `report-${new Date().toISOString().split('T')[0]}.html`;
+            // Generate filename with timestamp
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            const ampm = hours >= 12 ? 'pm' : 'am';
+            const hour12 = hours % 12 || 12;
+            const filename = options.filename ||
+                `report-${dateStr}-time-${hour12}-${minutes.toString().padStart(2, '0')}-${seconds.toString().padStart(2, '0')}-${ampm}.html`;
             const templateName = options.template || 'report-template.html';
             // Load HTML template
             const templatePath = path.join(this.templatesDir, 'reporter', templateName);
@@ -104,7 +113,7 @@ export class HtmlGenerator {
             '{{generatedAt}}': new Date().toLocaleString(),
             '{{testStatsTable}}': this.generateTestStatsTable(data.testResults),
             '{{recentResultsTable}}': this.generateRecentResultsTable(data.testResults),
-            '{{testDataJson}}': JSON.stringify(data.testResults, null, 2),
+            '{{testDataJson}}': JSON.stringify(this.formatTestDataForTemplate(data), null, 2),
         };
         // Apply all replacements
         for (const [placeholder, value] of Object.entries(replacements)) {
@@ -116,13 +125,13 @@ export class HtmlGenerator {
     /**
      * Generate test statistics table HTML
      */
-    generateTestStatsTable(testResults) {
-        if (testResults.length === 0) {
+    generateTestStatsTable(allTestResults) {
+        if (allTestResults.length === 0) {
             return '<tr><td colspan="6" class="text-center">No test results available</td></tr>';
         }
         // Group results by test name for aggregated statistics
         const testStats = {};
-        testResults.forEach((result) => {
+        allTestResults.forEach((result) => {
             const testName = result.testName;
             if (!testStats[testName]) {
                 testStats[testName] = {
@@ -154,16 +163,24 @@ export class HtmlGenerator {
             .map((stats) => {
             const successRate = stats.totalRuns > 0 ? ((stats.successfulRuns / stats.totalRuns) * 100).toFixed(1) : '0.0';
             const avgDurationFormatted = this.formatDuration(stats.avgDuration);
-            const lastRunFormatted = new Date(stats.lastRun).toLocaleString();
+            // Status badge based on success rate
+            const statusBadge = stats.successfulRuns > stats.failedRuns
+                ? '<span class="badge bg-success">PASSING</span>'
+                : '<span class="badge bg-danger">FAILING</span>';
+            // Calculate total tokens and cost for this test
+            const testResultsForThisTest = allTestResults.filter(r => r.testName === stats.testName);
+            const totalTokens = testResultsForThisTest.reduce((sum, r) => sum + (r.tokenSummary?.totalTokens || 0), 0);
+            const totalCost = testResultsForThisTest.reduce((sum, r) => sum + (r.tokenSummary?.totalCost || 0), 0);
+            const mostCommonModel = testResultsForThisTest[0]?.tokenSummary?.model || 'Unknown';
             return `
           <tr>
-            <td><strong>${this.escapeHtml(stats.testName)}</strong></td>
-            <td>${stats.totalRuns}</td>
-            <td><span class="badge bg-success">${stats.successfulRuns}</span></td>
-            <td><span class="badge bg-danger">${stats.failedRuns}</span></td>
-            <td>${successRate}%</td>
+            <td><strong>${this.escapeHtml(stats.testName)}</strong><br>
+                <small class="text-muted">${stats.totalRuns} runs, ${successRate}% success</small></td>
+            <td>${statusBadge}</td>
             <td>${avgDurationFormatted}</td>
-            <td>${lastRunFormatted}</td>
+            <td><span class="badge bg-warning text-dark">${totalTokens}</span></td>
+            <td><span class="badge bg-primary">$${totalCost.toFixed(4)}</span></td>
+            <td><code>${mostCommonModel}</code></td>
           </tr>
         `;
         })
@@ -174,31 +191,46 @@ export class HtmlGenerator {
      */
     generateRecentResultsTable(testResults) {
         if (testResults.length === 0) {
-            return '<tr><td colspan="5" class="text-center">No recent test results</td></tr>';
+            return '<tr><td colspan="7" class="text-center">No recent test results</td></tr>';
         }
         // Take most recent 10 results
         const recentResults = testResults.slice(0, 10);
         return recentResults
-            .map((result) => {
+            .map((result, index) => {
             const statusBadge = result.status === 'SUCCESS'
-                ? '<span class="badge bg-success">SUCCESS</span>'
-                : '<span class="badge bg-danger">FAILED</span>';
+                ? '<span class="badge bg-success">✓ Passed</span>'
+                : '<span class="badge bg-danger">✗ Failed</span>';
             const durationFormatted = this.formatDuration(result.duration);
-            const startTimeFormatted = new Date(result.startTime).toLocaleString();
-            const screenshotCount = result.screenshots?.length || 0;
-            const screenshotInfo = screenshotCount > 0
-                ? `<small class="text-muted">${screenshotCount} screenshot(s)</small>`
-                : '<small class="text-muted">No screenshots</small>';
+            // Token information with badges
+            const tokenInfo = result.tokenSummary
+                ? `<span class="badge bg-warning text-dark">${result.tokenSummary.totalTokens || 0}</span>`
+                : '<span class="badge bg-warning text-dark">0</span>';
+            const costInfo = result.tokenSummary
+                ? `<span class="badge bg-primary">$${(result.tokenSummary.totalCost || 0).toFixed(4)}</span>`
+                : '<span class="badge bg-primary">$0.0000</span>';
+            // Step information
+            const stepInfo = `${result.successfulSteps || 0}/${result.totalSteps || 0}`;
+            // Actions - View Details button with proper attributes
+            const viewDetailsBtn = `
+          <button class="btn btn-sm btn-outline-primary view-details-btn" 
+                  data-result-index="${index}"
+                  onclick="showTestDetails('${result.sessionId}')" 
+                  title="View detailed execution steps">
+            <i class="bi bi-eye"></i> View Details
+          </button>
+        `;
             return `
-          <tr>
-            <td><strong>${this.escapeHtml(result.testName)}</strong></td>
-            <td><code>${this.escapeHtml(result.testId)}</code></td>
+          <tr class="test-result-row" data-result-index="${index}">
+            <td>
+              <strong>${this.escapeHtml(result.testName)}</strong><br>
+              <small class="text-muted">${this.escapeHtml(result.testId)}</small>
+            </td>
             <td>${statusBadge}</td>
             <td>${durationFormatted}</td>
-            <td>
-              ${startTimeFormatted}<br>
-              ${screenshotInfo}
-            </td>
+            <td>${tokenInfo}</td>
+            <td>${costInfo}</td>
+            <td>${stepInfo}</td>
+            <td>${viewDetailsBtn}</td>
           </tr>
         `;
         })
@@ -216,17 +248,27 @@ export class HtmlGenerator {
                 .map((screenshot) => `<img src="screenshots/${screenshot}" alt="Screenshot" class="screenshot-thumb">`)
                 .join('');
             const stepsHtml = result.steps
-                .map((step, index) => `
-            <div class="step">
-              <strong>Step ${index + 1}:</strong> ${this.escapeHtml(step.description || 'No description')}
-            </div>
-          `)
+                .map((step, index) => {
+                const stepTokens = step.tokenUsage
+                    ? `<span class="badge bg-warning text-dark ms-2">${step.tokenUsage.totalTokens}</span>`
+                    : '';
+                const stepCost = step.tokenUsage
+                    ? `<span class="badge bg-primary ms-1">$${step.tokenUsage.cost.toFixed(4)}</span>`
+                    : '';
+                return `
+                <div class="step">
+                  <strong>Step ${index + 1}:</strong> ${this.escapeHtml(step.description || 'No description')}
+                  ${stepTokens}${stepCost}
+                </div>
+              `;
+            })
                 .join('');
             const tokenUsageHtml = result.tokenSummary
                 ? `
           <div class="token-usage">
-            <strong>Token Usage:</strong> ${result.tokenSummary.totalTokens} tokens 
-            ($${result.tokenSummary.totalCost?.toFixed(4) || '0.0000'})
+            <strong>Token Usage:</strong> 
+            <span class="badge bg-warning text-dark ms-2">${result.tokenSummary.totalTokens}</span> 
+            <span class="badge bg-primary ms-1">$${result.tokenSummary.totalCost?.toFixed(4) || '0.0000'}</span>
           </div>
         `
                 : '';
@@ -255,13 +297,46 @@ export class HtmlGenerator {
             .join('');
     }
     /**
+     * Format test data for JavaScript template consumption
+     */
+    formatTestDataForTemplate(data) {
+        return data.testResults.map(result => ({
+            session: {
+                sessionId: result.sessionId,
+                testId: result.testId,
+                testName: result.testName,
+                status: result.status,
+                duration: result.duration,
+                startTime: result.startTime,
+                endTime: result.endTime,
+                finalResult: result.finalResult,
+                conclusion: result.conclusion,
+                steps: result.steps,
+                tokenSummary: result.tokenSummary,
+                setupResult: result.setupResult,
+                dataGenerationResult: result.dataGenerationResult
+            },
+            summary: {
+                sessionId: result.sessionId,
+                tokenSummary: result.tokenSummary
+            },
+            screenshots: result.screenshots,
+            resultDir: result.sessionDir
+        }));
+    }
+    /**
      * Copy static assets (CSS, JS) to reports directory
      */
     copyStaticAssets() {
         try {
+            // Create assets directory
+            const assetsDir = path.join(this.reportsDir, 'assets');
+            if (!fs.existsSync(assetsDir)) {
+                fs.mkdirSync(assetsDir, { recursive: true });
+            }
             const assetsToMap = [
-                { source: 'styles.css', dest: 'styles.css' },
-                { source: 'scripts.js', dest: 'scripts.js' },
+                { source: 'styles.css', dest: 'assets/styles.css' },
+                { source: 'scripts.js', dest: 'assets/scripts.js' },
             ];
             for (const asset of assetsToMap) {
                 const sourcePath = path.join(this.templatesDir, 'reporter', asset.source);

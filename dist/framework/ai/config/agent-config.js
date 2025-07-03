@@ -19,11 +19,11 @@ export const AGENT_CONFIG = {
         timeout: 5 * 60 * 1000, // 5 minutes
         // Stop phrases that indicate test completion
         stopPhrases: [
-            'test completed',
+            'test completed successfully',
             'verification complete',
-            'login successful',
-            'test finished',
-            'done',
+            'test finished successfully',
+            'all steps completed',
+            'task finished',
             'stop',
             'stop - test completed',
         ],

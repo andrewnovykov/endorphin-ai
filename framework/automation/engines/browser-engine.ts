@@ -3,7 +3,7 @@
  * Core engine for browser-based test execution
  */
 
-import { HumanMessage } from '@langchain/core/messages';
+import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { AGENT_CONFIG } from '../../ai/config/agent-config.js';
 import { TIMEOUTS } from '../../config/constants.js';
 import { createSystemContext } from '../../config/system-context.js';
@@ -27,12 +27,12 @@ import type {
   TaskResult,
   TestConfig,
   TestSession,
-  TestTaskFunction,
   ToolCall,
 } from '../../types/index.js';
 import { DirectoryManager } from '../../utils/directory-manager.js';
 import { TestHelpers } from '../../utils/test-helpers.js';
 import { EventEmitter } from 'node:events';
+import { ValidationAgent } from '../../ai/validation-agent.js';
 
 // Increase max listeners to prevent memory leak warnings during test execution
 EventEmitter.defaultMaxListeners = 30;
@@ -67,6 +67,7 @@ export class BrowserEngine {
   private frameworkInstance: any; // Reference to EnhancedBrowserTestFramework
   private globalSetupManager: GlobalSetupManager;
   private globalSetupExecuted: boolean = false;
+  private validationAgent: ValidationAgent;
 
   constructor(config: BrowserEngineConfig) {
     this.config = config.framework;
@@ -92,6 +93,9 @@ export class BrowserEngine {
 
     // Initialize global setup manager
     this.globalSetupManager = new GlobalSetupManager();
+    
+    // Initialize validation agent
+    this.validationAgent = new ValidationAgent();
   }
 
   /**
@@ -100,8 +104,7 @@ export class BrowserEngine {
   async initialize(): Promise<void> {
     console.log('🚀 Initializing Browser Test Engine...');
 
-    // Clean up directories before starting
-    await DirectoryManager.cleanupDirectories(this.resultBaseDir);
+    // Note: Directory cleanup is now handled at the test session level, not per-test
 
     // Ensure directories exist
     await DirectoryManager.ensureDirectory(this.resultBaseDir);
@@ -300,14 +303,19 @@ export class BrowserEngine {
     try {
       // Log initial step
       this.logTestStep('Test started', null, null, `Starting task: ${taskDescription}`, true);
-      await this.takeStepScreenshot('Initial page state');
+      
+      // Skip screenshots in interactive recorder mode to avoid duplicates
+      const isInteractiveMode = name.includes('Interactive-Step-');
+      if (!isInteractiveMode) {
+        await this.takeStepScreenshot('Initial page state');
+      }
 
       // Create enhanced context message for the agent
       const systemContext = createSystemContext(taskDescription);
 
       const finalState = await this.invokeAgentWithTracking(
         {
-          messages: [new HumanMessage(systemContext)],
+          messages: [new SystemMessage(systemContext)],
         },
         {
           recursionLimit: AGENT_CONFIG.agent.recursionLimit,
@@ -320,7 +328,11 @@ export class BrowserEngine {
 
       // Log final step
       this.logTestStep('Test completed', null, null, result, true);
-      await this.takeStepScreenshot('Final page state');
+      
+      // Skip screenshots in interactive recorder mode to avoid duplicates
+      if (!isInteractiveMode) {
+        await this.takeStepScreenshot('Final page state');
+      }
 
       // Finish session
       await this.finishTestSession('SUCCESS', result);
@@ -457,23 +469,26 @@ export class BrowserEngine {
         `Test execution: ${test.name}`
       );
 
-      await Promise.race([agentPromise, timeoutPromise]);
+      const finalState = await Promise.race([agentPromise, timeoutPromise]);
 
+      // Analyze the final conversation state for test result
+      const testResult = await this.analyzeTestResultWithValidation(finalState, taskDescription);
+      
       this.logTestStep(
-        'Test execution completed successfully',
+        `Test execution ${testResult.status.toLowerCase()}`,
         null,
         null,
-        'All steps completed',
-        true
+        testResult.conclusion,
+        testResult.status === 'SUCCESS'
       );
 
-      // Finish the test session
-      const session = await this.finishTestSession('SUCCESS', 'Test completed successfully');
+      // Finish the test session with proper analysis
+      const session = await this.finishTestSession(testResult.status, testResult.conclusion);
 
       if (useDetailedLogs) {
-        console.log(`✅ Test ${test.id} completed successfully!`);
+        console.log(`✅ Test ${test.id} ${testResult.status.toLowerCase()}!`);
       }
-      return { success: true, session };
+      return { success: testResult.status === 'SUCCESS', session };
     } catch (error: any) {
       if (useDetailedLogs) {
         console.error(`❌ Test ${test.id} failed:`, error.message);
@@ -499,6 +514,11 @@ export class BrowserEngine {
     this.currentTestSession.status = status;
     if (finalResult !== null) {
       this.currentTestSession.finalResult = finalResult;
+      
+      // Always save the final result as conclusion for detailed reporting
+      if (typeof finalResult === 'string' && finalResult.trim().length > 0) {
+        this.currentTestSession.conclusion = finalResult.trim();
+      }
     }
     this.currentTestSession.duration =
       new Date(this.currentTestSession.endTime).getTime() -
@@ -597,6 +617,146 @@ export class BrowserEngine {
 
   getSnapshotManager(): PageSnapshotManager {
     return this.snapshotManager;
+  }
+
+  /**
+   * Analyze test result with validation agent
+   */
+  private async analyzeTestResultWithValidation(
+    finalState: any, 
+    testTask: string
+  ): Promise<{ status: 'SUCCESS' | 'FAILED'; conclusion: string }> {
+    const messages = finalState?.messages || [];
+    
+    // First try quick validation
+    const quickResult = this.validationAgent.quickValidate(messages);
+    
+    // If we have high confidence, use quick result
+    if (quickResult.confidence >= 0.8) {
+      return {
+        status: quickResult.status,
+        conclusion: quickResult.conclusion
+      };
+    }
+    
+    // Otherwise, do full analysis with validation agent
+    try {
+      const validationResult = await this.validationAgent.analyzeTestExecution(messages, testTask);
+      return {
+        status: validationResult.status,
+        conclusion: validationResult.conclusion
+      };
+    } catch (error) {
+      console.error('Validation agent failed, falling back to pattern analysis');
+      return this.analyzeTestResult(finalState);
+    }
+  }
+
+  /**
+   * Analyze the final agent state to determine test result and extract conclusion
+   */
+  private analyzeTestResult(finalState: any): { status: 'SUCCESS' | 'FAILED'; conclusion: string } {
+    const messages = finalState?.messages || [];
+    if (messages.length === 0) {
+      return {
+        status: 'FAILED',
+        conclusion: 'No agent response received'
+      };
+    }
+
+    const lastMessage = messages[messages.length - 1];
+    const content = typeof lastMessage.content === 'string' ? lastMessage.content : '';
+    const trimmedContent = content.trim().toLowerCase();
+
+    // Check for validation failure patterns first
+    const validationFailurePatterns = [
+      'verification failed',
+      'unable to verify',
+      'verification step was looking for the wrong',
+      'expected.*not visible',
+      'not found on the page',
+      'timeout.*exceeded',
+      'element not found',
+      'wrong username',
+      'incorrect.*displayed',
+      'login was not successful',
+      'authentication failed'
+    ];
+
+    const hasValidationFailure = validationFailurePatterns.some(pattern => {
+      const regex = new RegExp(pattern, 'i');
+      return regex.test(trimmedContent);
+    });
+
+    if (hasValidationFailure) {
+      return {
+        status: 'FAILED',
+        conclusion: content || 'Test failed due to validation failure'
+      };
+    }
+
+    // Check for explicit test failure patterns
+    const testFailPatterns = [
+      'test failed',
+      'test execution failed',
+      'e2e test failed',
+      'test completed with failures',
+      'cannot continue with test execution',
+      'test aborted due to error',
+      'critical error in test execution',
+      'maximum retries exceeded - test failed',
+      'step failed after 3 attempts',
+      'unable to complete all steps'
+    ];
+
+    const hasTestFailure = testFailPatterns.some(pattern => 
+      trimmedContent.includes(pattern)
+    );
+
+    if (hasTestFailure) {
+      return {
+        status: 'FAILED',
+        conclusion: content || 'Test execution failed'
+      };
+    }
+
+    // Check for successful completion patterns
+    const testPassPatterns = [
+      'test completed successfully',
+      'all test steps completed successfully', 
+      'e2e test passed',
+      'test execution finished successfully',
+      'all steps have been completed and the test passed',
+      'all numbered steps completed successfully',
+      'final step completed - test passed',
+      'step completion confirmed - test successful'
+    ];
+
+    const hasTestSuccess = testPassPatterns.some(pattern => 
+      trimmedContent.includes(pattern)
+    );
+
+    if (hasTestSuccess) {
+      return {
+        status: 'SUCCESS',
+        conclusion: content || 'Test completed successfully'
+      };
+    }
+
+    // If no clear completion pattern, check if we have a meaningful conclusion
+    if (content.length > 50) {
+      // Default to FAILED if we can't determine success explicitly
+      // This is conservative - tests should explicitly indicate success
+      return {
+        status: 'FAILED',
+        conclusion: content || 'Test completed but success could not be verified'
+      };
+    }
+
+    return {
+      status: 'FAILED',
+      conclusion: 'Test completed with unclear result'
+    };
   }
 
   /**

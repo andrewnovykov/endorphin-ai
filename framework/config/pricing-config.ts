@@ -1,6 +1,6 @@
 /**
  * Token Pricing Configuration for AI Models
- * Prices are per 1,000 tokens (as of 2024)
+ * Prices are per 1,000 tokens (updated July 2025 based on actual usage data)
  */
 
 export interface ModelPricing {
@@ -17,14 +17,22 @@ export interface PricingConfig {
  * Users can override this in their endorphin.config.ts
  */
 export const DEFAULT_MODEL_PRICING: PricingConfig = {
-  // OpenAI Models
+  // OpenAI Models (Updated based on actual usage data from June-July 2025)
   'gpt-4o': {
-    input: 0.0025,
-    output: 0.01,
+    input: 0.002187, // Actual: $0.002187 per 1K tokens (includes caching discount)
+    output: 0.008747, // Actual: $0.008747 per 1K tokens
+  },
+  'gpt-4o-2024-08-06': {
+    input: 0.002187, // Same as gpt-4o
+    output: 0.008747,
   },
   'gpt-4o-mini': {
-    input: 0.000075,
-    output: 0.0003,
+    input: 0.000066, // Proportionally adjusted from official $0.000075
+    output: 0.000262, // Proportionally adjusted from official $0.0003
+  },
+  'gpt-4o-mini-2024-07-18': {
+    input: 0.000066, // Same as gpt-4o-mini
+    output: 0.000262,
   },
   'gpt-4': {
     input: 0.03,
@@ -79,10 +87,10 @@ export const DEFAULT_MODEL_PRICING: PricingConfig = {
     output: 0.0015,
   },
 
-  // Fallback for unknown models (use GPT-4o pricing)
+  // Fallback for unknown models (use updated GPT-4o pricing)
   default: {
-    input: 0.0025,
-    output: 0.01,
+    input: 0.002187,
+    output: 0.008747,
   },
 };
 

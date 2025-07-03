@@ -34,7 +34,6 @@ export interface DebugUtils {
   takeScreenshot: () => Promise<string>;
   getToolStats: () => any;
   getToolByName: (name: string) => any;
-  getCustomToolDiscoveryInfo: () => any;
 }
 
 /**
@@ -45,7 +44,6 @@ export interface EndorphinDebugObject {
   session: TestSession | null;
   config: FrameworkConfig;
   tools: LangChainTool[];
-  customTools: LangChainTool[];
   utils: DebugUtils;
   version: string;
   isDebugMode: boolean;
@@ -86,7 +84,6 @@ export class DebugManager {
         session: null, // Will be updated when session is created
         config: this.framework.getConfigManager().getConfig(),
         tools: this.framework.getToolManager().getTools(),
-        customTools: [], // Will be populated with custom tools
         utils: this.createDebugUtils(),
         version: this.getFrameworkVersion(),
         isDebugMode: true,
@@ -135,22 +132,15 @@ export class DebugManager {
 
     // Get detailed tool information from tool manager
     const toolManager = this.framework.getToolManager();
-    const _toolStats = toolManager.getToolStats();
-    const _customToolDiscovery = toolManager.getCustomToolDiscovery();
+    const toolStats = toolManager.getToolStats();
 
-    // Separate built-in and custom tools
+    // All tools are built-in tools now
     const allTools = toolManager.getTools();
-    const customToolNames = _customToolDiscovery?.getLoadedTools().map((t) => t.name) || [];
 
-    const builtInTools = allTools.filter((tool) => !customToolNames.includes(tool.name));
-    const actualCustomTools = allTools.filter((tool) => customToolNames.includes(tool.name));
-
-    globalThis.endorphinDebug.tools = builtInTools;
-    globalThis.endorphinDebug.customTools = actualCustomTools;
+    globalThis.endorphinDebug.tools = allTools;
 
     this.logger.debug('Debug object updated with tools', {
-      builtInTools: builtInTools.length,
-      customTools: actualCustomTools.length,
+      builtInTools: toolStats.builtIn,
       totalTools: allTools.length,
     });
   }
@@ -204,7 +194,6 @@ export class DebugManager {
 
         const toolManager = this.framework.getToolManager();
         const _toolStats = toolManager.getToolStats();
-        const _customToolDiscovery = toolManager.getCustomToolDiscovery();
 
         const frameworkTools: ToolInfo[] = debugObj.tools.map((tool) => ({
           name: tool.name,
@@ -214,20 +203,7 @@ export class DebugManager {
           isLoaded: true,
         }));
 
-        const customToolsInfo: ToolInfo[] = debugObj.customTools.map((tool) => ({
-          name: tool.name,
-          description: tool.description,
-          type: 'custom' as const,
-          schema: tool.schema,
-          isLoaded: true,
-        }));
-
-        // Add information about failed custom tool loads
-        const failedCustomTools: ToolInfo[] = [];
-        // Note: CustomToolDiscovery doesn't expose failed tool information currently
-        // This could be enhanced in the future to include discovery errors
-
-        const allToolsInfo = [...frameworkTools, ...customToolsInfo, ...failedCustomTools];
+        const allToolsInfo = [...frameworkTools];
 
         // Sort by type, then by name
         allToolsInfo.sort((a, b) => {
@@ -268,26 +244,6 @@ export class DebugManager {
       getToolByName: (name: string) => {
         const toolManager = this.framework.getToolManager();
         return toolManager.getToolByName(name);
-      },
-
-      getCustomToolDiscoveryInfo: () => {
-        const toolManager = this.framework.getToolManager();
-        const customDiscovery = toolManager.getCustomToolDiscovery();
-
-        if (!customDiscovery) {
-          return { hasCustomTools: false, message: 'No custom tools configured' };
-        }
-
-        const loaded = customDiscovery.getLoadedTools();
-
-        return {
-          hasCustomTools: true,
-          totalLoaded: loaded.length,
-          loadedTools: loaded.map((tool) => ({
-            name: tool.name,
-            description: tool.description,
-          })),
-        };
       },
     };
   }

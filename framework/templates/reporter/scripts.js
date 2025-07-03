@@ -111,6 +111,31 @@ class TestReportViewer {
       testDetailsModal.addEventListener('shown.bs.modal', () => {
         this.animateTimeline();
       });
+      
+      // Ensure backdrop is properly cleaned up when modal is hidden
+      testDetailsModal.addEventListener('hidden.bs.modal', () => {
+        // Remove any lingering modal backdrops
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+          backdrop.remove();
+        });
+        // Ensure body scroll is restored
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+      });
+    }
+    
+    // Handle screenshot modal backdrop cleanup
+    const screenshotModal = document.getElementById('screenshotModal');
+    if (screenshotModal) {
+      screenshotModal.addEventListener('hidden.bs.modal', () => {
+        // Remove any lingering modal backdrops
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+          backdrop.remove();
+        });
+        // Ensure body scroll is restored
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+      });
     }
 
     // Screenshot click events will be attached dynamically
@@ -150,6 +175,10 @@ class TestReportViewer {
     this.updateModalField('modal-ai-calls', tokenSummary.aiCalls || 0);
     this.updateModalField('modal-model', tokenSummary.model || 'N/A');
 
+    // Populate test conclusion
+    const conclusion = session.conclusion || session.finalResult || 'No conclusion available';
+    this.updateModalField('modal-conclusion', conclusion);
+
     // Populate setup and data generation results
     this.populateSetupAndDataResults(session);
 
@@ -160,7 +189,8 @@ class TestReportViewer {
     this.populateScreenshotsGallery(result);
 
     // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('testDetailsModal'));
+    const modalElement = document.getElementById('testDetailsModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
     modal.show();
   }
 
@@ -428,7 +458,8 @@ class TestReportViewer {
       info.textContent = screenshotName;
     }
 
-    const modal = new bootstrap.Modal(document.getElementById('screenshotModal'));
+    const modalElement = document.getElementById('screenshotModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
     modal.show();
   }
 
@@ -751,7 +782,32 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+/**
+ * Global function to show test details by sessionId
+ * Called by View Details buttons in the report
+ */
+function showTestDetails(sessionId) {
+  if (window.reportViewer && window.reportViewer.testData) {
+    // Find the test result index by sessionId
+    const index = window.reportViewer.testData.findIndex(
+      result => result.session?.sessionId === sessionId || result.summary?.sessionId === sessionId
+    );
+    
+    if (index !== -1) {
+      window.reportViewer.showTestDetails(index);
+    } else {
+      console.error('Test result not found for sessionId:', sessionId);
+      alert(`Test details not found for session: ${sessionId}`);
+    }
+  } else {
+    console.error('Report viewer not initialized');
+  }
+}
+
+// Make function available globally
+window.showTestDetails = showTestDetails;
+
 // Export for module usage if needed
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { TestReportViewer, ReportUtils };
+  module.exports = { TestReportViewer, ReportUtils, showTestDetails };
 }

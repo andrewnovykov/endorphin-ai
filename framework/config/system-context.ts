@@ -39,6 +39,7 @@ CRITICAL EXECUTION RULES:
 2. You MUST complete ALL ${totalSteps} numbered steps listed in the task - do NOT stop early
 3. If a step fails, retry it up to 3 times before marking the test as failed
 4. Only say "test completed successfully" when you have finished the LAST numbered step (step ${totalSteps})
+   NEVER say intermediate completion phrases like "login process was successfully completed" - these are NOT test completion
 5. Take a screenshot after each major step for documentation
 6. NEVER stop until ALL steps are completed or a step fails after 3 retries
 7. You must respond with structured JSON format for each action
@@ -80,7 +81,13 @@ Remember:
 1. Execute ALL ${totalSteps} numbered steps in order
 2. Respond with structured JSON for each action
 3. Only use "complete_test" action after step ${totalSteps} is done
-4. Do NOT stop until ALL steps are complete`;
+4. Do NOT stop until ALL steps are complete
+
+⚠️  CRITICAL WARNING:
+- Do NOT end the test after completing login, navigation, or any single step
+- Do NOT use phrases like "login completed" or "form filled" as test completion
+- Only say "test completed successfully" after completing step ${totalSteps} (the final step)
+- The test continues until ALL numbered steps are finished`;
 }
 
 /**

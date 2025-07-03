@@ -4,6 +4,7 @@
  */
 import { performance } from 'perf_hooks';
 import { ConsoleReporter } from '../../reporters/console-reporter.js';
+import { DirectoryManager } from '../../utils/directory-manager.js';
 /**
  * Check if we're running in test environment
  */
@@ -52,6 +53,10 @@ export class TestRunner {
             console.log(`⚠️ Skipping quarantined test: ${test.id}`);
             return { success: false, error: 'Test is quarantined' };
         }
+        // Clean up test results directory before single test run
+        const resultBaseDir = this.config?.resultBaseDir || 'test-results';
+        console.log('🧹 Cleaning up test results directory before single test...');
+        await DirectoryManager.cleanupDirectories(resultBaseDir);
         const { EnhancedBrowserTestFramework } = await import('../../automation/browser/browser-framework.js');
         const framework = new EnhancedBrowserTestFramework(this.config || undefined);
         try {
@@ -68,40 +73,71 @@ export class TestRunner {
      */
     async runTestsSequentially(tests) {
         this.reporter.startSession();
-        console.log(`🚀 Running ${tests.length} tests sequentially...`);
+        // Clean up test results directory once before the entire test session
+        const resultBaseDir = this.config?.resultBaseDir || 'test-results';
+        console.log('🧹 Cleaning up test results directory before test session...');
+        await DirectoryManager.cleanupDirectories(resultBaseDir);
+        console.log(`🚀 Running ${tests.length} tests sequentially with fresh browser per test...`);
         const results = [];
         const { EnhancedBrowserTestFramework } = await import('../../automation/browser/browser-framework.js');
-        const framework = new EnhancedBrowserTestFramework(this.config || undefined);
-        try {
-            await framework.initialize();
-            for (const test of tests) {
-                // Skip quarantined tests unless explicitly enabled
-                if (isTestQuarantined(test) && !shouldRunQuarantined()) {
-                    console.log(`⚠️ Skipping quarantined test: ${test.id}`);
-                    continue;
-                }
-                const startTime = performance.now();
-                this.reporter.startTest(test.id, test.name);
-                try {
-                    const result = await framework.runSingleTest(test);
-                    const duration = Math.round(performance.now() - startTime);
-                    const status = result.success ? 'SUCCESS' : 'FAILED';
-                    this.reporter.completeTest(test.id, test.name, status, duration, result.error);
-                    const testResult = { test, success: result.success, duration };
-                    if (result.error)
-                        testResult.error = result.error;
-                    results.push(testResult);
-                }
-                catch (error) {
-                    const duration = Math.round(performance.now() - startTime);
-                    const message = error instanceof Error ? error.message : String(error);
-                    this.reporter.completeTest(test.id, test.name, 'FAILED', duration, message);
-                    results.push({ test, success: false, duration, error: message });
-                }
+        for (const test of tests) {
+            // Skip quarantined tests unless explicitly enabled
+            if (isTestQuarantined(test) && !shouldRunQuarantined()) {
+                console.log(`⚠️ Skipping quarantined test: ${test.id}`);
+                continue;
             }
-        }
-        finally {
-            await framework.cleanup();
+            // Create a fresh framework instance for each test
+            console.log(`🌟 Creating fresh browser instance for test: ${test.id}`);
+            const framework = new EnhancedBrowserTestFramework(this.config || undefined);
+            const startTime = performance.now();
+            this.reporter.startTest(test.id, test.name);
+            try {
+                // Initialize fresh browser for this test
+                await framework.initialize();
+                // Add aggressive timeout for sequential execution to prevent blocking
+                const testTimeout = 300000; // 5 minutes per test maximum
+                const testPromise = framework.runSingleTest(test);
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => {
+                        reject(new Error(`Test '${test.id}' exceeded maximum execution time of ${testTimeout / 1000} seconds in sequential execution`));
+                    }, testTimeout);
+                });
+                console.log(`⏱️ Starting test ${test.id} with ${testTimeout / 1000}s timeout`);
+                const result = await Promise.race([testPromise, timeoutPromise]);
+                const duration = Math.round(performance.now() - startTime);
+                const status = result.success ? 'SUCCESS' : 'FAILED';
+                this.reporter.completeTest(test.id, test.name, status, duration, result.error);
+                const testResult = { test, success: result.success, duration };
+                if (result.error)
+                    testResult.error = result.error;
+                results.push(testResult);
+                console.log(`✅ Test ${test.id} completed in ${duration}ms`);
+            }
+            catch (error) {
+                const duration = Math.round(performance.now() - startTime);
+                const message = error instanceof Error ? error.message : String(error);
+                console.log(`❌ Test ${test.id} failed after ${duration}ms: ${message}`);
+                // If this was a timeout, add special handling
+                if (message.includes('exceeded maximum execution time')) {
+                    console.log(`🚨 Test ${test.id} TIMED OUT - continuing with next test`);
+                    console.log(`🔧 Consider optimizing test ${test.id} or increasing timeout if needed`);
+                }
+                this.reporter.completeTest(test.id, test.name, 'FAILED', duration, message);
+                results.push({ test, success: false, duration, error: message });
+            }
+            finally {
+                // Always cleanup browser instance after each test
+                console.log(`🔥 Closing browser instance for test: ${test.id}`);
+                try {
+                    await framework.cleanup();
+                }
+                catch (cleanupError) {
+                    console.log(`⚠️ Browser cleanup error (non-critical): ${cleanupError}`);
+                }
+                // Brief pause between tests for complete cleanup
+                console.log(`⏸️ Waiting between tests for complete cleanup...`);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
         }
         const summary = this.reporter.endSession();
         return {
@@ -135,6 +171,10 @@ export class TestRunner {
                 total: 0,
             };
         }
+        // Clean up test results directory once before the entire parallel test session
+        const resultBaseDir = this.config?.resultBaseDir || 'test-results';
+        console.log('🧹 Cleaning up test results directory before parallel test session...');
+        await DirectoryManager.cleanupDirectories(resultBaseDir);
         // Set environment variable to reduce noise from browser framework
         process.env.ENDORPHIN_CONSOLE_REPORTER = 'true';
         const { EnhancedBrowserTestFramework } = await import('../../automation/browser/browser-framework.js');
@@ -149,36 +189,40 @@ export class TestRunner {
         try {
             // Run test chunks in parallel
             const chunkPromises = testChunks.map(async (chunk, workerIndex) => {
-                const framework = new EnhancedBrowserTestFramework(this.config || undefined);
-                try {
-                    await framework.initialize();
-                    for (const test of chunk) {
-                        const startTime = performance.now();
+                console.log(`🔀 Worker ${workerIndex + 1}: Processing ${chunk.length} tests with fresh browsers`);
+                for (const test of chunk) {
+                    // Create a fresh framework instance for each test in parallel mode too
+                    const framework = new EnhancedBrowserTestFramework(this.config || undefined);
+                    const startTime = performance.now();
+                    try {
                         this.reporter.startTest(test.id, test.name);
+                        // Initialize fresh browser for this test
+                        await framework.initialize();
+                        const result = await framework.runSingleTest(test);
+                        const duration = Math.round(performance.now() - startTime);
+                        const status = result.success ? 'SUCCESS' : 'FAILED';
+                        this.reporter.completeTest(test.id, test.name, status, duration, result.error);
+                        const testResult = { test, success: result.success, duration };
+                        if (result.error)
+                            testResult.error = result.error;
+                        results.push(testResult);
+                    }
+                    catch (error) {
+                        const duration = Math.round(performance.now() - startTime);
+                        const message = error instanceof Error ? error.message : String(error);
+                        this.reporter.completeTest(test.id, test.name, 'FAILED', duration, message);
+                        results.push({ test, success: false, duration, error: message });
+                        errors.push(`Worker ${workerIndex + 1}, Test ${test.id}: ${message}`);
+                    }
+                    finally {
+                        // Always cleanup browser instance after each test
                         try {
-                            const result = await framework.runSingleTest(test);
-                            const duration = Math.round(performance.now() - startTime);
-                            const status = result.success ? 'SUCCESS' : 'FAILED';
-                            this.reporter.completeTest(test.id, test.name, status, duration, result.error);
-                            const testResult = { test, success: result.success, duration };
-                            if (result.error)
-                                testResult.error = result.error;
-                            results.push(testResult);
+                            await framework.cleanup();
                         }
-                        catch (error) {
-                            const duration = Math.round(performance.now() - startTime);
-                            const message = error instanceof Error ? error.message : String(error);
-                            this.reporter.completeTest(test.id, test.name, 'FAILED', duration, message);
-                            results.push({ test, success: false, duration, error: message });
+                        catch (cleanupError) {
+                            console.log(`⚠️ Worker ${workerIndex + 1} cleanup error for ${test.id}: ${cleanupError}`);
                         }
                     }
-                }
-                catch (error) {
-                    const message = error instanceof Error ? error.message : String(error);
-                    errors.push(`Worker ${workerIndex + 1}: ${message}`);
-                }
-                finally {
-                    await framework.cleanup();
                 }
             });
             await Promise.all(chunkPromises);

@@ -29,10 +29,6 @@ export default {
   testsDirectory: 'tests',
   environment: 'development',
 
-  // Custom tools configuration
-  customTools: [
-    './tools', // Load all tools from the tools directory
-  ],
   globalSetup: './global-setup.ts',
 };
 

@@ -50,6 +50,10 @@ export declare function getDiscoveryStatistics(config?: FrameworkConfig | null):
  */
 export declare function clearDiscoveryCache(): void;
 /**
+ * Clear global setup state (for testing purposes)
+ */
+export declare function clearGlobalSetupState(): void;
+/**
  * Get current discovery instance (for testing)
  */
 export declare function getCurrentDiscoveryInstance(): TestDiscoverer | null;

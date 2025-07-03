@@ -102,6 +102,10 @@ export declare class BrowserManager {
      */
     private setupPageEventHandlers;
     /**
+     * Determine if a console message should be filtered out
+     */
+    private shouldFilterConsoleMessage;
+    /**
      * Remove page event handlers to prevent memory leaks
      */
     private removePageEventHandlers;

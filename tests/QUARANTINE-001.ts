@@ -1,4 +1,10 @@
+/**
+ * Quarantined Test Example
+ * This test demonstrates the quarantine functionality
+ */
+
 import type { TestCase } from '../framework/types/index.js';
+
 const quarantinedTest: TestCase = {
   id: 'QUARANTINE-001',
   name: 'Example Quarantined Test',

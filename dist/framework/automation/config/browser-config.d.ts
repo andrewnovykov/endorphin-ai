@@ -18,9 +18,10 @@ export declare const BROWSER_CONFIG: {
     };
     readonly timeouts: {
         readonly navigation: 60000;
-        readonly element: 10000;
+        readonly element: 45000;
         readonly screenshot: 5000;
         readonly testExecution: number;
+        readonly verification: 60000;
     };
     readonly screenshot: {
         readonly fullPage: false;
