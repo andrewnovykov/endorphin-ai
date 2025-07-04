@@ -10,9 +10,9 @@ Write tests in plain English. Let AI generate, validate, and fix them
 automatically.
 
 <div align="center">
-  <img src="./doc/images/playwright-logo.png" alt="Playwright" height="40" />
+  <img src="./doc/images/playwright-logo.png" alt="Playwright" height="30" />
   &nbsp;&nbsp;&nbsp;<strong>+</strong>&nbsp;&nbsp;&nbsp;
-  <img src="./doc/images/langchain-logo.png" alt="LangChain" height="40" />
+  <img src="./doc/images/langchain-logo.png" alt="LangChain" height="30" />
 </div>
 
 A powerful, modular browser automation framework using AI-powered testing with
