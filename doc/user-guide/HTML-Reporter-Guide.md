@@ -1,315 +1,243 @@
-# HTML Reporter User Guide
+# HTML Reporter Guide
 
-_Last Updated: June 28, 2025 - v0.5.0+_
+Beautiful, interactive test reports that make debugging easy.
 
-The Endorphin AI HTML Reporter provides comprehensive, interactive test reports
-that help you analyze test execution results, identify patterns, and debug
-issues effectively.
+## 🎯 What are HTML Reports?
 
-## 🎯 Overview
-
-The HTML Reporter generates beautiful, responsive web-based reports from your
-test execution data. These reports include:
-
-- **📊 Interactive dashboards** with test statistics and success rates
-- **📋 Detailed test execution summaries** with step-by-step breakdowns
-- **📸 Screenshot galleries** for visual debugging
-- **🔍 Search and filtering capabilities** for large test suites
-- **📤 Export functionality** for data analysis and sharing
-- **📱 Responsive design** that works on all devices
+After running tests, Endorphin AI creates interactive web reports showing:
+- ✅ Which tests passed or failed
+- 📸 Screenshots of every step
+- 🔍 Detailed execution logs
+- 📊 Success rates and statistics
 
 ## 🚀 Quick Start
 
-### Generating Reports
+### Generate a Report
 
+Run tests first:
 ```bash
-# Generate HTML report from test results
-endorphin generate report
-
-# Generate report with custom filename
-endorphin generate report --filename my-test-report.html
-
-# Open the latest report in your browser
-endorphin open report
-
-# Open a specific report file
-endorphin open report my-test-report.html
+npx endorphin run test HEALTH-001
 ```
 
-### Prerequisites
-
-You need test results to generate reports. Run some tests first:
-
+Then generate the report:
 ```bash
-# Run a health check test
-endorphin run test HEALTH-001
-
-# Run all tests
-endorphin run test all
-
-# Run smoke tests
-endorphin run test --tag smoke
-
-# Then generate the report
-endorphin generate report
+npx endorphin generate report
 ```
 
-## ✨ What's New in v0.5.0
-
-- **🖼️ Enhanced Screenshot Display**: Screenshots now display as actual images instead of text
-- **🎯 Fixed Filter Functionality**: All/Passed/Failed filter tabs now work correctly
-- **🔍 Improved Search**: Real-time search by test ID and name
-- **📱 Better Mobile Support**: Responsive design improvements
-- **⚡ Performance Optimizations**: Faster loading for large test suites
-
-## Report Features
-
-### 📊 Dashboard Overview
-
-The main dashboard provides:
-
-- **Summary Cards**: Total tests, runs, success/failure counts
-- **Success Rate Progress Bar**: Visual representation of overall health
-- **Test Statistics Table**: Performance breakdown by individual tests
-- **Recent Results Table**: Latest test executions with quick actions
-
-### 🔍 Search and Filtering
-
-#### Search Functionality
-
-- **Real-time search**: Type in the search box to filter tests instantly
-- **Search by Test ID or Name**: Find specific tests quickly
-- **Highlighted results**: Matching tests are visually highlighted
-- **Auto-scroll**: Automatically scrolls to first matching result
-
-#### Status Filtering
-
-- **All Tests**: Show all test results (default)
-- **Passed Only**: Filter to show only successful tests
-- **Failed Only**: Filter to show only failed tests
-- **Combined Filtering**: Use search and status filters together
-
-#### Smart Results Display
-
-```
-Showing 5 of 25 tests matching "login" with status "failed"
-```
-
-### 🔍 Detailed Test Analysis
-
-Click on any test result to view:
-
-#### Test Information
-
-- Test ID, name, and execution status
-- Start/end times and duration
-- Total number of steps executed
-- Screenshot count
-
-#### Step-by-Step Timeline
-
-- Chronological execution flow
-- Step descriptions and results
-- Tool calls and arguments
-- Success/failure indicators
-- Execution timestamps
-
-#### Screenshot Gallery
-
-- **Visual record of test execution** with actual image thumbnails
-- **Click to zoom and examine details** in full-screen modal
-- **Step-level screenshots** embedded directly in timeline
-- **Organized by execution sequence** with timestamps
-- **Supports multiple formats** (PNG, JPG)
-- **Hover for descriptions** and additional metadata
-
-### ⌨️ Keyboard Shortcuts
-
-| Shortcut       | Action                 |
-| -------------- | ---------------------- |
-| `Ctrl/Cmd + F` | Focus search box       |
-| `Escape`       | Clear search           |
-| `Ctrl/Cmd + 1` | Show all tests         |
-| `Ctrl/Cmd + 2` | Show passed tests only |
-| `Ctrl/Cmd + 3` | Show failed tests only |
-| `Ctrl/Cmd + E` | Export to JSON         |
-| `Ctrl/Cmd + P` | Print report           |
-
-### 📤 Export and Sharing
-
-#### Export to JSON
-
-- Complete test data in structured format
-- Suitable for further analysis
-- Includes all execution details and metadata
-
-#### Print Reports
-
-- Print-optimized layout
-- Removes interactive elements
-- Perfect for documentation and archiving
-
-## Managing Reports
-
-### Cleanup Commands
-
+Open it:
 ```bash
-# Clean up old test results (keep 10 most recent per test)
-endorphin cleanup results
-
-# Keep only 5 most recent results per test
-endorphin cleanup results 5
-
-# Clean up old report files (older than 30 days)
-endorphin cleanup reports
-
-# Clean up report files older than 7 days
-endorphin cleanup reports 7
+npx endorphin open report
 ```
 
-### Report Organization
+That's it! Your report opens in the browser.
 
-Reports are stored in:
+## 📋 Report Features
+
+### Dashboard View
+When you open a report, you'll see:
+- **Summary Cards**: Total tests, passes, failures
+- **Success Rate**: Visual progress bar
+- **Test List**: All your test results
+
+### Interactive Features
+
+#### 🔍 Search Tests
+Type in the search box to find tests instantly:
+- Search by test ID (e.g., "LOGIN-001")
+- Search by test name (e.g., "login")
+- Results update as you type
+
+#### 📊 Filter by Status
+Click the tabs to filter:
+- **All**: Show everything
+- **Passed**: Only successful tests
+- **Failed**: Only failed tests
+
+#### 📸 View Screenshots
+Click any screenshot to:
+- See full-size image
+- Zoom in/out
+- Navigate between screenshots
+- Close with Escape key
+
+### Test Details
+Click "View Details" on any test to see:
+- Step-by-step execution
+- Timing for each step
+- Screenshots at each step
+- Error messages (if failed)
+
+### 💰 Cost & Token Tracking
+Each test shows detailed AI usage information:
+- **Total cost** - How much the test cost to run
+- **Token usage** - Input and output tokens consumed
+- **AI model used** - Which OpenAI model processed the test
+- **Cost per step** - Breakdown of expenses by test step
+- **Session totals** - Aggregate costs for the entire test run
+
+### 🧠 AI Decision History
+See exactly how the AI analyzed and executed your test:
+- **Agent thinking** - What the AI was considering at each step
+- **Decision process** - Why the AI chose specific actions
+- **Tool selection** - Which browser tools were used and why
+- **Error recovery** - How the AI handled and fixed issues
+- **Context awareness** - How previous steps influenced decisions
+
+### 📋 Detailed Step Information
+For each test step, view:
+- **Action taken** - What the AI did (click, fill, verify, etc.)
+- **Target elements** - Which page elements were interacted with
+- **Tool arguments** - Parameters passed to automation tools
+- **Execution time** - How long each step took
+- **Token cost** - AI processing cost for that specific step
+- **Before/after screenshots** - Visual proof of what happened
+
+## ⌨️ Keyboard Shortcuts
+
+| Keys | Action |
+|------|--------|
+| `Ctrl+F` / `Cmd+F` | Focus search |
+| `Escape` | Clear search or close modal |
+| `Ctrl+1` / `Cmd+1` | Show all tests |
+| `Ctrl+2` / `Cmd+2` | Show passed only |
+| `Ctrl+3` / `Cmd+3` | Show failed only |
+| `Ctrl+E` / `Cmd+E` | Export to JSON |
+
+## 📁 Where Reports are Saved
 
 ```
 test-results/
 ├── reports/
-│   ├── report-2025-06-28.html      # Full interactive reports
-│   ├── assets/                     # Static assets
-│   │   ├── styles.css              # Bootstrap + custom styling
-│   │   └── scripts.js              # Interactive functionality
-│   └── screenshots/                # Copied screenshot assets
-└── TEST-001_2025-06-28T00-17-57/  # Raw test data
-    ├── test-session.json           # Test execution data
-    └── screenshots/                # Original screenshots
+│   ├── report-2025-01-04.html    # Today's report
+│   ├── screenshots/               # Images for the report
+│   └── assets/                    # Styles and scripts
+└── HEALTH-001_2025-01-04/         # Raw test data
 ```
 
-## Best Practices
+## 💡 Tips & Tricks
 
-### For Development Teams
+### Debug Failed Tests
+1. Filter by "Failed" to focus on problems
+2. Click "View Details" on a failed test
+3. Look for the red error step
+4. Check the screenshot before failure
+5. **Review AI thinking** - See what the AI was considering when it failed
+6. **Check tool selection** - Verify the AI used the right automation tools
 
-1. **Regular Report Generation**: Generate reports after each test run
-2. **Use Filters Effectively**: Focus on failed tests for debugging
-3. **Leverage Search**: Find specific test patterns quickly
-4. **Export for Analysis**: Use JSON export for trend analysis
-5. **Clean Up Regularly**: Maintain storage efficiency with cleanup commands
+### Monitor Test Costs
+1. **Track spending** - See total cost for each test run
+2. **Optimize expensive tests** - Find tests that use too many tokens
+3. **Compare costs** - See which tests are most/least expensive
+4. **Budget planning** - Use cost data for project planning
 
-### For CI/CD Integration
+### Understand AI Behavior
+1. **Review decision history** - Learn how the AI solves problems
+2. **Improve test instructions** - See where the AI gets confused
+3. **Debug complex flows** - Follow the AI's reasoning process
+4. **Share insights** - Export decision data for team analysis
 
-```bash
-# In your CI pipeline
-npm run test                    # Run your tests
-endorphin generate report       # Generate HTML report
-endorphin cleanup results 5    # Keep storage manageable
+### Share Reports
+Reports are self-contained HTML files. You can:
+- Email them to teammates
+- Upload to shared drives
+- View them anywhere
 
-# Archive reports for later analysis
-cp test-results/reports/report-*.html ./artifacts/
-```
-
-### For Test Analysis
-
-1. **Start with Summary**: Use summary reports for quick overviews
-2. **Drill Down on Failures**: Use failed filter to identify patterns
-3. **Timeline Analysis**: Review step-by-step execution for debugging
-4. **Screenshot Review**: Visual debugging of UI-related issues
-5. **Export Data**: Use JSON export for custom analysis tools
-
-## Troubleshooting
-
-### Common Issues
-
-#### No Reports Generated
-
-```bash
-# Check if test results exist
-ls test-results/
-
-# Generate report manually
-endorphin generate report
-```
-
-#### Reports Not Opening
-
-```bash
-# Check report files exist
-ls test-results/reports/
-
-# Open specific report
-endorphin open report report-2025-06-22.html
-```
-
-#### Search/Filter Not Working
-
-- **Ensure JavaScript is enabled** in your browser
-- **Clear browser cache** and reload the report
-- **Check browser console** for JavaScript errors
-- **Verify filter buttons** are clickable and highlighted when active
-
-#### Missing Screenshots
-
-- **Verify screenshot directory exists**: `test-results/reports/screenshots/`
-- **Check if screenshots were captured** during test execution
-- **Ensure proper file permissions** for screenshot files
-- **Check console for 404 errors** indicating missing screenshot files
-- **Verify asset paths** are correct in the report HTML
-
-### Performance Optimization
-
-For large test suites:
-
-1. **Use Summary Reports**: Faster loading for quick overviews
-2. **Regular Cleanup**: Remove old results to improve performance
-3. **Filter Early**: Use status filters to reduce data processing
-4. **Export Subsets**: Export specific date ranges or test groups
-
-## Advanced Usage
-
-### Custom Styling
-
-Reports use Bootstrap 5 with custom CSS. You can modify:
-
-- `framework/templates/styles.css` for global styling
-- Add custom CSS classes for specific elements
-- Modify color schemes and branding
-
-### Data Integration
-
-Export JSON format includes:
-
-```json
-{
-  "session": {
-    "testId": "TEST-001",
-    "testName": "Login Test",
-    "status": "SUCCESS",
-    "duration": 1500,
-    "steps": [...]
-  },
-  "summary": {
-    "totalSteps": 5,
-    "successfulSteps": 5,
-    "failedSteps": 0
-  },
-  "screenshots": ["step1.png", "step2.png"]
-}
-```
-
-Use this data for:
-
-- Custom dashboards
-- Trend analysis
+### Export Data
+Press `Ctrl+E` to export test data as JSON for:
+- Custom analysis
 - Integration with other tools
-- Automated reporting systems
+- Historical tracking
 
-## Support
+## 🧹 Manage Reports
 
-For issues and questions:
+### Clean Up Old Reports
+```bash
+# Remove reports older than 30 days
+npx endorphin cleanup reports
 
-- Check the [main README](../../README.md) for general setup
-- Review [framework documentation](../framework-development/)
-- Create issues on the project repository
-- Consult the troubleshooting section above
+# Keep only last 7 days
+npx endorphin cleanup reports 7
+```
+
+### Clean Up Test Results
+```bash
+# Keep only 10 most recent results per test
+npx endorphin cleanup results
+
+# Keep only 5 most recent
+npx endorphin cleanup results 5
+```
+
+## 🎨 Report Customization
+
+### Change Report Name
+```bash
+npx endorphin generate report --filename my-custom-report.html
+```
+
+### Multiple Reports
+Generate different reports for different purposes:
+```bash
+# Smoke test report
+npx endorphin generate report --filename smoke-tests.html
+
+# Full regression report  
+npx endorphin generate report --filename regression.html
+```
+
+## 🚨 Troubleshooting
+
+### "No test results found"
+Run some tests first:
+```bash
+npx endorphin run test HEALTH-001
+```
+
+### Screenshots Not Loading
+- Check `test-results/reports/screenshots/` folder exists
+- Ensure browser allows local file access
+- Try opening report from a web server
+
+### Report Won't Open
+- Check file exists in `test-results/reports/`
+- Use full path if needed
+- Try different browser
+
+## 🏢 CI/CD Integration
+
+### GitHub Actions Example
+```yaml
+- name: Run Tests
+  run: npx endorphin run all
+
+- name: Generate Report
+  run: npx endorphin generate report
+  
+- name: Upload Report
+  uses: actions/upload-artifact@v2
+  with:
+    name: test-report
+    path: test-results/reports/report-*.html
+```
+
+### GitLab CI Example
+```yaml
+test:
+  script:
+    - npx endorphin run all
+    - npx endorphin generate report
+  artifacts:
+    paths:
+      - test-results/reports/
+    expire_in: 1 week
+```
+
+## 📚 Next Steps
+
+- [Write Better Tests](Test-Structure-Guide.md)
+- [Configure Your Project](Project-Setup-Guide.md)
+- [Test Writing Tips](Test-Writing-Tips.md)
 
 ---
 
-_Happy testing with Endorphin AI! 🧪✨_
+Reports help you understand what happened in your tests. Use them to debug failures and track progress!

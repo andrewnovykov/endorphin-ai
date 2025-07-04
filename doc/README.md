@@ -5,13 +5,14 @@ This directory contains comprehensive documentation for the Endorphin AI framewo
 ## 📚 Documentation Structure
 
 ### For Users
-- **[Quick Start Guide](user-guide/Quick-Start-v0.5.0.md)** - Get started with latest features
-- **[User Setup Guide](user-guide/User-Setup-Guide.md)** - Complete setup instructions
+- **[Quick Start Guide](user-guide/Quick-Start.md)** - Get started in minutes
+- **[Project Setup Guide](user-guide/Project-Setup-Guide.md)** - Complete project setup instructions
+- **[Test Structure Guide](user-guide/Test-Structure-Guide.md)** - Learn the new test structure with setup/data functions
+- **[Test Writing Tips](user-guide/Test-Writing-Tips.md)** - Write better tests with natural language
 - **[HTML Reporter Guide](user-guide/HTML-Reporter-Guide.md)** - Interactive reports documentation
-- **[Test Recorder Guide](user-guide/Test-Recorder.md)** - Recording test workflows
-- **[Custom Tools Guide](user-guide/Custom-Tools-Guide.md)** - Creating custom automation tools
-- **[Prompt Guide](user-guide/Prompt-Guide.md)** - Writing effective AI prompts
-- **[Global Setup Guide](user-guide/Global-Setup-Guide.md)** - System-wide configuration
+- **[Test Recorder Guide](user-guide/Test-Recorder.md)** - Recording test workflows interactively
+- **[Environment Variables Guide](user-guide/Environment-Variables-Guide.md)** - Configure your environment
+- **[Global Setup Guide](user-guide/Global-Setup-Guide.md)** - Run setup code before tests
 
 ### For Developers & Maintainers
 - **[Framework Architecture](framework-development/Framework-Architecture.md)** - Technical architecture overview
@@ -31,19 +32,19 @@ This directory contains comprehensive documentation for the Endorphin AI framewo
 ### I want to...
 
 #### Use Endorphin AI
-→ Start with [Quick Start Guide](user-guide/Quick-Start-v0.5.0.md)
+→ Start with [Quick Start Guide](user-guide/Quick-Start.md)
 
 #### Set up my first project
-→ Follow [User Setup Guide](user-guide/User-Setup-Guide.md)
+→ Follow [Project Setup Guide](user-guide/Project-Setup-Guide.md)
+
+#### Write better tests
+→ Read [Test Structure Guide](user-guide/Test-Structure-Guide.md) and [Test Writing Tips](user-guide/Test-Writing-Tips.md)
 
 #### Understand test reports
 → Read [HTML Reporter Guide](user-guide/HTML-Reporter-Guide.md)
 
 #### Record test workflows
 → Check [Test Recorder Guide](user-guide/Test-Recorder.md)
-
-#### Develop custom tools
-→ See [Custom Tools Guide](user-guide/Custom-Tools-Guide.md)
 
 #### Understand the architecture
 → Review [Framework Architecture](framework-development/Framework-Architecture.md)
@@ -57,27 +58,27 @@ This directory contains comprehensive documentation for the Endorphin AI framewo
 #### Debug issues
 → Use [VSCode Debugging Guide](framework-development/VSCode-Debugging-Guide.md)
 
-## 🆕 What's New in v0.5.0
+## 🆕 What's New in v0.9
 
 ### Major Improvements
-- **✅ TestCase Type Export**: Now available for test recorder integration
-- **🖼️ Enhanced HTML Reports**: Screenshots display as actual images
-- **🎯 Fixed Filter Functionality**: All/Passed/Failed tabs work correctly
-- **🔍 Improved Search**: Real-time filtering by test ID and name
-- **⚡ Better Performance**: Optimized for large test suites
+- **🔧 Smart Test Structure**: New async `setup` and `data` functions for dynamic test preparation
+- **📝 Better Documentation**: Completely rewritten user guides with friendly language
+- **🎯 Simplified Setup**: Easier project initialization and configuration
+- **🖼️ Enhanced HTML Reports**: Interactive reports with screenshot galleries
+- **🔍 Test Writing Tips**: New guide for writing effective natural language tests
 
 ### Key Features
 - **TypeScript-first development** with JavaScript distribution
 - **Interactive HTML reports** with full functionality
-- **Comprehensive CI/CD pipeline** with multi-tier testing
+- **Test recorder** for creating tests by demonstration
+- **Global setup** for environment preparation
 - **Cross-platform compatibility** (Windows, macOS, Linux)
 - **Multi-browser support** via Playwright
 - **AI-powered test execution** with OpenAI integration
 
 ## 📋 Version Information
 
-- **Current Version**: v0.5.0
-- **Release Date**: June 28, 2025
+- **Current Version**: v0.9.0
 - **Node.js Support**: 18.x, 20.x, 22.x
 - **Platform Support**: Windows, macOS, Linux
 - **TypeScript Version**: 5.8+
@@ -115,9 +116,10 @@ When updating documentation:
 ## 🚀 Getting Started
 
 ### For New Users
-1. Read [Quick Start Guide](user-guide/Quick-Start-v0.5.0.md)
-2. Follow [User Setup Guide](user-guide/User-Setup-Guide.md)
-3. Try the HTML reporter with [HTML Reporter Guide](user-guide/HTML-Reporter-Guide.md)
+1. Read [Quick Start Guide](user-guide/Quick-Start.md)
+2. Follow [Project Setup Guide](user-guide/Project-Setup-Guide.md)
+3. Learn test writing with [Test Structure Guide](user-guide/Test-Structure-Guide.md)
+4. Try the HTML reporter with [HTML Reporter Guide](user-guide/HTML-Reporter-Guide.md)
 
 ### For New Developers
 1. Review [Framework Architecture](framework-development/Framework-Architecture.md)

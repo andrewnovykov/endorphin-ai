@@ -7,9 +7,8 @@ Endorphin AI project.
 
 Endorphin AI is a **TypeScript-first browser automation testing framework** that
 uses AI agents to execute natural language test instructions. The framework is
-built with modern TypeScript, compiles to JavaScript for distribution, provides
-interactive HTML reports, and supports custom tools for extending testing
-capabilities.
+built with modern TypeScript, compiles to JavaScript for distribution, and provides
+interactive HTML reports with comprehensive cost tracking and AI decision analysis.
 
 ## Architecture Summary
 
@@ -38,10 +37,8 @@ npm run test:post-install  # Post-install verification
 npx tsx bin/endorphin.ts run test HEALTH-001
 npx tsx bin/endorphin.ts generate report
 
-# Custom tools management
-npx tsx bin/endorphin.ts create tool my-tool
-npx tsx bin/endorphin.ts validate tools
-npx tsx bin/endorphin.ts list tools
+# Test recorder
+npx tsx bin/endorphin.ts run test-recorder
 ```
 
 ## Directory Structure
@@ -73,7 +70,7 @@ doc/                      # Documentation
 
 ## Important TypeScript Types
 
-### TestCase Interface
+### TestCase Interface (v0.9 Update)
 
 ```typescript
 // framework/types/test.ts
@@ -81,6 +78,23 @@ export interface TestCase extends TestConfig {
   recordingId?: string;
   recordedSteps?: number;
 }
+
+export interface TestConfig {
+  id: string;
+  name: string;
+  description: string;
+  priority: 'High' | 'Medium' | 'Low';
+  tags: string[];
+  url?: string;
+  setup?: TestSetupFunction;      // NEW: Async setup function
+  data?: TestDataFunction | Record<string, any>;  // NEW: Dynamic data generation
+  task: string | TestTaskFunction; // NEW: Can be async function
+}
+
+// NEW: Function types for dynamic tests
+export type TestSetupFunction = () => Promise<any>;
+export type TestDataFunction = () => Promise<any>;
+export type TestTaskFunction = (data?: any, setupData?: any) => Promise<string> | string;
 
 // Exported from framework/types/index.ts
 export type { TestCase } from './test.js';
@@ -90,6 +104,47 @@ This type is used by the test recorder and must be importable as:
 
 ```typescript
 import { TestCase } from 'endorphin-ai';
+```
+
+### New v0.9 Test Structure Examples
+
+```typescript
+// Basic test (static)
+export const BASIC_TEST: TestCase = {
+  id: 'TEST-001',
+  name: 'Basic Test',
+  description: 'Simple static test',
+  priority: 'High',
+  tags: ['basic'],
+  task: 'Navigate to google.com and search for "testing"'
+};
+
+// Dynamic test with setup and data
+export const DYNAMIC_TEST: TestCase = {
+  id: 'TEST-002',
+  name: 'Dynamic Test',
+  description: 'Test with setup and data generation',
+  priority: 'High',
+  tags: ['dynamic'],
+  
+  setup: async () => ({
+    baseUrl: process.env.TEST_URL || 'https://example.com',
+    timestamp: new Date().toISOString()
+  }),
+  
+  data: async () => ({
+    email: `test_${Date.now()}@example.com`,
+    password: 'TestPass123!'
+  }),
+  
+  task: async (data, setupData) => `
+    Navigate to ${setupData.baseUrl}/login
+    Fill email with ${data.email}
+    Fill password with ${data.password}
+    Click Sign In
+    Verify welcome message appears
+  `
+};
 ```
 
 ## Built-in Tools System
@@ -152,6 +207,10 @@ task: 'Navigate to login page, fill username and password, click submit, verify 
 - Screenshot galleries with zoom functionality
 - Keyboard shortcuts for navigation
 - Export to JSON functionality
+- **NEW v0.9**: Cost and token tracking per test
+- **NEW v0.9**: AI decision history and agent thinking
+- **NEW v0.9**: Detailed step-by-step cost analysis
+- **NEW v0.9**: Tool selection reasoning display
 
 ## Build Process
 
@@ -348,12 +407,41 @@ npx tsx bin/endorphin.ts generate report
 open test-results/reports/report-*.html
 ```
 
+## Documentation Structure (Updated v0.9)
+
+### User Guide Documentation (`doc/user-guide/`)
+
+- **Quick-Start.md** - Get started in minutes (no version number)
+- **Project-Setup-Guide.md** - Complete project setup instructions  
+- **Test-Structure-Guide.md** - NEW: Learn the v0.9 test structure with setup/data functions
+- **Test-Writing-Tips.md** - NEW: User-friendly test writing guidance
+- **HTML-Reporter-Guide.md** - Interactive reports with cost tracking and AI insights
+- **Test-Recorder.md** - Interactive test creation
+- **Environment-Variables-Guide.md** - Simplified environment configuration
+- **Global-Setup-Guide.md** - Global setup functionality (no teardown yet)
+- **Prompt-Guide.md** - Advanced prompting techniques (restored)
+
+### Key Documentation Updates
+
+1. **Removed versioned guides** - No more v0.5.0 suffixes
+2. **User-friendly language** - Simplified technical jargon throughout
+3. **New test structure** - Documented async setup/data functions
+4. **Cost tracking** - Added documentation for token usage and pricing
+5. **AI decision history** - Documented agent thinking and decision process
+6. **Updated links** - All cross-references point to current file names
+
+### Documentation Standards
+
+- **User-focused**: Written for end users, not framework developers
+- **Concise**: Shorter guides with practical examples
+- **Cross-linked**: Related guides reference each other
+- **Current**: No outdated version references or non-existent features
+
 ## Git Workflow
 
 ### Current Branch
 
 - **Main development**: `develop` branch
-- **Current branch**: `lint` (working on linting fixes)
 
 ### Commit Best Practices
 
