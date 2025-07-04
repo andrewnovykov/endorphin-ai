@@ -1,6 +1,6 @@
 # 🎯 AI Agent Prompting Guide
 
-_Last Updated: June 27, 2025 - v0.4.1+_
+_Last Updated: July 4, 2025 - v0.9.0_
 
 ## 📝 Overview
 

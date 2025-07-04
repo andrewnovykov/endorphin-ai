@@ -1,27 +1,37 @@
 # Documentation Overview
 
+_Last Updated: July 4, 2025 - v0.9.0_
+
 This directory contains comprehensive documentation for the Endorphin AI framework, organized for different audiences.
 
 ## 📚 Documentation Structure
 
-### For Users
-- **[Quick Start Guide](user-guide/Quick-Start-v0.5.0.md)** - Get started with latest features
-- **[User Setup Guide](user-guide/User-Setup-Guide.md)** - Complete setup instructions
-- **[HTML Reporter Guide](user-guide/HTML-Reporter-Guide.md)** - Interactive reports documentation
-- **[Test Recorder Guide](user-guide/Test-Recorder.md)** - Recording test workflows
-- **[Custom Tools Guide](user-guide/Custom-Tools-Guide.md)** - Creating custom automation tools
-- **[Prompt Guide](user-guide/Prompt-Guide.md)** - Writing effective AI prompts
-- **[Global Setup Guide](user-guide/Global-Setup-Guide.md)** - System-wide configuration
+### 👥 For Users ([user-guide/](user-guide/))
+- **[Quick Start Guide](user-guide/Quick-Start.md)** - Get started in minutes
+- **[Project Setup Guide](user-guide/Project-Setup-Guide.md)** - Complete project setup instructions
+- **[Test Structure Guide](user-guide/Test-Structure-Guide.md)** - Learn v0.9 test structure with setup/data functions
+- **[Test Writing Tips](user-guide/Test-Writing-Tips.md)** - Enterprise & small app examples
+- **[Prompt Guide](user-guide/Prompt-Guide.md)** - Advanced AI prompting techniques
+- **[HTML Reporter Guide](user-guide/HTML-Reporter-Guide.md)** - Interactive reports with cost tracking
+- **[Test Recorder Guide](user-guide/Test-Recorder.md)** - Recording test workflows interactively
+- **[Environment Variables Guide](user-guide/Environment-Variables-Guide.md)** - Configure your environment
+- **[Global Setup Guide](user-guide/Global-Setup-Guide.md)** - Run setup code before tests
+- **[VS Code Debugging Guide](user-guide/VSCode-Debugging-Guide.md)** - Debug tests in VS Code
+- **[CI/CD Setup Guide](user-guide/CI-CD-Setup-Guide.md)** - GitHub Actions integration
 
-### For Developers & Maintainers
+### 🔧 For Developers & Contributors ([framework-development/](framework-development/))
 - **[Framework Architecture](framework-development/Framework-Architecture.md)** - Technical architecture overview
-- **[CI/CD Guide](framework-development/CI-CD-Guide.md)** - Continuous integration setup
+- **[Development Guide](framework-development/Development-Guide.md)** - Framework development workflow
+- **[Contributing Guide](framework-development/Contributing-Guide.md)** - Contribution process (fork → develop → PR)
+- **[Development Environment Setup](framework-development/Development-Environment-Setup-Guide.md)** - Complete dev environment setup
+- **[Testing Guide](framework-development/Testing-Guide.md)** - Multi-tier testing strategy overview
+- **[Development Testing Guide](framework-development/Development-Testing-Guide.md)** - Jest automated testing
+- **[Package Testing Guide](framework-development/Package-Testing-Guide.md)** - Manual tarball testing
+- **[Post-Install Testing Guide](framework-development/Post-Install-Testing-Guide.md)** - NPM package validation
+- **[NPM Publishing Guide](framework-development/NPM-Publishing-Guide.md)** - Step-by-step publishing process
+- **[CI/CD Guide](framework-development/CI-CD-Guide.md)** - Framework CI/CD pipeline
 - **[Maintainers Guide](framework-development/Maintainers-Guide.md)** - Framework maintenance
-- **[Publish Guide](framework-development/Publish-Guide.md)** - Release process
-- **[VSCode Debugging Guide](framework-development/VSCode-Debugging-Guide.md)** - Development setup
-- **[Package Testing Scenarios](framework-development/Package-Testing-Scenarios.md)** - Testing strategy
-- **[Development Testing](framework-development/development-testing.md)** - Testing framework code
-- **[Changelog v0.5.0](framework-development/CHANGELOG-v0.5.0.md)** - Latest release notes
+- **[VS Code Debugging Guide](framework-development/VSCode-Debugging-Guide.md)** - Development debugging setup
 
 ### For AI Assistants
 - **[CLAUDE.md](../CLAUDE.md)** - AI assistant development instructions
@@ -31,10 +41,13 @@ This directory contains comprehensive documentation for the Endorphin AI framewo
 ### I want to...
 
 #### Use Endorphin AI
-→ Start with [Quick Start Guide](user-guide/Quick-Start-v0.5.0.md)
+→ Start with [Quick Start Guide](user-guide/Quick-Start.md)
 
 #### Set up my first project
-→ Follow [User Setup Guide](user-guide/User-Setup-Guide.md)
+→ Follow [Project Setup Guide](user-guide/Project-Setup-Guide.md)
+
+#### Write better tests
+→ Read [Test Structure Guide](user-guide/Test-Structure-Guide.md) and [Test Writing Tips](user-guide/Test-Writing-Tips.md)
 
 #### Understand test reports
 → Read [HTML Reporter Guide](user-guide/HTML-Reporter-Guide.md)
@@ -42,42 +55,44 @@ This directory contains comprehensive documentation for the Endorphin AI framewo
 #### Record test workflows
 → Check [Test Recorder Guide](user-guide/Test-Recorder.md)
 
-#### Develop custom tools
-→ See [Custom Tools Guide](user-guide/Custom-Tools-Guide.md)
-
 #### Understand the architecture
 → Review [Framework Architecture](framework-development/Framework-Architecture.md)
 
 #### Contribute to development
-→ Start with [CLAUDE.md](../CLAUDE.md) and [CI/CD Guide](framework-development/CI-CD-Guide.md)
+→ Start with [Contributing Guide](framework-development/Contributing-Guide.md) and [CLAUDE.md](../CLAUDE.md)
 
 #### Release a new version
-→ Follow [Publish Guide](framework-development/Publish-Guide.md)
+→ Follow [NPM Publishing Guide](framework-development/NPM-Publishing-Guide.md)
 
-#### Debug issues
-→ Use [VSCode Debugging Guide](framework-development/VSCode-Debugging-Guide.md)
+#### Debug framework issues
+→ Use [VS Code Debugging Guide](framework-development/VSCode-Debugging-Guide.md)
 
-## 🆕 What's New in v0.5.0
+#### Debug user tests
+→ Use [VS Code Debugging Guide](user-guide/VSCode-Debugging-Guide.md)
+
+## 🆕 What's New in v0.9.0
 
 ### Major Improvements
-- **✅ TestCase Type Export**: Now available for test recorder integration
-- **🖼️ Enhanced HTML Reports**: Screenshots display as actual images
-- **🎯 Fixed Filter Functionality**: All/Passed/Failed tabs work correctly
-- **🔍 Improved Search**: Real-time filtering by test ID and name
-- **⚡ Better Performance**: Optimized for large test suites
+- **🔧 Smart Test Structure**: New async `setup` and `data` functions for dynamic test preparation
+- **📝 Complete Documentation Rewrite**: User-friendly guides with enterprise & small app examples
+- **🎯 Simplified Setup**: Easier project initialization and configuration
+- **🖼️ Enhanced HTML Reports**: Interactive reports with cost tracking and AI decision history
+- **🔍 Comprehensive Testing Examples**: Real-world patterns for all application types
+- **🚀 CI/CD Integration**: Ready-to-use GitHub Actions workflows
+- **🐛 Professional Debugging**: VS Code integration with debug object access
 
 ### Key Features
 - **TypeScript-first development** with JavaScript distribution
 - **Interactive HTML reports** with full functionality
-- **Comprehensive CI/CD pipeline** with multi-tier testing
+- **Test recorder** for creating tests by demonstration
+- **Global setup** for environment preparation
 - **Cross-platform compatibility** (Windows, macOS, Linux)
 - **Multi-browser support** via Playwright
 - **AI-powered test execution** with OpenAI integration
 
 ## 📋 Version Information
 
-- **Current Version**: v0.5.0
-- **Release Date**: June 28, 2025
+- **Current Version**: v0.9.0
 - **Node.js Support**: 18.x, 20.x, 22.x
 - **Platform Support**: Windows, macOS, Linux
 - **TypeScript Version**: 5.8+
@@ -115,19 +130,22 @@ When updating documentation:
 ## 🚀 Getting Started
 
 ### For New Users
-1. Read [Quick Start Guide](user-guide/Quick-Start-v0.5.0.md)
-2. Follow [User Setup Guide](user-guide/User-Setup-Guide.md)
-3. Try the HTML reporter with [HTML Reporter Guide](user-guide/HTML-Reporter-Guide.md)
+1. Read [Quick Start Guide](user-guide/Quick-Start.md)
+2. Follow [Project Setup Guide](user-guide/Project-Setup-Guide.md)
+3. Learn test writing with [Test Structure Guide](user-guide/Test-Structure-Guide.md)
+4. Try the HTML reporter with [HTML Reporter Guide](user-guide/HTML-Reporter-Guide.md)
 
-### For New Developers
-1. Review [Framework Architecture](framework-development/Framework-Architecture.md)
-2. Read [CLAUDE.md](../CLAUDE.md) for development guidelines
-3. Study [CI/CD Guide](framework-development/CI-CD-Guide.md) for testing
+### For New Contributors
+1. Read [Contributing Guide](framework-development/Contributing-Guide.md) for the complete workflow
+2. Set up environment with [Development Environment Setup Guide](framework-development/Development-Environment-Setup-Guide.md)
+3. Review [Framework Architecture](framework-development/Framework-Architecture.md)
+4. Study [Development Guide](framework-development/Development-Guide.md)
+5. Read [CLAUDE.md](../CLAUDE.md) for AI assistant guidelines
 
 ### For New Maintainers
 1. Understand [Maintainers Guide](framework-development/Maintainers-Guide.md)
-2. Learn [Publish Guide](framework-development/Publish-Guide.md)
-3. Review [Package Testing Scenarios](framework-development/Package-Testing-Scenarios.md)
+2. Learn [NPM Publishing Guide](framework-development/NPM-Publishing-Guide.md)
+3. Review [Testing Guide](framework-development/Testing-Guide.md) and all testing strategies
 
 ---
 

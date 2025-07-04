@@ -1,12 +1,19 @@
-# VS Code Debugging Guide for Endorphin AI
+# VS Code Debugging Guide - Endorphin AI Framework Development
 
-This guide explains how to debug and develop the Endorphin AI framework using Visual Studio Code.
+_Last Updated: July 4, 2025 - v0.9.0_
+
+This guide explains how to debug and develop the **Endorphin AI framework** using Visual Studio Code. This is for **framework contributors and maintainers**, not end users.
+
+> **Note**: For end-user VS Code debugging, see [doc/user-guide/VSCode-Debugging-Guide.md](../user-guide/VSCode-Debugging-Guide.md)
 
 ## Quick Setup
 
 1. **Open the project in VS Code**
    ```bash
-   code /path/to/endorphin-ai
+   # Clone and open the framework repository
+   git clone https://github.com/andrewnovykov/endorphin-ai.git
+   cd endorphin-ai
+   code .
    ```
 
 2. **Install recommended extensions** (VS Code will prompt automatically):
@@ -16,21 +23,31 @@ This guide explains how to debug and develop the Endorphin AI framework using Vi
    - Jest (for test debugging)
    - Node.js Extension Pack
 
-## Project Structure Overview
+## Framework Development Structure
 
 ```
 endorphin-ai/
-├── framework/          # Core framework code (TypeScript)
-│   ├── core/          # Main framework components
-│   ├── cli/           # CLI command handlers
-│   ├── config/        # Configuration management
-│   ├── reporters/     # Test result reporting
-│   └── tools/         # Browser automation tools
-├── bin/               # CLI entry points
-├── examples/          # User template files
-├── tests/             # Development tests
-├── dist/              # Compiled output
-└── .vscode/           # VS Code configuration
+├── framework/                 # Core framework source (TypeScript)
+│   ├── index.ts              # Main framework entry
+│   ├── core/                 # Framework components
+│   │   ├── config-loader.ts  # Configuration system
+│   │   ├── test-discovery.ts # Test file discovery
+│   │   └── browser-framework.ts # Browser automation
+│   ├── cli/                  # CLI command handlers
+│   ├── tools/                # Browser automation tools
+│   ├── types/                # TypeScript definitions
+│   └── reporters/            # Report generation
+├── bin/                      # CLI entry points (TypeScript)
+│   └── endorphin.ts          # Main CLI source
+├── dev-tests/                # Framework testing
+│   ├── development/          # Development tests (Jest)
+│   ├── package-tests/        # Package testing (bash)
+│   └── post-install/         # Post-install validation
+├── dist/                     # Compiled JavaScript output
+│   ├── bin/endorphin.js      # Compiled CLI
+│   └── framework/            # Compiled framework
+├── examples/                 # User template files
+└── .vscode/                  # VS Code configuration
 ```
 
 ## Debug Configurations
@@ -61,14 +78,15 @@ Create `.vscode/launch.json`:
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/dist/bin/endorphin.js",
-            "args": ["test", "HEALTH-001"],
+            "args": ["run", "test", "HEALTH-001"],
             "cwd": "/tmp/debug-project",
             "outFiles": ["${workspaceFolder}/dist/**/*.js"],
             "sourceMaps": true,
             "console": "integratedTerminal",
             "env": {
                 "NODE_ENV": "development",
-                "OPENAI_API_KEY": "your-test-key-here"
+                "OPENAI_API_KEY": "your-test-key-here",
+                "ENDORPHIN_DEBUG": "verbose"
             },
             "preLaunchTask": "build"
         },
@@ -109,7 +127,7 @@ Create `.vscode/launch.json`:
             "id": "testFile",
             "description": "Test file to debug",
             "type": "promptString",
-            "default": "tests/development/unit/"
+            "default": "dev-tests/development/unit/"
         }
     ]
 }
@@ -250,7 +268,7 @@ npm run build:watch
 npm run test:dev
 
 # Run specific test file
-npx jest tests/development/unit/init-command.test.ts
+npx jest dev-tests/development/unit/init-command.test.ts
 
 # Run linting
 npm run lint
@@ -262,7 +280,7 @@ npm run test:local
 node --inspect-brk dist/bin/endorphin.js init
 
 # View test coverage
-npm test && open tests/development/coverage/index.html
+npm test && open dev-tests/development/coverage/index.html
 ```
 
 ## Breakpoint Best Practices
@@ -325,7 +343,8 @@ NODE_ENV=development
 # OpenAI API (for testing AI features)
 OPENAI_API_KEY=your-development-key
 
-# Debug settings
+# Debug settings  
+ENDORPHIN_DEBUG=verbose
 DEBUG=endorphin:*
 LOG_LEVEL=debug
 
@@ -340,9 +359,18 @@ For debugging tests in CI or remote environments:
 
 ```bash
 # Start with debugging enabled
-node --inspect=0.0.0.0:9229 dist/bin/endorphin.js test HEALTH-001
+node --inspect=0.0.0.0:9229 dist/bin/endorphin.js run test HEALTH-001
 
 # Connect from VS Code using "Attach to Process" configuration
 ```
+
+## Related Documentation
+
+- 📖 [Contributing-Guide.md](./Contributing-Guide.md) - Complete contribution workflow  
+- 📖 [Development-Testing-Guide.md](./Development-Testing-Guide.md) - Jest testing during development
+- 📖 [Package-Testing-Guide.md](./Package-Testing-Guide.md) - Manual tarball testing
+- 📖 [Testing-Guide.md](./Testing-Guide.md) - Complete testing overview
+- 📖 [Development-Guide.md](./Development-Guide.md) - Development workflow
+- 📖 [Framework-Architecture.md](./Framework-Architecture.md) - Framework design
 
 This guide provides comprehensive debugging capabilities for developing and maintaining the Endorphin AI framework.

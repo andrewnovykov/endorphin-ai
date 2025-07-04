@@ -1,6 +1,6 @@
 # 🏗️ Framework Architecture
 
-_Last Updated: June 28, 2025 - v0.5.0+_
+_Last Updated: July 4, 2025 - v0.9.0_
 
 ## Overview
 
@@ -8,7 +8,7 @@ Endorphin AI is built with a **TypeScript-first modular architecture** that
 separates concerns and provides clear interfaces between components. The
 framework is designed for extensibility, maintainability, and ease of testing.
 
-**Architecture Highlights (v0.5.0+):**
+**Architecture Highlights (v0.9.0):**
 
 - ✅ **TypeScript Development**: Full type safety and modern tooling
 - ✅ **JavaScript Distribution**: Compiled output for production
@@ -16,10 +16,10 @@ framework is designed for extensibility, maintainability, and ease of testing.
 - ✅ **Path Aliases**: Clean imports with `@core/`, `@tools/`, `@types/`
 - ✅ **Comprehensive Testing**: Multi-tier testing strategy
 - ✅ **Production Ready**: No development dependencies at runtime
-- ✅ **TestCase Type**: Exported TestCase interface for test recorder
-  integration
-- ✅ **Interactive HTML Reports**: Fully functional screenshot display and
-  filtering
+- ✅ **Smart Test Structure**: Async setup, data generation, and task functions
+- ✅ **Cost Tracking**: Token usage and pricing analysis
+- ✅ **AI Decision History**: Complete agent reasoning and decision tracking
+- ✅ **Interactive HTML Reports**: Enhanced reports with cost analysis and AI insights
 
 ## 📁 Directory Structure
 
@@ -296,6 +296,153 @@ bin/endorphin.ts → dist/bin/endorphin.js (standalone)
 Type Definitions:
 framework/types/*.ts → dist/framework/types/*.d.ts
 ```
+
+## ✨ New in v0.9: Smart Test Structure
+
+### Dynamic Test Execution
+
+Version 0.9 introduces a revolutionary **smart test structure** that allows tests to dynamically prepare data and environments:
+
+```typescript
+// framework/types/test.ts
+export interface TestConfig {
+  id: string;
+  name: string;
+  description: string;
+  priority: 'High' | 'Medium' | 'Low';
+  tags: string[];
+  url?: string;
+  
+  // NEW v0.9: Dynamic functions
+  setup?: TestSetupFunction;      // Async environment preparation  
+  data?: TestDataFunction | Record<string, any>;  // Dynamic data generation
+  task: string | TestTaskFunction; // Can now be async function
+}
+
+// NEW function types
+export type TestSetupFunction = () => Promise<any>;
+export type TestDataFunction = () => Promise<any>;
+export type TestTaskFunction = (data?: any, setupData?: any) => Promise<string> | string;
+```
+
+### Smart Test Examples
+
+#### Static Test (Traditional)
+```typescript
+export const BASIC_TEST: TestCase = {
+  id: 'TEST-001',
+  name: 'Basic Google Search',
+  description: 'Simple static test',
+  priority: 'High',
+  tags: ['basic'],
+  task: 'Go to google.com and search for "Endorphin AI"'
+};
+```
+
+#### Dynamic Test with Setup & Data
+```typescript
+export const SMART_TEST: TestCase = {
+  id: 'TEST-002', 
+  name: 'Dynamic Login Test',
+  description: 'Test with environment setup and data generation',
+  priority: 'High',
+  tags: ['auth', 'dynamic'],
+  
+  // Setup runs before test - prepare environment
+  setup: async () => {
+    const testEnv = process.env.NODE_ENV || 'staging';
+    return {
+      baseUrl: testEnv === 'prod' ? 'https://app.com' : 'https://staging.app.com',
+      timestamp: new Date().toISOString(),
+      testId: `test_${Date.now()}`
+    };
+  },
+  
+  // Data runs after setup - generate test data
+  data: async () => {
+    return {
+      email: `test_${Date.now()}@example.com`,
+      password: 'SecurePass123!',
+      firstName: 'Test',
+      lastName: 'User'
+    };
+  },
+  
+  // Task receives both setup and data results
+  task: async (data, setupData) => {
+    return `
+      Navigate to ${setupData.baseUrl}/login
+      Fill email field with ${data.email}
+      Fill password field with ${data.password}
+      Click Sign In button
+      Wait 3 seconds for dashboard to load
+      Verify welcome message contains "${data.firstName}"
+    `;
+  }
+};
+```
+
+## 💰 Cost Tracking & AI Decision Analysis
+
+### Token Usage Tracking
+
+v0.9 introduces comprehensive **cost tracking** throughout the test execution pipeline:
+
+```typescript
+// framework/types/test.ts
+export interface AgentHistoryEntry {
+  historyId: number;
+  timestamp: string;
+  thinking: string;     // What the AI was considering
+  prompt: string;       // Actual prompt sent to OpenAI
+  response: string;     // AI's response
+  tokenUsage: {
+    promptTokens: number;
+    responseTokens: number;
+    totalTokens: number;
+    cost: number;        // Actual dollar cost
+    model: string;       // AI model used
+  };
+  duration: number;     // AI call duration
+  context?: string;     // Additional context
+}
+
+export interface TestStep {
+  stepNumber: number;
+  timestamp: string;
+  description: string;
+  toolName?: string;
+  toolArgs?: any;
+  result?: string;
+  status: 'SUCCESS' | 'FAILED';
+  screenshots: Screenshot[];
+  tokenUsage?: {         // Per-step cost tracking
+    promptTokens: number;
+    responseTokens: number;
+    totalTokens: number;
+    cost: number;
+    model: string;
+  };
+}
+```
+
+### AI Decision History
+
+Every test execution now captures the **complete AI reasoning process**:
+
+- **Agent Thinking**: What the AI was considering at each decision point
+- **Decision Logic**: Why the AI chose specific actions over alternatives  
+- **Tool Selection**: Reasoning behind browser tool choices
+- **Error Recovery**: How the AI adapted to unexpected situations
+- **Context Awareness**: How previous steps influenced current decisions
+
+### Cost Analysis Features
+
+- **Real-time cost calculation** during test execution
+- **Per-test cost breakdown** with step-level granularity
+- **Session-level cost summaries** for budget tracking
+- **Model comparison** - cost differences between GPT-4o, GPT-4, etc.
+- **Token optimization insights** for expensive tests
 
 ## 🎯 Design Principles
 
