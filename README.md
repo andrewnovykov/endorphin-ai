@@ -1,12 +1,13 @@
 <div align="center">
   <img src="./doc/images/endorphin-ai-logo-no-bg.png" alt="Endorphin Logo" width="200" />
   
-  # 💜 ENDORPHIN AI
+  # 💜 ENDORPHIN
   
   ## E2E Testing Reinvented with AI
 </div>
 
-Write tests in plain English. Let AI handle the automation.
+Write tests in plain English. Let AI generate, validate, and fix them
+automatically.
 
 <div align="center">
   <img src="./doc/images/playwright-logo.png" alt="Playwright" height="40" />
@@ -14,356 +15,1040 @@ Write tests in plain English. Let AI handle the automation.
   <img src="./doc/images/langchain-logo.png" alt="LangChain" height="40" />
 </div>
 
-A powerful TypeScript browser automation framework using AI-powered testing with
-LangChain, OpenAI GPT-4o, and Playwright. Write tests in natural language and
-let AI handle the complex automation.
+A powerful, modular browser automation framework using AI-powered testing with
+LangChain, OpenAI GPT-4o, and Playwright. Provides intelligent browser
+automation with automatic element detection, visual validation, and
+comprehensive test management.
+
+## 🎬 Watch Demo
+
+<div align="center">
+  <a href="https://youtu.be/ev_71RBO6g8?si=F9xTPSJNp36Mr1wx" target="_blank">
+    <img src="https://img.shields.io/badge/🎬_WATCH_DEMO-FF0000?style=for-the-badge&logo=youtube&logoColor=white&labelColor=000000&scale=1.5" alt="Watch Demo" style="transform: scale(1.5); margin: 20px 0;" width="300" />
+  </a>
+  <br />
+  <p style="font-size: 18px; font-weight: bold; margin: 15px 0;">🎯 See Endorphin AI in Action - Complete Walkthrough</p>
+  <p style="font-size: 16px; color: #666; margin-bottom: 30px;">
+    ✨ Watch how AI writes and executes your tests<br />
+    🔍 See intelligent element detection in real-time<br />
+    📊 Explore beautiful HTML reports with screenshots<br />
+    ⚡ From setup to test execution in 10 minutes
+  </p>
+  <p style="margin-top: 20px;">
+    <a href="https://endorphinai.dev" style="color: #007bff; text-decoration: none; font-size: 18px; font-weight: bold;">
+      🌐 Visit our website for more examples and tutorials
+    </a>
+  </p>
+</div>
 
 ---
 
 ## 🚀 Quick Start
 
-### 📦 Installation
+### 📦 Installation & Setup
+
+Get started in under 30 seconds:
 
 ```bash
-npm install endorphin-ai
+# ⚡ Quick setup (recommended)
+npx create-endorphin-ai@latest my-ai-tests
+cd my-ai-tests
 ```
 
-### 🔑 Setup
-
-1. **Create a `.env` file** with your OpenAI API key:
+**Or manual setup:**
 
 ```bash
-OPENAI_API_KEY=your_key_here
+# 1. Create your project
+mkdir my-ai-tests && cd my-ai-tests
+
+# 2. Install Endorphin AI
+npm install endorphin-ai@latest --save-dev
+
+# 3. Initialize with everything you need
+npx endorphin-ai init
 ```
 
-2. **Initialize your project**:
+**What you get:**
+
+- ✅ Sample test ready to run
+- ✅ Configuration files
+- ✅ Project structure
+- ✅ Environment setup
+
+### 🔑 Add Your OpenAI API Key
 
 ```bash
-npx endorphin init
+# Edit the .env file that was created
+echo "OPENAI_API_KEY=your-openai-api-key-here" > .env
 ```
 
-### ✨ Your First Test
+_Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)_
 
-Create `tests/my-test.ts`:
-
-```typescript
-import type { TestCase } from 'endorphin-ai';
-
-export const GOOGLE_TEST: TestCase = {
-  id: 'TEST-001',
-  name: 'Google Search Test',
-  description: 'Search for something on Google',
-  priority: 'High',
-  tags: ['demo'],
-  task: 'Go to google.com and search for "Endorphin AI"',
-};
-```
-
-### ▶️ Run Your Test
+### ▶️ Run Your First Test
 
 ```bash
-# Run the test
-npx endorphin run test TEST-001
+# Run the sample health check test
+npx endorphin-ai run test HEALTH-001
 
-# Generate beautiful reports
-npx endorphin generate report
-npx endorphin open report
+# Generate a beautiful HTML report
+npx endorphin-ai generate report && npx endorphin-ai open report
 ```
 
-**🎉 That's it!** You now have AI-powered testing with interactive reports.
+**🎉 That's it!** You now have:
 
----
+- A working AI-powered test
+- Interactive HTML reports with screenshots
+- Complete project structure for scaling
 
-## 🎯 Key Features
+### 🔧 Troubleshooting Installation
+
+If `npx endorphin-ai` doesn't work, try these **guaranteed solutions**:
+
+```bash
+# Option 1: Use npm scripts (always works)
+npm run endorphin:init                # Initialize project
+npm run endorphin:version             # Check version
+npm run endorphin:help                # Get help
+
+# Option 2: Clear npx cache and retry
+npx --clear-cache
+npx endorphin-ai init
+
+# Option 3: Use direct path
+./node_modules/.bin/endorphin-ai init
+
+# Option 4: Global installation
+npm install -g endorphin-ai
+endorphin-ai init
+```
+
+**Why this happens:** This is a known npm/npx issue with local binary
+resolution, not a problem with Endorphin AI. The npm scripts above always work
+regardless of npx behavior.
+
+### Manual Setup (Alternative)
+
+If you prefer manual setup:
+
+1. Create your project directory:
+
+   ```bash
+   mkdir my-test-project && cd my-test-project
+   ```
+
+2. Initialize with ES modules:
+
+   ```bash
+   npm init -y
+   npm pkg set type="module"
+   ```
+
+3. Install Endorphin AI:
+
+   ```bash
+   npm install endorphin-ai
+   ```
+
+4. Set up your `.env` file with your OpenAI API key:
+
+   ```env
+   OPENAI_API_KEY=your_api_key_here
+   ```
+
+5. Create tests directory:
+
+   ```bash
+   mkdir tests
+   ```
+
+6. Create your first test file `tests/login-test.ts`:
+
+   ```typescript
+   import type { TestCase } from 'endorphin-ai';
+
+   export const QE001: TestCase = {
+     id: 'QE-001',
+     name: 'Basic Login Test',
+     description: 'Test the login functionality with valid credentials',
+     priority: 'High',
+     tags: ['authentication', 'login', 'smoke'],
+     site: 'https://qafromla.herokuapp.com/',
+     testData: {
+       originalEmail: 'papapin888@gmail.com',
+       originalPassword: 'lalalend',
+     },
+     task: `Navigate to https://qafromla.herokuapp.com/. 
+     Click on "Log In" button. Wait 2 seconds for page load. 
+     Fill email field with "papapin888@gmail.com". 
+     Fill password field with "lalalend". 
+     Click "Sign In" button. Wait 3 seconds for page load. 
+     Verify login was successful by checking page content.`,
+   };
+   ```
+
+7. Add scripts to your `package.json`:
+   ```json
+   {
+     "scripts": {
+       "test": "endorphin-ai run test all",
+       "test:smoke": "endorphin-ai run test --tag smoke",
+       "test:auth": "endorphin-ai run test --tag authentication",
+       "test:single": "endorphin-ai run test",
+       "test:record": "endorphin-ai run test-recorder",
+       "endorphin:init": "./node_modules/.bin/endorphin-ai init",
+       "endorphin:version": "./node_modules/.bin/endorphin --version"
+     }
+   }
+   ```
+
+## 🎯 Core Features
 
 ### 🤖 AI-Powered Testing
 
-- **Natural language tests** - Write tests like you're explaining to a person
-- **Smart element detection** - AI finds buttons, forms, and content
+- **Write tests in plain English** - No complex selectors needed
+- **Intelligent element detection** - AI finds buttons, forms, and content
   automatically
 - **Self-healing tests** - Adapts to UI changes without breaking
-- **Dynamic test data** - Generate data on-the-fly with async functions
+- **Smart error recovery** - Automatically retries failed actions with different
+  strategies
 
 ### 📊 Beautiful Reports
 
 - **Interactive HTML reports** with screenshots and step-by-step execution
-- **Real-time filtering** and search to quickly find issues
+- **Cost & token tracking** - Monitor AI usage and optimize expenses
+- **AI decision history** - See exactly how AI analyzes and executes tests
+- **Real-time filtering and search** to quickly find issues
 - **Visual debugging** with click-to-zoom screenshots
 - **Export capabilities** for sharing with your team
 
 ### 🛠️ Developer Experience
 
-- **TypeScript-first** with full type safety
 - **Zero configuration** - Works out of the box
-- **Test recorder** - Create tests by demonstration
-- **Global setup** - Prepare environments before tests
+- **TypeScript support** with full type definitions
+- **Smart test structure** - Dynamic setup, data generation, and task functions
+- **Built-in tools system** - 12 comprehensive automation tools included
+- **VS Code debugging** - Professional debugging with debug object access
+- **Multiple browsers** - Chrome, Firefox, Safari support
+- **Parallel execution** for faster test runs
+
+### 🎮 Interactive Tools
+
+- **Test Recorder** - Create tests by clicking through your app
+- **Live debugging** - See exactly what the AI is doing
+- **Custom test creation** with guided prompts
+- **Session replay** to understand test failures
 
 ---
 
-## 🔧 Smart Test Structure (New in v0.9)
+## 🔄 Staying Updated
 
-Tests can now prepare data and environments automatically:
-
-```typescript
-export const SMART_TEST: TestCase = {
-  id: 'LOGIN-001',
-  name: 'Dynamic Login Test',
-  description: 'Test login with generated data',
-  priority: 'High',
-  tags: ['auth'],
-
-  // Setup runs before the test
-  setup: async () => {
-    return {
-      baseUrl: process.env.TEST_URL || 'https://example.com',
-      timestamp: new Date().toISOString(),
-    };
-  },
-
-  // Generate fresh data for each run
-  data: async () => {
-    return {
-      email: `test_${Date.now()}@example.com`,
-      password: 'SecurePass123!',
-    };
-  },
-
-  // Use the data in your test
-  task: async (data, setupData) => {
-    return `
-      Go to ${setupData.baseUrl}/login
-      Enter email: ${data.email}
-      Enter password: ${data.password}
-      Click Sign In
-      Verify welcome message appears
-    `;
-  },
-};
-```
-
----
-
-## 🎮 Interactive Test Recorder
-
-Create tests by showing the AI what to do:
+### Current Version: v0.9.0
 
 ```bash
+# Check your current version
+npx endorphin-ai --version
+
+# Update to the latest version
+npm update endorphin-ai
+
+# Get help and see new features
+npx endorphin-ai --help
+```
+
+### What's New in v0.9.0
+
+- ✅ **Smart Test Structure** - New async `setup()`, `data()`, and `task()` functions for dynamic test preparation
+- ✅ **Enhanced HTML Reports** - Interactive reports with cost tracking and AI decision history
+- ✅ **Cost & Token Tracking** - Monitor AI usage costs per test and per step
+- ✅ **AI Decision History** - See exactly how AI analyzes and executes tests
+- ✅ **Built-in Tools System** - 12 comprehensive browser automation tools (no custom tools needed)
+- ✅ **Professional Debugging** - VS Code integration with debug object access
+- ✅ **CI/CD Ready** - Ready-to-use GitHub Actions workflows included
+
+## 🚀 Project Initialization
+
+### New Projects (Recommended)
+
+```bash
+# Quick setup for new projects
+mkdir my-test-project && cd my-test-project
+npx endorphin-ai init
+```
+
+The `init` command creates:
+
+- ✅ `tests/` directory with sample TypeScript test
+- ✅ `test-results/` for test outputs
+- ✅ `test-recorder/` for recorded tests
+- ✅ `.env` file with API key placeholder
+- ✅ `endorphin.config.ts` with optimized TypeScript settings
+
+- ✅ `tsconfig.json` for TypeScript compilation
+- ✅ `.gitignore` with Endorphin-specific patterns
+- ✅ `README-ENDORPHIN.md` quick start guide
+
+### Existing Projects
+
+For existing Endorphin projects, the `init` command is optional and safe:
+
+- ✅ Never overwrites existing configuration files
+- ✅ Only creates missing directories
+- ✅ Adds helpful template files if needed
+
+```bash
+# Safe to run in existing projects
+npx endorphin-ai init
+```
+
+### Usage Commands
+
+#### ℹ️ Version & Help
+
+```bash
+# Check current version
+npx endorphin-ai --version
+
+# Get help and see all commands
+npx endorphin-ai --help
+
+# Update to latest version
+npm update endorphin-ai
+```
+
+#### 🎯 Initialize New Project
+
+```bash
+# Create a new Endorphin AI project with all necessary files
+npx endorphin-ai init
+
+# What gets created:
+# ├── tests/sample-test.ts     # Ready-to-run TypeScript test
+# ├── .env                     # API key configuration
+# ├── endorphin.config.ts      # Framework settings (TypeScript)
+# ├── tsconfig.json            # TypeScript configuration
+# ├── .gitignore              # Endorphin-specific ignores
+# └── README-ENDORPHIN.md     # Quick start guide
+```
+
+#### 🧪 Run Specific Test
+
+```bash
+# Using npm scripts (recommended)
+npm run test:single QE-001
+
+# Using npx
+npx endorphin run test QE-001
+
+# Global installation
+endorphin run test QE-001
+```
+
+#### 🏷️ Run Tests by Category
+
+```bash
+# Using npm scripts
+npm run test:smoke
+npm run test:auth
+
+# Using npx/global
+npx endorphin run test --tag authentication
+npx endorphin run test --priority High
+```
+
+#### 🎯 Run All Tests
+
+```bash
+# Using npm scripts
+npm test
+
+# Using npx/global
+npx endorphin run test all
+```
+
+#### 🎬 Test Recorder Mode
+
+```bash
+# Using npm scripts
+npm run test:record
+
+# Using npx/global
 npx endorphin run test-recorder
 ```
 
-1. Browser opens
-2. Type commands in plain English
-3. Watch AI perform actions
-4. Get ready-to-run test file
+## 📊 HTML Reports & Analytics
 
-Example recording session:
+Endorphin AI generates beautiful, interactive HTML reports that provide
+comprehensive insights into your test execution results.
 
-```
-> click the login button
-✅ Clicked login button
-
-> fill email with test@example.com
-✅ Filled email field
-
-> verify welcome message appears
-✅ Verified welcome message
-
-> done
-✅ Test saved to tests/LOGIN-001.ts
-```
-
----
-
-## 📝 Writing Great Tests
-
-### Simple Format
-
-```typescript
-task: 'Go to amazon.com, search for "laptop", verify results appear';
-```
-
-### Step-by-Step Format
-
-```typescript
-task: `
-  1. Navigate to login page
-  2. Enter email: test@example.com
-  3. Enter password: mypassword
-  4. Click Sign In button
-  5. Verify dashboard loads
-`;
-```
-
-### Natural Language Tips
-
-- Be specific: "Click the blue Submit button" not "click button"
-- Add waits: "Wait 2 seconds for page to load"
-- Verify results: "Verify success message appears"
-- Use real data: "Enter john@example.com" not "enter email"
-
----
-
-## 📊 Interactive Reports
-
-Generate beautiful reports with:
+### 🚀 Quick Report Generation
 
 ```bash
+# Generate a full interactive HTML report
 npx endorphin generate report
+
+# Generate a lightweight summary report
+npx endorphin generate report --summary
+
+# Open the latest report in your browser
 npx endorphin open report
+
+# Open a specific report file
+npx endorphin open report report-2025-06-22.html
 ```
 
-### Report Features
+### ✨ Report Features
 
-- 🔍 **Search tests** by name or ID
-- 📊 **Filter by status** (All/Passed/Failed)
-- 📸 **Click screenshots** to zoom
-- ⌨️ **Keyboard shortcuts** (Ctrl+F to search)
-- 📄 **Export to JSON** for analysis
+#### 📈 **Interactive Dashboard**
 
----
+- **Real-time Statistics**: Success rates, test counts, execution trends
+- **Visual Progress Bars**: Easy-to-understand success rate indicators
+- **Summary Cards**: Quick overview of test health
+
+#### 🔍 **Advanced Search & Filtering**
+
+- **Real-time Search**: Find tests by name or ID instantly
+- **Status Filtering**: Filter by passed/failed tests with one click
+- **Smart Results**: Shows "5 of 25 tests matching 'login' with status 'failed'"
+- **Keyboard Shortcuts**: `Ctrl+F` to search, `Ctrl+3` for failed tests only
+
+#### 🎯 **Detailed Test Analysis**
+
+- **Step-by-Step Timeline**: See exactly what happened during test execution
+- **Screenshot Galleries**: Visual debugging with click-to-zoom screenshots
+- **Interactive Modals**: Deep dive into test execution details
+- **Tool Call Tracking**: See which browser actions were performed
+
+#### ⌨️ **Productivity Features**
+
+- **Export to JSON**: Data-driven analysis and custom reporting
+- **Print Support**: Documentation-ready printed reports
+- **Responsive Design**: Works on desktop, tablet, and mobile
+- **Performance Optimized**: Fast loading even with large test suites
+
+### 🛠️ Report Management
+
+```bash
+# Clean up old test results (keep 10 most recent per test)
+npx endorphin cleanup results
+
+# Keep only 5 most recent results per test
+npx endorphin cleanup results 5
+
+# Clean up old report files (older than 30 days)
+npx endorphin cleanup reports
+
+# Clean up report files older than 7 days
+npx endorphin cleanup reports 7
+```
+
+### 📖 Complete Guide
+
+For detailed usage instructions, advanced features, and best practices, see the
+**[HTML Reporter User Guide](./doc/user-guide/HTML-Reporter-Guide.md)**.
+
+## 🏗️ Framework Architecture
+
+Endorphin AI is built with a modular, extensible architecture designed for
+reliability and maintainability.
+
+📖
+**[View detailed Framework Architecture documentation](./doc/Framework-Architecture.md)**
+
+### Key Components
+
+- **Core Framework**: Main test execution engine and session management
+- **Browser Tools**: Intelligent automation tools powered by AI
+- **Configuration System**: Flexible, hierarchical configuration management
+- **Test Discovery**: Automatic test file detection and loading
+- **Interactive Tools**: Real-time test creation and debugging
 
 ## ⚙️ Configuration
 
-### Basic Config (`endorphin.config.ts`)
+### Default Configuration
+
+Endorphin AI works out of the box with sensible defaults, but you can customize
+it by creating an `endorphin.config.ts` file in your project root:
 
 ```typescript
-export default {
-  browser: {
-    headless: false, // Show browser
-    viewport: {
-      // Browser size
-      width: 1280,
-      height: 720,
-    },
+// endorphin.config.ts
+import type { FrameworkConfig } from 'endorphin-ai';
+
+const config: FrameworkConfig = {
+  // Global test settings
+  defaultTimeout: 30000,
+  headless: false,
+  viewport: { width: 1280, height: 720 },
+
+  // Default test data
+  testData: {
+    baseUrl: 'https://staging.example.com',
+    adminEmail: 'admin@example.com',
   },
 
-  // Global setup (runs before all tests)
-  globalSetup: './global-setup.js',
+  // Result settings
+  screenshots: true,
+  recordVideo: false,
+};
+
+export default config;
+```
+
+### CLI Options
+
+You can override configuration with CLI flags:
+
+```bash
+# Using npm scripts with -- to pass flags
+npm test -- --browser firefox
+npm run test:single QE-001 -- --no-headless
+
+# Using npx/global
+npx endorphin run test all --browser firefox
+npx endorphin run test QE-001 --no-headless
+npx endorphin run test all --viewport 1920x1080
+npx endorphin run test all --parallel 3
+npx endorphin run test all --model gpt-4
+npx endorphin run test all --env staging
+```
+
+## 📝 Test Categories
+
+You can organize your tests using tags and priorities:
+
+### Common Tags
+
+- `authentication` - Login, logout, registration tests
+- `smoke` - Critical path tests that must pass
+- `navigation` - Menu, links, page routing tests
+- `forms` - Form filling and validation tests
+- `checkout` - E-commerce purchase flow tests
+- `search` - Search functionality tests
+- `responsive` - Mobile/tablet/desktop tests
+
+### Priority Levels
+
+- `High` - Critical functionality, run on every build
+- `Medium` - Important features, run daily
+- `Low` - Nice-to-have features, run weekly
+
+### Example Test Organization
+
+```typescript
+// tests/auth-tests.ts
+import type { TestCase } from 'endorphin-ai';
+
+export const LOGIN_TEST: TestCase = {
+  id: 'AUTH-001',
+  name: 'User Login Test',
+  description: 'Test user authentication flow',
+  tags: ['authentication', 'smoke'],
+  priority: 'High',
+  site: 'https://example.com',
+  task: 'Navigate to login page and authenticate user...',
+};
+
+export const LOGOUT_TEST: TestCase = {
+  id: 'AUTH-002',
+  name: 'User Logout Test',
+  description: 'Test user logout functionality',
+  tags: ['authentication'],
+  priority: 'Medium',
+  site: 'https://example.com',
+  task: 'Log out the authenticated user...',
 };
 ```
 
-### Environment Variables (`.env`)
+## 🔧 Smart Test Structure (v0.9.0)
+
+Endorphin AI v0.9.0 introduces a powerful new test structure with async functions for dynamic test preparation.
+
+### 🚀 New Test Format
+
+```typescript
+import type { TestCase } from 'endorphin-ai';
+
+export const SMART_TEST: TestCase = {
+  id: 'LOGIN-001',
+  name: 'User Login Test',
+  description: 'Test login with generated credentials',
+  priority: 'High',
+  tags: ['auth', 'smoke'],
+  
+  // Generate test data dynamically
+  data: async () => {
+    const timestamp = Date.now();
+    return {
+      email: `testuser${timestamp}@example.com`,
+      password: 'SecurePassword123!',
+      firstName: 'Test',
+      lastName: 'User'
+    };
+  },
+  
+  // Set up test environment
+  setup: async () => {
+    return {
+      baseUrl: process.env.TEST_URL || 'https://example.com',
+      startTime: new Date().toISOString()
+    };
+  },
+  
+  // Main test instructions using generated data
+  task: async (data, setupData) => {
+    return `
+      Navigate to ${setupData.baseUrl}/login
+      Fill email with "${data.email}"
+      Fill password with "${data.password}"
+      Click Submit button
+      Verify welcome message contains "${data.firstName}"
+    `;
+  }
+};
+```
+
+### ✨ Key Benefits
+
+- **Dynamic Data Generation** - Create unique test data for each run
+- **Environment Setup** - Prepare test environment before execution
+- **Type Safety** - Full TypeScript support for all functions
+- **Backward Compatibility** - Old test format still works perfectly
+
+## 📁 Project Structure
+
+Your project should look like this:
+
+```
+my-test-project/
+├── .env                    # OpenAI API key
+├── tests/                  # Your test files (TypeScript)
+│   ├── login-test.ts      # Authentication tests
+│   ├── checkout-test.ts   # E-commerce tests
+│   └── navigation-test.ts # UI/Navigation tests
+├── endorphin.config.ts    # Optional configuration (TypeScript)
+├── tsconfig.json          # TypeScript configuration
+└── package.json           # Project config
+```
+
+## 📝 Test File Format
+
+Each test file should export test objects with TypeScript types:
+
+```typescript
+import type { TestCase } from 'endorphin-ai';
+
+export const QE001: TestCase = {
+  id: 'QE-001', // Unique test identifier
+  name: 'Basic Login Test', // Human readable name
+  description: 'Test login functionality with valid credentials',
+  priority: 'High', // High, Medium, Low
+  tags: ['authentication', 'login', 'smoke'], // Categories
+  site: 'https://example.com/', // Target website
+  testData: {
+    // Test data (optional, fully typed)
+    email: 'test@example.com',
+    password: 'password123',
+  },
+  task: `Your test instructions in plain English...`,
+};
+
+// Multiple tests per file with full type safety
+export const QE002: TestCase = {
+  id: 'QE-002',
+  name: 'Registration Test',
+  description: 'Test user registration flow',
+  priority: 'Medium',
+  tags: ['authentication', 'registration'],
+  site: 'https://example.com/',
+  task: 'Test new user registration process...',
+};
+```
+
+### 🎯 TypeScript Benefits
+
+- ✅ **Full type safety** for test configuration
+- ✅ **IntelliSense support** in your IDE
+- ✅ **Compile-time error checking**
+- ✅ **Auto-completion** for test properties
+- ✅ **Refactoring support** across your test suite
+
+## 📊 Test Results
+
+Each test execution creates:
+
+- **📁 Session Directory**: `test-result/[test-id]_[timestamp]/`
+- **📝 Session Data**: `test-session.json` with complete execution details
+- **📊 Summary**: `summary.json` with test outcomes
+- **📸 Screenshots**: Automatic visual documentation
+- **🔄 Step Logs**: Detailed execution tracking
+
+### Example Test Output
+
+```
+🎯 Running: QE-001 - Basic Login Test
+📸 Screenshot taken: step-1-navigation.png
+✅ Login successful - test completed!
+📊 Result: PASSED
+```
+
+## 🎮 Interactive Features
+
+### Custom Test Creation
 
 ```bash
-OPENAI_API_KEY=your_key_here
-HEADLESS=false
-BASE_URL=https://myapp.com
+# Using npm scripts
+npm run test:record
+
+# Using npx/global
+npx endorphin run test-recorder
 ```
+
+Create tests on-the-fly with guided prompts:
+
+- Custom navigation tasks
+- Form filling scenarios
+- Login test automation
+- Content verification
+
+## 🔍 Browser Automation Tools
+
+Intelligent AI-powered tools for navigation, interaction, verification, and
+utilities.
+
+📖
+**[View detailed tool documentation](./doc/Framework-Architecture.md#browser-automation-tools)**
 
 ---
 
-## 📂 Project Structure
+## 💡 Common Use Cases
 
-```
-my-project/
-├── .env                    # API keys
-├── endorphin.config.ts     # Configuration
-├── tests/                  # Test files
-│   ├── auth/              # Login tests
-│   ├── shopping/          # E-commerce tests
-│   └── smoke/             # Critical tests
-└── test-results/          # Generated reports
-    └── reports/           # HTML reports
-```
-
----
-
-## 🏃 Common Commands
+### 🔐 Authentication Testing
 
 ```bash
-# Test execution
-npx endorphin run test TEST-001     # Run specific test
-npx endorphin run test all          # Run all tests
-npx endorphin run test --tag smoke  # Run by tag
-
-# Test creation
-npx endorphin run test-recorder     # Interactive recorder
-npx endorphin init                  # Initialize project
-
-# Reports
-npx endorphin generate report       # Generate HTML report
-npx endorphin open report          # Open in browser
-npx endorphin list                  # List all tests
-
-# Cleanup
-npx endorphin cleanup results       # Clean old results
-npx endorphin cleanup reports       # Clean old reports
+# Test login flows across different user types
+npx endorphin run test --tag authentication
 ```
 
----
+### 🛒 E-commerce Workflows
 
-## 🆕 What's New in v0.9
+```bash
+# Test complete purchase flows
+npx endorphin run test --tag checkout
+```
 
-- **🔧 Smart Test Structure**: Async `setup` and `data` functions
-- **📝 Better Documentation**: User-friendly guides
-- **🎯 Test Writing Tips**: Natural language best practices
-- **🖼️ Enhanced Reports**: Interactive screenshots and filtering
-- **⚡ Simplified Setup**: Easier project initialization
+### 📱 Responsive Testing
 
----
+```bash
+# Test mobile, tablet, and desktop layouts
+npx endorphin run test --tag responsive
+```
 
-## 📚 Documentation
+### 🔍 Search & Navigation
 
-### For Users
+```bash
+# Test site search and menu navigation
+npx endorphin run test --tag navigation
+```
 
-- **[Quick Start Guide](./doc/user-guide/Quick-Start.md)** - Get started fast
-- **[Project Setup Guide](./doc/user-guide/Project-Setup-Guide.md)** - Complete
-  setup
-- **[Test Structure Guide](./doc/user-guide/Test-Structure-Guide.md)** - Learn
-  the new features
-- **[Test Writing Tips](./doc/user-guide/Test-Writing-Tips.md)** - Write better
-  tests
-- **[HTML Reporter Guide](./doc/user-guide/HTML-Reporter-Guide.md)** - Beautiful
-  reports
-- **[Test Recorder Guide](./doc/user-guide/Test-Recorder.md)** - Interactive
-  testing
+### 📊 Form Validation
 
-### For Developers
-
-- **[Framework Architecture](./doc/framework-development/Framework-Architecture.md)** -
-  Technical details
-- **[CLAUDE.md](./CLAUDE.md)** - AI assistant development
+```bash
+# Test form submissions and validation
+npx endorphin run test --tag forms
+```
 
 ---
 
 ## 🏆 Why Choose Endorphin AI?
 
-| Traditional Testing    | Endorphin AI           |
-| ---------------------- | ---------------------- |
-| ❌ Brittle selectors   | ✅ AI finds elements   |
-| ❌ Breaks with changes | ✅ Self-healing tests  |
-| ❌ Complex setup       | ✅ Zero configuration  |
-| ❌ Hard to maintain    | ✅ Plain English       |
-| ❌ Basic reports       | ✅ Interactive reports |
+### Traditional E2E Testing vs Endorphin AI
+
+| Traditional Testing       | Endorphin AI                         |
+| ------------------------- | ------------------------------------ |
+| ❌ Brittle CSS selectors  | ✅ AI finds elements intelligently   |
+| ❌ Breaks with UI changes | ✅ Self-healing tests                |
+| ❌ Complex setup          | ✅ Zero configuration                |
+| ❌ Hard to maintain       | ✅ Plain English test descriptions   |
+| ❌ Basic reporting        | ✅ Interactive HTML reports          |
+| ❌ Manual debugging       | ✅ Visual debugging with screenshots |
+
+### 🚀 Production Ready
+
+✅ **Enterprise Scale**: Used in production environments  
+✅ **Cross-Platform**: Windows, macOS, Linux support  
+✅ **CI/CD Integration**: GitHub Actions, Jenkins, CircleCI  
+✅ **Security First**: Automated vulnerability scanning  
+✅ **Type Safe**: Full TypeScript support  
+✅ **Extensible**: Modular architecture for custom needs
+
+## 🎮 Complete CLI Reference
+
+### Core Commands
+
+#### Test Execution
+
+```bash
+# Run a specific test
+npx endorphin run test TEST-001
+
+# Run all tests
+npx endorphin run test all
+
+# Run tests by tag
+npx endorphin run test --tag smoke
+npx endorphin run test --tag authentication
+
+# Run tests by priority
+npx endorphin run test --priority High
+npx endorphin run test --priority Medium
+```
+
+#### Test Creation & Recording
+
+```bash
+# Start interactive test recorder
+npx endorphin run test-recorder
+
+# List all available tests
+npx endorphin list
+```
+
+#### Built-in Tools
+
+```bash
+# List all available built-in tools
+npx endorphin list tools
+
+# Show detailed tool information
+npx endorphin list tools --verbose
+```
+
+#### Project Setup
+
+```bash
+# Initialize new project (recommended for new projects)
+npx endorphin-ai init
+
+# Show help and available commands
+npx endorphin-ai --help
+npx endorphin help
+
+# Check current version
+npx endorphin-ai --version
+```
+
+### HTML Reports & Analytics
+
+#### Report Generation
+
+```bash
+# Generate full interactive HTML report
+npx endorphin generate report
+
+# Generate lightweight summary report
+npx endorphin generate report --summary
+```
+
+#### Report Management
+
+```bash
+# Open latest report in browser
+npx endorphin open report
+
+# Open specific report file
+npx endorphin open report report-2025-06-22.html
+npx endorphin open report summary-report.html
+```
+
+#### Cleanup Commands
+
+```bash
+# Clean old test results (keep 10 most recent per test)
+npx endorphin cleanup results
+
+# Keep only 5 most recent results per test
+npx endorphin cleanup results 5
+
+# Clean old report files (older than 30 days)
+npx endorphin cleanup reports
+
+# Clean report files older than 7 days
+npx endorphin cleanup reports 7
+```
+
+### Advanced Options
+
+#### Browser Configuration
+
+```bash
+# Use different browsers
+npx endorphin run test all --browser firefox
+npx endorphin run test all --browser webkit
+
+# Headless/headed mode
+npx endorphin run test all --no-headless
+npx endorphin run test all --headless
+
+# Custom viewport
+npx endorphin run test all --viewport 1920x1080
+npx endorphin run test all --viewport 1366x768
+```
+
+#### AI & Performance
+
+```bash
+# Use different AI models
+npx endorphin run test all --model gpt-4
+npx endorphin run test all --model gpt-4o-mini
+
+# Parallel execution
+npx endorphin run test all --parallel 3
+npx endorphin run test all --parallel 5
+
+# Environment selection
+npx endorphin run test all --env staging
+npx endorphin run test all --env production
+```
+
+### npm Scripts Integration
+
+Add these to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "endorphin run test all",
+    "test:smoke": "endorphin run test --tag smoke",
+    "test:auth": "endorphin run test --tag authentication",
+    "test:single": "endorphin run test",
+    "test:record": "endorphin run test-recorder",
+    "test:report": "endorphin generate report",
+    "test:summary": "endorphin generate report --summary",
+    "test:open": "endorphin open report",
+    "test:cleanup": "endorphin cleanup results",
+    "tools:list": "endorphin list tools",
+    "endorphin:init": "./node_modules/.bin/endorphin-ai init",
+    "endorphin:version": "./node_modules/.bin/endorphin --version",
+    "endorphin:help": "./node_modules/.bin/endorphin --help"
+  }
+}
+```
+
+Then use npm scripts:
+
+```bash
+npm test                # Run all tests
+npm run test:smoke      # Run smoke tests
+npm run test:report     # Generate HTML report
+npm run test:open       # Open latest report
+
+# Built-in tools:
+npm run tools:list     # List all built-in tools
+
+# Guaranteed to work (bypasses npx issues):
+npm run endorphin:init  # Initialize project
+npm run endorphin:version # Check version
+npm run endorphin:help  # Get help
+```
+
+## 🔄 Staying Updated
+
+### Check Your Version
+
+```bash
+# Check current installed version
+npx endorphin-ai --version
+
+# Check latest available version on npm
+npm view endorphin-ai version
+
+# Check for outdated packages
+npm outdated endorphin-ai
+```
+
+### Update to Latest
+
+```bash
+# Update to the latest version
+npm update endorphin-ai
+
+# Or force install latest
+npm install endorphin-ai@latest
+
+# Verify the update
+npx endorphin-ai --version
+```
+
+### Version History & Features
+
+- **v0.9.0** _(Latest)_: Smart test structure, enhanced HTML reports with cost tracking, AI decision history, built-in tools system
+- **v0.8.0**: Custom tools support with CLI management and templates
+- **v0.6.1**: Fixed npx resolution issues, enhanced user experience
+- **v0.6.0**: Enhanced CLI, security-first publishing, cross-platform CI/CD
+- **v0.5.0**: Advanced HTML reporting with interactive features
+- **v0.4.0**: TypeScript-first experience with full type definitions
+- **v0.3.0**: Added `endorphin-ai init` command for instant project setup
+- **v0.2.x**: Core framework with AI-powered testing
+- **v0.1.x**: Initial release with basic functionality
+
+### Compatibility & Migration
+
+Endorphin AI maintains **backward compatibility** across versions:
+
+- ✅ **All existing tests work** without modification
+- ✅ **Configuration files** are automatically migrated
+- ✅ **npm scripts** continue to function normally
+- ✅ **Semantic versioning** ensures predictable updates
+
+Update with confidence - your existing tests won't break!
 
 ---
 
-## 🤝 Support
+## 🤝 Support & Community
 
-### 📚 Get Help
+### 📚 Documentation
 
-- Check the **[documentation](./doc/)**
+- **[Quick Start Guide](./doc/user-guide/Quick-Start.md)** - Get up and running quickly
+- **[Test Writing Tips](./doc/user-guide/Test-Writing-Tips.md)** - Enterprise & small app examples
+- **[HTML Reporter Guide](./doc/user-guide/HTML-Reporter-Guide.md)** - Interactive reporting with cost tracking
+- **[VS Code Debugging Guide](./doc/user-guide/VSCode-Debugging-Guide.md)** - Professional debugging setup
+- **[CI/CD Setup Guide](./doc/user-guide/CI-CD-Setup-Guide.md)** - GitHub Actions integration
+- **[Framework Architecture](./doc/framework-development/Framework-Architecture.md)** - Technical deep dive
+
+### 🐛 Issues & Feature Requests
+
+Found a bug or have a feature idea?
+[Open an issue](https://github.com/andrewnovykov/endorphin-ai/issues) on GitHub.
+
+### 💬 Getting Help
+
+- Check the **[documentation](./doc/)** first
 - Search
   **[existing issues](https://github.com/andrewnovykov/endorphin-ai/issues)**
 - Create a
-  **[new issue](https://github.com/andrewnovykov/endorphin-ai/issues/new)**
+  **[new issue](https://github.com/andrewnovykov/endorphin-ai/issues/new)** with
+  details
 
-### 📄 License
+---
 
-**GNU Affero General Public License v3.0**
+## 📄 License
 
-- **Open Source**: Free under AGPLv3
-- **Commercial**: Licenses available
+Endorphin AI is licensed under the **GNU Affero General Public License v3.0**
+(AGPLv3).
 
-📧 Contact: [iam@andrewnovykov.com](mailto:iam@andrewnovykov.com)
+**For Open Source Projects**: Free to use under AGPLv3  
+**For Commercial Projects**: Commercial licenses available
+
+📧 Contact: [iam@andrewnovykov.com](mailto:iam@andrewnovykov.com) for licensing
+questions
 
 ---
 
 <div align="center">
   <p><strong>⚡ Happy Vibetesting!</strong></p>
   <p>
-    <a href="#-quick-start">Get Started</a> • 
-    <a href="./doc/user-guide/Quick-Start.md">Documentation</a> • 
-    <a href="https://github.com/andrewnovykov/endorphin-ai/issues">Support</a>
+    <a href="#-installation--setup">Get Started Now</a> • 
+    <a href="https://youtu.be/ev_71RBO6g8?si=F9xTPSJNp36Mr1wx">Watch Demo</a> • 
+    <a href="./doc/">Documentation</a> • 
+    <a href="https://endorphinai.dev">Website</a>
   </p>
 </div>
