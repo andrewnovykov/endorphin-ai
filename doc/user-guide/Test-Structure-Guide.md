@@ -1,3 +1,4 @@
+_Last Updated: July 4, 2025 - v0.9.0_
 # Test Structure Guide
 
 Learn how to write tests that Endorphin AI understands perfectly.

@@ -1,3 +1,4 @@
+_Last Updated: July 4, 2025 - v0.9.0_
 # HTML Reporter Guide
 
 Beautiful, interactive test reports that make debugging easy.

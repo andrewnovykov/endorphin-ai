@@ -1,3 +1,4 @@
+_Last Updated: July 4, 2025 - v0.9.0_
 # Project Setup Guide
 
 Set up your Endorphin AI project in minutes.

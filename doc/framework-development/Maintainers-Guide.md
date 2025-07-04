@@ -1,13 +1,13 @@
 # Maintainers Guide - Endorphin AI
 
-_Last Updated: June 27, 2025 - v0.4.1+_
+_Last Updated: July 4, 2025 - v0.9.0_
 
 ## 🎯 Overview
 
 This guide is for developers who want to contribute to, maintain, or understand
 the Endorphin AI natural language browser testing framework codebase.
 
-**Framework State (v0.4.1+):**
+**Framework State (v0.9.0):**
 
 - ✅ **TypeScript Development**: Full TypeScript codebase with strict typing
 - ✅ **JavaScript Distribution**: Compiled JavaScript for production
@@ -84,11 +84,12 @@ endorphin-ai/
 │   ├── bin/endorphin.js    # Compiled CLI
 │   ├── framework/          # Compiled framework
 │   └── ...
-├── tests/                  # Testing infrastructure
+├── dev-tests/              # Testing infrastructure
 │   ├── development/        # Framework unit & integration tests (Jest)
-│   ├── pre-release/        # Pre-release testing (Jest)
-│   ├── post-install/       # Post-install testing (Jest)
-│   └── package-tests/      # Package integration tests
+│   │   ├── unit/           # Unit tests for individual components
+│   │   └── integration/    # Integration tests for workflows
+│   ├── package-tests/      # Package integration tests (bash scripts)
+│   └── utils/              # Testing utilities
 ├── examples/               # User examples and templates
 ├── doc/                    # Documentation
 └── roadmap/               # Development roadmap and progress
@@ -104,17 +105,14 @@ The framework is developed in **TypeScript** and compiled to **JavaScript** for
 distribution:
 
 ```bash
-# Clean build (recommended for releases)
-npm run build:clean              # Remove dist/, rebuild fresh
-
 # Standard build
 npm run build                    # Compile TypeScript to JavaScript
 
-# Development build with watch
-npm run build:watch              # Auto-recompile on changes
-
 # Type checking only (no output)
 npm run type-check               # Verify TypeScript without compilation
+
+# Linting
+npm run lint                     # ESLint with TypeScript rules
 ```
 
 ### Build Output Structure
@@ -145,10 +143,11 @@ dist/                           # Compiled JavaScript
 
 ```bash
 # Complete build and validation workflow
-npm run build:clean              # Clean build
+npm run build                    # Compile TypeScript to JavaScript
 npm run type-check               # Verify TypeScript
+npm run lint                     # Code quality check
 npm test                         # Development tests
-npm run test:pre-release         # Pre-release validation
+cd dev-tests/package-tests && ./run-all-tests.sh  # Package validation
 npm pack                         # Create package tarball
 
 # Verify package contents
@@ -173,23 +172,17 @@ The framework uses a comprehensive multi-tier testing approach:
 ### Test Structure
 
 ```
-tests/
+dev-tests/
 ├── development/             # Framework development tests (Jest)
 │   ├── unit/               # Unit tests for individual components
 │   ├── integration/        # Integration tests for workflows
-│   └── setup.ts           # Test environment setup
-├── pre-release/            # Pre-release validation (Jest)
-│   ├── local-installation.test.ts    # Local package installation
-│   ├── cli-functionality.test.ts     # CLI command testing
-│   ├── framework-integration.test.ts # Core framework features
-│   ├── e2e-testing.test.ts           # End-to-end capabilities
-│   ├── test-recorder.test.ts         # Interactive recording
-│   ├── test-reporter.test.ts         # Report generation
-│   └── real-world-scenarios.test.ts  # Complete workflows
-├── post-install/           # Post-install validation (Jest)
-│   └── npm-package.test.ts # Published package testing
-└── package-tests/          # Package integration (Bash scripts)
-    └── run-all-tests.sh   # Integration test runner
+│   └── coverage/           # Test coverage reports
+├── package-tests/          # Package integration (Bash scripts)
+│   ├── run-all-tests.sh   # Main test runner
+│   ├── scripts/           # Individual test scripts
+│   └── results/           # Test execution results
+├── jest-setup.js          # Jest configuration
+└── utils/                 # Testing utilities
 ```
 
 ### Running Framework Tests
@@ -202,12 +195,9 @@ npm run test:unit           # Unit tests only
 npm run test:integration    # Integration tests only
 npm run test:coverage       # Code coverage analysis
 
-# 🚀 Pre-Release Tests (Compiled JavaScript)
-npm run test:pre-release    # Complete pre-release validation
-npm run test:pre-release -- --testNamePattern="CLI" # Specific test
-
-# 📦 Post-Install Tests (Published package)
-npm run test:post-install   # Published package validation
+# 📦 Package Tests (Manual tarball testing)
+npm run test:package        # Package integration scenarios
+cd dev-tests/package-tests && ./run-all-tests.sh  # Manual package tests
 
 # 🔍 Integration Tests
 npm run test:package        # Package integration scenarios
@@ -218,7 +208,7 @@ npm run test:all           # All test types
 
 #### 1. Development Tests (TypeScript Source)
 
-- **Location**: `tests/development/`
+- **Location**: `dev-tests/development/`
 - **Framework**: Jest with TypeScript support
 - **Purpose**: Validate framework code during development
 - **Runtime**: tsx + Node.js
@@ -230,44 +220,27 @@ npm run test:all           # All test types
 - Browser framework automation tests
 - CLI command functionality tests
 
-#### 2. Pre-Release Tests (Compiled JavaScript)
+#### 2. Package Integration Tests
 
-- **Location**: `tests/pre-release/`
-- **Framework**: Jest with compiled JavaScript
-- **Purpose**: Validate package before publishing
-- **Runtime**: Node.js (production environment)
-
-**Test Suites:**
-
-- `local-installation.test.ts` - Package installation validation
-- `cli-functionality.test.ts` - CLI commands with compiled JS
-- `framework-integration.test.ts` - Core framework features
-- `e2e-testing.test.ts` - End-to-end testing capabilities
-- `test-recorder.test.ts` - Interactive recording functionality
-- `test-reporter.test.ts` - Report generation
-- `real-world-scenarios.test.ts` - Complete user workflows
-
-#### 3. Post-Install Tests (Published Package)
-
-- **Location**: `tests/post-install/`
-- **Framework**: Jest with NPM-installed package
-- **Purpose**: Validate published package works correctly
-- **Runtime**: Node.js with NPM package
-
-#### 4. Package Integration Tests
-
-- **Location**: `tests/package-tests/`
+- **Location**: `dev-tests/package-tests/`
 - **Framework**: Custom bash scripts
-- **Purpose**: Real-world integration scenarios
+- **Purpose**: Manual tarball testing and real-world integration scenarios
 - **Runtime**: Various environments
+
+**Test Categories:**
+- Environment setup and package installation
+- CLI functionality with compiled JavaScript
+- Test discovery and execution
+- Report generation (HTML and console)
+- Test recorder functionality
+- Error handling and edge cases
 
 ### Framework Test Results
 
-Current test status (v0.4.1+):
+Current test status (v0.9.0):
 
 - **Development Tests**: ~95% passing
-- **Pre-Release Tests**: ~90% passing
-- **Post-Install Tests**: ~90% passing
+- **Package Integration Tests**: ~90% passing
 - **Total Test Coverage**: ~85%
 
 Key test metrics to maintain:
@@ -313,9 +286,10 @@ Key test metrics to maintain:
 - Error handling and retry logic with typed error classes
 - Modular tool architecture with clean interfaces
 
-#### 5. Type System (`framework/types/`)
+#### 8. Type System (`framework/types/`)
 
 - Complete TypeScript type definitions
+- TestCase interface with setup/data/task functions
 - Modular type organization by feature area
 - Exported types for user consumption
 - Strict typing for framework APIs
@@ -348,7 +322,7 @@ CLI (JS) → Config Loading (JS) → Test Discovery (JS) → Browser Framework (
 
    ```bash
    # Create test file (TypeScript)
-   touch tests/development/unit/new-feature.test.ts
+   touch dev-tests/development/unit/new-feature.test.ts
 
    # Write failing tests with TypeScript types
    # Implement feature with TypeScript
@@ -502,11 +476,14 @@ Enable debug output in CLI:
 
 ```bash
 # Development debugging (TypeScript)
-tsx bin/endorphin.ts list --debug
+ENDORPHIN_DEBUG=verbose npx tsx bin/endorphin.ts run test HEALTH-001
 
-# Production debugging (compiled JavaScript)
-./dist/bin/endorphin.js list --debug
-node dist/bin/endorphin.js list --debug
+# Production debugging (compiled JavaScript) 
+ENDORPHIN_DEBUG=verbose ./dist/bin/endorphin.js run test HEALTH-001
+ENDORPHIN_DEBUG=verbose node dist/bin/endorphin.js run test HEALTH-001
+
+# Enable debug object for VS Code debugging
+ENDORPHIN_DEBUG=true ./dist/bin/endorphin.js run test HEALTH-001
 ```
 
 ### Common Debug Scenarios
@@ -523,22 +500,22 @@ console.log('🔎 Checking export:', exportName, typeof exportValue);
 
 ```bash
 # Debug config loading (development)
-tsx bin/endorphin.ts list --debug
+ENDORPHIN_DEBUG=verbose npx tsx bin/endorphin.ts list
 
 # Debug config loading (production)
-./dist/bin/endorphin.js list --debug
+ENDORPHIN_DEBUG=verbose ./dist/bin/endorphin.js list
 
-# Look for "🔧 Loaded configuration:" output
+# Look for configuration loading output
 ```
 
 #### 3. Browser Framework Issues
 
 ```bash
 # Enable Playwright debug (development)
-DEBUG=pw:api tsx bin/endorphin.ts run test TEST-001
+DEBUG=pw:api npx tsx bin/endorphin.ts run test HEALTH-001
 
 # Enable Playwright debug (production)
-DEBUG=pw:api ./dist/bin/endorphin.js run test TEST-001
+DEBUG=pw:api ./dist/bin/endorphin.js run test HEALTH-001
 ```
 
 #### 4. AI Agent Problems
@@ -558,13 +535,13 @@ console.log('🤖 AI Response:', response);
 npm test -- --testNamePattern="specific test"
 
 # Debug specific test suite
-npm run test:pre-release -- --testNamePattern="CLI functionality"
+npm test -- --testNamePattern="CLI functionality"
 
 # Debug with Node inspector (development tests)
-node --inspect-brk node_modules/.bin/jest tests/development/unit/specific.test.ts
+node --inspect-brk node_modules/.bin/jest dev-tests/development/unit/specific.test.ts
 
-# Debug pre-release tests
-node --inspect-brk node_modules/.bin/jest tests/pre-release/cli-functionality.test.ts
+# Debug package tests
+cd dev-tests/package-tests && ./run-all-tests.sh
 ```
 
 ---
@@ -600,7 +577,7 @@ node --inspect-brk node_modules/.bin/jest tests/pre-release/cli-functionality.te
 
    ```bash
    # Build and pack package
-   npm run build:clean
+   npm run build
    npm pack
 
    # Test installation in temp directory
@@ -636,8 +613,8 @@ node --inspect-brk node_modules/.bin/jest tests/pre-release/cli-functionality.te
 
 - [ ] All development tests passing (`npm test`)
 - [ ] TypeScript compiles without errors (`npm run type-check`)
-- [ ] Clean build completes (`npm run build:clean`)
-- [ ] Pre-release tests pass (`npm run test:pre-release`)
+- [ ] Build completes successfully (`npm run build`)
+- [ ] Package tests pass (`cd dev-tests/package-tests && ./run-all-tests.sh`)
 - [ ] Documentation updated
 - [ ] Examples tested with packed version
 - [ ] Version bumped
@@ -678,7 +655,7 @@ find . -name "*.mjs" # Should be empty
 
 ```bash
 # Reset test environment
-rm -rf dev-tests/results
+rm -rf dev-tests/package-tests/results
 npm test
 
 # Check for cached modules
@@ -695,7 +672,7 @@ ls -la bin/endorphin.ts
 ls -la dist/bin/endorphin.js
 
 # Test TypeScript version (development)
-tsx bin/endorphin.ts --version
+npx tsx bin/endorphin.ts --version
 
 # Test compiled version (production)
 ./dist/bin/endorphin.js --version
@@ -779,8 +756,9 @@ npx playwright --version
 _This guide focuses on TypeScript framework development. For related
 documentation, see:_
 
-- _Pre-release testing:
-  `/doc/framework-development/Package-Testing-Scenarios.md`_
-- _Publishing process: `/doc/framework-development/Publish-Guide.md`_
+- _Package testing:
+  `/doc/framework-development/Package-Testing-Guide.md`_
+- _Publishing process: `/doc/framework-development/NPM-Publishing-Guide.md`_
+- _Testing overview: `/doc/framework-development/Testing-Guide.md`_
 - _Framework architecture:
   `/doc/framework-development/Framework-Architecture.md`_

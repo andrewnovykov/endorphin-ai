@@ -1,3 +1,4 @@
+_Last Updated: July 4, 2025 - v0.9.0_
 # Global Setup Guide
 
 Run custom code before all your tests start.

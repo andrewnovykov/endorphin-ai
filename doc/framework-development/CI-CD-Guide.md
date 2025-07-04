@@ -1,6 +1,6 @@
 # CI/CD Guide - Endorphin AI
 
-_Last Updated: June 28, 2025 - v0.5.0_
+_Last Updated: July 4, 2025 - v0.9.0_
 
 ## Overview
 
@@ -28,7 +28,7 @@ Endorphin AI uses a comprehensive CI/CD pipeline with GitHub Actions to ensure c
 ##### Development Tests
 - TypeScript type checking
 - ESLint linting
-- Jest unit and integration tests (108 tests)
+- Jest unit and integration tests (comprehensive coverage)
 - Test coverage upload
 
 ##### Package Tests
@@ -58,15 +58,15 @@ Endorphin AI uses a comprehensive CI/CD pipeline with GitHub Actions to ensure c
 ## Test Categories
 
 ### 1. Development Tests (`npm test`)
-**Location**: `tests/development/`
+**Location**: `dev-tests/development/`
 **Framework**: Jest
 **Purpose**: Framework development validation
 
 ```bash
 # Run locally
 npm test
-npm run test:unit
-npm run test:integration
+npm test dev-tests/development/unit
+npm test dev-tests/development/integration
 ```
 
 **Coverage**:
@@ -75,14 +75,15 @@ npm run test:integration
 - TypeScript source testing
 - Mock-based (no real browser/API calls)
 
-### 2. Package Tests (`npm run test:package`)
-**Location**: `tests/package-tests/`
+### 2. Package Tests (bash scripts)
+**Location**: `dev-tests/package-tests/`
 **Framework**: Bash scripts
 **Purpose**: User experience validation
 
 ```bash
 # Run locally
-npm run test:package
+cd dev-tests/package-tests
+./run-all-tests.sh
 ```
 
 **Coverage**:
@@ -108,17 +109,18 @@ npm run test:package
 - Complete user workflow
 - Production-like environment
 
-## Environment Variables
+## Environment Variables (v0.9)
 
 ### Required Secrets
 ```yaml
-OPENAI_API_KEY: # Required for package tests and E2E tests
+OPENAI_API_KEY: # Required for real test execution and E2E tests
 ```
 
 ### CI Environment Variables
 ```yaml
 CI: true                    # Indicates CI environment
-TEST_TIMEOUT: 300          # Test timeout in seconds
+HEADLESS: true             # Run browser in headless mode
+ENDORPHIN_DEBUG: verbose   # Enable debug logging
 ```
 
 ## Local Development
@@ -135,9 +137,9 @@ npm test
 ### Full Local Testing
 ```bash
 # Complete test suite
-npm test                    # Development tests
-npm run test:package        # Package tests (requires API key)
-npm run test:local          # Build + package tests
+npm test                                    # Development tests
+cd dev-tests/package-tests && ./run-all-tests.sh  # Package tests (requires API key)
+npm run build                               # Build for distribution
 ```
 
 ### Test Individual Components
@@ -198,12 +200,12 @@ Integration tests use a matrix but exclude some combinations:
 ## Artifacts
 
 ### Test Coverage
-- **Path**: `tests/development/coverage/`
+- **Path**: `dev-tests/development/coverage/`
 - **Upload**: Always (on development-tests job)
 - **Retention**: 90 days
 
 ### Package Test Results
-- **Path**: `tests/package-tests/results/`
+- **Path**: `dev-tests/package-tests/results/`
 - **Upload**: Always (on package-tests job)
 - **Includes**: Logs, HTML reports, session data
 
@@ -229,11 +231,12 @@ npm test -- --verbose
 ### Package Test Failures
 ```bash
 # Full package test locally
-npm run test:package
+cd dev-tests/package-tests
+./run-all-tests.sh
 
 # Check specific category
-cd tests/package-tests
-./scripts/runner/run-test.sh
+./run-tests-by-category.sh recorder
+./run-tests-by-category.sh reporter
 
 # View results
 ./view-results.sh
@@ -271,10 +274,10 @@ Check the specific OS/Node combination that failed:
 
 3. **Test package changes** locally:
    ```bash
-   npm run test:local
+   cd dev-tests/package-tests && ./run-all-tests.sh
    ```
 
-4. **Check cross-platform compatibility** for CLI changes
+4. **Test smart test structure (v0.9)** with setup/data/task functions
 
 ### For Maintainers
 
@@ -338,9 +341,8 @@ npm run test:integration
 npm run test:unit
 
 # Simulate package test environment
-mkdir /tmp/test-env
-cd /tmp/test-env
-# Run package tests
+cd dev-tests/package-tests
+./run-all-tests.sh
 
 # Check build artifacts
 npm run build
@@ -358,11 +360,11 @@ node dist/bin/endorphin.js --help
 
 ## Future Improvements
 
-### Planned Enhancements
-- **Performance testing** integration
+### Planned Enhancements (v0.9+)
+- **Smart test structure validation** (setup/data/task functions)
+- **Cost tracking in CI** for token usage monitoring
+- **AI decision history** validation in tests
 - **Visual regression testing** for HTML reports
-- **Automated dependency updates** with Dependabot
-- **Release automation** with semantic versioning
 
 ### Monitoring
 - **Test execution metrics** tracking

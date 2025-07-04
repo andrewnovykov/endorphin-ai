@@ -1,3 +1,4 @@
+_Last Updated: July 4, 2025 - v0.9.0_
 # Environment Variables Guide
 
 Configure Endorphin AI with these simple environment variables.
@@ -184,7 +185,7 @@ test:
 ## 📚 Next Steps
 
 - [Write Your First Test](Test-Structure-Guide.md)
-- [Configure Your Project](User-Setup-Guide.md)
+- [Configure Your Project](Project-Setup-Guide.md)
 - [View Test Reports](HTML-Reporter-Guide.md)
 
 ---

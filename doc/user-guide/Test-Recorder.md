@@ -1,3 +1,4 @@
+_Last Updated: July 4, 2025 - v0.9.0_
 # Test Recorder Guide
 
 Create tests by showing the AI what to do in plain English.

@@ -1,3 +1,4 @@
+_Last Updated: July 4, 2025 - v0.9.0_
 # Quick Start Guide
 
 Welcome to Endorphin AI! This guide will get you up and running in minutes.
