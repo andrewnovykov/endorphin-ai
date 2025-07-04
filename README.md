@@ -11,7 +11,7 @@ automatically.
 
 <div align="center">
   <img src="./doc/images/playwright-logo.png" alt="Playwright" height="40" />
-  <span style="margin: 10px 15px; font-size: 24px; display: inline-block; vertical-align: middle;">+</span>
+  &nbsp;&nbsp;&nbsp;<strong>+</strong>&nbsp;&nbsp;&nbsp;
   <img src="./doc/images/langchain-logo.png" alt="LangChain" height="40" />
 </div>
 
@@ -257,11 +257,14 @@ npx endorphin-ai --help
 
 ### What's New in v0.9.0
 
-- ✅ **Smart Test Structure** - New async `setup()`, `data()`, and `task()` functions for dynamic test preparation
-- ✅ **Enhanced HTML Reports** - Interactive reports with cost tracking and AI decision history
+- ✅ **Smart Test Structure** - New async `setup()`, `data()`, and `task()`
+  functions for dynamic test preparation
+- ✅ **Enhanced HTML Reports** - Interactive reports with cost tracking and AI
+  decision history
 - ✅ **Cost & Token Tracking** - Monitor AI usage costs per test and per step
 - ✅ **AI Decision History** - See exactly how AI analyzes and executes tests
-- ✅ **Built-in Tools System** - 12 comprehensive browser automation tools (no custom tools needed)
+- ✅ **Built-in Tools System** - 12 comprehensive browser automation tools (no
+  custom tools needed)
 - ✅ **Professional Debugging** - VS Code integration with debug object access
 - ✅ **CI/CD Ready** - Ready-to-use GitHub Actions workflows included
 
@@ -560,7 +563,8 @@ export const LOGOUT_TEST: TestCase = {
 
 ## 🔧 Smart Test Structure (v0.9.0)
 
-Endorphin AI v0.9.0 introduces a powerful new test structure with async functions for dynamic test preparation.
+Endorphin AI v0.9.0 introduces a powerful new test structure with async
+functions for dynamic test preparation.
 
 ### 🚀 New Test Format
 
@@ -573,7 +577,7 @@ export const SMART_TEST: TestCase = {
   description: 'Test login with generated credentials',
   priority: 'High',
   tags: ['auth', 'smoke'],
-  
+
   // Generate test data dynamically
   data: async () => {
     const timestamp = Date.now();
@@ -581,18 +585,18 @@ export const SMART_TEST: TestCase = {
       email: `testuser${timestamp}@example.com`,
       password: 'SecurePassword123!',
       firstName: 'Test',
-      lastName: 'User'
+      lastName: 'User',
     };
   },
-  
+
   // Set up test environment
   setup: async () => {
     return {
       baseUrl: process.env.TEST_URL || 'https://example.com',
-      startTime: new Date().toISOString()
+      startTime: new Date().toISOString(),
     };
   },
-  
+
   // Main test instructions using generated data
   task: async (data, setupData) => {
     return `
@@ -602,7 +606,7 @@ export const SMART_TEST: TestCase = {
       Click Submit button
       Verify welcome message contains "${data.firstName}"
     `;
-  }
+  },
 };
 ```
 
@@ -980,7 +984,8 @@ npx endorphin-ai --version
 
 ### Version History & Features
 
-- **v0.9.0** _(Latest)_: Smart test structure, enhanced HTML reports with cost tracking, AI decision history, built-in tools system
+- **v0.9.0** _(Latest)_: Smart test structure, enhanced HTML reports with cost
+  tracking, AI decision history, built-in tools system
 - **v0.8.0**: Custom tools support with CLI management and templates
 - **v0.6.1**: Fixed npx resolution issues, enhanced user experience
 - **v0.6.0**: Enhanced CLI, security-first publishing, cross-platform CI/CD
@@ -1007,12 +1012,18 @@ Update with confidence - your existing tests won't break!
 
 ### 📚 Documentation
 
-- **[Quick Start Guide](./doc/user-guide/Quick-Start.md)** - Get up and running quickly
-- **[Test Writing Tips](./doc/user-guide/Test-Writing-Tips.md)** - Enterprise & small app examples
-- **[HTML Reporter Guide](./doc/user-guide/HTML-Reporter-Guide.md)** - Interactive reporting with cost tracking
-- **[VS Code Debugging Guide](./doc/user-guide/VSCode-Debugging-Guide.md)** - Professional debugging setup
-- **[CI/CD Setup Guide](./doc/user-guide/CI-CD-Setup-Guide.md)** - GitHub Actions integration
-- **[Framework Architecture](./doc/framework-development/Framework-Architecture.md)** - Technical deep dive
+- **[Quick Start Guide](./doc/user-guide/Quick-Start.md)** - Get up and running
+  quickly
+- **[Test Writing Tips](./doc/user-guide/Test-Writing-Tips.md)** - Enterprise &
+  small app examples
+- **[HTML Reporter Guide](./doc/user-guide/HTML-Reporter-Guide.md)** -
+  Interactive reporting with cost tracking
+- **[VS Code Debugging Guide](./doc/user-guide/VSCode-Debugging-Guide.md)** -
+  Professional debugging setup
+- **[CI/CD Setup Guide](./doc/user-guide/CI-CD-Setup-Guide.md)** - GitHub
+  Actions integration
+- **[Framework Architecture](./doc/framework-development/Framework-Architecture.md)** -
+  Technical deep dive
 
 ### 🐛 Issues & Feature Requests
 
