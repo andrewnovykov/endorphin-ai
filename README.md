@@ -130,6 +130,13 @@ npx endorphin-ai generate report && npx endorphin-ai open report
 - Interactive HTML reports with screenshots
 - Complete project structure for scaling
 
+### 🎬 Demo Video
+
+<video width="100%" controls>
+  <source src="doc/video/github-demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ### 🔧 Troubleshooting Installation
 
 If `npx endorphin-ai` doesn't work, try these **guaranteed solutions**:
@@ -262,6 +269,13 @@ If you prefer manual setup:
 - **VS Code debugging** - Professional debugging with debug object access
 - **Multiple browsers** - Chrome, Firefox, Safari support
 - **Parallel execution** for faster test runs
+
+### 🎬 Developer Demo
+
+<video width="100%" controls>
+  <source src="doc/video/github-demo-2.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ### 🎮 Interactive Tools
 
