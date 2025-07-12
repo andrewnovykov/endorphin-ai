@@ -46,25 +46,25 @@ comprehensive test management.
 ## 🌐 Read in Your Language
 
 <div align="center">
-  <a href="./README-UA.md">🇺🇦 Українська</a>
-  <a href="./README-DE.md">🇩🇪 Deutsch</a> • 
-  <a href="./README-FR.md">🇫🇷 Français</a> • 
-  <a href="./README-ES.md">🇪🇸 Español</a> • 
-  <a href="./README-IT.md">🇮🇹 Italiano</a> • 
-  <a href="./README-PT.md">🇵🇹 Português</a> • 
-  <a href="./README-JA.md">🇯🇵 日本語</a> • 
-  <a href="./README-KO.md">🇰🇷 한국어</a> • 
-  <a href="./README-ZH.md">🇨🇳 中文</a> • 
-  <a href="./README-TR.md">🇹🇷 Türkçe</a> • 
-  <a href="./README-NL.md">🇳🇱 Nederlands</a> • 
-  <a href="./README-SV.md">🇸🇪 Svenska</a> • 
-  <a href="./README-NO.md">🇳🇴 Norsk</a> • 
-  <a href="./README-DA.md">🇩🇰 Dansk</a> • 
-  <a href="./README-FI.md">🇫🇮 Suomi</a> • 
-  <a href="./README-PL.md">🇵🇱 Polski</a> • 
-  <a href="./README-AR.md">🇸🇦 العربية</a> • 
-  <a href="./README-HE.md">🇮🇱 עברית</a> • 
-  <a href="./README-ID.md">🇮🇩 Indonesia</a> • 
+  <a href="doc/languages/ua/README-UA.md">🇺🇦 Українська</a>
+  <a href="doc/languages/de/README-DE.md">🇩🇪 Deutsch</a> • 
+  <a href="doc/languages/fr/README-FR.md">🇫🇷 Français</a> • 
+  <a href="doc/languages/es/README-ES.md">🇪🇸 Español</a> • 
+  <a href="doc/languages/it/README-IT.md">🇮🇹 Italiano</a> • 
+  <a href="doc/languages/pt/README-PT.md">🇵🇹 Português</a> • 
+  <a href="doc/languages/ja/README-JA.md">🇯🇵 日本語</a> • 
+  <a href="doc/languages/ko/README-KO.md">🇰🇷 한국어</a> • 
+  <a href="doc/languages/zh/README-ZH.md">🇨🇳 中文</a> • 
+  <a href="doc/languages/tr/README-TR.md">🇹🇷 Türkçe</a> • 
+  <a href="doc/languages/nl/README-NL.md">🇳🇱 Nederlands</a> • 
+  <a href="doc/languages/sv/README-SV.md">🇸🇪 Svenska</a> • 
+  <a href="doc/languages/no/README-NO.md">🇳🇴 Norsk</a> • 
+  <a href="doc/languages/da/README-DA.md">🇩🇰 Dansk</a> • 
+  <a href="doc/languages/fi/README-FI.md">🇫🇮 Suomi</a> • 
+  <a href="doc/languages/pl/README-PL.md">🇵🇱 Polski</a> • 
+  <a href="doc/languages/ar/README-AR.md">🇸🇦 العربية</a> • 
+  <a href="doc/languages/he/README-HE.md">🇮🇱 עברית</a> • 
+  <a href="doc/languages/id/README-ID.md">🇮🇩 Indonesia</a> • 
   
 </div>
 
