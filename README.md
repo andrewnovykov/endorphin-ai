@@ -46,25 +46,25 @@ comprehensive test management.
 ## 🌐 Read in Your Language
 
 <div align="center">
-  <a href="./README-UA.md">🇺🇦 Українська</a>
-  <a href="./README-DE.md">🇩🇪 Deutsch</a> • 
-  <a href="./README-FR.md">🇫🇷 Français</a> • 
-  <a href="./README-ES.md">🇪🇸 Español</a> • 
-  <a href="./README-IT.md">🇮🇹 Italiano</a> • 
-  <a href="./README-PT.md">🇵🇹 Português</a> • 
-  <a href="./README-JA.md">🇯🇵 日本語</a> • 
-  <a href="./README-KO.md">🇰🇷 한국어</a> • 
-  <a href="./README-ZH.md">🇨🇳 中文</a> • 
-  <a href="./README-TR.md">🇹🇷 Türkçe</a> • 
-  <a href="./README-NL.md">🇳🇱 Nederlands</a> • 
-  <a href="./README-SV.md">🇸🇪 Svenska</a> • 
-  <a href="./README-NO.md">🇳🇴 Norsk</a> • 
-  <a href="./README-DA.md">🇩🇰 Dansk</a> • 
-  <a href="./README-FI.md">🇫🇮 Suomi</a> • 
-  <a href="./README-PL.md">🇵🇱 Polski</a> • 
-  <a href="./README-AR.md">🇸🇦 العربية</a> • 
-  <a href="./README-HE.md">🇮🇱 עברית</a> • 
-  <a href="./README-ID.md">🇮🇩 Indonesia</a> • 
+  <a href="doc/languages/ua/README-UA.md">🇺🇦 Українська</a>
+  <a href="doc/languages/de/README-DE.md">🇩🇪 Deutsch</a> • 
+  <a href="doc/languages/fr/README-FR.md">🇫🇷 Français</a> • 
+  <a href="doc/languages/es/README-ES.md">🇪🇸 Español</a> • 
+  <a href="doc/languages/it/README-IT.md">🇮🇹 Italiano</a> • 
+  <a href="doc/languages/pt/README-PT.md">🇵🇹 Português</a> • 
+  <a href="doc/languages/ja/README-JA.md">🇯🇵 日本語</a> • 
+  <a href="doc/languages/ko/README-KO.md">🇰🇷 한국어</a> • 
+  <a href="doc/languages/zh/README-ZH.md">🇨🇳 中文</a> • 
+  <a href="doc/languages/tr/README-TR.md">🇹🇷 Türkçe</a> • 
+  <a href="doc/languages/nl/README-NL.md">🇳🇱 Nederlands</a> • 
+  <a href="doc/languages/sv/README-SV.md">🇸🇪 Svenska</a> • 
+  <a href="doc/languages/no/README-NO.md">🇳🇴 Norsk</a> • 
+  <a href="doc/languages/da/README-DA.md">🇩🇰 Dansk</a> • 
+  <a href="doc/languages/fi/README-FI.md">🇫🇮 Suomi</a> • 
+  <a href="doc/languages/pl/README-PL.md">🇵🇱 Polski</a> • 
+  <a href="doc/languages/ar/README-AR.md">🇸🇦 العربية</a> • 
+  <a href="doc/languages/he/README-HE.md">🇮🇱 עברית</a> • 
+  <a href="doc/languages/id/README-ID.md">🇮🇩 Indonesia</a> • 
   
 </div>
 
@@ -457,22 +457,6 @@ npx endorphin open report report-2025-06-22.html
 - **Responsive Design**: Works on desktop, tablet, and mobile
 - **Performance Optimized**: Fast loading even with large test suites
 
-### 🛠️ Report Management
-
-```bash
-# Clean up old test results (keep 10 most recent per test)
-npx endorphin cleanup results
-
-# Keep only 5 most recent results per test
-npx endorphin cleanup results 5
-
-# Clean up old report files (older than 30 days)
-npx endorphin cleanup reports
-
-# Clean up report files older than 7 days
-npx endorphin cleanup reports 7
-```
-
 ### 📖 Complete Guide
 
 For detailed usage instructions, advanced features, and best practices, see the
@@ -484,7 +468,7 @@ Endorphin AI is built with a modular, extensible architecture designed for
 reliability and maintainability.
 
 📖
-**[View detailed Framework Architecture documentation](./doc/Framework-Architecture.md)**
+**[View detailed Framework Architecture documentation](./doc/framework-development/Framework-Architecture.md)**
 
 ### Key Components
 
@@ -743,53 +727,6 @@ Create tests on-the-fly with guided prompts:
 - Login test automation
 - Content verification
 
-## 🔍 Browser Automation Tools
-
-Intelligent AI-powered tools for navigation, interaction, verification, and
-utilities.
-
-📖
-**[View detailed tool documentation](./doc/Framework-Architecture.md#browser-automation-tools)**
-
----
-
-## 💡 Common Use Cases
-
-### 🔐 Authentication Testing
-
-```bash
-# Test login flows across different user types
-npx endorphin run test --tag authentication
-```
-
-### 🛒 E-commerce Workflows
-
-```bash
-# Test complete purchase flows
-npx endorphin run test --tag checkout
-```
-
-### 📱 Responsive Testing
-
-```bash
-# Test mobile, tablet, and desktop layouts
-npx endorphin run test --tag responsive
-```
-
-### 🔍 Search & Navigation
-
-```bash
-# Test site search and menu navigation
-npx endorphin run test --tag navigation
-```
-
-### 📊 Form Validation
-
-```bash
-# Test form submissions and validation
-npx endorphin run test --tag forms
-```
-
 ---
 
 ## 🏆 Why Choose Endorphin AI?
@@ -813,176 +750,6 @@ npx endorphin run test --tag forms
 ✅ **Security First**: Automated vulnerability scanning  
 ✅ **Type Safe**: Full TypeScript support  
 ✅ **Extensible**: Modular architecture for custom needs
-
-## 🎮 Complete CLI Reference
-
-### Core Commands
-
-#### Test Execution
-
-```bash
-# Run a specific test
-npx endorphin run test TEST-001
-
-# Run all tests
-npx endorphin run test all
-
-# Run tests by tag
-npx endorphin run test --tag smoke
-npx endorphin run test --tag authentication
-
-# Run tests by priority
-npx endorphin run test --priority High
-npx endorphin run test --priority Medium
-```
-
-#### Test Creation & Recording
-
-```bash
-# Start interactive test recorder
-npx endorphin run test-recorder
-
-# List all available tests
-npx endorphin list
-```
-
-#### Built-in Tools
-
-```bash
-# List all available built-in tools
-npx endorphin list tools
-
-# Show detailed tool information
-npx endorphin list tools --verbose
-```
-
-#### Project Setup
-
-```bash
-# Initialize new project (recommended for new projects)
-npx endorphin-ai init
-
-# Show help and available commands
-npx endorphin-ai --help
-npx endorphin help
-
-# Check current version
-npx endorphin-ai --version
-```
-
-### HTML Reports & Analytics
-
-#### Report Generation
-
-```bash
-# Generate full interactive HTML report
-npx endorphin generate report
-
-# Generate lightweight summary report
-npx endorphin generate report --summary
-```
-
-#### Report Management
-
-```bash
-# Open latest report in browser
-npx endorphin open report
-
-# Open specific report file
-npx endorphin open report report-2025-06-22.html
-npx endorphin open report summary-report.html
-```
-
-#### Cleanup Commands
-
-```bash
-# Clean old test results (keep 10 most recent per test)
-npx endorphin cleanup results
-
-# Keep only 5 most recent results per test
-npx endorphin cleanup results 5
-
-# Clean old report files (older than 30 days)
-npx endorphin cleanup reports
-
-# Clean report files older than 7 days
-npx endorphin cleanup reports 7
-```
-
-### Advanced Options
-
-#### Browser Configuration
-
-```bash
-# Use different browsers
-npx endorphin run test all --browser firefox
-npx endorphin run test all --browser webkit
-
-# Headless/headed mode
-npx endorphin run test all --no-headless
-npx endorphin run test all --headless
-
-# Custom viewport
-npx endorphin run test all --viewport 1920x1080
-npx endorphin run test all --viewport 1366x768
-```
-
-#### AI & Performance
-
-```bash
-# Use different AI models
-npx endorphin run test all --model gpt-4
-npx endorphin run test all --model gpt-4o-mini
-
-# Parallel execution
-npx endorphin run test all --parallel 3
-npx endorphin run test all --parallel 5
-
-# Environment selection
-npx endorphin run test all --env staging
-npx endorphin run test all --env production
-```
-
-### npm Scripts Integration
-
-Add these to your `package.json`:
-
-```json
-{
-  "scripts": {
-    "test": "endorphin run test all",
-    "test:smoke": "endorphin run test --tag smoke",
-    "test:auth": "endorphin run test --tag authentication",
-    "test:single": "endorphin run test",
-    "test:record": "endorphin run test-recorder",
-    "test:report": "endorphin generate report",
-    "test:summary": "endorphin generate report --summary",
-    "test:open": "endorphin open report",
-    "test:cleanup": "endorphin cleanup results",
-    "tools:list": "endorphin list tools",
-    "endorphin:init": "./node_modules/.bin/endorphin-ai init",
-    "endorphin:version": "./node_modules/.bin/endorphin --version",
-    "endorphin:help": "./node_modules/.bin/endorphin --help"
-  }
-}
-```
-
-Then use npm scripts:
-
-```bash
-npm test                # Run all tests
-npm run test:smoke      # Run smoke tests
-npm run test:report     # Generate HTML report
-npm run test:open       # Open latest report
-
-# Built-in tools:
-npm run tools:list     # List all built-in tools
-
-# Guaranteed to work (bypasses npx issues):
-npm run endorphin:init  # Initialize project
-npm run endorphin:version # Check version
-npm run endorphin:help  # Get help
-```
 
 ## 🔄 Staying Updated
 
