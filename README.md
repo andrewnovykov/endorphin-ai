@@ -4,10 +4,13 @@
   # 💜 ENDORPHIN
   
   ## E2E Testing Reinvented with AI
-</div>
 
 Write tests in plain English. Let AI generate, validate, and fix them
 automatically.
+
+🌐 https://endorphinai.dev
+
+</div>
 
 <div align="center">
   <img src="./doc/images/playwright-logo.png" alt="Playwright" height="30" />
