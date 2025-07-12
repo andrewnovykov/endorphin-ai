@@ -132,10 +132,7 @@ npx endorphin-ai generate report && npx endorphin-ai open report
 
 ### 🎬 Demo Video
 
-<video width="100%" controls>
-  <source src="doc/video/github-demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+https://github.com/user-attachments/assets/a09d956b-7c6f-4f6b-b248-994e666c870d
 
 ### 🔧 Troubleshooting Installation
 
@@ -260,6 +257,10 @@ If you prefer manual setup:
 - **Visual debugging** with click-to-zoom screenshots
 - **Export capabilities** for sharing with your team
 
+### 🎬 Report Demo
+
+https://github.com/user-attachments/assets/8a29d3b6-932a-46ca-93aa-55b400424fb2
+
 ### 🛠️ Developer Experience
 
 - **Zero configuration** - Works out of the box
@@ -269,13 +270,6 @@ If you prefer manual setup:
 - **VS Code debugging** - Professional debugging with debug object access
 - **Multiple browsers** - Chrome, Firefox, Safari support
 - **Parallel execution** for faster test runs
-
-### 🎬 Developer Demo
-
-<video width="100%" controls>
-  <source src="doc/video/github-demo-2.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
 
 ### 🎮 Interactive Tools
 
