@@ -132,7 +132,7 @@ npx endorphin-ai generate report && npx endorphin-ai open report
 
 ### 🎬 Demo Video
 
-https://github.com/user-attachments/assets/a09d956b-7c6f-4f6b-b248-994e666c870d
+https://github.com/user-attachments/assets/166b27d5-5da8-4aab-baaa-6924435f07a9
 
 ### 🔧 Troubleshooting Installation
 
@@ -259,7 +259,7 @@ If you prefer manual setup:
 
 ### 🎬 Report Demo
 
-https://github.com/user-attachments/assets/8a29d3b6-932a-46ca-93aa-55b400424fb2
+https://github.com/user-attachments/assets/83a900c6-9279-496d-bc12-f16fb98cf6dc
 
 ### 🛠️ Developer Experience
 
