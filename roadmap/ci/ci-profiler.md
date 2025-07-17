@@ -521,10 +521,115 @@ ENDORPHIN_TIMEOUT=30m
 ENDORPHIN_MAX_RETRIES=2
 ENDORPHIN_PARALLEL_TESTS=2
 
+# Performance optimization
+ENDORPHIN_MEMORY_OPTIMIZER=true
+ENDORPHIN_CONTEXT_POOLING=true
+ENDORPHIN_AGGRESSIVE_GC=true
+ENDORPHIN_DISABLE_IMAGES=true
+ENDORPHIN_PERF_MONITORING=true
+
 # Resource limits
-NODE_OPTIONS="--max-old-space-size=2048"
+NODE_OPTIONS="--max-old-space-size=2048 --expose-gc"
 PLAYWRIGHT_BROWSERS_PATH="/ms-playwright"
 ```
+
+## Implementation Priorities
+
+### Phase 1: Critical Performance (Week 1-2) 
+**Priority: HIGH**
+
+1. **Memory Optimizer Integration**
+   - Implement `MemoryOptimizer` class in framework core
+   - Add automatic garbage collection triggers
+   - Setup memory pressure monitoring
+   - **Impact**: 40-60% reduction in memory usage
+   - **Files**: `framework/core/memory-optimizer.ts`
+
+2. **Enhanced Resource Manager**
+   - Upgrade existing `ResourceManager` with performance monitoring
+   - Add memory threshold warnings
+   - Implement aggressive cleanup in CI
+   - **Impact**: Better resource cleanup, prevent memory leaks
+   - **Files**: `framework/core/resource-manager.ts`
+
+3. **Browser Context Optimization**
+   - Disable unnecessary features in CI (images, videos, service workers)
+   - Optimize browser launch options
+   - Add context cleanup between tests
+   - **Impact**: 30-50% faster browser operations
+   - **Files**: `framework/automation/browser/browser-manager.ts`
+
+### Phase 2: Intelligent Execution (Week 2-3)
+**Priority: MEDIUM**
+
+4. **Test Execution Optimizer**
+   - Implement intelligent test batching
+   - Add historical metrics tracking
+   - Create adaptive concurrency control
+   - **Impact**: Optimal test parallelization, reduced execution time
+   - **Files**: `framework/execution/optimizer/test-optimizer.ts`
+
+5. **Browser Context Pooling**
+   - Implement context reuse for multi-user tests
+   - Add context state clearing
+   - Create pool size management
+   - **Impact**: 60-80% faster multi-user test execution
+   - **Files**: `framework/automation/browser/context-pool.ts`
+
+### Phase 3: Advanced Profiling (Week 3-4)
+**Priority: LOW**
+
+6. **Performance Manager**
+   - Real-time performance metrics collection
+   - Optimization recommendations engine
+   - Historical performance analysis
+   - **Impact**: Proactive performance monitoring
+   - **Files**: `framework/core/performance-manager.ts`
+
+7. **Enhanced CI Profiler**
+   - Integration with new performance classes
+   - Advanced metrics collection
+   - Performance regression detection
+   - **Impact**: Comprehensive CI performance insights
+   - **Files**: `framework/core/ci-profiler.ts`
+
+### Implementation Strategy
+
+#### Incremental Deployment
+```bash
+# Phase 1: Core optimizations (immediate impact)
+npm run build
+npm run test:ci  # Baseline performance measurement
+
+# Enable memory optimizer
+ENDORPHIN_MEMORY_OPTIMIZER=true npm run test:ci
+
+# Enable all Phase 1 optimizations
+ENDORPHIN_MEMORY_OPTIMIZER=true \
+ENDORPHIN_AGGRESSIVE_GC=true \
+ENDORPHIN_DISABLE_IMAGES=true \
+npm run test:ci
+
+# Phase 2: Intelligent execution
+ENDORPHIN_CONTEXT_POOLING=true \
+ENDORPHIN_SMART_BATCHING=true \
+npm run test:ci
+
+# Phase 3: Full profiling
+ENDORPHIN_PERF_MONITORING=true npm run test:ci
+```
+
+#### Performance Metrics Tracking
+- **Baseline measurement**: Current memory usage and execution time
+- **Phase 1 target**: 40% memory reduction, 25% faster execution
+- **Phase 2 target**: 50% faster multi-user tests, intelligent batching
+- **Phase 3 target**: Complete performance visibility and optimization
+
+#### Backwards Compatibility
+- All optimizations are **opt-in** via environment variables
+- Default behavior remains unchanged
+- Performance features can be individually enabled/disabled
+- No breaking changes to existing API
 
 ## Cost Analysis
 
@@ -582,69 +687,551 @@ Benefits:
   - Better resource control
 ```
 
-## Performance Optimization
+## Framework Performance Optimization
+
+### Core Framework Improvements
+
+#### 1. Enhanced Resource Management
+
+```typescript
+// framework/core/performance-manager.ts
+export class PerformanceManager {
+  private memoryThreshold = 512 * 1024 * 1024; // 512MB
+  private gcInterval: NodeJS.Timeout | null = null;
+  private metrics: PerformanceMetrics = {
+    startTime: Date.now(),
+    memoryPeaks: [],
+    testDurations: [],
+    browserInstances: 0,
+    agentCalls: 0
+  };
+
+  constructor() {
+    this.startMemoryMonitoring();
+    this.setupGCOptimization();
+  }
+
+  startMemoryMonitoring() {
+    this.gcInterval = setInterval(() => {
+      const memUsage = process.memoryUsage();
+      
+      // Track memory peaks
+      if (memUsage.heapUsed > this.memoryThreshold) {
+        this.metrics.memoryPeaks.push({
+          timestamp: Date.now(),
+          heapUsed: memUsage.heapUsed,
+          heapTotal: memUsage.heapTotal
+        });
+        
+        // Force garbage collection if available
+        if (global.gc && process.env.CI) {
+          global.gc();
+          console.log(`🗑️ Forced GC - Memory: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
+        }
+      }
+    }, 10000); // Check every 10 seconds
+  }
+
+  setupGCOptimization() {
+    // Optimize V8 for test execution
+    if (process.env.CI) {
+      // Increase old space size for CI
+      process.env.NODE_OPTIONS = process.env.NODE_OPTIONS || '';
+      if (!process.env.NODE_OPTIONS.includes('--max-old-space-size')) {
+        process.env.NODE_OPTIONS += ' --max-old-space-size=2048';
+      }
+      
+      // Enable garbage collection exposure for monitoring
+      if (!process.env.NODE_OPTIONS.includes('--expose-gc')) {
+        process.env.NODE_OPTIONS += ' --expose-gc';
+      }
+    }
+  }
+
+  recordTestStart(testId: string) {
+    this.metrics.testDurations.push({
+      testId,
+      startTime: Date.now(),
+      startMemory: process.memoryUsage().heapUsed
+    });
+  }
+
+  recordTestEnd(testId: string) {
+    const testRecord = this.metrics.testDurations.find(t => t.testId === testId);
+    if (testRecord) {
+      testRecord.endTime = Date.now();
+      testRecord.duration = testRecord.endTime - testRecord.startTime;
+      testRecord.endMemory = process.memoryUsage().heapUsed;
+      testRecord.memoryDelta = testRecord.endMemory - testRecord.startMemory;
+    }
+  }
+
+  getOptimizationRecommendations(): PerformanceRecommendation[] {
+    const recommendations: PerformanceRecommendation[] = [];
+    
+    // Memory analysis
+    const avgMemoryDelta = this.metrics.testDurations
+      .filter(t => t.memoryDelta)
+      .reduce((sum, t) => sum + t.memoryDelta!, 0) / this.metrics.testDurations.length;
+    
+    if (avgMemoryDelta > 50 * 1024 * 1024) { // 50MB per test
+      recommendations.push({
+        type: 'memory',
+        severity: 'high',
+        message: 'High memory usage per test detected',
+        suggestion: 'Implement browser context pooling and increase GC frequency'
+      });
+    }
+    
+    // Test duration analysis
+    const avgDuration = this.metrics.testDurations
+      .filter(t => t.duration)
+      .reduce((sum, t) => sum + t.duration!, 0) / this.metrics.testDurations.length;
+    
+    if (avgDuration > 120000) { // 2 minutes
+      recommendations.push({
+        type: 'performance',
+        severity: 'medium',
+        message: 'Slow test execution detected',
+        suggestion: 'Optimize navigation timeouts and element selectors'
+      });
+    }
+    
+    return recommendations;
+  }
+
+  dispose() {
+    if (this.gcInterval) {
+      clearInterval(this.gcInterval);
+      this.gcInterval = null;
+    }
+  }
+}
+```
+
+#### 2. Browser Context Pooling
+
+```typescript
+// framework/automation/browser/context-pool.ts
+export class BrowserContextPool {
+  private pools = new Map<string, BrowserContext[]>();
+  private maxPoolSize = 3;
+  private activeContexts = new Map<string, BrowserContext>();
+
+  async getContext(userId: string, browser: Browser): Promise<BrowserContext> {
+    // Check if we have an active context for this user
+    if (this.activeContexts.has(userId)) {
+      return this.activeContexts.get(userId)!;
+    }
+
+    // Get from pool or create new
+    const userPool = this.pools.get(userId) || [];
+    let context: BrowserContext;
+
+    if (userPool.length > 0) {
+      context = userPool.pop()!;
+      console.log(`♻️ Reusing browser context for user: ${userId}`);
+    } else {
+      context = await browser.newContext({
+        // Optimized context settings
+        ignoreHTTPSErrors: true,
+        bypassCSP: true,
+        acceptDownloads: false,
+        serviceWorkers: 'block',
+        // Reduce memory usage
+        javaScriptEnabled: true,
+        images: process.env.CI ? 'disabled' : 'enabled',
+        // Screenshot optimization
+        recordVideo: undefined,
+        recordHar: undefined
+      });
+      console.log(`🆕 Created new browser context for user: ${userId}`);
+    }
+
+    this.activeContexts.set(userId, context);
+    return context;
+  }
+
+  async releaseContext(userId: string): Promise<void> {
+    const context = this.activeContexts.get(userId);
+    if (!context) return;
+
+    this.activeContexts.delete(userId);
+    
+    // Return to pool if pool isn't full
+    const userPool = this.pools.get(userId) || [];
+    if (userPool.length < this.maxPoolSize) {
+      // Clear context state before pooling
+      await this.clearContextState(context);
+      userPool.push(context);
+      this.pools.set(userId, userPool);
+      console.log(`🔄 Returned context to pool for user: ${userId}`);
+    } else {
+      // Pool is full, dispose context
+      await context.close();
+      console.log(`🗑️ Disposed excess context for user: ${userId}`);
+    }
+  }
+
+  private async clearContextState(context: BrowserContext): Promise<void> {
+    // Clear all pages except one
+    const pages = context.pages();
+    for (let i = 1; i < pages.length; i++) {
+      await pages[i].close();
+    }
+    
+    // Clear storage and reset the remaining page
+    if (pages.length > 0) {
+      await context.clearCookies();
+      await context.clearPermissions();
+      try {
+        await pages[0].goto('about:blank');
+      } catch {
+        // Ignore navigation errors during cleanup
+      }
+    }
+  }
+
+  async disposeAll(): Promise<void> {
+    // Close all active contexts
+    for (const [userId, context] of this.activeContexts) {
+      try {
+        await context.close();
+      } catch (error) {
+        console.warn(`Failed to close context for user ${userId}:`, error);
+      }
+    }
+    this.activeContexts.clear();
+
+    // Close all pooled contexts
+    for (const [userId, userPool] of this.pools) {
+      for (const context of userPool) {
+        try {
+          await context.close();
+        } catch (error) {
+          console.warn(`Failed to close pooled context for user ${userId}:`, error);
+        }
+      }
+    }
+    this.pools.clear();
+  }
+}
+```
+
+#### 3. Intelligent Test Execution
+
+```typescript
+// framework/execution/optimizer/test-optimizer.ts
+export class TestExecutionOptimizer {
+  private testMetrics = new Map<string, TestMetrics>();
+  private parallelismStrategy: 'conservative' | 'aggressive' | 'adaptive' = 'adaptive';
+
+  constructor(private maxConcurrency: number = 2) {
+    this.loadHistoricalMetrics();
+  }
+
+  async optimizeTestExecution(tests: TestConfig[]): Promise<TestExecutionPlan> {
+    // Analyze test characteristics
+    const analysisResults = await this.analyzeTests(tests);
+    
+    // Determine optimal batching strategy
+    const strategy = this.determineStrategy(analysisResults);
+    
+    // Create execution plan
+    return {
+      batches: this.createOptimalBatches(tests, strategy),
+      estimatedDuration: this.estimateTotalDuration(tests),
+      recommendedConcurrency: this.getOptimalConcurrency(analysisResults),
+      optimizations: this.getOptimizationFlags(analysisResults)
+    };
+  }
+
+  private async analyzeTests(tests: TestConfig[]): Promise<TestAnalysis> {
+    const analysis: TestAnalysis = {
+      totalTests: tests.length,
+      heavyTests: [], // Tests with multiple users or complex workflows
+      lightTests: [], // Simple navigation/verification tests
+      memoryIntensive: [], // Tests with many screenshots or large pages
+      networkHeavy: [] // Tests with external dependencies
+    };
+
+    for (const test of tests) {
+      const metrics = this.testMetrics.get(test.id);
+      
+      // Classify test based on structure and historical data
+      if (test.users && test.users.length > 1) {
+        analysis.heavyTests.push(test.id);
+      } else if (metrics?.avgDuration && metrics.avgDuration > 60000) {
+        analysis.heavyTests.push(test.id);
+      } else if (metrics?.avgMemoryUsage && metrics.avgMemoryUsage > 100 * 1024 * 1024) {
+        analysis.memoryIntensive.push(test.id);
+      } else {
+        analysis.lightTests.push(test.id);
+      }
+    }
+
+    return analysis;
+  }
+
+  private createOptimalBatches(tests: TestConfig[], strategy: ExecutionStrategy): TestBatch[] {
+    const batches: TestBatch[] = [];
+    
+    if (strategy.type === 'sequential') {
+      // Heavy tests run sequentially
+      return tests.map(test => ({ tests: [test], concurrency: 1 }));
+    }
+    
+    if (strategy.type === 'mixed') {
+      // Light tests in parallel, heavy tests sequential
+      const lightTests = tests.filter(t => !strategy.heavyTestIds.includes(t.id));
+      const heavyTests = tests.filter(t => strategy.heavyTestIds.includes(t.id));
+      
+      // Batch light tests
+      for (let i = 0; i < lightTests.length; i += strategy.lightBatchSize) {
+        batches.push({
+          tests: lightTests.slice(i, i + strategy.lightBatchSize),
+          concurrency: Math.min(strategy.lightBatchSize, this.maxConcurrency)
+        });
+      }
+      
+      // Add heavy tests individually
+      heavyTests.forEach(test => {
+        batches.push({ tests: [test], concurrency: 1 });
+      });
+    }
+    
+    return batches;
+  }
+
+  recordTestMetrics(testId: string, metrics: TestMetrics): void {
+    this.testMetrics.set(testId, metrics);
+    this.saveMetricsToFile();
+  }
+
+  private loadHistoricalMetrics(): void {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const metricsFile = path.join(process.cwd(), '.endorphin', 'test-metrics.json');
+      
+      if (fs.existsSync(metricsFile)) {
+        const data = JSON.parse(fs.readFileSync(metricsFile, 'utf8'));
+        this.testMetrics = new Map(Object.entries(data));
+      }
+    } catch (error) {
+      // Ignore errors loading historical metrics
+    }
+  }
+
+  private saveMetricsToFile(): void {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const metricsDir = path.join(process.cwd(), '.endorphin');
+      const metricsFile = path.join(metricsDir, 'test-metrics.json');
+      
+      if (!fs.existsSync(metricsDir)) {
+        fs.mkdirSync(metricsDir, { recursive: true });
+      }
+      
+      const data = Object.fromEntries(this.testMetrics);
+      fs.writeFileSync(metricsFile, JSON.stringify(data, null, 2));
+    } catch (error) {
+      // Ignore errors saving metrics
+    }
+  }
+}
+```
 
 ### Parallel Test Execution
 
-```javascript
-// Add to framework/core/test-discovery.js
-export async function runTestsInParallel(tests, options = {}) {
-  const { maxConcurrency = 2, reporter } = options;
-  const chunks = chunkArray(tests, maxConcurrency);
+```typescript
+// Enhanced parallel execution with resource awareness
+export async function runTestsInParallel(tests: TestConfig[], options: ParallelExecutionOptions = {}) {
+  const {
+    maxConcurrency = 2,
+    memoryThreshold = 1024 * 1024 * 1024, // 1GB
+    enableResourceMonitoring = true,
+    reporter
+  } = options;
 
-  for (const chunk of chunks) {
-    await Promise.all(
-      chunk.map((test) => runSingleTestById(test.id, { reporter }))
-    );
+  const optimizer = new TestExecutionOptimizer(maxConcurrency);
+  const executionPlan = await optimizer.optimizeTestExecution(tests);
+  
+  console.log(`🚀 Executing ${tests.length} tests in ${executionPlan.batches.length} batches`);
+  console.log(`⏱️ Estimated duration: ${Math.round(executionPlan.estimatedDuration / 1000)}s`);
+  
+  const results: TestResult[] = [];
+  
+  for (const batch of executionPlan.batches) {
+    console.log(`📦 Starting batch with ${batch.tests.length} tests (concurrency: ${batch.concurrency})`);
+    
+    // Check memory before starting batch
+    if (enableResourceMonitoring) {
+      const memUsage = process.memoryUsage();
+      if (memUsage.heapUsed > memoryThreshold) {
+        console.log(`⚠️ High memory usage detected, forcing GC before batch`);
+        if (global.gc) global.gc();
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Let GC complete
+      }
+    }
+    
+    // Execute batch with concurrency control
+    const batchPromises = batch.tests.map(async (test, index) => {
+      // Stagger test starts to reduce initial load
+      await new Promise(resolve => setTimeout(resolve, index * 500));
+      return runSingleTestById(test.id, { reporter });
+    });
+    
+    const batchResults = await Promise.allSettled(batchPromises);
+    
+    // Process results and handle failures
+    batchResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        results.push(result.value);
+      } else {
+        console.error(`❌ Test ${batch.tests[index].id} failed:`, result.reason);
+        results.push({
+          testId: batch.tests[index].id,
+          success: false,
+          error: result.reason.message
+        });
+      }
+    });
+    
+    // Brief pause between batches for resource recovery
+    if (batch !== executionPlan.batches[executionPlan.batches.length - 1]) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
   }
-}
-
-function chunkArray(array, size) {
-  const chunks = [];
-  for (let i = 0; i < array.length; i += size) {
-    chunks.push(array.slice(i, i + size));
-  }
-  return chunks;
+  
+  return results;
 }
 ```
 
-### Resource Cleanup
+### Advanced Memory Management
 
-```javascript
-// Add browser cleanup
-afterEach(async () => {
-  if (global.browser) {
-    await global.browser.close();
-    global.browser = null;
+```typescript
+// framework/core/memory-optimizer.ts
+export class MemoryOptimizer {
+  private static instance: MemoryOptimizer;
+  private cleanupQueue: Array<() => Promise<void>> = [];
+  private cleanupInterval: NodeJS.Timeout | null = null;
+
+  static getInstance(): MemoryOptimizer {
+    if (!MemoryOptimizer.instance) {
+      MemoryOptimizer.instance = new MemoryOptimizer();
+    }
+    return MemoryOptimizer.instance;
   }
 
-  // Force garbage collection in CI
-  if (process.env.CI && global.gc) {
-    global.gc();
+  startOptimization(): void {
+    // Aggressive cleanup in CI environments
+    const cleanupIntervalMs = process.env.CI ? 30000 : 60000; // 30s in CI, 60s locally
+    
+    this.cleanupInterval = setInterval(async () => {
+      await this.performCleanup();
+    }, cleanupIntervalMs);
+
+    // Setup memory pressure handlers
+    this.setupMemoryPressureHandlers();
   }
-});
-```
 
-### Memory Management
+  private setupMemoryPressureHandlers(): void {
+    // Monitor memory usage and trigger cleanup when needed
+    const memoryCheckInterval = setInterval(() => {
+      const memUsage = process.memoryUsage();
+      const heapUsedMB = memUsage.heapUsed / 1024 / 1024;
+      const heapTotalMB = memUsage.heapTotal / 1024 / 1024;
+      const usagePercent = (heapUsedMB / heapTotalMB) * 100;
 
-```javascript
-// Optimize browser context
-const browserContext = await browser.newContext({
-  // Reduce memory usage
-  ignoreHTTPSErrors: true,
-  bypassCSP: true,
+      if (usagePercent > 80) {
+        console.log(`⚠️ High memory usage: ${heapUsedMB.toFixed(2)}MB (${usagePercent.toFixed(1)}%)`);
+        this.triggerEmergencyCleanup();
+      }
+    }, 15000); // Check every 15 seconds
 
-  // Disable unnecessary features
-  javaScriptEnabled: true,
-  acceptDownloads: false,
+    // Cleanup interval when optimizer is disposed
+    this.addToCleanupQueue(async () => {
+      clearInterval(memoryCheckInterval);
+    });
+  }
 
-  // Limit resources
-  serviceWorkers: 'block',
+  private async triggerEmergencyCleanup(): Promise<void> {
+    console.log('🚨 Triggering emergency memory cleanup');
+    
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc();
+    }
+    
+    // Run all queued cleanup tasks
+    await this.performCleanup();
+    
+    // Log memory after cleanup
+    const memUsage = process.memoryUsage();
+    console.log(`💾 Memory after cleanup: ${(memUsage.heapUsed / 1024 / 1024).toFixed(2)}MB`);
+  }
 
-  // Video/screenshot optimization
-  recordVideo: process.env.CI ? undefined : { dir: 'test-results/videos' },
-  screenshot: { mode: 'only-on-failure', fullPage: false },
-});
+  addToCleanupQueue(cleanupFn: () => Promise<void>): void {
+    this.cleanupQueue.push(cleanupFn);
+  }
+
+  private async performCleanup(): Promise<void> {
+    const cleanupTasks = [...this.cleanupQueue];
+    this.cleanupQueue = [];
+
+    for (const cleanupFn of cleanupTasks) {
+      try {
+        await cleanupFn();
+      } catch (error) {
+        console.warn('Cleanup task failed:', error);
+      }
+    }
+
+    // Force garbage collection in CI
+    if (process.env.CI && global.gc) {
+      global.gc();
+    }
+  }
+
+  optimizeBrowserContext(contextOptions: any): any {
+    return {
+      ...contextOptions,
+      // Reduce memory usage
+      ignoreHTTPSErrors: true,
+      bypassCSP: true,
+      acceptDownloads: false,
+      
+      // Disable resource-intensive features in CI
+      ...(process.env.CI && {
+        serviceWorkers: 'block',
+        images: 'disabled',
+        media: 'disabled',
+        fonts: 'disabled'
+      }),
+      
+      // Optimize recording settings
+      recordVideo: process.env.CI ? undefined : contextOptions.recordVideo,
+      recordHar: process.env.CI ? undefined : contextOptions.recordHar,
+      
+      // Reduce screenshot quality in CI
+      screenshot: process.env.CI 
+        ? { mode: 'only-on-failure', fullPage: false }
+        : contextOptions.screenshot
+    };
+  }
+
+  dispose(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    
+    // Run final cleanup
+    this.performCleanup();
+  }
+}
 ```
 
 ## Monitoring Dashboard
@@ -856,6 +1443,97 @@ const config = {
   navigationTimeout: 30000, // 30 seconds
 };
 ```
+
+## Quick Start Implementation Guide
+
+### Immediate Performance Gains (5 minutes)
+
+1. **Update Environment Variables**
+```bash
+# Add to .env or CI configuration
+NODE_OPTIONS="--max-old-space-size=2048 --expose-gc"
+ENDORPHIN_DISABLE_IMAGES=true
+ENDORPHIN_AGGRESSIVE_GC=true
+```
+
+2. **Enable Memory Optimization in CI**
+```yaml
+# .github/workflows/endorphin-tests.yml
+env:
+  NODE_OPTIONS: "--max-old-space-size=2048 --expose-gc"
+  ENDORPHIN_MEMORY_OPTIMIZER: true
+  ENDORPHIN_DISABLE_IMAGES: true
+  ENDORPHIN_AGGRESSIVE_GC: true
+```
+
+3. **Test Performance Improvement**
+```bash
+# Before optimization
+npm run test:ci  # Measure baseline
+
+# After optimization  
+ENDORPHIN_MEMORY_OPTIMIZER=true npm run test:ci  # Compare results
+```
+
+### Expected Immediate Results
+- **Memory usage**: 30-40% reduction
+- **Test execution**: 15-25% faster
+- **Browser startup**: 40-50% faster
+- **CI stability**: Fewer out-of-memory errors
+
+### Gradual Implementation
+
+#### Week 1: Core Memory Optimization
+```typescript
+// 1. Add to framework/core/memory-optimizer.ts (copy from roadmap)
+// 2. Integrate with existing ResourceManager
+// 3. Enable via environment variables
+// 4. Measure memory usage improvements
+```
+
+#### Week 2: Browser Context Optimization  
+```typescript
+// 1. Update browser-manager.ts with CI optimizations
+// 2. Add context pooling for multi-user tests
+// 3. Implement aggressive cleanup
+// 4. Measure execution time improvements
+```
+
+#### Week 3: Test Execution Intelligence
+```typescript
+// 1. Create test-optimizer.ts
+// 2. Add historical metrics tracking
+// 3. Implement smart batching
+// 4. Optimize parallel execution
+```
+
+### Integration Checklist
+
+#### Phase 1 Implementation ✅
+- [ ] Create `MemoryOptimizer` class
+- [ ] Add memory pressure monitoring
+- [ ] Enable garbage collection in CI
+- [ ] Disable images/videos in headless mode
+- [ ] Update browser context options
+- [ ] Add memory threshold warnings
+- [ ] Test with existing test suite
+
+#### Phase 2 Implementation ✅  
+- [ ] Create `BrowserContextPool` class
+- [ ] Implement context reuse logic
+- [ ] Add context state clearing
+- [ ] Create `TestExecutionOptimizer`
+- [ ] Add historical metrics storage
+- [ ] Implement adaptive batching
+- [ ] Test multi-user performance
+
+#### Phase 3 Implementation ✅
+- [ ] Create `PerformanceManager` class
+- [ ] Add real-time metrics collection
+- [ ] Implement recommendation engine
+- [ ] Enhance CI profiler integration
+- [ ] Add performance regression detection
+- [ ] Create performance dashboard
 
 ## Best Practices
 
