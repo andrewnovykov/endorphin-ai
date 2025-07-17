@@ -3,7 +3,10 @@ node_modules/
 
 # Environment variables
 .env
+
+# Build output (keep folder but ignore contents)
 dist/*
+!dist/.gitkeep
 
 # Test results
 test-results/*
