@@ -1,15 +1,15 @@
 /**
  * Validation Agent for Test Result Analysis
- * 
+ *
  * A specialized agent that analyzes test execution conversations
  * to determine if tests passed or failed based on the execution history
  */
 
+import { BaseMessage, HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { ChatOpenAI } from '@langchain/openai';
-import { HumanMessage, SystemMessage, BaseMessage } from '@langchain/core/messages';
-import { AGENT_CONFIG } from './config/agent-config.js';
-import { trackAICall } from './agent-setup.js';
 import type { TokenTracker } from '../core/token-tracker.js';
+import { trackAICall } from './agent-setup.js';
+import { AGENT_CONFIG } from './config/agent-config.js';
 
 export interface ValidationResult {
   status: 'SUCCESS' | 'FAILED';
@@ -30,7 +30,7 @@ export class ValidationAgent {
     if (!AGENT_CONFIG.openai.apiKey) {
       throw new Error('OpenAI API key is required for validation agent');
     }
-    
+
     this.model = new ChatOpenAI({
       openAIApiKey: AGENT_CONFIG.openai.apiKey,
       modelName: 'gpt-4o',
@@ -41,10 +41,8 @@ export class ValidationAgent {
   /**
    * Analyze test execution messages to determine result
    */
-  async analyzeTestExecution(
-    messages: BaseMessage[],
-    testTask: string
-  ): Promise<ValidationResult> {
+  async analyzeTestExecution(messages: BaseMessage[], testTask: string): Promise<ValidationResult> {
+    //TODO: Move to
     const systemPrompt = `You are a test result validator. Your job is to analyze a test execution conversation and determine if the test passed or failed.
 
 Test Task: ${testTask}
@@ -89,22 +87,19 @@ Provide your analysis in the specified JSON format.`;
       // Track token usage if tracker is available
       const systemMessage = new SystemMessage(systemPrompt);
       const humanMessage = new HumanMessage(prompt);
-      
+
       // Estimate token usage before making the call
       if (this.tokenTracker) {
         const promptTokens = this.tokenTracker.estimateTokens(systemPrompt + prompt);
-        console.log(`🧠 Validation Agent: Estimated ${promptTokens} input tokens`);
+        console.log(`\n 🧠 Validation Agent: Estimated ${promptTokens} input tokens`);
       }
-      
+
       const startTime = Date.now();
-      const response = await this.model.invoke([
-        systemMessage,
-        humanMessage,
-      ]);
+      const response = await this.model.invoke([systemMessage, humanMessage]);
       const duration = Date.now() - startTime;
 
       const content = response.content as string;
-      
+
       // Record token usage and track in agent history
       let tokenUsage;
       if (this.tokenTracker && response.usage_metadata) {
@@ -128,20 +123,20 @@ Provide your analysis in the specified JSON format.`;
           responseTokens: estimatedResponse,
           totalTokens: estimatedPrompt + estimatedResponse,
           cost: (estimatedPrompt * 0.005 + estimatedResponse * 0.015) / 1000,
-          model: 'gpt-4o'
+          model: 'gpt-4o',
         };
       }
-      
+
       // Track this AI call in agent history
       trackAICall(
         'Validation Agent',
-        systemPrompt + '\n\n' + prompt,
+        `${systemPrompt}\n\n${prompt}`,
         content,
         tokenUsage,
         duration,
         'Test result validation and analysis'
       );
-      
+
       // Parse JSON response
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -177,7 +172,7 @@ Provide your analysis in the specified JSON format.`;
       .map((msg, idx) => {
         const role = msg._getType() === 'human' ? 'USER' : 'AGENT';
         const content = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
-        
+
         // Include tool calls if present
         const toolCalls = (msg as any).tool_calls;
         if (toolCalls?.length) {
@@ -186,7 +181,7 @@ Provide your analysis in the specified JSON format.`;
             .join(', ');
           return `${idx + 1}. ${role}: ${content}\n   ${tools}`;
         }
-        
+
         return `${idx + 1}. ${role}: ${content}`;
       })
       .join('\n\n');
@@ -198,7 +193,7 @@ Provide your analysis in the specified JSON format.`;
   quickValidate(messages: BaseMessage[]): ValidationResult {
     const lastMessages = messages.slice(-5);
     const content = lastMessages
-      .map(m => (typeof m.content === 'string' ? m.content : ''))
+      .map((m) => (typeof m.content === 'string' ? m.content : ''))
       .join(' ')
       .toLowerCase();
 
@@ -226,8 +221,8 @@ Provide your analysis in the specified JSON format.`;
       'error occurred',
     ];
 
-    const hasSuccess = successPatterns.some(p => new RegExp(p).test(content));
-    const hasFailure = failurePatterns.some(p => new RegExp(p).test(content));
+    const hasSuccess = successPatterns.some((p) => new RegExp(p).test(content));
+    const hasFailure = failurePatterns.some((p) => new RegExp(p).test(content));
 
     if (hasSuccess && !hasFailure) {
       return {

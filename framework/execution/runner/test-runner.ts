@@ -6,7 +6,7 @@
 import { performance } from 'perf_hooks';
 import { ConsoleReporter } from '../../reporters/console-reporter.js';
 import { DirectoryManager } from '../../utils/directory-manager.js';
-import type { DiscoveryResult, FrameworkConfig } from '../../types/index.js';
+import type { DiscoveryResult, FrameworkConfig, TaskResult } from '../../types/index.js';
 import type { DiscoveredTest, TestExecutionOptions } from '../discovery/discovery-types.js';
 
 /**
@@ -28,6 +28,13 @@ function isTestQuarantined(test: DiscoveredTest): boolean {
  */
 function shouldRunQuarantined(): boolean {
   return process.env.ENDORPHIN_RUN_QUARANTINED === 'true';
+}
+
+/**
+ * Check if a test is a multi-user test
+ */
+function isMultiUserTest(test: DiscoveredTest): boolean {
+  return !!(test.users && Array.isArray(test.users) && test.users.length > 0 && test.tasks);
 }
 
 /**
@@ -70,15 +77,35 @@ export class TestRunner {
     console.log('🧹 Cleaning up test results directory before single test...');
     await DirectoryManager.cleanupDirectories(resultBaseDir);
 
-    const { EnhancedBrowserTestFramework } = await import('../../automation/browser/browser-framework.js');
-    const framework = new EnhancedBrowserTestFramework(this.config || undefined);
+    // Check if this is a multi-user test
+    if (isMultiUserTest(test)) {
+      console.log(`🔄 Detected multi-user test: ${test.id}`);
+      const { TestFramework } = await import('../../core/test-framework.js');
+      const framework = new TestFramework(this.config || undefined);
+      
+      try {
+        await framework.initialize();
+        const result = await framework.runTest(test);
+        const returnValue: { success: boolean; error?: string; session?: any } = {
+          success: result.status === 'SUCCESS' || result.success === true
+        };
+        if (result.error) returnValue.error = result.error;
+        if (result.report || result) returnValue.session = result.report || result;
+        return returnValue;
+      } finally {
+        await framework.cleanup();
+      }
+    } else {
+      const { EnhancedBrowserTestFramework } = await import('../../automation/browser/browser-framework.js');
+      const framework = new EnhancedBrowserTestFramework(this.config || undefined);
 
-    try {
-      await framework.initialize();
-      const result = await framework.runSingleTest(test);
-      return result;
-    } finally {
-      await framework.cleanup();
+      try {
+        await framework.initialize();
+        const result = await framework.runSingleTest(test);
+        return result;
+      } finally {
+        await framework.cleanup();
+      }
     }
   }
 
@@ -101,7 +128,6 @@ export class TestRunner {
       duration: number;
       error?: string;
     }> = [];
-    const { EnhancedBrowserTestFramework } = await import('../../automation/browser/browser-framework.js');
 
     for (const test of tests) {
       // Skip quarantined tests unless explicitly enabled
@@ -112,37 +138,78 @@ export class TestRunner {
 
       // Create a fresh framework instance for each test
       console.log(`🌟 Creating fresh browser instance for test: ${test.id}`);
-      const framework = new EnhancedBrowserTestFramework(this.config || undefined);
       
       const startTime = performance.now();
       this.reporter.startTest(test.id, test.name);
 
       try {
-        // Initialize fresh browser for this test
-        await framework.initialize();
-        
-        // Add aggressive timeout for sequential execution to prevent blocking
-        const testTimeout = 300000; // 5 minutes per test maximum
-        
-        const testPromise = framework.runSingleTest(test);
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => {
-            reject(new Error(`Test '${test.id}' exceeded maximum execution time of ${testTimeout/1000} seconds in sequential execution`));
-          }, testTimeout);
-        });
-        
-        console.log(`⏱️ Starting test ${test.id} with ${testTimeout/1000}s timeout`);
-        const result = await Promise.race([testPromise, timeoutPromise]) as any;
-        
-        const duration = Math.round(performance.now() - startTime);
-        const status = result.success ? 'SUCCESS' : 'FAILED';
+        // Check if this is a multi-user test
+        if (isMultiUserTest(test)) {
+          console.log(`🔄 Detected multi-user test: ${test.id}`);
+          const { TestFramework } = await import('../../core/test-framework.js');
+          const framework = new TestFramework(this.config || undefined);
+          
+          await framework.initialize();
+          
+          // Add aggressive timeout for sequential execution to prevent blocking
+          const testTimeout = 300000; // 5 minutes per test maximum
+          
+          const testPromise = framework.runTest(test);
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+              reject(new Error(`Test '${test.id}' exceeded maximum execution time of ${testTimeout/1000} seconds in sequential execution`));
+            }, testTimeout);
+          });
+          
+          console.log(`⏱️ Starting test ${test.id} with ${testTimeout/1000}s timeout`);
+          const result = await Promise.race([testPromise, timeoutPromise]) as TaskResult;
+          
+          const duration = Math.round(performance.now() - startTime);
+          const success = result.status === 'SUCCESS' || result.success === true;
+          const status = success ? 'SUCCESS' : 'FAILED';
 
-        this.reporter.completeTest(test.id, test.name, status, duration, result.error);
-        const testResult: any = { test, success: result.success, duration };
-        if (result.error) testResult.error = result.error;
-        results.push(testResult);
-        
-        console.log(`✅ Test ${test.id} completed in ${duration}ms`);
+          this.reporter.completeTest(test.id, test.name, status, duration, result.error);
+          const testResult: any = { test, success, duration };
+          if (result.error) testResult.error = result.error;
+          results.push(testResult);
+          
+          console.log(`✅ Test ${test.id} completed in ${duration}ms`);
+          
+          // Cleanup multi-user test framework
+          await framework.cleanup();
+        } else {
+          // Single-user test - use existing logic
+          const { EnhancedBrowserTestFramework } = await import('../../automation/browser/browser-framework.js');
+          const framework = new EnhancedBrowserTestFramework(this.config || undefined);
+          
+          await framework.initialize();
+          
+          // Add aggressive timeout for sequential execution to prevent blocking
+          const testTimeout = 300000; // 5 minutes per test maximum
+          
+          const testPromise = framework.runSingleTest(test);
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+              reject(new Error(`Test '${test.id}' exceeded maximum execution time of ${testTimeout/1000} seconds in sequential execution`));
+            }, testTimeout);
+          });
+          
+          console.log(`⏱️ Starting test ${test.id} with ${testTimeout/1000}s timeout`);
+          const result = await Promise.race([testPromise, timeoutPromise]) as any;
+          
+          const duration = Math.round(performance.now() - startTime);
+          const status = result.success ? 'SUCCESS' : 'FAILED';
+
+          this.reporter.completeTest(test.id, test.name, status, duration, result.error);
+          const testResult: any = { test, success: result.success, duration };
+          if (result.error) testResult.error = result.error;
+          results.push(testResult);
+          
+          console.log(`✅ Test ${test.id} completed in ${duration}ms`);
+          
+          // Cleanup single-user test framework
+          await framework.cleanup();
+        }
         
       } catch (error) {
         const duration = Math.round(performance.now() - startTime);
@@ -158,19 +225,11 @@ export class TestRunner {
         
         this.reporter.completeTest(test.id, test.name, 'FAILED', duration, message);
         results.push({ test, success: false, duration, error: message });
-      } finally {
-        // Always cleanup browser instance after each test
-        console.log(`🔥 Closing browser instance for test: ${test.id}`);
-        try {
-          await framework.cleanup();
-        } catch (cleanupError) {
-          console.log(`⚠️ Browser cleanup error (non-critical): ${cleanupError}`);
-        }
-        
-        // Brief pause between tests for complete cleanup
-        console.log(`⏸️ Waiting between tests for complete cleanup...`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
       }
+      
+      // Brief pause between tests for complete cleanup
+      console.log(`⏸️ Waiting between tests for complete cleanup...`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     const summary = this.reporter.endSession();

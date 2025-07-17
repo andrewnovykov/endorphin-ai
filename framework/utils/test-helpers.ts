@@ -17,7 +17,8 @@ export class TestHelpers {
     params: any,
     result: string,
     isImportant: boolean = false,
-    session?: TestSession
+    session?: TestSession,
+    screenshots: string[] = []
   ): void {
     const timestamp = new Date().toISOString();
     const _stepLog = {
@@ -55,7 +56,13 @@ export class TestHelpers {
         toolArgs: params,
         result,
         status: isImportant ? 'SUCCESS' : 'SUCCESS',
-        screenshots: [],
+        screenshots: screenshots.map(path => ({
+          filepath: path,
+          filename: path.split('/').pop() || 'screenshot.png',
+          description: `${description} screenshot`,
+          timestamp,
+          stepNumber: session.steps.length + 1
+        })),
       };
 
       session.steps.push(step);

@@ -138,9 +138,17 @@ function isValidTestObject(obj: unknown): boolean {
     typeof obj === 'object' &&
     typeof (obj as any).id === 'string' &&
     typeof (obj as any).name === 'string' &&
-    (typeof (obj as any).task === 'string' || 
-     typeof (obj as any).task === 'function' || 
-     typeof (obj as any).execute === 'function')
+    (
+      // Single-user test (traditional format)
+      typeof (obj as any).task === 'string' || 
+      typeof (obj as any).task === 'function' || 
+      typeof (obj as any).execute === 'function' ||
+      // Multi-user test (new format)
+      (Array.isArray((obj as any).users) && 
+       ((obj as any).users).length > 0 && 
+       (typeof (obj as any).tasks === 'function' || 
+        typeof (obj as any).tasks === 'object'))
+    )
   );
 }
 
@@ -426,7 +434,7 @@ export async function discoverTests(config: FrameworkConfig): Promise<TestConfig
       description: test.description,
       priority: test.priority,
       tags: test.tags,
-      task: test.task,
+      ...(test.task && { task: test.task }),
     };
 
     // Only add optional properties if they exist
@@ -435,6 +443,8 @@ export async function discoverTests(config: FrameworkConfig): Promise<TestConfig
     if (test.testData) config.testData = test.testData;
     if (test.data) config.data = test.data;
     if (test.setup) config.setup = test.setup;
+    if (test.users) config.users = test.users;
+    if (test.tasks) config.tasks = test.tasks;
 
     return config;
   });

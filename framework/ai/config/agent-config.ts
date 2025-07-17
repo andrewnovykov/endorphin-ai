@@ -19,7 +19,7 @@ export const AGENT_CONFIG = {
 
   // Agent behavior settings
   agent: {
-    recursionLimit: 150,
+    recursionLimit: 200, // Increased from 150 to 200
     timeout: 5 * 60 * 1000, // 5 minutes
 
     // Stop phrases that indicate test completion
@@ -36,10 +36,8 @@ export const AGENT_CONFIG = {
 
   // Test execution settings
   execution: {
-    stepDelay: 2000, // 2 seconds between test steps
-    maxRetries: 3,
-    retryDelay: 1000,
+    stepDelay: 3000, // 2 seconds between test steps
+    maxRetries: 5,
+    retryDelay: 2000,
   },
 } as const;
-
-export default AGENT_CONFIG;

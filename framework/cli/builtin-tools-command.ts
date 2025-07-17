@@ -12,7 +12,7 @@ export interface BuiltinTool {
 
 /**
  * Built-in tools registry
- * These are the 12 core browser automation tools available in Endorphin AI
+ * These are the 17 core browser automation tools available in Endorphin AI
  */
 const BUILTIN_TOOLS: BuiltinTool[] = [
   // Navigation Tools (1)
@@ -69,7 +69,7 @@ const BUILTIN_TOOLS: BuiltinTool[] = [
     parameters: ['selector: string', 'options?: ClearOptions']
   },
 
-  // Verification Tools (2)
+  // Verification Tools (5)
   {
     name: 'verifyElement',
     description: 'Verify element state (visible, hidden, enabled, disabled, etc.)',
@@ -81,6 +81,24 @@ const BUILTIN_TOOLS: BuiltinTool[] = [
     description: 'Get detailed information about elements (text, attributes, properties)',
     category: 'Verification',
     parameters: ['selector: string', 'properties?: string[]']
+  },
+  {
+    name: 'verifyTextContent',
+    description: 'Verify specific text content is visible on the page',
+    category: 'Verification',
+    parameters: ['text: string', 'exact?: boolean', 'timeout?: number']
+  },
+  {
+    name: 'verifyTitle',
+    description: 'Verify the page title matches or contains expected text',
+    category: 'Verification',
+    parameters: ['title: string', 'exact?: boolean', 'timeout?: number']
+  },
+  {
+    name: 'verifyURL',
+    description: 'Verify the page URL matches or contains expected URL',
+    category: 'Verification',
+    parameters: ['url: string', 'exact?: boolean', 'timeout?: number']
   },
 
   // Utility Tools (2)

@@ -17,6 +17,11 @@ export class BrowserManager {
   private page: Page | null = null;
   private config: BrowserManagerConfig;
   private logger = globalLogger.createChild('BrowserManager');
+  
+  // Multi-user support
+  private userContexts: Map<string, BrowserContext> = new Map();
+  private userPages: Map<string, Page> = new Map();
+  private currentUserId: string | null = null;
 
   constructor(config: BrowserManagerConfig) {
     this.config = config;
@@ -62,6 +67,17 @@ export class BrowserManager {
       throw new Error('Browser not initialized. Call initialize() first.');
     }
     return this.page;
+  }
+
+  /**
+   * Get page for specific user
+   */
+  getUserPage(userId: string): Page {
+    const page = this.userPages.get(userId);
+    if (!page) {
+      throw new Error(`User page not found for user: ${userId}. Call initializeMultiUser() first.`);
+    }
+    return page;
   }
 
   /**
@@ -231,6 +247,10 @@ export class BrowserManager {
     this.logger.info('Cleaning up browser resources');
 
     try {
+      // Clean up multi-user sessions first
+      await this.cleanupMultiUser();
+      
+      // Clean up single-user session
       await this.closePage();
       await this.closeContext();
       await this.closeBrowser();
@@ -238,6 +258,55 @@ export class BrowserManager {
     } catch (error: any) {
       this.logger.error('Error during browser cleanup', error);
     }
+  }
+
+  /**
+   * Clean up multi-user sessions
+   */
+  private async cleanupMultiUser(): Promise<void> {
+    if (this.userPages.size === 0) {
+      return;
+    }
+
+    this.logger.debug('Cleaning up multi-user sessions', { userCount: this.userPages.size });
+
+    // Close all user pages except the main page if it's being reused
+    for (const [userId, page] of this.userPages) {
+      try {
+        // Skip closing if this is the main page
+        if (page === this.page) {
+          this.logger.debug('Skipping main page close for user', { userId });
+          continue;
+        }
+        this.removePageEventHandlers(page);
+        await page.close();
+        this.logger.debug('Closed page for user', { userId });
+      } catch (error: any) {
+        this.logger.error('Error closing page for user', error, { userId });
+      }
+    }
+
+    // Close all user contexts except the main context if it's being reused
+    for (const [userId, context] of this.userContexts) {
+      try {
+        // Skip closing if this is the main context
+        if (context === this.context) {
+          this.logger.debug('Skipping main context close for user', { userId });
+          continue;
+        }
+        await context.close();
+        this.logger.debug('Closed context for user', { userId });
+      } catch (error: any) {
+        this.logger.error('Error closing context for user', error, { userId });
+      }
+    }
+
+    // Clear maps
+    this.userPages.clear();
+    this.userContexts.clear();
+    this.currentUserId = null;
+
+    this.logger.debug('Multi-user cleanup completed');
   }
 
   /**
@@ -277,6 +346,119 @@ export class BrowserManager {
   }
 
   /**
+   * Initialize multi-user browser sessions
+   */
+  async initializeMultiUser(userIds: string[]): Promise<void> {
+    if (userIds.length === 0) {
+      throw new Error('At least one user ID is required');
+    }
+
+    if (userIds.length > 5) {
+      throw new Error('Maximum 5 users supported per test');
+    }
+
+    this.logger.info('Initializing multi-user browser sessions', { userCount: userIds.length, users: userIds });
+
+    // Ensure browser is initialized
+    if (!this.browser) {
+      await this.initialize();
+    }
+
+    // For the first user, reuse the existing context and page
+    const firstUserId = userIds[0];
+    if (this.context && this.page) {
+      this.userContexts.set(firstUserId, this.context);
+      this.userPages.set(firstUserId, this.page);
+      this.logger.debug(`Reusing existing browser context for user: ${firstUserId}`);
+    } else {
+      throw new Error('Browser must be initialized before multi-user setup');
+    }
+
+    // Create new contexts and pages for additional users
+    for (let i = 1; i < userIds.length; i++) {
+      const userId = userIds[i];
+      const contextOptions = this.getContextOptions();
+      const context = await this.browser!.newContext(contextOptions);
+      const page = await context.newPage();
+
+      // Setup page event handlers
+      this.setupPageEventHandlers(page);
+
+      // Store user context and page
+      this.userContexts.set(userId, context);
+      this.userPages.set(userId, page);
+      this.logger.debug(`Created new browser context for user: ${userId}`);
+
+      this.logger.debug('Created browser session for user', { userId });
+    }
+
+    this.logger.info('Multi-user browser sessions initialized successfully');
+  }
+
+  /**
+   * Parse base user ID from phase ID (e.g., 'user1.phase1' -> 'user1')
+   */
+  private parseBaseUserId(phaseId: string): string {
+    return phaseId.split('.')[0];
+  }
+
+  /**
+   * Switch to specific user context (supports phase-based IDs)
+   */
+  async switchToUser(userId: string): Promise<void> {
+    // Parse base user ID from phase ID if needed
+    const baseUserId = this.parseBaseUserId(userId);
+    
+    if (!this.userPages.has(baseUserId)) {
+      throw new Error(`User ${baseUserId} not found. Call initializeMultiUser() first.`);
+    }
+
+    this.currentUserId = userId; // Keep the full phase ID for tracking
+    this.page = this.userPages.get(baseUserId)!;
+    this.context = this.userContexts.get(baseUserId)!;
+
+    this.logger.debug('Switched to user context', { 
+      phaseId: userId, 
+      baseUserId,
+      availableUsers: Array.from(this.userPages.keys())
+    });
+
+    // Add timing delay for multi-user context switching to ensure stability
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Ensure the page is ready by checking if it's still connected
+    if (this.page) {
+      try {
+        await this.page.waitForLoadState('networkidle', { timeout: 3000 });
+      } catch (error) {
+        // If networkidle times out, just wait for domcontentloaded
+        await this.page.waitForLoadState('domcontentloaded', { timeout: 2000 });
+      }
+    }
+  }
+
+  /**
+   * Get current user ID
+   */
+  getCurrentUserId(): string | null {
+    return this.currentUserId;
+  }
+
+  /**
+   * Get all user IDs
+   */
+  getUserIds(): string[] {
+    return Array.from(this.userPages.keys());
+  }
+
+  /**
+   * Check if multi-user mode is active
+   */
+  isMultiUserMode(): boolean {
+    return this.userPages.size > 0;
+  }
+
+  /**
    * Get browser type
    */
   private getBrowserType() {
@@ -297,7 +479,10 @@ export class BrowserManager {
   private getLaunchOptions() {
     const options: any = {
       headless: this.config.browser.headless,
-      args: ['--start-maximized'],
+      args: [
+        '--window-size=1300,750',  // Small window size (slightly bigger than viewport for window chrome)
+        '--disable-web-security',
+      ],
     };
 
     if (this.config.browser.slowMo !== undefined) {

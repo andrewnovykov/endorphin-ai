@@ -5,23 +5,23 @@
 
 import { HumanMessage } from '@langchain/core/messages';
 import * as path from 'node:path';
+import { setupAgent } from '../ai/agent-setup.js';
 import type {
   AgentInvokeParams,
   AgentResponse,
   LangChainAgent,
   LangChainTool,
-} from '../ai/types/agent.js';
+} from '../types/agent.js';
 import { TestTimeoutError } from '../types/errors.js';
 import type { FrameworkConfig, TaskResult, TestConfig, TestSession } from '../types/index.js';
-import { setupAgent } from '../ai/agent-setup.js';
 
 // DI imports
-import { HtmlReporter } from '../reporters/html-reporter.js';
 import { BrowserManager } from '../automation/browser/browser-manager.js';
+import { PageSnapshotManager } from '../managers/content/snapshot-manager.js';
+import { HtmlReporter } from '../reporters/html-reporter.js';
 import { ConfigManager } from './config-manager.js';
 import { DependencyContainer, createContainer } from './dependency-container.js';
 import { Logger } from './logger.js';
-import { PageSnapshotManager } from '../managers/content/snapshot-manager.js';
 import { ResourceManager } from './resource-manager.js';
 import { SERVICE_NAMES, ServiceRegistry } from './service-registry.js';
 import { SessionManager } from './session-manager.js';

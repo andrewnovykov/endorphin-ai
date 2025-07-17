@@ -164,7 +164,7 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
 
         await locator.waitFor({ state: 'visible', timeout });
         await locator.click({ force });
-        await framework.takeStepScreenshot(`After clicking ${selector}`);
+        const screenshotPath = await framework.takeStepScreenshot(`After clicking ${selector}`);
 
         const result = `Successfully clicked ${selector} using ${strategy} strategy`;
         framework.logTestStep(
@@ -172,7 +172,8 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
           'click',
           { selector, strategy, timeout, force },
           result,
-          true
+          true,
+          screenshotPath ? [screenshotPath] : []
         );
 
         // Debug logging for successful tool completion
@@ -182,13 +183,14 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
 
         return result;
       } catch (error: any) {
-        await framework.takeStepScreenshot(`Failed to click ${selector}`);
+        const screenshotPath = await framework.takeStepScreenshot(`Failed to click ${selector}`);
         framework.logTestStep(
           stepDesc,
           'click',
           { selector, strategy, timeout, force },
           error.message,
-          false
+          false,
+          screenshotPath ? [screenshotPath] : []
         );
 
         // Debug logging for failed tool execution
@@ -331,7 +333,7 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
           await framework.currentPage!.keyboard.press('Enter');
         }
 
-        await framework.takeStepScreenshot(`After filling ${finalSelector}`);
+        const screenshotPath = await framework.takeStepScreenshot(`After filling ${finalSelector}`);
 
         // Verify the value was set correctly
         const actualValue = await framework.currentPage!.locator(finalSelector).inputValue();
@@ -345,17 +347,19 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
           'fill',
           { selector: finalSelector, value, strategy, clearFirst, pressEnter },
           result,
-          success
+          success,
+          screenshotPath ? [screenshotPath] : []
         );
         return success ? `✅ ${result}` : `⚠️ ${result}`;
       } catch (error: any) {
-        await framework.takeStepScreenshot(`Failed to fill ${selector}`);
+        const screenshotPath = await framework.takeStepScreenshot(`Failed to fill ${selector}`);
         framework.logTestStep(
           stepDesc,
           'fill',
           { selector, value, strategy, clearFirst, pressEnter },
           error.message,
-          false
+          false,
+          screenshotPath ? [screenshotPath] : []
         );
         return `❌ Error filling ${selector}: ${error.message}`;
       }
@@ -400,6 +404,8 @@ export function createClearFieldTool(framework: EnhancedBrowserTestFramework) {
         const locator = framework.currentPage!.locator(selector);
         await locator.clear();
 
+        const screenshotPath = await framework.takeStepScreenshot(`After clearing ${selector}`);
+
         // Verify field is cleared
         const value = await locator.inputValue();
         const isCleared = value === '';
@@ -408,10 +414,11 @@ export function createClearFieldTool(framework: EnhancedBrowserTestFramework) {
           ? `Successfully cleared field ${selector}`
           : `Field ${selector} still contains: "${value}"`;
 
-        framework.logTestStep(stepDesc, 'clearField', { selector }, result, isCleared);
+        framework.logTestStep(stepDesc, 'clearField', { selector }, result, isCleared, screenshotPath ? [screenshotPath] : []);
         return isCleared ? `✅ ${result}` : `⚠️ ${result}`;
       } catch (error: any) {
-        framework.logTestStep(stepDesc, 'clearField', { selector }, error.message, false);
+        const screenshotPath = await framework.takeStepScreenshot(`Failed to clear ${selector}`);
+        framework.logTestStep(stepDesc, 'clearField', { selector }, error.message, false, screenshotPath ? [screenshotPath] : []);
         return `❌ Error clearing field ${selector}: ${error.message}`;
       }
     },

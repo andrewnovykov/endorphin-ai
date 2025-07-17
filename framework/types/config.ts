@@ -3,7 +3,7 @@
  */
 
 import type { PricingConfig } from '../config/pricing-config';
-import type { AIConfig } from '../ai/types/agent.js';
+import type { AIConfig } from './agent.js';
 import type { BrowserConfig } from './browser';
 
 export interface FrameworkConfig {

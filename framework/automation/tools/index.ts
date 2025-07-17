@@ -16,14 +16,20 @@ import {
 } from './interaction.js';
 import { createNavigationTool } from './navigation.js';
 import { createScreenshotTool, createWaitTool } from './utilities.js';
-import { createGetElementInfoTool, createVerifyElementTool } from './verification.js';
+import { 
+  createGetElementInfoTool, 
+  createVerifyElementTool, 
+  createVerifyTextContentTool,
+  createVerifyTitleTool,
+  createVerifyURLTool
+} from './verification.js';
 
 /**
  * Create all browser automation tools for the framework
  * @param framework - Framework instance
  * @returns Array of all configured LangChain tools
  */
-export function createAllTools(framework: EnhancedBrowserTestFramework): any[] {
+export function createAllTools(framework: any): any[] {
   // Built-in browser automation tools
   const builtInTools = [
     // Navigation tools
@@ -45,6 +51,9 @@ export function createAllTools(framework: EnhancedBrowserTestFramework): any[] {
     // Verification tools
     createVerifyElementTool(framework),
     createGetElementInfoTool(framework),
+    createVerifyTextContentTool(framework), // New tool for better text verification
+    createVerifyTitleTool(framework), // New tool for title verification
+    createVerifyURLTool(framework), // New tool for URL verification
 
     // Utility tools
     createWaitTool(framework),

@@ -12,7 +12,7 @@ import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
  * @param framework - Framework instance
  * @returns LangChain tool for navigation
  */
-export function createNavigationTool(framework: EnhancedBrowserTestFramework) {
+export function createNavigationTool(framework: any) {
   return tool(
     async (params: {
       location: string;
