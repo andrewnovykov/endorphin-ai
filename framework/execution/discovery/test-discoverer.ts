@@ -13,6 +13,7 @@ import type {
   TestDiscoveryResult,
   TestFileResult,
 } from './discovery-types.js';
+import { cloneTestObject } from '../utils/clone-utils.js';
 
 /**
  * Check if we're running in test environment
@@ -352,7 +353,7 @@ export class TestDiscoverer {
     if (module.default && this.isValidTest(module.default)) {
       const test = module.default as TestConfig;
       const discoveredTest: DiscoveredTest = {
-        ...test,
+        ...cloneTestObject(test),
         sourceFile: filename,
         exportName: 'default',
       };
@@ -367,7 +368,7 @@ export class TestDiscoverer {
       if (exportName !== 'default' && this.isValidTest(exportValue)) {
         const test = exportValue as TestConfig;
         const discoveredTest: DiscoveredTest = {
-          ...test,
+          ...cloneTestObject(test),
           sourceFile: filename,
           exportName,
         };
@@ -452,17 +453,18 @@ export class TestDiscoverer {
   }
 
   /**
-   * Get test by ID
+   * Get test by ID (returns a cloned copy to ensure isolation)
    */
   getTest(id: string): DiscoveredTest | undefined {
-    return this.tests.get(id);
+    const test = this.tests.get(id);
+    return test ? (cloneTestObject(test) as DiscoveredTest) : undefined;
   }
 
   /**
-   * Get all tests
+   * Get all tests (returns cloned copies to ensure isolation)
    */
   getAllTests(): DiscoveredTest[] {
-    return Array.from(this.tests.values());
+    return Array.from(this.tests.values()).map(test => cloneTestObject(test) as DiscoveredTest);
   }
 
   /**

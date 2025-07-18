@@ -10,7 +10,7 @@ import type { TestSession } from '../types/test.js';
 interface SessionSummary {
   testName: string;
   sessionId: string;
-  status: 'SUCCESS' | 'FAILED' | 'RUNNING';
+  status: 'SUCCESS' | 'FAILED' | 'RUNNING' | 'SKIPPED';
   startTime: string;
   endTime?: string;
   duration?: number;

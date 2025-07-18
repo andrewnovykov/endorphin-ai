@@ -39,6 +39,7 @@ export type { RecorderCommand, RecorderSession } from './recorder.js';
 
 // Reporter types
 export type { ReportOptions, TestReport, TestSummary } from './reporter.js';
+export type { TestPerformanceData } from '../reporters/performance-reporter.js';
 
 // Test types
 export type {
@@ -56,4 +57,10 @@ export type {
   TestStep,
   TestTaskFunction,
   TestTasksFunction,
+  TestAttempt,
+  EnhancedTestResult,
+  PerformanceMetrics,
+  MemorySample,
+  CpuSample,
+  TestSuiteSummary,
 } from './test.js';

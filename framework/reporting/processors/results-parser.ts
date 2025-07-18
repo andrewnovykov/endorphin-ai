@@ -34,6 +34,12 @@ export interface ParsedTestResult {
   dataGenerationResult?: any;
   totalSteps?: number;
   successfulSteps?: number;
+  // Enhanced fields for retry and flaky test support
+  attempts?: any[];
+  isFlaky?: boolean;
+  isSkipped?: boolean;
+  skipReason?: string;
+  performanceMetrics?: any;
 }
 
 export interface ReportData {
@@ -82,15 +88,18 @@ export class ResultsParser {
       }
     }
 
+    // Aggregate test results by test ID to combine multiple attempts
+    const aggregatedResults = this.aggregateTestResults(testResults);
+
     // Sort results by start time (newest first)
-    testResults.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+    aggregatedResults.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
 
     // Calculate summary
-    const summary = this.calculateSummary(testResults);
+    const summary = this.calculateSummary(aggregatedResults);
 
     return {
       summary,
-      testResults,
+      testResults: aggregatedResults,
       screenshots,
     };
   }
@@ -120,6 +129,72 @@ export class ResultsParser {
       console.warn('Error reading test results directory:', error);
       return [];
     }
+  }
+
+  /**
+   * Aggregate test results by test ID to combine multiple attempts
+   */
+  private aggregateTestResults(testResults: ParsedTestResult[]): ParsedTestResult[] {
+    const aggregatedMap = new Map<string, ParsedTestResult>();
+    
+    for (const result of testResults) {
+      const existingResult = aggregatedMap.get(result.testId);
+      
+      if (existingResult) {
+        // Combine attempts for the same test
+        const combinedResult = this.combineTestResults(existingResult, result);
+        aggregatedMap.set(result.testId, combinedResult);
+      } else {
+        // First occurrence of this test
+        aggregatedMap.set(result.testId, { ...result });
+      }
+    }
+    
+    return Array.from(aggregatedMap.values());
+  }
+
+  /**
+   * Combine two test results for the same test ID
+   */
+  private combineTestResults(existing: ParsedTestResult, newResult: ParsedTestResult): ParsedTestResult {
+    // Use the latest attempt's status as the final status
+    const finalStatus = newResult.status === 'SUCCESS' ? 'SUCCESS' : 
+                       existing.status === 'SUCCESS' ? 'SUCCESS' : 
+                       newResult.status;
+    
+    // Combine attempts
+    const existingAttempts = (existing as any).attempts || [];
+    const newAttempts = (newResult as any).attempts || [];
+    const allAttempts = [...existingAttempts, ...newAttempts];
+    
+    // Determine if test is flaky (passed after failing)
+    const isFlaky = allAttempts.some((a: any) => a.status === 'failed') && 
+                   allAttempts.some((a: any) => a.status === 'passed');
+    
+    // Use the latest result's timing and session info
+    const combinedResult: ParsedTestResult = {
+      ...existing,
+      status: finalStatus,
+      duration: newResult.duration, // Use latest duration
+      sessionId: newResult.sessionId, // Use latest session ID
+    };
+    
+    // Handle optional endTime property
+    if (newResult.endTime) {
+      combinedResult.endTime = newResult.endTime;
+    } else if (existing.endTime) {
+      combinedResult.endTime = existing.endTime;
+    }
+    
+    // Add enhanced tracking data
+    (combinedResult as any).attempts = allAttempts;
+    (combinedResult as any).totalAttempts = allAttempts.length;
+    (combinedResult as any).passedAttempts = allAttempts.filter((a: any) => a.status === 'passed').length;
+    (combinedResult as any).failedAttempts = allAttempts.filter((a: any) => a.status === 'failed').length;
+    (combinedResult as any).isFlaky = isFlaky;
+    (combinedResult as any).isQuarantined = (existing as any).isQuarantined || (newResult as any).isQuarantined;
+    
+    return combinedResult;
   }
 
   /**
@@ -156,6 +231,12 @@ export class ResultsParser {
         screenshots: this.extractScreenshotPaths(sessionData.steps || []),
         sessionDir: path.dirname(sessionFile),
         tokenSummary: sessionData.tokenSummary,
+        // Enhanced fields
+        attempts: sessionData.attempts || [],
+        isFlaky: sessionData.isFlaky || false,
+        isSkipped: sessionData.isSkipped || sessionData.status === 'SKIPPED',
+        skipReason: sessionData.skipReason || 'Not specified',
+        performanceMetrics: sessionData.performanceMetrics || {},
       };
     } catch (error) {
       console.warn(`Error parsing session file ${sessionFile}:`, error);

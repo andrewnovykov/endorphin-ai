@@ -4,10 +4,16 @@
  */
 
 import { performance } from 'perf_hooks';
+import { promises as fs } from 'fs';
+import path from 'path';
 import { ConsoleReporter } from '../../reporters/console-reporter.js';
 import { DirectoryManager } from '../../utils/directory-manager.js';
-import type { DiscoveryResult, FrameworkConfig, TaskResult } from '../../types/index.js';
+import type { DiscoveryResult, FrameworkConfig, TaskResult, TestAttempt, EnhancedTestResult, PerformanceMetrics, TestSession } from '../../types/index.js';
 import type { DiscoveredTest, TestExecutionOptions } from '../discovery/discovery-types.js';
+import { runWithTestExecutionContext } from '../../utils/context-isolation.js';
+import { PerformanceMonitor, runWithPerformanceMonitoring } from '../../utils/performance-monitor.js';
+import { createTestSession, saveTestSession } from '../../core/test-session.js';
+
 
 /**
  * Check if we're running in test environment

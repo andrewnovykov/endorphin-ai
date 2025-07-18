@@ -96,7 +96,7 @@ export interface TestSession {
   agentHistory: AgentHistoryEntry[]; // AI decision process tracking
   stepCounter: number;
   screenshotCounter: number;
-  status: 'RUNNING' | 'SUCCESS' | 'FAILED';
+  status: 'RUNNING' | 'SUCCESS' | 'FAILED' | 'SKIPPED';
   finalResult?: string;
   conclusion?: string;
   duration?: number;
@@ -109,6 +109,17 @@ export interface TestSession {
   };
   setupResult?: TestSetupResult; // Test setup execution result
   dataGenerationResult?: DataGenerationResult; // Test data generation execution result
+  // Enhanced retry and flaky test tracking
+  attempts?: TestAttempt[];
+  totalAttempts?: number;
+  passedAttempts?: number;
+  failedAttempts?: number;
+  isFlaky?: boolean;
+  isQuarantined?: boolean;
+  isSkipped?: boolean;
+  skipReason?: string;
+  // Performance metrics
+  performanceMetrics?: PerformanceMetrics;
 }
 
 export interface AgentHistoryEntry {
@@ -151,12 +162,22 @@ export interface TestStep {
 export interface TestResult {
   testId: string;
   name: string;
-  status: 'passed' | 'failed' | 'skipped';
+  status: 'passed' | 'failed' | 'skipped' | 'quarantined';
   duration: number;
   error?: string;
   screenshots: string[];
   logs: string[];
   timestamp: string;
+  // Enhanced retry and flaky test tracking
+  attempts?: TestAttempt[];
+  totalAttempts?: number;
+  passedAttempts?: number;
+  failedAttempts?: number;
+  isFlaky?: boolean;
+  isQuarantined?: boolean;
+  skipReason?: string;
+  // Performance metrics
+  performanceMetrics?: PerformanceMetrics;
 }
 
 export interface TaskResult {
@@ -190,4 +211,104 @@ export interface NaturalLanguageResult {
   error?: string;
   duration: number;
   tokenUsage?: any;
+}
+
+/**
+ * Individual test attempt result
+ */
+export interface TestAttempt {
+  attemptNumber: number;
+  status: 'passed' | 'failed' | 'skipped';
+  duration: number;
+  error?: string;
+  timestamp: string;
+  performanceMetrics?: PerformanceMetrics;
+}
+
+/**
+ * Performance metrics for test execution
+ */
+export interface PerformanceMetrics {
+  startTime: number;
+  endTime: number;
+  duration: number;
+  memoryUsage: {
+    start: NodeJS.MemoryUsage;
+    end: NodeJS.MemoryUsage;
+    peak: NodeJS.MemoryUsage;
+    samples: MemorySample[];
+  };
+  cpuUsage: {
+    start: NodeJS.CpuUsage;
+    end: NodeJS.CpuUsage;
+    samples: CpuSample[];
+  };
+  browserProcessMetrics?: {
+    startTime: number;
+    endTime: number;
+    duration: number;
+    samples: Array<{
+      timestamp: number;
+      processes: Array<{
+        pid: number;
+        name: string;
+        cpu: number;
+        memory: number;
+        parent?: number;
+      }>;
+      totalMemory: number;
+      totalCpu: number;
+    }>;
+    peakMemory: number;
+    avgMemory: number;
+    peakCpu: number;
+    avgCpu: number;
+    processCount: number;
+  };
+}
+
+/**
+ * Memory usage sample during test execution
+ */
+export interface MemorySample {
+  timestamp: number;
+  usage: NodeJS.MemoryUsage;
+}
+
+/**
+ * CPU usage sample during test execution
+ */
+export interface CpuSample {
+  timestamp: number;
+  usage: NodeJS.CpuUsage;
+}
+
+/**
+ * Enhanced test execution result with retry and flaky test tracking
+ */
+export interface EnhancedTestResult extends TestResult {
+  attempts: TestAttempt[];
+  totalAttempts: number;
+  passedAttempts: number;
+  failedAttempts: number;
+  isFlaky: boolean;
+  isQuarantined: boolean;
+  skipReason?: string;
+  performanceMetrics: PerformanceMetrics;
+}
+
+/**
+ * Test suite execution summary
+ */
+export interface TestSuiteSummary {
+  totalTests: number;
+  passedTests: number;
+  failedTests: number;
+  skippedTests: number;
+  quarantinedTests: number;
+  flakyTests: number;
+  totalDuration: number;
+  startTime: string;
+  endTime: string;
+  performanceMetrics: PerformanceMetrics;
 }

@@ -6,6 +6,8 @@
 import { Browser, BrowserContext, Page, chromium, firefox, webkit } from 'playwright';
 import type { BrowserConfig } from '../types/browser.js';
 import { globalLogger } from '../../core/logger.js';
+import { getContextCurrentUserId, setContextCurrentUserId } from '../../utils/context-isolation.js';
+import { globalBrowserProcessMonitor } from '../../utils/browser-process-monitor.js';
 
 export interface BrowserManagerConfig {
   browser: BrowserConfig;
@@ -21,7 +23,7 @@ export class BrowserManager {
   // Multi-user support
   private userContexts: Map<string, BrowserContext> = new Map();
   private userPages: Map<string, Page> = new Map();
-  private currentUserId: string | null = null;
+  // Note: currentUserId is now stored in context isolation instead of instance variable
 
   constructor(config: BrowserManagerConfig) {
     this.config = config;
@@ -50,6 +52,18 @@ export class BrowserManager {
     });
 
     this.browser = await browserType.launch(launchOptions);
+    
+    // Track browser process for monitoring
+    try {
+      const browserProcesses = (this.browser as any).process();
+      if (browserProcesses && browserProcesses.pid) {
+        globalBrowserProcessMonitor.addBrowserProcess(browserProcesses.pid);
+        this.logger.debug(`Browser process started with PID: ${browserProcesses.pid}`);
+      }
+    } catch (error) {
+      this.logger.debug('Browser process tracking not available in this Playwright version');
+    }
+    
     this.context = await this.browser.newContext(contextOptions);
     this.page = await this.context.newPage();
 
@@ -232,6 +246,18 @@ export class BrowserManager {
   async closeBrowser(): Promise<void> {
     if (this.browser) {
       this.logger.debug('Closing browser');
+      
+      // Remove browser process from monitoring
+      try {
+        const browserProcesses = (this.browser as any).process();
+        if (browserProcesses && browserProcesses.pid) {
+          globalBrowserProcessMonitor.removeBrowserProcess(browserProcesses.pid);
+          this.logger.debug(`Browser process stopped with PID: ${browserProcesses.pid}`);
+        }
+      } catch (error) {
+        this.logger.debug('Browser process tracking not available in this Playwright version');
+      }
+      
       await this.browser.close();
       this.browser = null;
       this.context = null;
@@ -304,7 +330,7 @@ export class BrowserManager {
     // Clear maps
     this.userPages.clear();
     this.userContexts.clear();
-    this.currentUserId = null;
+    setContextCurrentUserId(null);
 
     this.logger.debug('Multi-user cleanup completed');
   }
@@ -367,6 +393,12 @@ export class BrowserManager {
     // Clean up any existing multi-user sessions to prevent session reuse between tests
     await this.cleanupMultiUser();
 
+    // Ensure we still have a valid browser after cleanup
+    if (!this.browser || this.browser.isConnected() === false) {
+      this.logger.warn('Browser disconnected after cleanup, reinitializing...');
+      await this.initialize();
+    }
+
     // For the first user, reuse the existing context and page
     const firstUserId = userIds[0];
     if (this.context && this.page) {
@@ -374,7 +406,14 @@ export class BrowserManager {
       this.userPages.set(firstUserId, this.page);
       this.logger.debug(`Reusing existing browser context for user: ${firstUserId}`);
     } else {
-      throw new Error('Browser must be initialized before multi-user setup');
+      // If main context/page was closed during cleanup, create new ones
+      this.logger.debug('Main context/page not available, creating new ones');
+      this.context = await this.browser!.newContext(this.getContextOptions());
+      this.page = await this.context.newPage();
+      this.setupPageEventHandlers(this.page);
+      
+      this.userContexts.set(firstUserId, this.context);
+      this.userPages.set(firstUserId, this.page);
     }
 
     // Create new contexts and pages for additional users
@@ -416,7 +455,7 @@ export class BrowserManager {
       throw new Error(`User ${baseUserId} not found. Call initializeMultiUser() first.`);
     }
 
-    this.currentUserId = userId; // Keep the full phase ID for tracking
+    setContextCurrentUserId(userId); // Keep the full phase ID for tracking (thread-safe)
     this.page = this.userPages.get(baseUserId)!;
     this.context = this.userContexts.get(baseUserId)!;
 
@@ -441,10 +480,10 @@ export class BrowserManager {
   }
 
   /**
-   * Get current user ID
+   * Get current user ID (thread-safe)
    */
   getCurrentUserId(): string | null {
-    return this.currentUserId;
+    return getContextCurrentUserId();
   }
 
   /**
@@ -496,8 +535,8 @@ export class BrowserManager {
         '--disable-dev-shm-usage',
         '--disable-gpu',
         '--no-first-run',
-        '--no-zygote',
-        '--single-process', // Reduce memory usage in CI
+        '--no-zygote'
+        // Removed '--single-process' as it causes issues with multiple contexts
       );
 
       // Additional memory optimizations if enabled

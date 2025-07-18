@@ -6,6 +6,17 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
 import * as path from 'node:path';
 import { setCurrentTestSession, setupAgent } from '../ai/agent-setup.js';
+import {
+  runWithTestExecutionContext,
+  setContextSession,
+  setContextBrowserManager,
+  setContextTokenTracker,
+  setContextSetupData,
+  setContextGeneratedData,
+  getContextSetupData,
+  getContextGeneratedData,
+  debugContextState,
+} from '../utils/context-isolation.js';
 import { ValidationAgent } from '../ai/validation-agent.js';
 import { PageSnapshotManager } from '../managers/content/snapshot-manager.js';
 import { HtmlReporter } from '../reporters/html-reporter.js';
@@ -186,7 +197,7 @@ export class TestFramework {
    * Run a test with the given configuration
    */
   async runTest(testConfig: TestConfig): Promise<TaskResult> {
-    // Run the entire test within the browser manager context for isolation
+    // Run the entire test within both browser and agent contexts for complete isolation
     return await runWithBrowserManager(this.browserManager, async () => {
       this.logger.info(`Running test: ${testConfig.name}`, {
         testId: testConfig.id,
@@ -195,6 +206,11 @@ export class TestFramework {
 
       // Record test start for CI performance monitoring
       ciPerformanceMonitor.recordTestStart();
+
+      // Check if performance monitoring is enabled
+      const isPerformanceMonitoringEnabled = 
+        process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true' || 
+        process.env.ENDORPHIN_PERF_MONITORING === 'true';
 
       try {
         // Create test session
@@ -237,8 +253,40 @@ export class TestFramework {
           await this.browserManager.navigateToUrl(testConfig.url);
         }
 
-        // Execute test instructions
-        const result = await this.executeTest(testConfig, session);
+        // Execute test instructions with performance monitoring if enabled
+        let result: TaskResult;
+        let performanceMetrics: any = null;
+
+        if (isPerformanceMonitoringEnabled) {
+          // Run with performance monitoring
+          const { runWithPerformanceMonitoring } = await import('../utils/performance-monitor.js');
+          
+          const performanceResult = await runWithPerformanceMonitoring(
+            async () => {
+              return await this.executeTest(testConfig, session);
+            },
+            `Test: ${testConfig.name}`
+          );
+
+          result = performanceResult.result;
+          performanceMetrics = performanceResult.metrics;
+        } else {
+          // Run without performance monitoring
+          result = await this.executeTest(testConfig, session);
+        }
+
+        // Save performance metrics to separate file if available
+        if (performanceMetrics && session) {
+          await this.savePerformanceMetricsToFile(
+            testConfig.id!,
+            testConfig.name,
+            result.success ? 'SUCCESS' : 'FAILED',
+            performanceMetrics,
+            1, // attempts - will be updated later if retries are involved
+            false, // isFlaky - will be updated later if retries are involved
+            session.sessionDir
+          );
+        }
 
         // Complete session
         await this.sessionManager.completeSession(
@@ -248,7 +296,7 @@ export class TestFramework {
         );
 
         // Clear the current session for agent token tracking
-        setCurrentTestSession(null);
+        setContextSession(null);
 
         this.logger.info(`Test completed: ${(result as any).success ? 'SUCCESS' : 'FAILED'}`, {
           testId: testConfig.id,
@@ -266,11 +314,58 @@ export class TestFramework {
         await this.sessionManager.completeSession(false, error.message);
 
         // Clear the current session for agent token tracking
-        setCurrentTestSession(null);
+        setContextSession(null);
 
         throw error;
       }
     });
+  }
+
+  /**
+   * Save performance metrics to a separate performance.json file
+   */
+  private async savePerformanceMetricsToFile(
+    testId: string,
+    testName: string,
+    status: 'SUCCESS' | 'FAILED',
+    performanceMetrics: any,
+    attempts: number,
+    isFlaky: boolean,
+    sessionDir: string
+  ): Promise<void> {
+    try {
+      const { promises: fs } = await import('fs');
+      const path = await import('path');
+      
+      const performanceFilePath = path.join(sessionDir, 'performance.json');
+      const performanceData = {
+        testId,
+        testName,
+        status,
+        duration: performanceMetrics.duration,
+        attempts,
+        isFlaky,
+        timestamp: new Date().toISOString(),
+        performanceMetrics: performanceMetrics,
+        memoryUsage: {
+          start: performanceMetrics.memoryUsage.start.heapUsed,
+          end: performanceMetrics.memoryUsage.end.heapUsed,
+          peak: performanceMetrics.memoryUsage.peak.heapUsed,
+          usedMB: (performanceMetrics.memoryUsage.peak.heapUsed - performanceMetrics.memoryUsage.start.heapUsed) / 1024 / 1024
+        },
+        cpuUsage: {
+          userTime: performanceMetrics.cpuUsage.end.user,
+          systemTime: performanceMetrics.cpuUsage.end.system,
+          totalTime: performanceMetrics.cpuUsage.end.user + performanceMetrics.cpuUsage.end.system,
+          percentage: performanceMetrics.duration > 0 ? ((performanceMetrics.cpuUsage.end.user + performanceMetrics.cpuUsage.end.system) / (performanceMetrics.duration * 1000)) * 100 : 0
+        }
+      };
+      
+      await fs.writeFile(performanceFilePath, JSON.stringify(performanceData, null, 2));
+      this.logger.info(`Performance metrics saved to: ${performanceFilePath}`);
+    } catch (error) {
+      this.logger.warn(`Failed to save performance metrics: ${error}`);
+    }
   }
 
   /**
@@ -571,7 +666,7 @@ export class TestFramework {
       const setupData = await testConfig.setup();
       const executionTime = Date.now() - startTime;
 
-      // Store setup result in session
+      // Store setup result in session and context
       const setupResult: TestSetupResult = {
         success: true,
         data: setupData,
@@ -580,6 +675,9 @@ export class TestFramework {
 
       // Update session with setup result
       await this.sessionManager.updateSessionSetup(setupResult);
+      
+      // Store in context for thread-safe access
+      setContextSetupData(setupData);
 
       this.logger.info(`Test setup completed successfully in ${executionTime}ms`, {
         testId: testConfig.id,
@@ -627,7 +725,7 @@ export class TestFramework {
       const generatedData = await testConfig.data();
       const executionTime = Date.now() - startTime;
 
-      // Store data generation result in session
+      // Store data generation result in session and context
       const dataResult: DataGenerationResult = {
         success: true,
         data: generatedData,
@@ -638,6 +736,9 @@ export class TestFramework {
 
       // Update session with data generation result
       await this.sessionManager.updateSessionDataGeneration(dataResult);
+      
+      // Store in context for thread-safe access
+      setContextGeneratedData(generatedData);
 
       this.logger.info(`Data generation completed successfully in ${executionTime}ms`, {
         testId: testConfig.id,
@@ -678,9 +779,9 @@ export class TestFramework {
         throw new Error('Test must have either task (single-user) or users + tasks (multi-user)');
       }
 
-      // Get setup data and test data from session
-      const setupData = session.setupResult?.data || null;
-      const testData = session.dataGenerationResult?.data || null;
+      // Get setup data and test data from context (thread-safe)
+      const setupData = getContextSetupData() || session.setupResult?.data || null;
+      const testData = getContextGeneratedData() || session.dataGenerationResult?.data || null;
 
       // Handle both string and function tasks
       const taskInstruction =
@@ -793,9 +894,9 @@ export class TestFramework {
       // Initialize multi-user browser sessions
       await this.browserManager.initializeMultiUser(testConfig.users);
 
-      // Get setup data and test data from session
-      const setupData = session.setupResult?.data || null;
-      const testData = session.dataGenerationResult?.data || null;
+      // Get setup data and test data from context (thread-safe)
+      const setupData = getContextSetupData() || session.setupResult?.data || null;
+      const testData = getContextGeneratedData() || session.dataGenerationResult?.data || null;
 
       // Execute tasks function to get user-specific task instructions
       const userTasks: Record<string, string> =

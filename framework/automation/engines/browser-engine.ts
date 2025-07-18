@@ -390,6 +390,11 @@ export class BrowserEngine {
     // Create test session with detailed tracking
     await this.createTestSession(test.name, test.id);
 
+    // Check if performance monitoring is enabled
+    const isPerformanceMonitoringEnabled = 
+      process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true' || 
+      process.env.ENDORPHIN_PERF_MONITORING === 'true';
+
     try {
       this.logTestStep(
         `Starting test execution: ${test.name}`,
@@ -451,7 +456,7 @@ export class BrowserEngine {
         console.log(`📝 Final task description: ${taskDescription}`);
       }
 
-      // Execute the test task with timeout
+      // Execute the test task with performance monitoring if enabled
       const messages = [new HumanMessage(taskDescription)];
 
       // Add timeout to prevent infinite loops
@@ -469,16 +474,44 @@ export class BrowserEngine {
         );
       });
 
-      const agentPromise = this.invokeAgentWithTracking(
-        { messages },
-        {
-          recursionLimit: AGENT_CONFIG.agent.recursionLimit,
-          configurable: { thread_id: `session-${this.currentTestSession!.sessionId}` },
-        },
-        `Test execution: ${test.name}`
-      );
+      let finalState: any;
+      let performanceMetrics: any = null;
 
-      const finalState = await Promise.race([agentPromise, timeoutPromise]);
+      if (isPerformanceMonitoringEnabled) {
+        // Run with performance monitoring
+        const { runWithPerformanceMonitoring } = await import('../../utils/performance-monitor.js');
+        
+        const performanceResult = await runWithPerformanceMonitoring(
+          async () => {
+            const agentPromise = this.invokeAgentWithTracking(
+              { messages },
+              {
+                recursionLimit: AGENT_CONFIG.agent.recursionLimit,
+                configurable: { thread_id: `session-${this.currentTestSession!.sessionId}` },
+              },
+              `Test execution: ${test.name}`
+            );
+
+            return await Promise.race([agentPromise, timeoutPromise]);
+          },
+          `Test: ${test.name}`
+        );
+
+        finalState = performanceResult.result;
+        performanceMetrics = performanceResult.metrics;
+      } else {
+        // Run without performance monitoring
+        const agentPromise = this.invokeAgentWithTracking(
+          { messages },
+          {
+            recursionLimit: AGENT_CONFIG.agent.recursionLimit,
+            configurable: { thread_id: `session-${this.currentTestSession!.sessionId}` },
+          },
+          `Test execution: ${test.name}`
+        );
+
+        finalState = await Promise.race([agentPromise, timeoutPromise]);
+      }
 
       // Analyze the final conversation state for test result
       const testResult = await this.analyzeTestResultWithValidation(finalState, taskDescription);
@@ -490,6 +523,18 @@ export class BrowserEngine {
         testResult.conclusion,
         testResult.status === 'SUCCESS'
       );
+
+      // Save performance metrics to separate file if available
+      if (performanceMetrics && this.currentTestSession) {
+        await this.savePerformanceMetricsToFile(
+          test.id,
+          test.name,
+          testResult.status,
+          performanceMetrics,
+          1, // attempts - will be updated later if retries are involved
+          false // isFlaky - will be updated later if retries are involved
+        );
+      }
 
       // Finish the test session with proper analysis
       const session = await this.finishTestSession(testResult.status, testResult.conclusion);
@@ -507,6 +552,54 @@ export class BrowserEngine {
       const session = await this.finishTestSession('FAILED', error.message);
 
       return { success: false, error: error.message, session };
+    }
+  }
+
+  /**
+   * Save performance metrics to a separate performance.json file
+   */
+  private async savePerformanceMetricsToFile(
+    testId: string,
+    testName: string,
+    status: 'SUCCESS' | 'FAILED',
+    performanceMetrics: any,
+    attempts: number,
+    isFlaky: boolean
+  ): Promise<void> {
+    if (!this.currentTestSession) return;
+
+    try {
+      const { promises: fs } = await import('fs');
+      const path = await import('path');
+      
+      const performanceFilePath = path.join(this.currentTestSession.sessionDir, 'performance.json');
+      const performanceData = {
+        testId,
+        testName,
+        status,
+        duration: performanceMetrics.duration,
+        attempts,
+        isFlaky,
+        timestamp: new Date().toISOString(),
+        performanceMetrics: performanceMetrics,
+        memoryUsage: {
+          start: performanceMetrics.memoryUsage.start.heapUsed,
+          end: performanceMetrics.memoryUsage.end.heapUsed,
+          peak: performanceMetrics.memoryUsage.peak.heapUsed,
+          usedMB: (performanceMetrics.memoryUsage.peak.heapUsed - performanceMetrics.memoryUsage.start.heapUsed) / 1024 / 1024
+        },
+        cpuUsage: {
+          userTime: performanceMetrics.cpuUsage.end.user,
+          systemTime: performanceMetrics.cpuUsage.end.system,
+          totalTime: performanceMetrics.cpuUsage.end.user + performanceMetrics.cpuUsage.end.system,
+          percentage: performanceMetrics.duration > 0 ? ((performanceMetrics.cpuUsage.end.user + performanceMetrics.cpuUsage.end.system) / (performanceMetrics.duration * 1000)) * 100 : 0
+        }
+      };
+      
+      await fs.writeFile(performanceFilePath, JSON.stringify(performanceData, null, 2));
+      console.log(`📊 Performance metrics saved to: ${performanceFilePath}`);
+    } catch (error) {
+      console.warn(`Failed to save performance metrics: ${error}`);
     }
   }
 

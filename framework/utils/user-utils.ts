@@ -3,18 +3,14 @@
  */
 
 import type { Page } from 'playwright';
-import { AsyncLocalStorage } from 'async_hooks';
-
-// Use AsyncLocalStorage for thread-safe context isolation
-const browserManagerStorage = new AsyncLocalStorage<any>();
+import { getContextBrowserManager, setContextBrowserManager } from './context-isolation.js';
 
 /**
  * Set the current browser manager instance for the current execution context
  * This is called internally by the framework
  */
 export function setBrowserManager(browserManager: any): void {
-  // Set the browser manager in the current async context
-  browserManagerStorage.enterWith(browserManager);
+  setContextBrowserManager(browserManager);
 }
 
 /**
@@ -22,7 +18,7 @@ export function setBrowserManager(browserManager: any): void {
  * Used internally by the framework
  */
 export function getCurrentBrowserManager(): any | null {
-  return browserManagerStorage.getStore() || null;
+  return getContextBrowserManager();
 }
 
 /**
@@ -30,7 +26,23 @@ export function getCurrentBrowserManager(): any | null {
  * This ensures the browser manager is isolated to this execution context
  */
 export function runWithBrowserManager<T>(browserManager: any, fn: () => T | Promise<T>): T | Promise<T> {
-  return browserManagerStorage.run(browserManager, fn);
+  const previousManager = getContextBrowserManager();
+  setContextBrowserManager(browserManager);
+  
+  try {
+    if (fn.constructor.name === 'AsyncFunction') {
+      return (fn as () => Promise<T>)().finally(() => {
+        setContextBrowserManager(previousManager);
+      });
+    } else {
+      const result = fn();
+      setContextBrowserManager(previousManager);
+      return result;
+    }
+  } catch (error) {
+    setContextBrowserManager(previousManager);
+    throw error;
+  }
 }
 
 /**

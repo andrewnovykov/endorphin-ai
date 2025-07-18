@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Endorphin AI Test Report</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="assets/styles.css" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Header -->
+  <nav class="navbar navbar-dark bg-primary">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">
+        <i class="bi bi-graph-up-arrow"></i>
+        Endorphin AI Test Report
+      </span>
+      <span class="navbar-text">
+        Generated: {{generatedAt}}
+      </span>
+    </div>
+  </nav>
+
+  <div class="container-fluid mt-4">
+    <!-- Main Navigation Tabs -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-pane" type="button" role="tab" aria-controls="overview-pane" aria-selected="true">
+              <i class="bi bi-speedometer2"></i> Overview
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance-pane" type="button" role="tab" aria-controls="performance-pane" aria-selected="false">
+              <i class="bi bi-graph-up"></i> Test Performance
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="flaky-tab" data-bs-toggle="tab" data-bs-target="#flaky-pane" type="button" role="tab" aria-controls="flaky-pane" aria-selected="false">
+              <i class="bi bi-exclamation-triangle"></i> Flaky Tests
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="skipped-tab" data-bs-toggle="tab" data-bs-target="#skipped-pane" type="button" role="tab" aria-controls="skipped-pane" aria-selected="false">
+              <i class="bi bi-skip-forward"></i> Skipped Tests
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="mainTabContent">
+      <!-- Overview Tab -->
+      <div class="tab-pane fade show active" id="overview-pane" role="tabpanel" aria-labelledby="overview-tab">
+        <!-- Enhanced Search and Filter Controls -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-6">
+                    <div class="input-group">
+                      <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                      </span>
+                      <input type="text" class="form-control" id="test-search" placeholder="Search tests by name or ID..."
+                        autocomplete="off">
+                      <button class="btn btn-outline-secondary" type="button" id="clear-search" title="Clear search">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="btn-group" role="group" aria-label="Filter options">
+                      <button type="button" class="btn btn-outline-primary active" id="filter-all" data-filter="all">
+                        <i class="bi bi-list"></i> All Tests
+                      </button>
+                      <button type="button" class="btn btn-outline-success" id="filter-passed" data-filter="passed">
+                        <i class="bi bi-check-circle"></i> Passed
+                      </button>
+                      <button type="button" class="btn btn-outline-danger" id="filter-failed" data-filter="failed">
+                        <i class="bi bi-x-circle"></i> Failed
+                      </button>
+                      <button type="button" class="btn btn-outline-warning" id="filter-flaky" data-filter="flaky">
+                        <i class="bi bi-exclamation-triangle"></i> Flaky
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary" id="filter-skipped" data-filter="skipped">
+                        <i class="bi bi-skip-forward"></i> Skipped
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-12">
+                    <small class="text-muted">
+                      <span id="search-results-info">Showing all test results</span>
+                      <span class="float-end">
+                        <button type="button" class="btn btn-link btn-sm p-0 text-muted me-2" id="export-json"
+                          title="Export to JSON">
+                          <i class="bi bi-download"></i> Export
+                        </button>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-muted me-2" id="print-report"
+                          title="Print report">
+                          <i class="bi bi-printer"></i> Print
+                        </button>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-muted" data-bs-toggle="modal"
+                          data-bs-target="#keyboardShortcutsModal" title="Keyboard shortcuts">
+                          <i class="bi bi-keyboard"></i> Shortcuts
+                        </button>
+                      </span>
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Summary Cards -->
+        <div class="row mb-4">
+          <div class="col-md-2">
+            <div class="card text-center">
+              <div class="card-body">
+                <h5 class="card-title text-primary">Total Tests</h5>
+                <h2 class="card-text">{{totalTests}}</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="card text-center">
+              <div class="card-body">
+                <h5 class="card-title text-success">Passed</h5>
+                <h2 class="card-text">{{passedTests}}</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="card text-center">
+              <div class="card-body">
+                <h5 class="card-title text-danger">Failed</h5>
+                <h2 class="card-text">{{failedTests}}</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="card text-center">
+              <div class="card-body">
+                <h5 class="card-title text-warning">Flaky</h5>
+                <h2 class="card-text">{{flakyTests}}</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="card text-center">
+              <div class="card-body">
+                <h5 class="card-title text-secondary">Skipped</h5>
+                <h2 class="card-text">{{skippedTests}}</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="card text-center">
+              <div class="card-body">
+                <h5 class="card-title text-info">Duration</h5>
+                <h2 class="card-text">{{totalDuration}}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cost and Performance Summary -->
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h5 class="card-title text-warning">Total Tokens</h5>
+                <h2 class="card-text">{{totalTokens}}</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h5 class="card-title text-success">Total Cost</h5>
+                <h2 class="card-text">${{totalCost}}</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h5 class="card-title text-primary">Avg Duration</h5>
+                <h2 class="card-text">{{avgDuration}}</h2>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h5 class="card-title text-info">Total Runs</h5>
+                <h2 class="card-text">{{totalRuns}}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success Rate -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Overall Success Rate</h5>
+                <div class="progress" style="height: 30px;">
+                  <div class="progress-bar bg-success" style="width: {{successRate}}%">
+                    {{successRate}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Test Duration Chart -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <i class="bi bi-clock"></i> Test Duration Analysis
+                </h5>
+                <canvas id="durationChart" width="800" height="300"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Test Results Table -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="card-title mb-0">Test Results</h5>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-primary" id="show-all-columns">
+                      <i class="bi bi-eye"></i> Show All
+                    </button>
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover" id="test-results-table">
+                    <thead class="table-dark">
+                      <tr>
+                        <th class="sortable" data-sort="testId">Test ID <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="testName">Test Name <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="status">Status <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="duration">Duration <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="attempts">Attempts <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="cost">Cost <i class="bi bi-chevron-expand"></i></th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="test-results-tbody">
+                      {{enhancedTestResultsTable}}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Analysis Tab -->
+      <div class="tab-pane fade" id="performance-pane" role="tabpanel" aria-labelledby="performance-tab">
+        <!-- Performance Controls -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-4">
+                    <div class="input-group">
+                      <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                      </span>
+                      <input type="text" class="form-control" id="performance-search" placeholder="Search tests...">
+                      <button class="btn btn-outline-secondary" type="button" id="clear-performance-search">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <select class="form-select" id="performance-filter">
+                      <option value="all">All Tests</option>
+                      <option value="100">100% Pass Rate</option>
+                      <option value="0">0% Pass Rate</option>
+                      <option value="flaky">Flaky Tests</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <select class="form-select" id="performance-sort">
+                      <option value="duration-desc">Slowest First</option>
+                      <option value="duration-asc">Fastest First</option>
+                      <option value="cost-desc">Most Expensive</option>
+                      <option value="cost-asc">Least Expensive</option>
+                      <option value="pass-rate-desc">Best Pass Rate</option>
+                      <option value="pass-rate-asc">Worst Pass Rate</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Charts -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <i class="bi bi-speedometer2"></i> Pass Rate Analysis
+                </h5>
+                <canvas id="passRateChart" width="400" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <i class="bi bi-currency-dollar"></i> Cost Analysis
+                </h5>
+                <canvas id="costChart" width="400" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Statistics -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Test Performance Statistics</h5>
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover" id="performance-table">
+                    <thead class="table-dark">
+                      <tr>
+                        <th class="sortable" data-sort="testId">Test ID <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="testName">Test Name <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="duration">Duration <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="passRate">Pass Rate <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="attempts">Attempts <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="cost">Cost <i class="bi bi-chevron-expand"></i></th>
+                        <th class="sortable" data-sort="tokens">Tokens <i class="bi bi-chevron-expand"></i></th>
+                        <th>Success Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody id="performance-table-body">
+                      {{performanceStatsTable}}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flaky Tests Tab -->
+      <div class="tab-pane fade" id="flaky-pane" role="tabpanel" aria-labelledby="flaky-tab">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Flaky Tests Analysis</h5>
+                <p class="text-muted">Tests that have both passed and failed attempts</p>
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover" id="flaky-tests-table">
+                    <thead class="table-dark">
+                      <tr>
+                        <th>Test ID</th>
+                        <th>Test Name</th>
+                        <th>Pass Rate</th>
+                        <th>Total Attempts</th>
+                        <th>Passed</th>
+                        <th>Failed</th>
+                        <th>Avg Duration</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="flaky-tests-tbody">
+                      {{flakyTestsTable}}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skipped Tests Tab -->
+      <div class="tab-pane fade" id="skipped-pane" role="tabpanel" aria-labelledby="skipped-tab">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Skipped Tests</h5>
+                <p class="text-muted">Tests that were skipped during execution</p>
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover" id="skipped-tests-table">
+                    <thead class="table-dark">
+                      <tr>
+                        <th>Test ID</th>
+                        <th>Test Name</th>
+                        <th>Skip Reason</th>
+                        <th>Skipped At</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="skipped-tests-tbody">
+                      {{skippedTestsTable}}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Details Modal -->
+  <div class="modal fade" id="testDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Test Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="testDetailsContent">
+          <!-- Test Overview Section -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h6>Test Information</h6>
+              <table class="table table-sm">
+                <tr>
+                  <th>Test ID:</th>
+                  <td id="modal-test-id">-</td>
+                </tr>
+                <tr>
+                  <th>Test Name:</th>
+                  <td id="modal-test-name">-</td>
+                </tr>
+                <tr>
+                  <th>Status:</th>
+                  <td id="modal-status">-</td>
+                </tr>
+                <tr>
+                  <th>Duration:</th>
+                  <td id="modal-duration">-</td>
+                </tr>
+                <tr>
+                  <th>Start Time:</th>
+                  <td id="modal-start-time">-</td>
+                </tr>
+                <tr>
+                  <th>End Time:</th>
+                  <td id="modal-end-time">-</td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <h6>Test Metrics</h6>
+              <table class="table table-sm">
+                <tr>
+                  <th>Total Steps:</th>
+                  <td id="modal-total-steps">-</td>
+                </tr>
+                <tr>
+                  <th>Screenshots:</th>
+                  <td id="modal-screenshots">-</td>
+                </tr>
+                <tr>
+                  <th>Total Tokens:</th>
+                  <td id="modal-total-tokens">-</td>
+                </tr>
+                <tr>
+                  <th>Total Cost:</th>
+                  <td id="modal-total-cost">-</td>
+                </tr>
+                <tr>
+                  <th>AI Calls:</th>
+                  <td id="modal-ai-calls">-</td>
+                </tr>
+                <tr>
+                  <th>Model:</th>
+                  <td id="modal-model">-</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Setup and Data Generation Section -->
+          <div id="setup-data-section" style="display: none;">
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h6>Setup Results</h6>
+                <table class="table table-sm">
+                  <tr>
+                    <th>Status:</th>
+                    <td id="modal-setup-status">-</td>
+                  </tr>
+                  <tr>
+                    <th>Execution Time:</th>
+                    <td id="modal-setup-time">-</td>
+                  </tr>
+                  <tr>
+                    <th>Has Data:</th>
+                    <td id="modal-setup-has-data">-</td>
+                  </tr>
+                  <tr id="modal-setup-error-row" style="display: none;">
+                    <th>Error:</th>
+                    <td id="modal-setup-error" class="text-danger">-</td>
+                  </tr>
+                </table>
+                <div id="setup-data-viewer" style="display: none;">
+                  <h6>Setup Data</h6>
+                  <pre id="setup-data-content" class="bg-light p-2" style="max-height: 200px; overflow-y: auto;"></pre>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <h6>Data Generation Results</h6>
+                <table class="table table-sm">
+                  <tr>
+                    <th>Status:</th>
+                    <td id="modal-data-status">-</td>
+                  </tr>
+                  <tr>
+                    <th>Execution Time:</th>
+                    <td id="modal-data-time">-</td>
+                  </tr>
+                  <tr>
+                    <th>Tokens Used:</th>
+                    <td id="modal-data-tokens">-</td>
+                  </tr>
+                  <tr>
+                    <th>Cost:</th>
+                    <td id="modal-data-cost">-</td>
+                  </tr>
+                  <tr id="modal-data-error-row" style="display: none;">
+                    <th>Error:</th>
+                    <td id="modal-data-error" class="text-danger">-</td>
+                  </tr>
+                </table>
+                <div id="generated-data-viewer" style="display: none;">
+                  <h6>Generated Data</h6>
+                  <pre id="generated-data-content" class="bg-light p-2" style="max-height: 200px; overflow-y: auto;"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test Conclusion Section -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6>Test Conclusion</h6>
+              <div class="bg-light p-3 rounded">
+                <p id="modal-conclusion">-</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs for Steps and Agent History -->
+          <ul class="nav nav-tabs" id="modalTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="steps-tab" data-bs-toggle="tab" data-bs-target="#steps" type="button" role="tab">
+                Steps Timeline
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="agent-history-tab" data-bs-toggle="tab" data-bs-target="#agent-history" type="button" role="tab">
+                Agent History
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="screenshots-tab" data-bs-toggle="tab" data-bs-target="#screenshots" type="button" role="tab">
+                Screenshots
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content mt-3">
+            <!-- Steps Timeline Tab -->
+            <div class="tab-pane fade show active" id="steps" role="tabpanel">
+              <div id="steps-timeline" class="timeline-container">
+                <!-- Steps will be populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Agent History Tab -->
+            <div class="tab-pane fade" id="agent-history" role="tabpanel">
+              <div id="agent-history-timeline" class="timeline-container">
+                <!-- Agent history will be populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Screenshots Tab -->
+            <div class="tab-pane fade" id="screenshots" role="tabpanel">
+              <div id="screenshots-gallery" class="row">
+                <!-- Screenshots will be populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screenshot Modal -->
+  <div class="modal fade" id="screenshotModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Screenshot</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <img id="screenshot-viewer" src="" alt="Screenshot" class="img-fluid">
+          <div class="mt-2">
+            <small class="text-muted" id="screenshot-info">Screenshot info</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div class="modal fade" id="keyboardShortcutsModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Keyboard Shortcuts</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-6">
+              <h6>Navigation</h6>
+              <ul class="list-unstyled">
+                <li><kbd>Ctrl</kbd> + <kbd>F</kbd> - Focus search</li>
+                <li><kbd>Esc</kbd> - Clear search</li>
+                <li><kbd>1-5</kbd> - Filter by status</li>
+              </ul>
+            </div>
+            <div class="col-6">
+              <h6>Actions</h6>
+              <ul class="list-unstyled">
+                <li><kbd>Ctrl</kbd> + <kbd>E</kbd> - Export to JSON</li>
+                <li><kbd>Ctrl</kbd> + <kbd>P</kbd> - Print report</li>
+                <li><kbd>?</kbd> - Show shortcuts</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Data (for JavaScript) -->
+  <script type="application/json" id="test-data">
+    {{testDataJson}}
+  </script>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/scripts.js"></script>
+  <script>
+    // Initialize charts and enhanced features
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeCharts();
+      
+      // Wait a bit for scripts.js to initialize the reportViewer
+      setTimeout(function() {
+        initializeEnhancedFeatures();
+      }, 100);
+    });
+
+    function initializeCharts() {
+      const testData = JSON.parse(document.getElementById('test-data').textContent);
+      
+      // Test Duration Chart (Overview)
+      const durationCtx = document.getElementById('durationChart').getContext('2d');
+      new Chart(durationCtx, {
+        type: 'bar',
+        data: {
+          labels: testData.tests.map(t => t.testId),
+          datasets: [{
+            label: 'Test Duration (s)',
+            data: testData.tests.map(t => Math.round((t.duration / 1000) * 100) / 100),
+            backgroundColor: testData.tests.map(t => 
+              t.status === 'SUCCESS' ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)'
+            ),
+            borderColor: testData.tests.map(t => 
+              t.status === 'SUCCESS' ? 'rgb(40, 167, 69)' : 'rgb(220, 53, 69)'
+            ),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false
+          },
+          scales: {
+            x: {
+              display: testData.tests.length <= 50,
+              maxTicksLimit: 50
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value + 's';
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.raw + 's';
+                }
+              }
+            },
+            legend: {
+              display: true
+            }
+          }
+        }
+      });
+
+      // Performance Analysis Charts (separate tab)
+      initializePerformanceCharts(testData);
+    }
+
+    function initializePerformanceCharts(testData) {
+      // Pass Rate Analysis Chart
+      const passRateCtx = document.getElementById('passRateChart').getContext('2d');
+      new Chart(passRateCtx, {
+        type: 'bar',
+        data: {
+          labels: testData.tests.map(t => t.testId),
+          datasets: [{
+            label: 'Pass Rate (%)',
+            data: testData.tests.map(t => t.passRate || 0),
+            backgroundColor: testData.tests.map(t => {
+              const rate = t.passRate || 0;
+              if (rate === 100) return 'rgba(40, 167, 69, 0.8)';
+              if (rate === 0) return 'rgba(220, 53, 69, 0.8)';
+              return 'rgba(255, 193, 7, 0.8)';
+            }),
+            borderColor: testData.tests.map(t => {
+              const rate = t.passRate || 0;
+              if (rate === 100) return 'rgb(40, 167, 69)';
+              if (rate === 0) return 'rgb(220, 53, 69)';
+              return 'rgb(255, 193, 7)';
+            }),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false
+          },
+          scales: {
+            x: {
+              display: testData.tests.length <= 50,
+              maxTicksLimit: 50
+            },
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.raw + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Cost Analysis Chart
+      const costCtx = document.getElementById('costChart').getContext('2d');
+      new Chart(costCtx, {
+        type: 'bar',
+        data: {
+          labels: testData.tests.map(t => t.testId),
+          datasets: [{
+            label: 'Cost ($)',
+            data: testData.tests.map(t => t.cost || 0),
+            backgroundColor: 'rgba(108, 117, 125, 0.8)',
+            borderColor: 'rgb(108, 117, 125)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false
+          },
+          scales: {
+            x: {
+              display: testData.tests.length <= 50,
+              maxTicksLimit: 50
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toFixed(4);
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': $' + context.raw.toFixed(4);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function initializeEnhancedFeatures() {
+      // Ensure search functionality is initialized
+      initializeSearchAndFilter();
+
+      // Performance Analysis Features
+      initializePerformanceAnalysis();
+    }
+
+    function initializeSearchAndFilter() {
+      // Initialize search functionality
+      const searchInput = document.getElementById('test-search');
+      const clearBtn = document.getElementById('clear-search');
+      
+      if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+          if (window.reportViewer) {
+            window.reportViewer.filterResults(e.target.value, window.reportViewer.currentFilter || 'all');
+          }
+        });
+      }
+      
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+          if (searchInput) {
+            searchInput.value = '';
+            if (window.reportViewer) {
+              window.reportViewer.filterResults('', window.reportViewer.currentFilter || 'all');
+            }
+          }
+        });
+      }
+      
+      // Initialize filter buttons
+      const filterButtons = document.querySelectorAll('[data-filter]');
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          // Add active class to clicked button
+          this.classList.add('active');
+          
+          const filter = this.getAttribute('data-filter');
+          const searchTerm = searchInput ? searchInput.value : '';
+          
+          if (window.reportViewer) {
+            window.reportViewer.currentFilter = filter;
+            window.reportViewer.filterResults(searchTerm, filter);
+          }
+        });
+      });
+    }
+
+    function initializePerformanceAnalysis() {
+      // Performance search functionality
+      const performanceSearch = document.getElementById('performance-search');
+      const clearPerformanceSearch = document.getElementById('clear-performance-search');
+      const performanceFilter = document.getElementById('performance-filter');
+      const performanceSort = document.getElementById('performance-sort');
+      
+      if (performanceSearch) {
+        performanceSearch.addEventListener('input', function() {
+          filterPerformanceTable();
+        });
+      }
+      
+      if (clearPerformanceSearch) {
+        clearPerformanceSearch.addEventListener('click', function() {
+          performanceSearch.value = '';
+          filterPerformanceTable();
+        });
+      }
+      
+      if (performanceFilter) {
+        performanceFilter.addEventListener('change', function() {
+          filterPerformanceTable();
+        });
+      }
+      
+      if (performanceSort) {
+        performanceSort.addEventListener('change', function() {
+          sortPerformanceTable();
+        });
+      }
+
+      // Sortable table headers
+      const sortableHeaders = document.querySelectorAll('#performance-table .sortable');
+      sortableHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+          const sortKey = this.dataset.sort;
+          toggleSort(sortKey);
+        });
+      });
+
+      // Sortable headers for overview table
+      const overviewSortableHeaders = document.querySelectorAll('#test-results-table .sortable');
+      overviewSortableHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+          const sortKey = this.dataset.sort;
+          toggleOverviewSort(sortKey);
+        });
+      });
+    }
+
+    function filterPerformanceTable() {
+      const searchTerm = document.getElementById('performance-search').value.toLowerCase();
+      const filterValue = document.getElementById('performance-filter').value;
+      const rows = document.querySelectorAll('#performance-table-body .performance-row');
+      
+      rows.forEach(row => {
+        const testId = row.dataset.testId.toLowerCase();
+        const testName = row.cells[1].textContent.toLowerCase();
+        const passRate = parseFloat(row.dataset.passRate) || 0;
+        const isFlaky = row.dataset.flaky === 'true';
+        
+        // Search filter
+        const matchesSearch = testId.includes(searchTerm) || testName.includes(searchTerm);
+        
+        // Status filter
+        let matchesFilter = true;
+        if (filterValue === '100') {
+          matchesFilter = passRate === 100;
+        } else if (filterValue === '0') {
+          matchesFilter = passRate === 0;
+        } else if (filterValue === 'flaky') {
+          matchesFilter = isFlaky;
+        }
+        
+        row.style.display = matchesSearch && matchesFilter ? '' : 'none';
+      });
+    }
+
+    function sortPerformanceTable() {
+      const sortValue = document.getElementById('performance-sort').value;
+      const [sortKey, sortDirection] = sortValue.split('-');
+      const tbody = document.getElementById('performance-table-body');
+      const rows = Array.from(tbody.querySelectorAll('.performance-row'));
+      
+      rows.sort((a, b) => {
+        let aValue, bValue;
+        
+        switch (sortKey) {
+          case 'duration':
+            aValue = parseFloat(a.dataset.duration) || 0;
+            bValue = parseFloat(b.dataset.duration) || 0;
+            break;
+          case 'cost':
+            aValue = parseFloat(a.dataset.cost) || 0;
+            bValue = parseFloat(b.dataset.cost) || 0;
+            break;
+          case 'pass-rate':
+            aValue = parseFloat(a.dataset.passRate) || 0;
+            bValue = parseFloat(b.dataset.passRate) || 0;
+            break;
+          default:
+            aValue = a.cells[0].textContent;
+            bValue = b.cells[0].textContent;
+        }
+        
+        if (sortDirection === 'desc') {
+          return aValue < bValue ? 1 : -1;
+        } else {
+          return aValue > bValue ? 1 : -1;
+        }
+      });
+      
+      rows.forEach(row => tbody.appendChild(row));
+    }
+
+    let currentSort = { key: null, direction: 'asc' };
+    
+    function toggleSort(sortKey) {
+      if (currentSort.key === sortKey) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.key = sortKey;
+        currentSort.direction = 'asc';
+      }
+      
+      // Update sort dropdown to match header click
+      const sortDropdown = document.getElementById('performance-sort');
+      sortDropdown.value = `${sortKey}-${currentSort.direction}`;
+      
+      sortPerformanceTable();
+    }
+
+    // Overview table sorting
+    let currentOverviewSort = { key: null, direction: 'asc' };
+    
+    function toggleOverviewSort(sortKey) {
+      if (currentOverviewSort.key === sortKey) {
+        currentOverviewSort.direction = currentOverviewSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentOverviewSort.key = sortKey;
+        currentOverviewSort.direction = 'asc';
+      }
+      
+      sortOverviewTable(sortKey, currentOverviewSort.direction);
+    }
+
+    function sortOverviewTable(sortKey, direction) {
+      const tbody = document.getElementById('test-results-tbody');
+      const rows = Array.from(tbody.querySelectorAll('.test-result-row'));
+      
+      rows.sort((a, b) => {
+        let aValue, bValue;
+        
+        switch (sortKey) {
+          case 'testId':
+            aValue = a.dataset.testId || '';
+            bValue = b.dataset.testId || '';
+            break;
+          case 'testName':
+            aValue = a.cells[1].textContent.trim();
+            bValue = b.cells[1].textContent.trim();
+            break;
+          case 'status':
+            aValue = a.dataset.status || '';
+            bValue = b.dataset.status || '';
+            break;
+          case 'duration':
+            aValue = parseFloat(a.cells[3].textContent) || 0;
+            bValue = parseFloat(b.cells[3].textContent) || 0;
+            break;
+          case 'attempts':
+            aValue = parseInt(a.cells[4].textContent) || 0;
+            bValue = parseInt(b.cells[4].textContent) || 0;
+            break;
+          case 'cost':
+            // Extract cost from "$0.0000" format
+            aValue = parseFloat(a.cells[5].textContent.replace('$', '')) || 0;
+            bValue = parseFloat(b.cells[5].textContent.replace('$', '')) || 0;
+            break;
+          default:
+            aValue = a.cells[0].textContent;
+            bValue = b.cells[0].textContent;
+        }
+        
+        if (direction === 'desc') {
+          return aValue < bValue ? 1 : -1;
+        } else {
+          return aValue > bValue ? 1 : -1;
+        }
+      });
+      
+      // Clear and re-append sorted rows
+      tbody.innerHTML = '';
+      rows.forEach(row => tbody.appendChild(row));
+    }
+
+    function filterTestResults(filter) {
+      const rows = document.querySelectorAll('.test-result-row');
+      const buttons = document.querySelectorAll('[data-filter]');
+      
+      // Update active button
+      buttons.forEach(btn => btn.classList.remove('active'));
+      const activeButton = document.querySelector(`[data-filter="${filter}"]`);
+      if (activeButton) {
+        activeButton.classList.add('active');
+      }
+      
+      // Filter rows
+      rows.forEach(row => {
+        const shouldShow = filter === 'all' || 
+                          (filter === 'flaky' && row.dataset.flaky === 'true') ||
+                          (filter === 'skipped' && row.dataset.skipped === 'true') ||
+                          (filter === 'passed' && row.dataset.status === 'SUCCESS') ||
+                          (filter === 'failed' && row.dataset.status === 'FAILED');
+        
+        row.style.display = shouldShow ? '' : 'none';
+      });
+      
+      // Update results info
+      const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none').length;
+      const infoElement = document.getElementById('search-results-info');
+      if (infoElement) {
+        infoElement.textContent = `Showing ${visibleRows} of ${rows.length} tests`;
+      }
+    }
+
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabButtons = document.querySelectorAll('#mainTabs button[data-bs-toggle="tab"]');
+      tabButtons.forEach(button => {
+        button.addEventListener('shown.bs.tab', function(e) {
+          const targetId = e.target.getAttribute('data-bs-target');
+          
+          // Initialize charts when performance tab is shown
+          if (targetId === '#performance-pane') {
+            // Small delay to ensure tab is visible
+            setTimeout(() => {
+              const testData = JSON.parse(document.getElementById('test-data').textContent);
+              initializePerformanceCharts(testData);
+            }, 100);
+          }
+        });
+      });
+      
+      // Initialize filter on page load
+      setTimeout(() => {
+        filterTestResults('all');
+      }, 100);
+    });
+  </script>
+
+  <style>
+    .sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .sortable:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .performance-row {
+      transition: all 0.3s ease;
+    }
+    
+    .performance-row:hover {
+      background-color: rgba(0, 123, 255, 0.1);
+    }
+    
+    .nav-tabs .nav-link {
+      border: none;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      color: #6c757d;
+    }
+    
+    .nav-tabs .nav-link.active {
+      border-bottom-color: #007bff;
+      color: #007bff;
+      background: transparent;
+    }
+    
+    .nav-tabs .nav-link:hover {
+      border-bottom-color: #dee2e6;
+      color: #495057;
+    }
+    
+    /* Make charts responsive and handle large datasets */
+    canvas {
+      max-height: 400px;
+    }
+    
+    #durationChart {
+      max-height: 300px;
+    }
+    
+    /* Improve chart container */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+  </style>
+</body>
+</html>

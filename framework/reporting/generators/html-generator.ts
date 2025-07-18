@@ -164,8 +164,17 @@ export class HtmlGenerator {
         `report-${dateStr}-time-${hour12}-${minutes.toString().padStart(2, '0')}-${seconds.toString().padStart(2, '0')}-${ampm}.html`;
       const templateName = options.template || 'report-template.html';
 
-      // Load HTML template
-      const templatePath = path.join(this.templatesDir, 'reporter', templateName);
+      // Load HTML template - try enhanced template first, fallback to regular template
+      let templatePath = path.join(this.templatesDir, 'reporter', templateName);
+      
+      // If no specific template requested, try enhanced template first
+      if (templateName === 'report-template.html') {
+        const enhancedTemplatePath = path.join(this.templatesDir, 'reporter', 'enhanced-report-template.html');
+        if (fs.existsSync(enhancedTemplatePath)) {
+          templatePath = enhancedTemplatePath;
+        }
+      }
+      
       let htmlTemplate = fs.readFileSync(templatePath, 'utf8');
 
       // Process template with report data
@@ -204,19 +213,36 @@ export class HtmlGenerator {
       return total + (result.tokenSummary?.totalCost || 0);
     }, 0);
 
+    // Calculate enhanced summary data
+    const flakyTests = data.testResults.filter(result => (result as any).isFlaky).length;
+    const skippedTests = data.testResults.filter(result => (result as any).isSkipped).length;
+    const totalDuration = data.testResults.reduce((total, result) => total + (result.duration || 0), 0);
+    const avgDuration = data.testResults.length > 0 ? totalDuration / data.testResults.length : 0;
+    const totalRuns = data.testResults.reduce((total, result) => total + ((result as any).attempts?.length || 1), 0);
+
     // Replace summary data
     const replacements = {
       '{{totalTests}}': data.summary.totalTests.toString(),
-      '{{totalRuns}}': data.summary.totalTests.toString(),
+      '{{totalRuns}}': totalRuns.toString(),
       '{{successfulRuns}}': data.summary.passedTests.toString(),
       '{{failedRuns}}': data.summary.failedTests.toString(),
+      '{{passedTests}}': data.summary.passedTests.toString(),
+      '{{failedTests}}': data.summary.failedTests.toString(),
+      '{{flakyTests}}': flakyTests.toString(),
+      '{{skippedTests}}': skippedTests.toString(),
       '{{successRate}}': data.summary.successRate.toFixed(1),
       '{{totalTokens}}': totalTokens.toLocaleString(),
       '{{totalCost}}': totalCost.toFixed(4),
+      '{{totalDuration}}': this.formatDuration(totalDuration),
+      '{{avgDuration}}': this.formatDuration(avgDuration),
       '{{generatedAt}}': new Date().toLocaleString(),
       '{{testStatsTable}}': this.generateTestStatsTable(data.testResults),
       '{{recentResultsTable}}': this.generateRecentResultsTable(data.testResults),
-      '{{testDataJson}}': JSON.stringify(this.formatTestDataForTemplate(data), null, 2),
+      '{{enhancedTestResultsTable}}': this.generateEnhancedTestResultsTable(data.testResults),
+      '{{performanceStatsTable}}': this.generatePerformanceStatsTable(data.testResults),
+      '{{flakyTestsTable}}': this.generateFlakyTestsTable(data.testResults),
+      '{{skippedTestsTable}}': this.generateSkippedTestsTable(data.testResults),
+      '{{testDataJson}}': JSON.stringify(this.formatEnhancedTestDataForTemplate(data), null, 2),
     };
 
     // Apply all replacements
@@ -476,6 +502,77 @@ export class HtmlGenerator {
   }
 
   /**
+   * Format enhanced test data for JavaScript template consumption with performance metrics
+   */
+  private formatEnhancedTestDataForTemplate(data: ReportData): any {
+    const testResults = data.testResults.map(result => {
+      const attempts = (result as any).attempts || [];
+      const isFlaky = (result as any).isFlaky || false;
+      const isSkipped = (result as any).isSkipped || false;
+      
+      // Calculate pass rate
+      let passRate = 0;
+      if (attempts.length > 0) {
+        const passed = attempts.filter((attempt: any) => attempt.status === 'passed').length;
+        passRate = Math.round((passed / attempts.length) * 100);
+      } else {
+        passRate = result.status === 'SUCCESS' ? 100 : 0;
+      }
+
+      return {
+        testId: result.testId,
+        testName: result.testName,
+        sessionId: result.sessionId,
+        status: result.status,
+        duration: result.duration,
+        startTime: result.startTime,
+        endTime: result.endTime,
+        finalResult: result.finalResult,
+        conclusion: result.conclusion,
+        steps: result.steps,
+        agentHistory: result.agentHistory,
+        tokenSummary: result.tokenSummary,
+        setupResult: result.setupResult,
+        dataGenerationResult: result.dataGenerationResult,
+        screenshots: result.screenshots,
+        attempts: attempts,
+        isFlaky: isFlaky,
+        isSkipped: isSkipped,
+        passRate: passRate,
+        passedAttempts: attempts.filter((a: any) => a.status === 'passed').length,
+        failedAttempts: attempts.filter((a: any) => a.status === 'failed').length,
+        totalAttempts: attempts.length || 1,
+        avgDuration: attempts.length > 0 ? attempts.reduce((sum: number, a: any) => sum + a.duration, 0) / attempts.length : result.duration,
+        skipReason: (result as any).skipReason || 'Not specified',
+        cost: result.tokenSummary?.totalCost || 0
+      };
+    });
+
+    // Generate performance data for charts (duration based)
+    const performanceData = {
+      labels: testResults.map(t => t.testId),
+      cpu: testResults.map(t => 0), // Placeholder for compatibility
+      memory: testResults.map(t => 0) // Placeholder for compatibility
+    };
+
+    return {
+      testResults: testResults,
+      tests: testResults, // Alias for backwards compatibility
+      performanceData: performanceData,
+      summary: {
+        totalTests: data.summary.totalTests,
+        passedTests: data.summary.passedTests,
+        failedTests: data.summary.failedTests,
+        successRate: data.summary.successRate,
+        totalDuration: data.summary.totalDuration,
+        flakyTests: testResults.filter(t => t.isFlaky).length,
+        skippedTests: testResults.filter(t => t.isSkipped).length,
+        totalRuns: testResults.reduce((sum, t) => sum + t.totalAttempts, 0)
+      }
+    };
+  }
+
+  /**
    * Copy static assets (CSS, JS) to reports directory
    */
   private copyStaticAssets(): void {
@@ -545,17 +642,16 @@ export class HtmlGenerator {
       return `${duration}ms`;
     }
 
-    const seconds = Math.floor(duration / 1000);
-    const ms = duration % 1000;
-
-    if (seconds < 60) {
-      return ms > 0 ? `${seconds}.${ms.toString().padStart(3, '0')}s` : `${seconds}s`;
+    const totalSeconds = duration / 1000;
+    
+    if (totalSeconds < 60) {
+      return `${totalSeconds.toFixed(2)}s`;
     }
 
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+    const minutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
 
-    return `${minutes}m ${remainingSeconds}s`;
+    return `${minutes}m ${remainingSeconds.toFixed(2)}s`;
   }
 
   /**
@@ -596,6 +692,200 @@ export class HtmlGenerator {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to generate custom report: ${message}`);
     }
+  }
+
+  /**
+   * Generate enhanced test results table HTML
+   */
+  private generateEnhancedTestResultsTable(testResults: ParsedTestResult[]): string {
+    if (testResults.length === 0) {
+      return '<tr><td colspan="7" class="text-center">No test results available</td></tr>';
+    }
+
+    return testResults
+      .map((result) => {
+        const attempts = (result as any).attempts || [];
+        const isFlaky = (result as any).isFlaky || false;
+        const isSkipped = (result as any).isSkipped || false;
+        
+        let statusBadge = '';
+        if (result.status === 'SUCCESS') {
+          statusBadge = '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Passed</span>';
+        } else if (result.status === 'FAILED') {
+          statusBadge = '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> Failed</span>';
+        } else if (isSkipped) {
+          statusBadge = '<span class="badge bg-secondary"><i class="bi bi-skip-forward"></i> Skipped</span>';
+        }
+
+        let flakyBadge = '';
+        let skippedBadge = '';
+        if (isFlaky) {
+          flakyBadge = '<span class="badge bg-warning ms-1" title="Flaky test - passed after failures"><i class="bi bi-exclamation-triangle"></i> Flaky</span>';
+        }
+        if (isSkipped) {
+          skippedBadge = '<span class="badge bg-secondary ms-1" title="Skipped test"><i class="bi bi-skip-forward"></i> Skipped</span>';
+        }
+
+        const attemptsInfo = attempts.length > 0 
+          ? `<span class="badge bg-info">${attempts.length}/${attempts.length}</span>`
+          : '<span class="badge bg-secondary">1/1</span>';
+
+        const tokenInfo = result.tokenSummary
+          ? `<span class="fw-bold">$${result.tokenSummary.totalCost?.toFixed(4) || '0.0000'}</span><br><small class="text-muted">${result.tokenSummary.totalTokens || 0} tokens</small>`
+          : '<span class="text-muted">N/A</span>';
+
+        return `
+          <tr class="test-result-row" data-status="${result.status}" data-test-id="${result.testId}" data-flaky="${isFlaky}" data-skipped="${isSkipped}">
+            <td>
+              <code>${this.escapeHtml(result.testId)}</code>
+              ${flakyBadge}
+              ${skippedBadge}
+            </td>
+            <td>${this.escapeHtml(result.testName)}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <span class="fw-bold">${this.formatDuration(result.duration)}</span>
+              ${attempts.length > 0 ? `<br><small class="text-muted">${attempts.length} attempts</small>` : ''}
+            </td>
+            <td>${attemptsInfo}</td>
+            <td>${tokenInfo}</td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                data-bs-target="#testDetailsModal" onclick="showTestDetails('${result.sessionId}')">
+                <i class="bi bi-eye"></i> Details
+              </button>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  /**
+   * Generate performance statistics table HTML
+   */
+  private generatePerformanceStatsTable(testResults: ParsedTestResult[]): string {
+    if (testResults.length === 0) {
+      return '<tr><td colspan="8" class="text-center">No performance data available</td></tr>';
+    }
+
+    return testResults
+      .map((result) => {
+        const attempts = (result as any).attempts || [];
+        const isFlaky = (result as any).isFlaky || false;
+        
+        let passRate = 0;
+        if (attempts.length > 0) {
+          const passed = attempts.filter((attempt: any) => attempt.status === 'passed').length;
+          passRate = Math.round((passed / attempts.length) * 100);
+        } else {
+          passRate = result.status === 'SUCCESS' ? 100 : 0;
+        }
+
+        const passRateBadge = passRate === 100 ? 'bg-success' : passRate === 0 ? 'bg-danger' : 'bg-warning';
+        const attemptsBadge = attempts.length > 0 ? `<span class="badge bg-info">${attempts.length}</span>` : '<span class="badge bg-secondary">1</span>';
+        
+        const tokenInfo = result.tokenSummary
+          ? `<span class="fw-bold">$${result.tokenSummary.totalCost?.toFixed(4) || '0.0000'}</span>`
+          : '<span class="text-muted">N/A</span>';
+
+        const tokensCount = result.tokenSummary ? result.tokenSummary.totalTokens || 0 : 0;
+        
+        const successRateBadge = passRate === 100 ? 'bg-success' : passRate === 0 ? 'bg-danger' : 'bg-warning';
+        
+        return `
+          <tr class="performance-row" data-test-id="${result.testId}" data-duration="${result.duration}" data-pass-rate="${passRate}" data-cost="${result.tokenSummary?.totalCost || 0}" data-flaky="${isFlaky}">
+            <td><code>${this.escapeHtml(result.testId)}</code></td>
+            <td>${this.escapeHtml(result.testName)}</td>
+            <td>
+              <span class="fw-bold">${this.formatDuration(result.duration)}</span>
+              ${isFlaky ? '<br><small class="text-warning">Flaky</small>' : ''}
+            </td>
+            <td>
+              <span class="badge ${passRateBadge}">${passRate}%</span>
+            </td>
+            <td>${attemptsBadge}</td>
+            <td>${tokenInfo}</td>
+            <td><span class="text-muted">${tokensCount}</span></td>
+            <td>
+              <span class="badge ${successRateBadge}">${passRate}%</span>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  /**
+   * Generate flaky tests table HTML
+   */
+  private generateFlakyTestsTable(testResults: ParsedTestResult[]): string {
+    const flakyTests = testResults.filter(result => (result as any).isFlaky);
+    
+    if (flakyTests.length === 0) {
+      return '<tr><td colspan="8" class="text-center">No flaky tests found</td></tr>';
+    }
+
+    return flakyTests
+      .map((result) => {
+        const attempts = (result as any).attempts || [];
+        const passedAttempts = attempts.filter((a: any) => a.status === 'passed').length;
+        const failedAttempts = attempts.filter((a: any) => a.status === 'failed').length;
+        const passRate = attempts.length > 0 ? Math.round((passedAttempts / attempts.length) * 100) : 0;
+        const avgDuration = attempts.length > 0 ? attempts.reduce((sum: number, a: any) => sum + a.duration, 0) / attempts.length : result.duration;
+        
+        return `
+          <tr>
+            <td><code>${this.escapeHtml(result.testId)}</code></td>
+            <td>${this.escapeHtml(result.testName)}</td>
+            <td><span class="badge bg-warning">${passRate}%</span></td>
+            <td><span class="badge bg-info">${attempts.length || 1}</span></td>
+            <td><span class="badge bg-success">${passedAttempts}</span></td>
+            <td><span class="badge bg-danger">${failedAttempts}</span></td>
+            <td><span class="fw-bold">${this.formatDuration(avgDuration)}</span></td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                data-bs-target="#testDetailsModal" onclick="showTestDetails('${result.sessionId}')">
+                <i class="bi bi-eye"></i> Details
+              </button>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+  }
+
+  /**
+   * Generate skipped tests table HTML
+   */
+  private generateSkippedTestsTable(testResults: ParsedTestResult[]): string {
+    const skippedTests = testResults.filter(result => (result as any).isSkipped);
+    
+    if (skippedTests.length === 0) {
+      return '<tr><td colspan="5" class="text-center">No skipped tests found</td></tr>';
+    }
+
+    return skippedTests
+      .map((result) => {
+        const skipReason = (result as any).skipReason || 'Not specified';
+        const skippedAt = new Date(result.startTime).toLocaleString();
+        
+        return `
+          <tr>
+            <td><code>${this.escapeHtml(result.testId)}</code></td>
+            <td>${this.escapeHtml(result.testName)}</td>
+            <td>${this.escapeHtml(skipReason)}</td>
+            <td>${skippedAt}</td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                data-bs-target="#testDetailsModal" onclick="showTestDetails('${result.sessionId}')">
+                <i class="bi bi-eye"></i> Details
+              </button>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
   }
 
   /**

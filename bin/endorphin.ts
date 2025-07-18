@@ -170,6 +170,7 @@ Options:
   --viewport <WxH>       Set browser viewport (e.g., 1920x1080)
   --timeout <ms>         Set test timeout in milliseconds
   --parallel <n>         Run tests in parallel (default: 2)
+  --retries <n>          Number of retry attempts for failed tests (default: 0)
   --model <n>         Set AI model to use (e.g., gpt-4o-mini)
   --env <environment>    Set environment (development/staging/production)
 
@@ -179,6 +180,7 @@ Examples:
   endorphin run test all --headless            # Run all tests headless
   endorphin run test --tag smoke --parallel 3  # Run smoke tests with 3 workers
   endorphin run test --priority High --env staging # Run high priority tests on staging
+  endorphin run test all --parallel 2 --retries 2 # Run all tests with 2 workers, retry failures twice
   endorphin run test-recorder                  # Start test recorder
   endorphin list                               # Show all available tests
   endorphin list tools                         # Show all available built-in tools
@@ -279,8 +281,11 @@ export async function main(): Promise<void> {
             console.log('🔧 Loaded configuration:', JSON.stringify(runConfig, null, 2));
           }
           if (subcommand === 'test') {
-            // Extract parallel/workers option from cliFlags
-            const options = { parallel: cliFlags.parallel || 1 };
+            // Extract parallel/workers and retries options from cliFlags
+            const options = { 
+              parallel: cliFlags.parallel || 1,
+              retries: cliFlags.maxRetries || 0
+            };
             await handleTestCommand(args, target, runConfig, options);
           } else {
             console.error(`❌ Unknown run command: ${subcommand}`);

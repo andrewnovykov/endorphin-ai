@@ -26,7 +26,16 @@ class TestReportViewer {
     try {
       const testDataElement = document.getElementById('test-data');
       if (testDataElement && testDataElement.textContent) {
-        this.testData = JSON.parse(testDataElement.textContent);
+        const rawData = JSON.parse(testDataElement.textContent);
+        // Handle both legacy format (array) and new format (object with testResults)
+        if (Array.isArray(rawData)) {
+          this.testData = rawData;
+        } else if (rawData.testResults && Array.isArray(rawData.testResults)) {
+          this.testData = rawData.testResults;
+        } else {
+          console.warn('Unexpected test data format:', rawData);
+          this.testData = [];
+        }
         console.log('Loaded test data:', this.testData.length, 'results');
       }
     } catch (error) {
@@ -155,8 +164,9 @@ class TestReportViewer {
 
     this.currentTestIndex = resultIndex;
     const result = this.testData[resultIndex];
-    const session = result.session;
-    const summary = result.summary;
+    // Handle both legacy format (result.session) and new format (result directly)
+    const session = result.session || result;
+    const summary = result.summary || result;
 
     // Populate modal fields
     this.updateModalField('modal-test-id', session.testId);
@@ -678,6 +688,10 @@ class TestReportViewer {
         statusMatch = status.includes('Passed');
       } else if (statusFilter === 'failed') {
         statusMatch = status.includes('Failed');
+      } else if (statusFilter === 'flaky') {
+        statusMatch = row.dataset.flaky === 'true';
+      } else if (statusFilter === 'skipped') {
+        statusMatch = row.dataset.skipped === 'true';
       }
 
       const shouldShow = searchMatch && statusMatch;
@@ -1036,13 +1050,23 @@ function showTestDetails(sessionId) {
   if (window.reportViewer && window.reportViewer.testData) {
     // Find the test result index by sessionId
     const index = window.reportViewer.testData.findIndex(
-      result => result.session?.sessionId === sessionId || result.summary?.sessionId === sessionId
+      result => {
+        // Handle both legacy format (result.session.sessionId) and new format (result.sessionId)
+        const resultSessionId = result.session?.sessionId || result.sessionId;
+        const summarySessionId = result.summary?.sessionId;
+        return resultSessionId === sessionId || summarySessionId === sessionId;
+      }
     );
     
     if (index !== -1) {
       window.reportViewer.showTestDetails(index);
     } else {
       console.error('Test result not found for sessionId:', sessionId);
+      console.log('Available test data:', window.reportViewer.testData.map(r => ({
+        sessionId: r.session?.sessionId || r.sessionId,
+        testId: r.testId,
+        testName: r.testName
+      })));
       alert(`Test details not found for session: ${sessionId}`);
     }
   } else {

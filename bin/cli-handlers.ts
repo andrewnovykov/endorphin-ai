@@ -74,7 +74,7 @@ export async function handleTestCommand(
   args: string[],
   target: string | undefined,
   config: FrameworkConfig,
-  options: { parallel?: number } = {}
+  options: { parallel?: number; retries?: number } = {}
 ): Promise<void> {
   if (args.includes('--tag')) {
     return handleTestByTag(args, config, options);
@@ -163,7 +163,7 @@ export async function handleOpenCommand(subcommand: string, target?: string): Pr
 async function handleTestByTag(
   args: string[],
   config: FrameworkConfig,
-  options: { parallel?: number } = {}
+  options: { parallel?: number; retries?: number } = {}
 ): Promise<void> {
   const tagIndex = args.indexOf('--tag');
   if (tagIndex === -1 || !args[tagIndex + 1]) {
@@ -187,7 +187,7 @@ async function handleTestByTag(
 async function handleTestByPriority(
   args: string[],
   config: FrameworkConfig,
-  options: { parallel?: number } = {}
+  options: { parallel?: number; retries?: number } = {}
 ): Promise<void> {
   const priorityIndex = args.indexOf('--priority');
   if (priorityIndex === -1 || !args[priorityIndex + 1]) {

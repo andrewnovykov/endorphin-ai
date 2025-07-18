@@ -25,21 +25,29 @@ import { ChatOpenAI } from '@langchain/openai';
 import type { TestSession } from '../types/test.js';
 import { getCurrentBrowserManager } from '../utils/user-utils.js';
 import { AGENT_CONFIG } from './config/agent-config.js';
-
-// Global variables to track session and token tracking
-let currentSession: TestSession | null = null;
-let agentCallCounter = 0;
+import {
+  getContextCurrentSession,
+  _getContextAgentCallCounter,
+  incrementContextAgentCallCounter,
+  setContextSession,
+  getCurrentTestExecutionContext,
+} from '../utils/context-isolation.js';
 
 /**
- * Set the current test session for token tracking
+ * Set the current test session for token tracking (thread-safe)
  */
 export function setCurrentTestSession(session: TestSession | null) {
-  currentSession = session;
-  agentCallCounter = 0;
+  const context = getCurrentTestExecutionContext();
+  if (context) {
+    setContextSession(session);
+  } else {
+    // This shouldn't happen if properly wrapped, but provide fallback
+    console.warn('setCurrentTestSession called outside of test execution context');
+  }
 }
 
 /**
- * Global function to track any AI call in the agent history
+ * Thread-safe function to track any AI call in the agent history
  */
 export function trackAICall(
   callType: string,
@@ -56,9 +64,12 @@ export function trackAICall(
   context?: string,
   userId?: string
 ) {
+  const currentSession = getContextCurrentSession();
   if (!currentSession) return;
 
-  agentCallCounter++;
+  const agentCallCounter = incrementContextAgentCallCounter();
+  const testContext = getCurrentTestExecutionContext();
+  const workerInfo = testContext?.parallelWorkerIndex ? `[Worker ${testContext.parallelWorkerIndex + 1}]` : '';
 
   const agentEntry = {
     historyId: currentSession.agentHistory.length + 1,
@@ -74,7 +85,7 @@ export function trackAICall(
 
   currentSession.agentHistory.push(agentEntry);
   console.log(
-    `\n 💰 ${callType} ${agentCallCounter}: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms \n`
+    `\n 💰 ${workerInfo} ${callType} ${agentCallCounter}: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms \n`
   );
 }
 
@@ -110,6 +121,15 @@ interface AgentWorkflow {
 
 // Global memory saver instance
 const memorySaver = new MemorySaver();
+
+/**
+ * Legacy function - now uses comprehensive context isolation
+ * @deprecated Use runWithTestExecutionContext instead
+ */
+export async function runWithAgentContext<T>(fn: () => Promise<T>): Promise<T> {
+  // This is now handled by the comprehensive context isolation in TestFramework
+  return await fn();
+}
 
 /**
  * Setup AI agent with tools and workflow

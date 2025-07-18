@@ -8,6 +8,7 @@ import type { DiscoveryResult, FrameworkConfig, TestConfig } from '../../types/i
 import { TestRunner } from '../runner/test-runner.js';
 import type { DiscoveredTest, TestExecutionOptions } from './discovery-types.js';
 import { TestDiscoverer } from './test-discoverer.js';
+import { cloneTestObject } from '../utils/clone-utils.js';
 
 // Standalone functions for CLI usage
 let discoveryInstance: TestDiscoverer | null = null;
@@ -104,7 +105,7 @@ async function loadSingleTestFile(filename: string, testsDirectory: string, targ
     if (module.default && isValidTestObject(module.default) && module.default.id === targetTestId) {
       console.log(`   ✓ Found ${targetTestId}: ${module.default.name}`);
       return {
-        ...module.default,
+        ...cloneTestObject(module.default),
         sourceFile: filename,
         exportName: 'default',
       };
@@ -115,7 +116,7 @@ async function loadSingleTestFile(filename: string, testsDirectory: string, targ
       if (exportName !== 'default' && isValidTestObject(exportValue) && (exportValue as any).id === targetTestId) {
         console.log(`   ✓ Found ${targetTestId}: ${(exportValue as any).name}`);
         return {
-          ...(exportValue as any),
+          ...cloneTestObject(exportValue as any),
           sourceFile: filename,
           exportName,
         };
@@ -249,7 +250,7 @@ export async function runSingleTestById(
 export async function runTestsByTag(
   tag: string,
   config: FrameworkConfig | null = null,
-  options: { parallel?: number } = {}
+  options: { parallel?: number; retries?: number } = {}
 ): Promise<DiscoveryResult> {
   // Execute global setup first, before any test discovery or framework initialization
   await executeGlobalSetupOnce(config);
@@ -295,6 +296,7 @@ export async function runTestsByTag(
   const executionOptions: TestExecutionOptions = {
     parallel: (options.parallel || 1) > 1,
     workers: options.parallel || 1,
+    retries: options.retries || 0,
   };
 
   return runner.runTests(testsToRun, executionOptions);
@@ -306,7 +308,7 @@ export async function runTestsByTag(
 export async function runTestsByPriority(
   priority: string,
   config: FrameworkConfig | null = null,
-  options: { parallel?: number } = {}
+  options: { parallel?: number; retries?: number } = {}
 ): Promise<DiscoveryResult> {
   // Execute global setup first, before any test discovery or framework initialization
   await executeGlobalSetupOnce(config);
@@ -352,6 +354,7 @@ export async function runTestsByPriority(
   const executionOptions: TestExecutionOptions = {
     parallel: (options.parallel || 1) > 1,
     workers: options.parallel || 1,
+    retries: options.retries || 0,
   };
 
   return runner.runTests(testsToRun, executionOptions);
@@ -362,7 +365,7 @@ export async function runTestsByPriority(
  */
 export async function runAllTests(
   config: FrameworkConfig | null = null,
-  options: { parallel?: number } = {}
+  options: { parallel?: number; retries?: number } = {}
 ): Promise<DiscoveryResult> {
   // Execute global setup first, before any test discovery or framework initialization
   await executeGlobalSetupOnce(config);
@@ -401,6 +404,7 @@ export async function runAllTests(
   const executionOptions: TestExecutionOptions = {
     parallel: (options.parallel || 1) > 1,
     workers: options.parallel || 1,
+    retries: options.retries || 0,
   };
 
   return runner.runTests(testsToRun, executionOptions);

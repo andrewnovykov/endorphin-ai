@@ -183,11 +183,95 @@ export class CIPerformanceMonitor {
     try {
       const { PerformanceReporter } = await import('../reporters/performance-reporter.js');
       const reporter = new PerformanceReporter();
-      return await reporter.generateReport(this.getMetrics(), outputDir);
+      
+      // Collect per-test performance data
+      const testResults = await reporter.collectTestPerformanceData(outputDir);
+      
+      // Enhance metrics with aggregated test data
+      const enhancedMetrics = this.aggregateTestPerformanceData(testResults);
+      
+      return reporter.generateReport(enhancedMetrics, outputDir, testResults);
     } catch (error) {
       console.error('Failed to generate performance report:', error);
       return null;
     }
+  }
+
+  /**
+   * Aggregate individual test performance data into overall metrics
+   */
+  private aggregateTestPerformanceData(testResults: any[]): CIPerformanceMetrics {
+    const baseMetrics = this.getMetrics();
+    
+    if (!testResults || testResults.length === 0) {
+      return baseMetrics;
+    }
+
+    // Calculate aggregated metrics from individual tests
+    const totalDuration = testResults.reduce((sum, test) => sum + test.duration, 0);
+    const memoryUsages = testResults.map(test => test.memoryUsage.peak / 1024 / 1024); // Convert to MB
+    const cpuPercentages = testResults.map(test => test.cpuUsage.percentage);
+    
+    const peakMemoryMB = Math.max(...memoryUsages);
+    const avgMemoryMB = memoryUsages.reduce((sum, mem) => sum + mem, 0) / memoryUsages.length;
+    const peakCpuPercent = Math.max(...cpuPercentages);
+    const avgCpuPercent = cpuPercentages.reduce((sum, cpu) => sum + cpu, 0) / cpuPercentages.length;
+    
+    // Generate samples from test data for charts
+    const samples = this.generateSamplesFromTestData(testResults);
+    
+    return {
+      ...baseMetrics,
+      testCount: testResults.length,
+      peakMemoryMB: Math.max(baseMetrics.peakMemoryMB, peakMemoryMB),
+      avgMemoryMB: Math.max(baseMetrics.avgMemoryMB, avgMemoryMB),
+      peakCpuPercent: Math.max(baseMetrics.peakCpuPercent, peakCpuPercent),
+      avgCpuPercent: Math.max(baseMetrics.avgCpuPercent, avgCpuPercent),
+      samples: samples.length > 0 ? samples : baseMetrics.samples,
+      endTime: baseMetrics.endTime || Date.now()
+    };
+  }
+
+  /**
+   * Generate performance samples from test data for charts
+   */
+  private generateSamplesFromTestData(testResults: any[]): PerformanceSample[] {
+    const samples: PerformanceSample[] = [];
+    
+    // Sort tests by timestamp
+    const sortedTests = testResults.sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+    
+    // Create samples from individual test performance data
+    for (const test of sortedTests) {
+      if (test.performanceMetrics && test.performanceMetrics.memoryUsage && test.performanceMetrics.memoryUsage.samples) {
+        const testSamples = test.performanceMetrics.memoryUsage.samples.map((sample: any) => ({
+          timestamp: sample.timestamp,
+          memoryMB: sample.usage.heapUsed / 1024 / 1024,
+          cpuPercent: Math.min(test.cpuUsage.percentage, 100) // Cap at 100%
+        }));
+        samples.push(...testSamples);
+      }
+    }
+    
+    // If no samples from tests, create synthetic samples
+    if (samples.length === 0 && sortedTests.length > 0) {
+      const startTime = Date.now() - (sortedTests.length * 30000); // Assume 30s per test
+      
+      for (let i = 0; i < sortedTests.length; i++) {
+        const test = sortedTests[i];
+        const timestamp = startTime + (i * 30000);
+        
+        samples.push({
+          timestamp,
+          memoryMB: test.memoryUsage.peak / 1024 / 1024,
+          cpuPercent: Math.min(test.cpuUsage.percentage, 100)
+        });
+      }
+    }
+    
+    return samples;
   }
 
   dispose(): void {
