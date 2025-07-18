@@ -177,6 +177,25 @@ export class SessionManager {
   }
 
   /**
+   * Update session with validation conclusion
+   */
+  updateSessionConclusion(conclusion: string): void {
+    const session = this.requireCurrentSession();
+
+    this.logger.info('Updating session with validation conclusion', {
+      sessionId: session.sessionId,
+      conclusionLength: conclusion.length,
+    });
+
+    // Store the conclusion in the session
+    session.conclusion = conclusion;
+
+    this.logger.debug('Session conclusion stored successfully', {
+      sessionId: session.sessionId,
+    });
+  }
+
+  /**
    * Save current session
    */
   async saveSession(): Promise<void> {

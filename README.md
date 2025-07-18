@@ -160,6 +160,17 @@ endorphin-ai init
 resolution, not a problem with Endorphin AI. The npm scripts above always work
 regardless of npx behavior.
 
+**Alternative npm scripts in package.json:**
+```json
+{
+  "scripts": {
+    "endorphin:init": "./node_modules/.bin/endorphin init",
+    "endorphin:version": "./node_modules/.bin/endorphin --version",
+    "endorphin:help": "./node_modules/.bin/endorphin --help"
+  }
+}
+```
+
 ### Manual Setup (Alternative)
 
 If you prefer manual setup:

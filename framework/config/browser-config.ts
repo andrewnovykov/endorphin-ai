@@ -15,12 +15,15 @@ export const BROWSER_CONFIG = {
   // Browser launch options
   launchOptions: {
     headless: process.env.HEADLESS === 'true' ? true : false,
-    args: ['--start-maximized'],
+    args: [
+      '--window-size=1300,750',  // Small window size (slightly bigger than viewport for window chrome)
+      '--disable-web-security',  // Help with some testing scenarios
+    ],
   },
 
   // Browser context options
   contextOptions: {
-    viewport: { width: 1920, height: 1080 },
+    viewport: { width: 1280, height: 720 },  // Match viewport to window size
   },
 
   // Default timeouts (in milliseconds)

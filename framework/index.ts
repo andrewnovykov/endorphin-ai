@@ -60,6 +60,7 @@ export { initProject } from './cli/init-command.js';
 
 // Utilities
 export { generateData, generateDataArray } from './utils/index.js';
+export { getPage, getCurrentUserId, getUserIds, isMultiUserMode } from './utils/user-utils.js';
 
 // Individual tool creators for custom setups
 export { createGetPageContentTool, createGetSimplePageContentTool } from './automation/tools/content.js';

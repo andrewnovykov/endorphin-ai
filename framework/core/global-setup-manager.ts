@@ -37,19 +37,53 @@ export class GlobalSetupManager {
       // Convert file path to file URL for ESM import
       const fileUrl = pathToFileURL(absolutePath).href;
 
-      // Dynamic import the setup module
-      const module = (await import(fileUrl)) as GlobalSetupModule;
-
-      if (!module.default || typeof module.default !== 'function') {
-        throw new Error(`Global setup file must export a default function: ${absolutePath}`);
+      // For TypeScript files, check if tsx is available
+      if (absolutePath.endsWith('.ts')) {
+        await this.loadTypeScriptSetup(fileUrl);
+      } else {
+        // Dynamic import the setup module
+        const module = (await import(fileUrl)) as GlobalSetupModule;
+        this.validateAndSetModule(module, absolutePath);
       }
-
-      this.setupFunction = module.default;
-      log.debug(`Global setup function loaded successfully`);
     } catch (error: any) {
       log.error(`Failed to load global setup file: ${absolutePath}`, error);
       throw new Error(`Failed to load global setup: ${error.message}`);
     }
+  }
+
+  /**
+   * Load TypeScript setup file using tsx or other TypeScript loaders
+   */
+  private async loadTypeScriptSetup(fileUrl: string): Promise<void> {
+    try {
+      // Try direct import first (works in development with tsx)
+      const module = (await import(fileUrl)) as GlobalSetupModule;
+      this.validateAndSetModule(module, this.setupFile!);
+    } catch (error: any) {
+      // If direct import fails, provide helpful error message
+      if (error.message.includes('Unknown file extension ".ts"') || error.message.includes('Cannot resolve')) {
+        throw new Error(
+          `Cannot load TypeScript global setup file. Please either:\n` +
+          `  1. Use a .js file instead: ${this.setupFile!.replace('.ts', '.js')}\n` +
+          `  2. Run with tsx: npx tsx node_modules/endorphin-ai/dist/bin/endorphin.js\n` +
+          `  3. Compile your TypeScript files to JavaScript first\n` +
+          `  Original error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Validate and set the imported module
+   */
+  private validateAndSetModule(module: GlobalSetupModule, filePath: string): void {
+    if (!module.default || typeof module.default !== 'function') {
+      throw new Error(`Global setup file must export a default function: ${filePath}`);
+    }
+
+    this.setupFunction = module.default;
+    log.debug(`Global setup function loaded successfully`);
   }
 
   /**

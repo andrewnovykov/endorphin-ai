@@ -437,9 +437,17 @@ export class TestDiscoverer {
       typeof obj === 'object' &&
       typeof (obj as any).id === 'string' &&
       typeof (obj as any).name === 'string' &&
-      (typeof (obj as any).task === 'string' || 
-       typeof (obj as any).task === 'function' || 
-       typeof (obj as any).execute === 'function')
+      (
+        // Single-user test (traditional format)
+        typeof (obj as any).task === 'string' || 
+        typeof (obj as any).task === 'function' || 
+        typeof (obj as any).execute === 'function' ||
+        // Multi-user test (new format)
+        (Array.isArray((obj as any).users) && 
+         ((obj as any).users).length > 0 && 
+         (typeof (obj as any).tasks === 'function' || 
+          typeof (obj as any).tasks === 'object'))
+      )
     );
   }
 

@@ -96,7 +96,12 @@ export async function handleTestCommand(
   if (target) {
     console.log(`🧪 Running test: ${target}`);
     const { runSingleTestById } = await import('../framework/execution/discovery/cli-functions.js');
-    await runSingleTestById(target, config);
+    const result = await runSingleTestById(target, config);
+    
+    // Check if the test execution was successful
+    if (result && !result.success) {
+      process.exit(1);
+    }
     process.exit(0);
   }
 

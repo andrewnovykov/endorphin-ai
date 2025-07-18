@@ -3,8 +3,11 @@
  * Orchestrates browser lifecycle, tool setup, and test session management
  */
 
-import { HumanMessage } from '@langchain/core/messages';
+import { AIMessage, HumanMessage } from '@langchain/core/messages';
 import * as path from 'node:path';
+import { setCurrentTestSession, setupAgent } from '../ai/agent-setup.js';
+import { ValidationAgent } from '../ai/validation-agent.js';
+import { PageSnapshotManager } from '../managers/content/snapshot-manager.js';
 import { HtmlReporter } from '../reporters/html-reporter.js';
 import { TestResultsManager } from '../results/test-results-manager.js';
 import type {
@@ -12,7 +15,7 @@ import type {
   AgentResponse,
   LangChainAgent,
   LangChainTool,
-} from '../ai/types/agent.js';
+} from '../types/agent.js';
 import { TestTimeoutError } from '../types/errors.js';
 import type {
   DataGenerationResult,
@@ -23,11 +26,11 @@ import type {
   TestSession,
   TestSetupResult,
 } from '../types/index.js';
-import { setupAgent } from '../ai/agent-setup.js';
+import { setBrowserManager } from '../utils/user-utils.js';
 import { globalLogger } from './logger.js';
-import { PageSnapshotManager } from '../managers/content/snapshot-manager.js';
 import { ResourceManager, globalResourceManager } from './resource-manager.js';
 import { TokenTracker } from './token-tracker.js';
+import { ciPerformanceMonitor } from './ci-performance.js';
 
 // Import the new service classes
 import { BrowserManager } from '../automation/browser/browser-manager.js';
@@ -52,6 +55,7 @@ export class TestFramework {
 
   // Core framework components
   private agent: LangChainAgent | null = null;
+  private validationAgent: ValidationAgent;
   private resultsManager: TestResultsManager;
   private isInteractiveMode: boolean = false;
   private tokenTracker: TokenTracker;
@@ -111,6 +115,9 @@ export class TestFramework {
     // Initialize resource manager for memory leak prevention
     this.resourceManager = globalResourceManager;
 
+    // Initialize validation agent with token tracker
+    this.validationAgent = new ValidationAgent(this.tokenTracker);
+
     this.logger.info('Test Framework initialized successfully');
   }
 
@@ -129,6 +136,9 @@ export class TestFramework {
 
       // Initialize browser
       await this.browserManager.initialize();
+
+      // Set browser manager for user utilities
+      setBrowserManager(this.browserManager);
 
       // Setup tools
       const tools = await this.toolManager.setupTools(this);
@@ -184,12 +194,18 @@ export class TestFramework {
       url: testConfig.url,
     });
 
+    // Record test start for CI performance monitoring
+    ciPerformanceMonitor.recordTestStart();
+
     try {
       // Create test session
       const session = await this.sessionManager.createSession(testConfig.name, testConfig.id);
 
       // Update debug manager with new session
       this.debugManager.updateSession(session);
+
+      // Set the current session for agent token tracking
+      setCurrentTestSession(session);
 
       // Execute test setup if provided
       if (testConfig.setup) {
@@ -232,6 +248,9 @@ export class TestFramework {
         (result as any).report
       );
 
+      // Clear the current session for agent token tracking
+      setCurrentTestSession(null);
+
       this.logger.info(`Test completed: ${(result as any).success ? 'SUCCESS' : 'FAILED'}`, {
         testId: testConfig.id,
         duration: result.duration,
@@ -246,6 +265,9 @@ export class TestFramework {
 
       // Complete session with error
       await this.sessionManager.completeSession(false, error.message);
+
+      // Clear the current session for agent token tracking
+      setCurrentTestSession(null);
 
       throw error;
     }
@@ -397,6 +419,77 @@ export class TestFramework {
     return this.browserManager;
   }
 
+  /**
+   * Get current page (tools compatibility)
+   */
+  get currentPage() {
+    return this.browserManager.getPage();
+  }
+
+  /**
+   * Take step screenshot (tools compatibility)
+   */
+  async takeStepScreenshot(_description: string): Promise<string | null> {
+    try {
+      const session = this.sessionManager.getCurrentSession();
+      if (!session) {
+        throw new Error('No active session for screenshot');
+      }
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const screenshotName = `step-${session.steps.length + 1}-${timestamp}.png`;
+      const screenshotPath = `${session.screenshotsDir}/${screenshotName}`;
+
+      await this.browserManager.getPage().screenshot({
+        path: screenshotPath,
+        fullPage: false,
+      });
+
+      return screenshotPath;
+    } catch (error: any) {
+      this.logger.error('Screenshot failed', error);
+      return null;
+    }
+  }
+
+  /**
+   * Log test step (tools compatibility)
+   */
+  logTestStep(
+    stepDescription: string,
+    toolName: string | null = null,
+    toolArgs: any = null,
+    result: string = '',
+    isSuccess: boolean = true,
+    screenshots: string[] = []
+  ): void {
+    const session = this.sessionManager.getCurrentSession();
+    if (!session) return;
+
+    const currentUserId = this.browserManager.getCurrentUserId();
+
+    const step = {
+      stepNumber: session.steps.length + 1,
+      timestamp: new Date().toISOString(),
+      description: stepDescription,
+      toolName: toolName || null,
+      toolArgs: toolArgs || undefined,
+      result: result || null,
+      status: isSuccess ? ('SUCCESS' as const) : ('FAILED' as const),
+      screenshots: screenshots.map((path) => ({
+        filepath: path,
+        filename: path.split('/').pop() || 'screenshot.png',
+        description: `${stepDescription} screenshot`,
+        timestamp: new Date().toISOString(),
+        stepNumber: session.steps.length + 1,
+      })),
+      userId: currentUserId ? currentUserId : undefined, // Include user context for multi-user tests
+    };
+
+    session.steps.push(step);
+    this.logger.debug('Test step logged', step);
+  }
+
   getSessionManager(): SessionManager {
     return this.sessionManager;
   }
@@ -515,7 +608,10 @@ export class TestFramework {
   /**
    * Execute test-level data generation function
    */
-  private async executeDataGeneration(testConfig: TestConfig, _session: TestSession): Promise<void> {
+  private async executeDataGeneration(
+    testConfig: TestConfig,
+    _session: TestSession
+  ): Promise<void> {
     if (!testConfig.data || typeof testConfig.data !== 'function') {
       return;
     }
@@ -568,31 +664,87 @@ export class TestFramework {
     }
   }
 
-  private async executeTest(testConfig: TestConfig, _session: TestSession): Promise<TaskResult> {
+  private async executeTest(testConfig: TestConfig, session: TestSession): Promise<TaskResult> {
     const startTime = Date.now();
 
     try {
+      // Check if this is a multi-user test
+      if (testConfig.users && testConfig.users.length > 0 && testConfig.tasks) {
+        return await this.executeMultiUserTest(testConfig, session);
+      }
+
+      // Single-user test execution (existing logic)
+      if (!testConfig.task) {
+        throw new Error('Test must have either task (single-user) or users + tasks (multi-user)');
+      }
+
+      // Get setup data and test data from session
+      const setupData = session.setupResult?.data || null;
+      const testData = session.dataGenerationResult?.data || null;
+
       // Handle both string and function tasks
-      const taskInstruction = typeof testConfig.task === 'string' 
-        ? testConfig.task 
-        : await testConfig.task();
-      
+      const taskInstruction =
+        typeof testConfig.task === 'string'
+          ? testConfig.task
+          : await testConfig.task(testData, setupData);
+
       // Execute test instructions
       const result = await this.executeNaturalLanguageInstruction(taskInstruction);
 
       const duration = Date.now() - startTime;
 
+      // Add validation with the validation agent
+      let validationResult: { status: 'SUCCESS' | 'FAILED'; conclusion: string } | null = null;
+      try {
+        // Get the current session for validation
+        const currentSession = this.sessionManager.getCurrentSession();
+        if (
+          currentSession &&
+          currentSession.agentHistory &&
+          currentSession.agentHistory.length > 0
+        ) {
+          // Create messages from agent history for validation
+          const messages = currentSession.agentHistory.map(
+            (entry) => new AIMessage(`${entry.thinking}: ${entry.response}`)
+          );
+
+          validationResult = await this.validationAgent.analyzeTestExecution(
+            messages,
+            taskInstruction
+          );
+
+          // Update session with validation conclusion
+          await this.sessionManager.updateSessionConclusion(validationResult.conclusion);
+        }
+      } catch (error: any) {
+        this.logger.warn('Validation agent failed', error);
+      }
+
+      // Store the session token summary in the session for the report
+      const sessionTokenSummary = this.tokenTracker.getSessionSummary();
+      const currentSession = this.sessionManager.getCurrentSession();
+      if (currentSession) {
+        currentSession.tokenSummary = sessionTokenSummary;
+      }
+
       const taskResult: TaskResult = {
-        success: (result as any).success,
+        success:
+          validationResult && validationResult.status === 'SUCCESS'
+            ? true
+            : (result as any).success,
         duration,
         report: {
           testName: testConfig.name,
           testId: testConfig.id || 'unknown',
-          success: (result as any).success,
+          success:
+            validationResult && validationResult.status === 'SUCCESS'
+              ? true
+              : (result as any).success,
           duration,
           timestamp: new Date().toISOString(),
+          conclusion: validationResult ? validationResult.conclusion : undefined,
         },
-        tokenUsage: result.tokenUsage,
+        tokenUsage: result.tokenUsage as any,
       };
 
       // Only add error if it exists
@@ -622,6 +774,220 @@ export class TestFramework {
     }
   }
 
+  private async executeMultiUserTest(
+    testConfig: TestConfig,
+    session: TestSession
+  ): Promise<TaskResult> {
+    const startTime = Date.now();
+
+    try {
+      if (!testConfig.users || !testConfig.tasks) {
+        throw new Error('Multi-user test requires both users and tasks');
+      }
+
+      this.logger.info(`Executing multi-user test with ${testConfig.users.length} users`, {
+        testId: testConfig.id,
+        users: testConfig.users,
+      });
+
+      // Initialize multi-user browser sessions
+      await this.browserManager.initializeMultiUser(testConfig.users);
+
+      // Get setup data and test data from session
+      const setupData = session.setupResult?.data || null;
+      const testData = session.dataGenerationResult?.data || null;
+
+      // Execute tasks function to get user-specific task instructions
+      const userTasks: Record<string, string> =
+        typeof testConfig.tasks === 'function'
+          ? await testConfig.tasks(testData, setupData, testConfig.users)
+          : (testConfig.tasks as Record<string, string>);
+
+      // Get all task IDs from tasks (supports both traditional and phase-based workflow)
+      const taskIds = Object.keys(userTasks);
+
+      // Detect if this is a phase-based workflow (contains '.phase' in task keys)
+      const isPhaseBasedWorkflow = taskIds.some((id) => id.includes('.'));
+
+      if (isPhaseBasedWorkflow) {
+        // Phase-based workflow: focus on phases, extract base users for browser context mapping
+        const baseUserIds = [...new Set(taskIds.map((taskId) => taskId.split('.')[0]))];
+        for (const baseUserId of baseUserIds) {
+          if (!testConfig.users.includes(baseUserId)) {
+            throw new Error(
+              `Base user ${baseUserId} from phase IDs not found in users array: ${testConfig.users.join(', ')}`
+            );
+          }
+        }
+
+        // Log phase structure for debugging
+        const phases = taskIds
+          .filter((id) => id.includes('.'))
+          .map((id) => id.split('.')[1])
+          .filter((v, i, a) => a.indexOf(v) === i);
+        this.logger.debug(`Phase-based workflow detected`, {
+          totalTasks: taskIds.length,
+          phases: phases.sort(),
+          baseUsers: baseUserIds,
+          executionOrder: taskIds,
+        });
+      } else {
+        // Traditional workflow: validate that all task keys match users array exactly
+        for (const taskUserId of taskIds) {
+          if (!testConfig.users.includes(taskUserId)) {
+            throw new Error(
+              `Task user ${taskUserId} not found in users array: ${testConfig.users.join(', ')}`
+            );
+          }
+        }
+        this.logger.debug(`Traditional workflow detected`, { users: taskIds });
+      }
+
+      // Execute tasks sequentially in the order they appear in the tasks object
+      const userResults = [];
+      for (const taskId of taskIds) {
+        this.logger.debug(`Executing task: ${taskId}`);
+
+        try {
+          // Switch to user context (will parse base user ID internally for phase-based workflow)
+          await this.browserManager.switchToUser(taskId);
+
+          // Execute the task instruction
+          const taskInstruction = userTasks[taskId];
+          const result = await this.executeNaturalLanguageInstruction(taskInstruction);
+
+          userResults.push({
+            userId: taskId, // Use task ID for tracking (could be 'user1' or 'user1.phase1')
+            success: (result as any).success,
+            result: result.result,
+            error: result.error,
+            tokenUsage: result.tokenUsage as any,
+          });
+        } catch (error: any) {
+          userResults.push({
+            userId: taskId, // Use task ID for tracking
+            success: false,
+            result: '',
+            error: error.message || 'Unknown error',
+            tokenUsage: null,
+          });
+        }
+      }
+
+      // All results are now in userResults array
+      const allResults = userResults;
+
+      // Determine overall success
+      const allSuccessful = allResults.every((r) => r.success);
+      const duration = Date.now() - startTime;
+
+      // Get the actual token usage from the session's token tracker
+      const sessionTokenSummary = this.tokenTracker.getSessionSummary();
+
+      // Store the session token summary in the session for the report
+      const currentSession = this.sessionManager.getCurrentSession();
+      if (currentSession) {
+        currentSession.tokenSummary = sessionTokenSummary;
+      }
+
+      // Use the session token summary as the total usage
+      const totalTokenUsage = {
+        totalTokens: sessionTokenSummary.totalTokens,
+        totalCost: sessionTokenSummary.totalCost,
+        aiCalls: sessionTokenSummary.aiCalls,
+      };
+
+      // Add validation with the validation agent for multi-user tests
+      let validationResult: { status: 'SUCCESS' | 'FAILED'; conclusion: string } | null = null;
+      try {
+        // Get the current session for validation
+        const currentSession = this.sessionManager.getCurrentSession();
+        if (
+          currentSession &&
+          currentSession.agentHistory &&
+          currentSession.agentHistory.length > 0
+        ) {
+          // Create combined task instruction for all users
+          const combinedTaskInstruction = Object.entries(userTasks)
+            .map(([userId, task]) => `${userId}: ${task}`)
+            .join('\n');
+
+          // Create messages from agent history for validation
+          const messages = currentSession.agentHistory.map(
+            (entry) => new AIMessage(`${entry.thinking}: ${entry.response}`)
+          );
+
+          validationResult = await this.validationAgent.analyzeTestExecution(
+            messages,
+            combinedTaskInstruction
+          );
+
+          // Update session with validation conclusion
+          await this.sessionManager.updateSessionConclusion(validationResult.conclusion);
+        }
+      } catch (error: any) {
+        this.logger.warn('Multi-user validation agent failed', error);
+      }
+
+      const finalSuccess =
+        validationResult && validationResult.status === 'SUCCESS' ? true : allSuccessful;
+
+      const taskResult: TaskResult = {
+        success: finalSuccess,
+        duration,
+        report: {
+          testName: testConfig.name,
+          testId: testConfig.id || 'unknown',
+          success: finalSuccess,
+          duration,
+          timestamp: new Date().toISOString(),
+          multiUser: true,
+          userResults: allResults,
+          conclusion: validationResult ? validationResult.conclusion : undefined,
+        },
+        tokenUsage: totalTokenUsage,
+      };
+
+      // Add error if any user failed
+      if (!allSuccessful) {
+        const failures = allResults.filter((r) => !r.success);
+        taskResult.error = `Multi-user test failed for users: ${failures.map((f) => f.userId).join(', ')}`;
+        taskResult.report.error = taskResult.error;
+      }
+
+      this.logger.info(`Multi-user test completed: ${allSuccessful ? 'SUCCESS' : 'FAILED'}`, {
+        testId: testConfig.id,
+        duration,
+        userResults: allResults.map((r) => ({ userId: r.userId, success: r.success })),
+      });
+
+      return taskResult;
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+
+      this.logger.error('Multi-user test execution failed', error, {
+        testId: testConfig.id,
+        users: testConfig.users,
+      });
+
+      return {
+        success: false,
+        error: error.message,
+        duration,
+        report: {
+          testName: testConfig.name,
+          testId: testConfig.id || 'unknown',
+          success: false,
+          duration,
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          multiUser: true,
+        },
+        tokenUsage: this.tokenTracker.getSessionSummary(),
+      };
+    }
+  }
+
   private async getOptimizedPageContent(): Promise<string> {
     if (!this.browserManager.isInitialized()) {
       return '';
@@ -641,12 +1007,12 @@ export class TestFramework {
   private createEnhancedPrompt(instruction: string, pageContent: string): string {
     const basePrompt = `You are a web automation expert. Execute the following instruction on the current web page.
 
-Current page content (optimized for AI context):
-${pageContent}
+    Current page content (optimized for AI context):
+    ${pageContent}
 
-Instruction: ${instruction}
+    Instruction: ${instruction}
 
-Use the available tools to complete this task. Be precise and efficient.`;
+    Use the available tools to complete this task. Be precise and efficient.`;
 
     return basePrompt;
   }
@@ -663,7 +1029,12 @@ Use the available tools to complete this task. Be precise and efficient.`;
     const startTime = Date.now();
 
     try {
-      const response = await this.agent.invoke(params);
+      const response = await this.agent.invoke(params, {
+        configurable: {
+          thread_id: `session-${this.sessionManager.getCurrentSession()?.sessionId || 'default'}`,
+        },
+        recursionLimit: 200, // Increased recursion limit for complex multi-user tests
+      });
       const _duration = Date.now() - startTime;
 
       // Track tokens (estimation for now)

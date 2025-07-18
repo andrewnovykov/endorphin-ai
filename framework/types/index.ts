@@ -4,7 +4,7 @@
  */
 
 // Agent and AI types
-export type { AIConfig, BrowserTool, LangChainTool, ToolCall, ToolParams } from '../ai/types/agent.js';
+export type { AIConfig, BrowserTool, LangChainTool, ToolCall, ToolParams } from './agent.js';
 
 // Browser types
 export type {
@@ -49,10 +49,11 @@ export type {
   TestCase,
   TestConfig,
   TestDataFunction,
-  TestTaskFunction,
   TestResult,
   TestSession,
   TestSetupFunction,
   TestSetupResult,
   TestStep,
+  TestTaskFunction,
+  TestTasksFunction,
 } from './test.js';

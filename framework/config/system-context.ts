@@ -30,6 +30,7 @@ export function createSystemContext(taskDescription: string): string {
 - fill: Fill input fields with text
 - wait: Wait for elements or time delays
 - verifyElement: Check if elements exist on the page
+- verifyTextContent: Verify text is visible on the page (highly reliable)
 - getPageContent: Get page content for analysis
 - screenshot: Take screenshots
 - getElementInfo: Get information about specific elements
@@ -43,6 +44,7 @@ CRITICAL EXECUTION RULES:
 5. Take a screenshot after each major step for documentation
 6. NEVER stop until ALL steps are completed or a step fails after 3 retries
 7. You must respond with structured JSON format for each action
+8. TOOL RESULT TRUST: When verification tools return ✅ SUCCESS, TRUST the result completely. Do NOT second-guess or re-verify unless explicitly asked to retry.
 
 STEP EXECUTION PROCESS:
 - There are ${totalSteps} total steps to complete
@@ -60,6 +62,12 @@ MANDATORY STEP COMPLETION:
 You MUST complete every single numbered step. There are ${totalSteps} steps total.
 ${hasValidSteps ? `Steps to complete: ${stepSummary}` : 'Parse the task description to identify all numbered steps.'}
 Do not stop until step ${totalSteps} is complete.
+
+VERIFICATION CONFIDENCE:
+- The verifyTextContent tool uses multiple exhaustive search methods (text content, DOM selectors, tree walker)
+- When verifyTextContent returns ✅ "Text 'X' is DEFINITELY visible on the page", the text IS there - trust it completely
+- Do NOT conclude a test failed if verification tools return success
+- Success tool responses mean the verification passed - proceed with confidence
 
 ERROR RECOVERY:
 - If a step fails, immediately respond with retry status and attempt number
@@ -99,6 +107,7 @@ export const SYSTEM_CONTEXT_TEMPLATE = `You are a browser automation agent with 
 - fill: Fill input fields with text
 - wait: Wait for elements or time delays
 - verifyElement: Check if elements exist on the page
+- verifyTextContent: Verify text is visible on the page (highly reliable)
 - getPageContent: Get page content for analysis
 - screenshot: Take screenshots
 - getElementInfo: Get information about specific elements

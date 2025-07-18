@@ -12,11 +12,7 @@ import { execSync } from 'child_process';
 const getFrameworkRoot = (): string => {
   // Try multiple potential paths to find the examples directory
   const possibleRoots = [
-    // When installed as package: look in node_modules/endorphin-ai
-    path.resolve(process.cwd(), 'node_modules/endorphin-ai'),
-    // When installed as package: try alternative paths
-    path.resolve(process.cwd(), 'node_modules/endorphin-ai/dist'),
-    // Try to resolve via require.resolve
+    // Try to resolve via require.resolve first (most reliable for installed packages)
     (() => {
       try {
         const packagePath = require.resolve('endorphin-ai/package.json');
@@ -25,15 +21,40 @@ const getFrameworkRoot = (): string => {
         return null;
       }
     })(),
-    // If running from project root (development)
-    process.cwd(),
+    // Try resolving the dist directory from this file's location
+    (() => {
+      try {
+        // This file is at dist/framework/cli/init-command.js when compiled
+        const thisFile = require.resolve('endorphin-ai/dist/framework/cli/init-command.js');
+        return path.resolve(path.dirname(thisFile), '../../../'); // Go up to package root
+      } catch {
+        return null;
+      }
+    })(),
+    // When installed as package: look in node_modules/endorphin-ai
+    path.resolve(process.cwd(), 'node_modules/endorphin-ai'),
+    // When installed as package: try alternative paths
+    path.resolve(process.cwd(), 'node_modules/endorphin-ai/dist'),
     // If __dirname is available (compiled JS), go up from framework/cli
     typeof __dirname !== 'undefined' ? path.resolve(__dirname, '../../') : null,
+    // If running from project root (development)
+    process.cwd(),
     // Alternative path resolution
     path.resolve(process.cwd(), '../..'),
   ].filter(Boolean) as string[];
 
-  // Return the first path that exists - actual existence check happens in copyExampleFiles
+  // Return the first path that actually has an examples directory
+  for (const root of possibleRoots) {
+    try {
+      const examplesPath = path.resolve(root, 'examples');
+      require('fs').accessSync(examplesPath);
+      return root; // Found examples directory here
+    } catch {
+      // Continue to next possibility
+    }
+  }
+
+  // If no examples directory found, return first path (will trigger fallback)
   return possibleRoots[0];
 };
 
@@ -90,11 +111,14 @@ async function createDirectories(targetDir: string): Promise<void> {
 async function copyExampleFiles(targetDir: string): Promise<void> {
   // Get path to examples folder (relative to framework root)
   const frameworkRoot = getFrameworkRoot();
+  console.log(`🔍 Framework root detected as: ${frameworkRoot}`);
   const examplesDir = path.resolve(frameworkRoot, 'examples');
+  console.log(`🔍 Looking for examples at: ${examplesDir}`);
 
   // Check if examples directory exists
   try {
     await fs.access(examplesDir);
+    console.log(`✅ Found examples directory at: ${examplesDir}`);
   } catch {
     console.warn(`⚠️  Examples directory not found at: ${examplesDir}`);
     console.warn('⚠️  Creating basic configuration files instead...');
@@ -177,6 +201,8 @@ async function fileExists(filePath: string): Promise<boolean> {
 }
 
 async function createBasicFiles(targetDir: string): Promise<void> {
+  console.log('🛠️ Creating basic configuration files...');
+  
   // Initialize npm package.json first
   try {
     console.log('📦 Initializing npm package...');
@@ -268,13 +294,15 @@ export default {
   const testContent = `// Example Endorphin AI Test
 // This is a sample test to help you get started
 
-export const HEALTH_001 = {
+import type { TestCase } from 'endorphin-ai';
+
+export const HEALTH_001: TestCase = {
   id: 'HEALTH-001',
   name: 'Health Check Test',
   description: 'Basic health check to verify the testing framework is working',
   priority: 'High',
   tags: ['health', 'smoke'],
-  site: 'https://example.com',
+  url: 'https://example.com',
   data: async () => {
     return {};
   },

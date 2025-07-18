@@ -177,16 +177,19 @@ else
   echo "✅ SUCCESS: No unwanted files in framework test-recorder directory"
 fi
 
-# Check if tests directory was updated
+# Check if test file was generated in recording directory
 echo ""
 echo "📝 Test file generation:"
-if [ -f "tests/test-rec-001-recorded-test.js" ]; then
-  echo "✅ SUCCESS: Generated test file found in user tests directory"
-  echo "📄 Generated test file: tests/test-rec-001-recorded-test.js"
+if [ -d "test-recorder" ]; then
+  GENERATED_TEST=$(find test-recorder -name "*recorded-test.ts" 2>/dev/null | head -1)
+  if [ -n "$GENERATED_TEST" ]; then
+    echo "✅ SUCCESS: Generated test file found in recording directory"
+    echo "📄 Generated test file: $GENERATED_TEST"
+  else
+    echo "⚠️ INFO: No generated test file found (may be expected if recorder was interrupted)"
+  fi
 else
-  echo "⚠️ INFO: No generated test file found (may be expected if recorder was interrupted)"
-  echo "📂 Current tests directory:"
-  ls -la tests/ 2>/dev/null || echo "   (No tests directory)"
+  echo "⚠️ INFO: No test-recorder directory found"
 fi
 
 echo ""

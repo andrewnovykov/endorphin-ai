@@ -242,10 +242,11 @@ export class EnhancedBrowserTestFramework {
     toolName: string | null = null,
     toolArgs: any = null,
     result: string | null = null,
-    isSuccess: boolean = true
+    isSuccess: boolean = true,
+    screenshots: string[] = []
   ): void {
     if (this.browserEngine) {
-      this.browserEngine.logTestStep(stepDescription, toolName, toolArgs, result, isSuccess);
+      this.browserEngine.logTestStep(stepDescription, toolName, toolArgs, result, isSuccess, screenshots);
     }
   }
 

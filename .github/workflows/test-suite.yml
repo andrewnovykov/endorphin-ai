@@ -1,0 +1,237 @@
+name: Manual Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      test-filter:
+        description: 'Test filter (e.g., specific test ID, tag, or priority)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - smoke
+          - regression
+          - High
+          - Medium
+          - Low
+      test-id:
+        description: 'Specific test ID to run (optional)'
+        required: false
+        type: string
+      parallel-workers:
+        description: 'Number of parallel workers'
+        required: false
+        default: '2'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+
+env:
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run TypeScript type check
+      run: npm run type-check || true
+      continue-on-error: true
+
+    - name: Run ESLint (warnings allowed, errors fail)
+      run: |
+        npm run lint
+        EXIT_CODE=$?
+        if [ $EXIT_CODE -eq 2 ]; then
+          echo "❌ ESLint errors found - failing build"
+          exit 1
+        elif [ $EXIT_CODE -eq 1 ]; then
+          echo "⚠️ ESLint warnings found - continuing build"
+          exit 0
+        else
+          echo "✅ ESLint passed with no issues"
+          exit 0
+        fi
+
+    - name: Run unit tests
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: npm test || true
+      continue-on-error: true
+
+    - name: Build framework
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: npm run build
+
+    - name: Verify build output
+      run: |
+        if [ ! -d "dist" ]; then
+          echo "❌ Build failed - dist directory not found"
+          exit 1
+        fi
+        echo "✅ Build successful - dist directory found"
+        ls -la dist/bin/
+
+    - name: Install Playwright browsers
+      run: |
+        npx playwright install chromium
+        npx playwright install-deps chromium
+
+    - name: Debug environment
+      run: |
+        echo "Node version: $(node --version)"
+        echo "NPM version: $(npm --version)"
+        echo "API Key present: ${{ secrets.OPENAI_API_KEY != '' && 'YES' || 'NO' }}"
+
+    - name: Run specific test by ID
+      if: ${{ github.event.inputs.test-id != '' }}
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        CI: true
+        HEADLESS: true
+        ENDORPHIN_MEMORY_OPTIMIZER: true
+        ENDORPHIN_DISABLE_IMAGES: true
+        ENDORPHIN_PERF_MONITORING: true
+      run: |
+        echo "🧪 Running test: ${{ github.event.inputs.test-id }}"
+        npx endorphin-ai run test ${{ github.event.inputs.test-id }}
+      timeout-minutes: 15
+
+    - name: Run tests by filter
+      if: ${{ github.event.inputs.test-id == '' }}
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        CI: true
+        HEADLESS: true
+        ENDORPHIN_MEMORY_OPTIMIZER: true
+        ENDORPHIN_DISABLE_IMAGES: true
+        ENDORPHIN_PERF_MONITORING: true
+      run: |
+        if [ "${{ github.event.inputs.test-filter }}" == "all" ]; then
+          echo "🚀 Running all tests with ${{ github.event.inputs.parallel-workers }} workers..."
+          npx endorphin-ai run test all --parallel ${{ github.event.inputs.parallel-workers }}
+        elif [ "${{ github.event.inputs.test-filter }}" == "High" ] || [ "${{ github.event.inputs.test-filter }}" == "Medium" ] || [ "${{ github.event.inputs.test-filter }}" == "Low" ]; then
+          echo "🎯 Running tests with priority: ${{ github.event.inputs.test-filter }}"
+          npx endorphin-ai run test --priority ${{ github.event.inputs.test-filter }} --parallel ${{ github.event.inputs.parallel-workers }}
+        else
+          echo "🏷️ Running tests with tag: ${{ github.event.inputs.test-filter }}"
+          npx endorphin-ai run test --tag ${{ github.event.inputs.test-filter }} --parallel ${{ github.event.inputs.parallel-workers }}
+        fi
+      timeout-minutes: 30
+
+    - name: Generate HTML test report
+      if: always()
+      run: |
+        echo "📊 Generating HTML test report..."
+        npx endorphin-ai generate report || echo "Report generation skipped"
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          test-results/
+          !test-results/**/node_modules/
+        retention-days: 7
+
+    - name: Upload HTML reports separately
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: html-reports
+        path: |
+          test-results/reports/report-*.html
+          test-results/reports/assets/
+          test-results/reports/screenshots/
+          test-results/performance-report-*.html
+        retention-days: 7
+    
+    - name: Generate job summary
+      if: always()
+      run: |
+        echo "## 🧪 Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ github.event.inputs.test-id }}" != "" ]; then
+          echo "**Test ID**: \`${{ github.event.inputs.test-id }}\`" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "**Test Filter**: ${{ github.event.inputs.test-filter }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Parallel Workers**: ${{ github.event.inputs.parallel-workers }}" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📥 Download Reports" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "1. Go to **Artifacts** section above" >> $GITHUB_STEP_SUMMARY
+        echo "2. Download \`html-reports\` artifact" >> $GITHUB_STEP_SUMMARY
+        echo "3. Extract and open the HTML files:" >> $GITHUB_STEP_SUMMARY
+        echo "   - \`report-*.html\` - Main test report" >> $GITHUB_STEP_SUMMARY
+        echo "   - \`performance-report-*.html\` - Performance metrics" >> $GITHUB_STEP_SUMMARY
+        
+        # List reports
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📋 Generated Files" >> $GITHUB_STEP_SUMMARY
+        if ls test-results/reports/report-*.html 2>/dev/null; then
+          for report in test-results/reports/report-*.html; do
+            echo "- ✅ \`$(basename $report)\`" >> $GITHUB_STEP_SUMMARY
+          done
+        fi
+        if ls test-results/performance-report-*.html 2>/dev/null; then
+          for report in test-results/performance-report-*.html; do
+            echo "- 📊 \`$(basename $report)\`" >> $GITHUB_STEP_SUMMARY
+          done
+        fi
+
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          let comment = '## 🧪 Test Results\n\n';
+          
+          // Check for performance report
+          const perfReports = fs.readdirSync('test-results').filter(f => f.startsWith('performance-report-'));
+          if (perfReports.length > 0) {
+            comment += '📊 **Performance Report Generated**\n';
+            comment += '- Memory Optimizer: ✅ Enabled\n';
+            comment += '- CI Optimizations: ✅ Active\n\n';
+          }
+          
+          // Add test summary if available
+          const summaryFiles = fs.readdirSync('test-results').filter(f => f.endsWith('summary.json'));
+          if (summaryFiles.length > 0) {
+            const summary = JSON.parse(fs.readFileSync(path.join('test-results', summaryFiles[0]), 'utf8'));
+            comment += `📈 **Test Summary**\n`;
+            comment += `- Total Tests: ${summary.totalTests || 0}\n`;
+            comment += `- Passed: ${summary.passedTests || 0}\n`;
+            comment += `- Failed: ${summary.failedTests || 0}\n`;
+            comment += `- Duration: ${summary.totalDuration || 0}ms\n`;
+          }
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });

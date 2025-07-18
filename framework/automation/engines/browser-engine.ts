@@ -4,23 +4,22 @@
  */
 
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { EventEmitter } from 'node:events';
 import { AGENT_CONFIG } from '../../ai/config/agent-config.js';
+import { ValidationAgent } from '../../ai/validation-agent.js';
 import { TIMEOUTS } from '../../config/constants.js';
 import { createSystemContext } from '../../config/system-context.js';
-import { setupAgent } from '../../ai/agent-setup.js';
-import { BrowserManager } from '../browser/browser-manager.js';
-import { PageSnapshotManager } from '../../managers/content/snapshot-manager.js';
+import { GlobalSetupManager } from '../../core/global-setup-manager.js';
 import { ResourceManager, globalResourceManager } from '../../core/resource-manager.js';
 import { createTestSession, saveTestSession } from '../../core/test-session.js';
 import { TokenTracker } from '../../core/token-tracker.js';
-import { GlobalSetupManager } from '../../core/global-setup-manager.js';
-import { createAllTools } from '../tools/index.js';
+import { PageSnapshotManager } from '../../managers/content/snapshot-manager.js';
 import type {
   AgentInvokeParams,
   AgentResponse,
   LangChainAgent,
   LangChainTool,
-} from '../../ai/types/agent.js';
+} from '../../types/agent.js';
 import { AgentError, TestTimeoutError, createErrorFromUnknown } from '../../types/errors.js';
 import type {
   FrameworkConfig,
@@ -31,8 +30,8 @@ import type {
 } from '../../types/index.js';
 import { DirectoryManager } from '../../utils/directory-manager.js';
 import { TestHelpers } from '../../utils/test-helpers.js';
-import { EventEmitter } from 'node:events';
-import { ValidationAgent } from '../../ai/validation-agent.js';
+import { BrowserManager } from '../browser/browser-manager.js';
+import { createAllTools } from '../tools/index.js';
 
 // Increase max listeners to prevent memory leak warnings during test execution
 EventEmitter.defaultMaxListeners = 30;
@@ -93,7 +92,7 @@ export class BrowserEngine {
 
     // Initialize global setup manager
     this.globalSetupManager = new GlobalSetupManager();
-    
+
     // Initialize validation agent with token tracker
     this.validationAgent = new ValidationAgent(this.tokenTracker);
   }
@@ -137,7 +136,7 @@ export class BrowserEngine {
     console.log('🤖 Setting up AI agent...');
     const { setupAgent, setCurrentTestSession } = await import('../../ai/agent-setup.js');
     this.agent = await setupAgent(this.toolsArray);
-    
+
     // Set the current session for token tracking
     if (this.currentTestSession) {
       setCurrentTestSession(this.currentTestSession);
@@ -169,7 +168,8 @@ export class BrowserEngine {
     toolName: string | null = null,
     toolArgs: any = null,
     result: string | null = null,
-    isSuccess: boolean = true
+    isSuccess: boolean = true,
+    screenshots: string[] = []
   ): void {
     TestHelpers.logTestStep(
       stepDescription,
@@ -177,7 +177,8 @@ export class BrowserEngine {
       toolArgs,
       result || '',
       isSuccess,
-      this.currentTestSession || undefined
+      this.currentTestSession || undefined,
+      screenshots
     );
 
     // Token usage tracking is now handled by the centralized trackAICall system
@@ -305,7 +306,7 @@ export class BrowserEngine {
     try {
       // Log initial step
       this.logTestStep('Test started', null, null, `Starting task: ${taskDescription}`, true);
-      
+
       // Always take screenshot for first step (important evidence)
       await this.takeStepScreenshot('Initial page state');
 
@@ -323,11 +324,12 @@ export class BrowserEngine {
         `Task execution: ${taskDescription}`
       );
 
-      const result = finalState.messages?.[finalState.messages.length - 1]?.content || 'Task completed';
+      const result =
+        finalState.messages?.[finalState.messages.length - 1]?.content || 'Task completed';
 
       // Log final step
       this.logTestStep('Test completed', null, null, result, true);
-      
+
       // Always take screenshot for last step (important evidence)
       await this.takeStepScreenshot('Final page state');
 
@@ -425,14 +427,24 @@ export class BrowserEngine {
 
       // Process task - support both string and function
       let taskDescription: string;
-      if (typeof test.task === 'function') {
-        if (useDetailedLogs) {
-          console.log(`🎯 Executing task function with generated data...`);
+      if (test.task) {
+        if (typeof test.task === 'function') {
+          if (useDetailedLogs) {
+            console.log(`🎯 Executing task function with generated data...`);
+          }
+          taskDescription = await test.task(generatedData, setupData);
+          this.logTestStep(
+            'Task function executed',
+            null,
+            null,
+            'Task description generated',
+            true
+          );
+        } else {
+          taskDescription = test.task;
         }
-        taskDescription = await test.task(generatedData, setupData);
-        this.logTestStep('Task function executed', null, null, 'Task description generated', true);
       } else {
-        taskDescription = test.task;
+        throw new Error('Test must have either task (single-user) or users + tasks (multi-user)');
       }
 
       if (useDetailedLogs) {
@@ -470,7 +482,7 @@ export class BrowserEngine {
 
       // Analyze the final conversation state for test result
       const testResult = await this.analyzeTestResultWithValidation(finalState, taskDescription);
-      
+
       this.logTestStep(
         `Test execution ${testResult.status.toLowerCase()}`,
         null,
@@ -511,7 +523,7 @@ export class BrowserEngine {
     this.currentTestSession.status = status;
     if (finalResult !== null) {
       this.currentTestSession.finalResult = finalResult;
-      
+
       // Always save the final result as conclusion for detailed reporting
       if (typeof finalResult === 'string' && finalResult.trim().length > 0) {
         this.currentTestSession.conclusion = finalResult.trim();
@@ -574,7 +586,7 @@ export class BrowserEngine {
 
       // Force cleanup of any remaining resources to prevent memory leaks
       await this.resourceManager.disposeAll();
-      
+
       // Reset global setup flag for future tests
       this.globalSetupExecuted = false;
     } catch (error) {
@@ -620,28 +632,28 @@ export class BrowserEngine {
    * Analyze test result with validation agent
    */
   private async analyzeTestResultWithValidation(
-    finalState: any, 
+    finalState: any,
     testTask: string
   ): Promise<{ status: 'SUCCESS' | 'FAILED'; conclusion: string }> {
     const messages = finalState?.messages || [];
-    
+
     // First try quick validation
     const quickResult = this.validationAgent.quickValidate(messages);
-    
+
     // If we have high confidence, use quick result
     if (quickResult.confidence >= 0.8) {
       return {
         status: quickResult.status,
-        conclusion: quickResult.conclusion
+        conclusion: quickResult.conclusion,
       };
     }
-    
+
     // Otherwise, do full analysis with validation agent
     try {
       const validationResult = await this.validationAgent.analyzeTestExecution(messages, testTask);
       return {
         status: validationResult.status,
-        conclusion: validationResult.conclusion
+        conclusion: validationResult.conclusion,
       };
     } catch {
       console.error('Validation agent failed, falling back to pattern analysis');
@@ -657,7 +669,7 @@ export class BrowserEngine {
     if (messages.length === 0) {
       return {
         status: 'FAILED',
-        conclusion: 'No agent response received'
+        conclusion: 'No agent response received',
       };
     }
 
@@ -677,10 +689,10 @@ export class BrowserEngine {
       'wrong username',
       'incorrect.*displayed',
       'login was not successful',
-      'authentication failed'
+      'authentication failed',
     ];
 
-    const hasValidationFailure = validationFailurePatterns.some(pattern => {
+    const hasValidationFailure = validationFailurePatterns.some((pattern) => {
       const regex = new RegExp(pattern, 'i');
       return regex.test(trimmedContent);
     });
@@ -688,7 +700,7 @@ export class BrowserEngine {
     if (hasValidationFailure) {
       return {
         status: 'FAILED',
-        conclusion: content || 'Test failed due to validation failure'
+        conclusion: content || 'Test failed due to validation failure',
       };
     }
 
@@ -703,40 +715,36 @@ export class BrowserEngine {
       'critical error in test execution',
       'maximum retries exceeded - test failed',
       'step failed after 3 attempts',
-      'unable to complete all steps'
+      'unable to complete all steps',
     ];
 
-    const hasTestFailure = testFailPatterns.some(pattern => 
-      trimmedContent.includes(pattern)
-    );
+    const hasTestFailure = testFailPatterns.some((pattern) => trimmedContent.includes(pattern));
 
     if (hasTestFailure) {
       return {
         status: 'FAILED',
-        conclusion: content || 'Test execution failed'
+        conclusion: content || 'Test execution failed',
       };
     }
 
     // Check for successful completion patterns
     const testPassPatterns = [
       'test completed successfully',
-      'all test steps completed successfully', 
+      'all test steps completed successfully',
       'e2e test passed',
       'test execution finished successfully',
       'all steps have been completed and the test passed',
       'all numbered steps completed successfully',
       'final step completed - test passed',
-      'step completion confirmed - test successful'
+      'step completion confirmed - test successful',
     ];
 
-    const hasTestSuccess = testPassPatterns.some(pattern => 
-      trimmedContent.includes(pattern)
-    );
+    const hasTestSuccess = testPassPatterns.some((pattern) => trimmedContent.includes(pattern));
 
     if (hasTestSuccess) {
       return {
         status: 'SUCCESS',
-        conclusion: content || 'Test completed successfully'
+        conclusion: content || 'Test completed successfully',
       };
     }
 
@@ -746,13 +754,13 @@ export class BrowserEngine {
       // This is conservative - tests should explicitly indicate success
       return {
         status: 'FAILED',
-        conclusion: content || 'Test completed but success could not be verified'
+        conclusion: content || 'Test completed but success could not be verified',
       };
     }
 
     return {
       status: 'FAILED',
-      conclusion: 'Test completed with unclear result'
+      conclusion: 'Test completed with unclear result',
     };
   }
 
@@ -766,14 +774,14 @@ export class BrowserEngine {
     }
 
     console.log('🌍 Executing global setup...');
-    
+
     try {
       const result = await this.globalSetupManager.loadAndExecute(this.config.globalSetup);
-      
+
       if (!result.success) {
         throw new Error(`Global setup failed: ${result.error?.message || 'Unknown error'}`);
       }
-      
+
       this.globalSetupExecuted = true;
       console.log(`✅ Global setup completed successfully in ${result.executionTime}ms`);
     } catch (error: any) {

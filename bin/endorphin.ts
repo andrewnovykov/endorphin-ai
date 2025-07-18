@@ -268,21 +268,25 @@ export async function main(): Promise<void> {
         break;
       }
       case 'run': {
-        // Run commands need full AI validation
-        const runConfig = await getConfig({ cwd: process.cwd(), cliFlags });
-        if (args.includes('--debug')) {
-          console.log('🔧 Loaded configuration:', JSON.stringify(runConfig, null, 2));
-        }
         if (subcommand === 'test-recorder') {
-          await handleTestRecorderCommand(runConfig);
-        } else if (subcommand === 'test') {
-          // Extract parallel/workers option from cliFlags
-          const options = { parallel: cliFlags.parallel || 1 };
-          await handleTestCommand(args, target, runConfig, options);
+          // Test recorder doesn't need AI validation until recording starts
+          const recorderConfig = await getConfig({ cwd: process.cwd(), cliFlags, validateAI: false });
+          await handleTestRecorderCommand(recorderConfig);
         } else {
-          console.error(`❌ Unknown run command: ${subcommand}`);
-          console.log('Use "endorphin help" for usage information');
-          process.exit(1);
+          // Other run commands need full AI validation
+          const runConfig = await getConfig({ cwd: process.cwd(), cliFlags });
+          if (args.includes('--debug')) {
+            console.log('🔧 Loaded configuration:', JSON.stringify(runConfig, null, 2));
+          }
+          if (subcommand === 'test') {
+            // Extract parallel/workers option from cliFlags
+            const options = { parallel: cliFlags.parallel || 1 };
+            await handleTestCommand(args, target, runConfig, options);
+          } else {
+            console.error(`❌ Unknown run command: ${subcommand}`);
+            console.log('Use "endorphin help" for usage information');
+            process.exit(1);
+          }
         }
         break;
       }

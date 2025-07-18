@@ -6,6 +6,7 @@
 import { EventEmitter } from 'node:events';
 import { LIMITS, PERFORMANCE } from '../config/constants.js';
 import { ResourceError, ResourceExhaustedError } from '../types/errors.js';
+import { ciPerformanceMonitor } from './ci-performance.js';
 
 export interface ManagedResource {
   id: string;
@@ -190,6 +191,11 @@ export class ResourceManager extends EventEmitter {
     }
 
     this.emit('cleanup', toDispose.length);
+    
+    // Record cleanup activity for CI performance monitoring
+    if (toDispose.length > 0) {
+      ciPerformanceMonitor.recordCleanup();
+    }
   }
 
   /**
@@ -244,14 +250,60 @@ export class ResourceManager extends EventEmitter {
 
       // Force cleanup on high memory usage
       this.cleanup();
+
+      // CI-specific aggressive memory management (opt-in)
+      if (process.env.CI && process.env.ENDORPHIN_AGGRESSIVE_GC === 'true') {
+        this.performAggressiveCleanup();
+      }
+    }
+  }
+
+  /**
+   * Perform aggressive cleanup in CI environments
+   */
+  private performAggressiveCleanup(): void {
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc();
+      console.log('🗑️ Forced garbage collection in CI');
+      ciPerformanceMonitor.recordGC();
+    }
+
+    // Clear all old resources more aggressively
+    const now = Date.now();
+    const aggressiveMaxAge = 60000; // 1 minute in CI vs 5 minutes normally
+    const toDispose: string[] = [];
+
+    for (const [id, resource] of this.resources) {
+      if (now - resource.created > aggressiveMaxAge) {
+        toDispose.push(id);
+      }
+    }
+
+    // Dispose old resources immediately
+    for (const id of toDispose) {
+      this.dispose(id).catch((error) => {
+        this.emit('cleanupError', error, id);
+      });
+    }
+
+    if (toDispose.length > 0) {
+      console.log(`🧹 Aggressively cleaned up ${toDispose.length} resources in CI`);
     }
   }
 
   private startCleanupTimer(): void {
+    // More frequent cleanup in CI environments
+    const intervalMs = process.env.CI ? Math.min(this.cleanupIntervalMs, 30000) : this.cleanupIntervalMs;
+    
     this.cleanupInterval = setInterval(() => {
       this.cleanup();
       this.checkMemoryUsage();
-    }, this.cleanupIntervalMs);
+    }, intervalMs);
+
+    if (process.env.CI) {
+      console.log(`🔧 CI mode: Resource cleanup interval set to ${intervalMs / 1000}s`);
+    }
   }
 }
 

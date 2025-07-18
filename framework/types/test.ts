@@ -2,7 +2,7 @@
  * Test configuration and test-related types
  */
 
-import type { ToolCall } from '../ai/types/agent.js';
+import type { ToolCall } from './agent.js';
 import type { Screenshot } from './browser';
 
 /**
@@ -34,6 +34,16 @@ export type TestDataFunction = () => Promise<any>;
 export type TestTaskFunction = (data?: any, setupData?: any) => Promise<string> | string;
 
 /**
+ * Multi-user test tasks function signature
+ * Executes with generated data, setup data, and users array, returns user-specific task descriptions
+ */
+export type TestTasksFunction = (
+  data?: any,
+  setupData?: any,
+  users?: string[]
+) => Promise<Record<string, string>> | Record<string, string>;
+
+/**
  * Test data generation execution result
  */
 export interface DataGenerationResult {
@@ -61,7 +71,9 @@ export interface TestConfig {
   testData?: Record<string, any>; // Keep for backward compatibility
   data?: TestDataFunction | Record<string, any>; // New async data generation or static data
   setup?: TestSetupFunction; // Optional test-level setup function
-  task: string | TestTaskFunction; // Support both string and function-based tasks
+  task?: string | TestTaskFunction; // Support both string and function-based tasks (single-user)
+  users?: string[]; // Array of user IDs for multi-user tests (max 5)
+  tasks?: TestTasksFunction; // Multi-user tasks function that returns user-specific task descriptions
 }
 
 // Test Case interface for test recorder generated files
@@ -105,6 +117,7 @@ export interface AgentHistoryEntry {
   thinking: string; // What the agent was thinking about
   prompt: string; // The actual prompt sent to the AI
   response: string; // The AI's response
+  userId?: string | undefined; // For multi-user tests, identifies which user/agent this belongs to
   tokenUsage: {
     promptTokens: number;
     responseTokens: number;
@@ -125,6 +138,7 @@ export interface TestStep {
   result?: string | null;
   status: 'SUCCESS' | 'FAILED';
   screenshots: Screenshot[];
+  userId?: string | undefined; // For multi-user tests, identifies which user this step belongs to
   tokenUsage?: {
     promptTokens: number;
     responseTokens: number;

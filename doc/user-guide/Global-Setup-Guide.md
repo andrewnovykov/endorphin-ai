@@ -13,8 +13,25 @@ Global setup lets you prepare your test environment once before any tests run. P
 
 ## 📦 Quick Setup
 
-1. Create a `global-setup.js` file in your project root:
+1. Create a global setup file in your project root:
 
+**Option A: TypeScript (recommended)**
+
+Create `global-setup.ts`:
+```typescript
+export default async function globalSetup(): Promise<void> {
+  console.log('🚀 Preparing test environment...');
+  
+  // Your setup code here
+  process.env.TEST_MODE = 'true';
+  
+  console.log('✅ Setup complete!');
+}
+```
+
+**Option B: JavaScript**
+
+Create `global-setup.js`:
 ```javascript
 export default async function globalSetup() {
   console.log('🚀 Preparing test environment...');
@@ -30,7 +47,7 @@ export default async function globalSetup() {
 
 ```typescript
 export default {
-  globalSetup: './global-setup.js'
+  globalSetup: './global-setup.ts'  // or './global-setup.js'
 };
 ```
 
@@ -282,12 +299,43 @@ export function setup() {
 - Global variables might not persist
 - Use files or external storage for complex data
 
+## 🔧 Troubleshooting
+
+### TypeScript Global Setup Not Working
+
+If you get errors like "Unknown file extension .ts", try these solutions:
+
+**Option 1: Use JavaScript instead**
+```bash
+# Rename your file
+mv global-setup.ts global-setup.js
+```
+
+**Option 2: Run with tsx**
+```bash
+npx tsx node_modules/endorphin-ai/dist/bin/endorphin.js run test HEALTH-001
+```
+
+**Option 3: Compile TypeScript first**
+```bash
+# Compile your setup file
+npx tsc global-setup.ts --target ES2022 --module ESNext
+# Update config to point to .js file
+```
+
+### Common Issues
+
+- **File not found**: Check the path in your config
+- **Not a function**: Make sure you export default a function
+- **Import errors**: Use ES6 imports, not CommonJS
+
 ## 💡 Tips
 
 1. **Keep it Simple**: Don't overcomplicate setup
 2. **Log Progress**: Help debug when things go wrong
 3. **Handle Errors**: Fail gracefully with clear messages
 4. **Fast Setup**: Don't slow down test starts
+5. **TypeScript**: Use .ts files with proper typing for better development experience
 
 ## 📚 Next Steps
 

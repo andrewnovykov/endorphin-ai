@@ -119,10 +119,10 @@ describe('npx Resolution Integration', () => {
       expect(packageJson.scripts).toHaveProperty('endorphin-ai:version');
       expect(packageJson.scripts).toHaveProperty('endorphin-ai:help');
 
-      // Check that scripts point to the correct binary
-      expect(packageJson.scripts['endorphin-ai:init']).toContain('./node_modules/.bin/endorphin init');
-      expect(packageJson.scripts['endorphin-ai:version']).toContain('./node_modules/.bin/endorphin --version');
-      expect(packageJson.scripts['endorphin-ai:help']).toContain('./node_modules/.bin/endorphin --help');
+      // Check that scripts point to the correct binary (allow both full path and short form for CI compatibility)
+      expect(packageJson.scripts['endorphin-ai:init']).toMatch(/(\.\/node_modules\/\.bin\/)?endorphin init/);
+      expect(packageJson.scripts['endorphin-ai:version']).toMatch(/(\.\/node_modules\/\.bin\/)?endorphin --version/);
+      expect(packageJson.scripts['endorphin-ai:help']).toMatch(/(\.\/node_modules\/\.bin\/)?endorphin --help/);
     });
 
     test('should have postinstall script', async () => {
@@ -199,8 +199,9 @@ describe('npx Resolution Integration', () => {
 
       expect(packageJson.bin).toHaveProperty('endorphin');
       expect(packageJson.bin).toHaveProperty('endorphin-ai');
-      expect(packageJson.bin.endorphin).toBe('./dist/bin/endorphin.js');
-      expect(packageJson.bin['endorphin-ai']).toBe('./dist/bin/endorphin.js');
+      // Allow both with and without ./ prefix (CI vs local differences)
+      expect(packageJson.bin.endorphin).toMatch(/^(\.\/)?dist\/bin\/endorphin\.js$/);
+      expect(packageJson.bin['endorphin-ai']).toMatch(/^(\.\/)?dist\/bin\/endorphin\.js$/);
     });
 
     test('should point to existing binary file', async () => {

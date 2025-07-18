@@ -1,4 +1,4 @@
-name: CI Tests
+name: CI
 
 on:
   pull_request:
@@ -32,11 +32,29 @@ jobs:
       - name: Run TypeScript type checking
         run: npm run type-check
 
-      - name: Run ESLint
-        run: npm run lint
-        continue-on-error: true
+      - name: Run ESLint (warnings allowed, errors fail)
+        run: |
+          npm run lint
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -eq 2 ]; then
+            echo "❌ ESLint errors found - failing build"
+            exit 1
+          elif [ $EXIT_CODE -eq 1 ]; then
+            echo "⚠️ ESLint warnings found - continuing build"
+            exit 0
+          else
+            echo "✅ ESLint passed with no issues"
+            exit 0
+          fi
+
+      - name: Install Playwright browsers
+        run: |
+          npx playwright install chromium
+          npx playwright install-deps chromium
 
       - name: Run development tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm test
 
       - name: Upload test coverage
@@ -44,7 +62,7 @@ jobs:
         if: always()
         with:
           name: test-coverage
-          path: tests/development/coverage/
+          path: dev-tests/development/coverage/
 
   # Build and Package Tests
   package-tests:
@@ -84,7 +102,7 @@ jobs:
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > /tmp/ci-test/.env
 
       - name: Run package tests
-        working-directory: tests/package-tests
+        working-directory: dev-tests/package-tests
         env:
           CI: true
           TEST_TIMEOUT: 300
@@ -110,7 +128,7 @@ jobs:
         if: always()
         with:
           name: package-test-results
-          path: tests/package-tests/results/
+          path: dev-tests/package-tests/results/
 
   # Integration Tests Matrix
   integration-tests:
@@ -140,16 +158,29 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm ci
 
       - name: Build project
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm run build
 
+      - name: Install Playwright browsers
+        run: |
+          npx playwright install chromium
+          npx playwright install-deps chromium
+
       - name: Run integration tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm run test:integration
 
       - name: Test CLI commands (Unix)
         if: runner.os != 'Windows'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           # Test basic CLI functionality
           node dist/bin/endorphin.js --version
@@ -158,6 +189,8 @@ jobs:
       - name: Test CLI commands (Windows)
         if: runner.os == 'Windows'
         shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           # Test basic CLI functionality on Windows
           node dist/bin/endorphin.js --version

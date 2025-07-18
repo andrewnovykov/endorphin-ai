@@ -295,10 +295,19 @@ class TestReportViewer {
       return;
     }
 
-    steps.forEach((step, index) => {
-      const stepElement = this.createStepElement(step, index);
-      timeline.appendChild(stepElement);
-    });
+    // Check if this is a multi-user test by looking for userId in steps
+    const hasMultipleUsers = steps.some(step => step.userId);
+    const isMultiUser = hasMultipleUsers && new Set(steps.filter(s => s.userId).map(s => s.userId)).size > 1;
+
+    if (isMultiUser) {
+      this.populateMultiUserStepsTimeline(steps, timeline);
+    } else {
+      // Single user timeline (existing behavior)
+      steps.forEach((step, index) => {
+        const stepElement = this.createStepElement(step, index);
+        timeline.appendChild(stepElement);
+      });
+    }
   }
 
   /**
@@ -315,16 +324,25 @@ class TestReportViewer {
       return;
     }
 
-    agentHistory.forEach((entry, index) => {
-      const historyElement = this.createAgentHistoryElement(entry, index);
-      timeline.appendChild(historyElement);
-    });
+    // Check if this is a multi-user test by looking for userId in agent history
+    const hasMultipleUsers = agentHistory.some(entry => entry.userId);
+    const isMultiUser = hasMultipleUsers && new Set(agentHistory.filter(e => e.userId).map(e => e.userId)).size > 1;
+
+    if (isMultiUser) {
+      this.populateMultiUserAgentHistoryTimeline(agentHistory, timeline);
+    } else {
+      // Single user timeline (existing behavior)
+      agentHistory.forEach((entry, index) => {
+        const historyElement = this.createAgentHistoryElement(entry, index);
+        timeline.appendChild(historyElement);
+      });
+    }
   }
 
   /**
    * Create an agent history element for the timeline
    */
-  createAgentHistoryElement(entry, index) {
+  createAgentHistoryElement(entry, index, showUserLabel = false) {
     const historyDiv = document.createElement('div');
     
     // Determine the type of AI call for styling
@@ -362,12 +380,13 @@ class TestReportViewer {
     }
     
     historyDiv.className = `agent-history-item border-start border-3 ${borderColor} mb-3`;
+    const userLabel = showUserLabel && entry.userId ? `<span class="badge bg-info ms-2">${entry.userId.toUpperCase()}</span>` : '';
 
     historyDiv.innerHTML = `
       <div class="agent-history-content p-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <h6 class="mb-0">
-            ${icon} ${callType} #${entry.historyId}
+            ${icon} ${callType} #${entry.historyId}${userLabel}
             <span class="badge ${badgeClass} ms-2 small">${entry.tokenUsage?.totalTokens || 0} tokens</span>
           </h6>
           <small class="text-muted">${this.formatDateTime(entry.timestamp)}</small>
@@ -413,16 +432,17 @@ class TestReportViewer {
   /**
    * Create a step element for the timeline
    */
-  createStepElement(step, index) {
+  createStepElement(step, index, showUserLabel = false) {
     const stepDiv = document.createElement('div');
     stepDiv.className = `timeline-item ${step.status.toLowerCase()}`;
 
     const statusClass = step.status === 'SUCCESS' ? 'status-success' : 'status-failure';
+    const userLabel = showUserLabel && step.userId ? `<span class="badge bg-info ms-2">${step.userId.toUpperCase()}</span>` : '';
 
     stepDiv.innerHTML = `
       <div class="timeline-content">
         <div class="timeline-header">
-          <span class="timeline-step-number">Step ${step.stepNumber}</span>
+          <span class="timeline-step-number">Step ${step.stepNumber}${userLabel}</span>
           <span class="timeline-timestamp">${this.formatDateTime(step.timestamp)}</span>
         </div>
         <div class="timeline-description">
@@ -740,6 +760,122 @@ class TestReportViewer {
    */
   printReport() {
     window.print();
+  }
+
+  /**
+   * Populate multi-user steps timeline with user sections
+   */
+  populateMultiUserStepsTimeline(steps, timeline) {
+    // Group steps by user
+    const userSteps = {};
+    const nonUserSteps = [];
+    
+    steps.forEach(step => {
+      if (step.userId) {
+        if (!userSteps[step.userId]) {
+          userSteps[step.userId] = [];
+        }
+        userSteps[step.userId].push(step);
+      } else {
+        nonUserSteps.push(step);
+      }
+    });
+    
+    // Add non-user steps first (setup, global steps)
+    if (nonUserSteps.length > 0) {
+      const globalSection = document.createElement('div');
+      globalSection.className = 'user-section mb-4';
+      globalSection.innerHTML = `
+        <h6 class="mb-3">
+          <span class="badge bg-secondary">🌍 GLOBAL</span>
+          Global Steps (${nonUserSteps.length})
+        </h6>
+      `;
+      
+      nonUserSteps.forEach(step => {
+        const stepElement = this.createStepElement(step, step.stepNumber - 1, false);
+        globalSection.appendChild(stepElement);
+      });
+      
+      timeline.appendChild(globalSection);
+    }
+    
+    // Add sections for each user
+    Object.keys(userSteps).sort().forEach(userId => {
+      const userSection = document.createElement('div');
+      userSection.className = 'user-section mb-4';
+      userSection.innerHTML = `
+        <h6 class="mb-3">
+          <span class="badge bg-primary">👤 ${userId.toUpperCase()}</span>
+          User Steps (${userSteps[userId].length})
+        </h6>
+      `;
+      
+      userSteps[userId].forEach(step => {
+        const stepElement = this.createStepElement(step, step.stepNumber - 1, false);
+        userSection.appendChild(stepElement);
+      });
+      
+      timeline.appendChild(userSection);
+    });
+  }
+
+  /**
+   * Populate multi-user agent history timeline with user sections
+   */
+  populateMultiUserAgentHistoryTimeline(agentHistory, timeline) {
+    // Group history by user
+    const userHistory = {};
+    const nonUserHistory = [];
+    
+    agentHistory.forEach(entry => {
+      if (entry.userId) {
+        if (!userHistory[entry.userId]) {
+          userHistory[entry.userId] = [];
+        }
+        userHistory[entry.userId].push(entry);
+      } else {
+        nonUserHistory.push(entry);
+      }
+    });
+    
+    // Add non-user history first (setup, global decisions)
+    if (nonUserHistory.length > 0) {
+      const globalSection = document.createElement('div');
+      globalSection.className = 'user-section mb-4';
+      globalSection.innerHTML = `
+        <h6 class="mb-3">
+          <span class="badge bg-secondary">🌍 GLOBAL</span>
+          Global Agent Decisions (${nonUserHistory.length})
+        </h6>
+      `;
+      
+      nonUserHistory.forEach(entry => {
+        const historyElement = this.createAgentHistoryElement(entry, entry.historyId - 1, false);
+        globalSection.appendChild(historyElement);
+      });
+      
+      timeline.appendChild(globalSection);
+    }
+    
+    // Add sections for each user
+    Object.keys(userHistory).sort().forEach(userId => {
+      const userSection = document.createElement('div');
+      userSection.className = 'user-section mb-4';
+      userSection.innerHTML = `
+        <h6 class="mb-3">
+          <span class="badge bg-primary">🤖 ${userId.toUpperCase()}</span>
+          Agent Decisions (${userHistory[userId].length})
+        </h6>
+      `;
+      
+      userHistory[userId].forEach(entry => {
+        const historyElement = this.createAgentHistoryElement(entry, entry.historyId - 1, false);
+        userSection.appendChild(historyElement);
+      });
+      
+      timeline.appendChild(userSection);
+    });
   }
 }
 

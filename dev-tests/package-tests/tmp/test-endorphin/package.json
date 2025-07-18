@@ -14,7 +14,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "endorphin-ai": "file:../../../../dist/endorphin-ai-0.8.0.tgz"
+    "endorphin-ai": "file:../../../../dist/endorphin-ai-0.9.0.tgz"
   },
   "type": "module"
 }

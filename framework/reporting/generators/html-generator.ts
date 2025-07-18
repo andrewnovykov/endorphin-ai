@@ -74,6 +74,7 @@ function getTemplatesDir(): string {
   // Use dynamic evaluation to avoid Jest parse errors
   try {
     // This technique avoids Jest parse errors with import.meta
+    // eslint-disable-next-line no-eval
     const importMeta = (0, eval)('import.meta');
     if (importMeta && importMeta.url) {
       const currentFileUrl = importMeta.url;

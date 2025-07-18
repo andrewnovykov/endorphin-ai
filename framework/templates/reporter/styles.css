@@ -433,6 +433,112 @@ body {
   }
 }
 
+/* Multi-User Test Styles */
+.user-section {
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background-color: #fafafa;
+}
+
+.user-section h6 {
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.user-section .badge {
+  font-size: 0.8rem;
+  padding: 0.5rem 0.8rem;
+}
+
+/* User-specific color coding */
+.user-section:nth-child(1) {
+  border-left: 4px solid #007bff;
+}
+
+.user-section:nth-child(2) {
+  border-left: 4px solid #28a745;
+}
+
+.user-section:nth-child(3) {
+  border-left: 4px solid #dc3545;
+}
+
+.user-section:nth-child(4) {
+  border-left: 4px solid #ffc107;
+}
+
+.user-section:nth-child(5) {
+  border-left: 4px solid #17a2b8;
+}
+
+/* Timeline modifications for multi-user */
+.user-section .timeline {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  max-height: 300px;
+}
+
+.user-section .timeline::before {
+  left: 20px;
+}
+
+.user-section .timeline-item {
+  padding-left: 50px;
+  margin-bottom: 1rem;
+}
+
+.user-section .timeline-item::before {
+  left: 14px;
+}
+
+/* Agent history modifications for multi-user */
+.user-section .agent-history-item {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.user-section .agent-history-item::before {
+  left: -0.6rem;
+  font-size: 0.8rem;
+  padding: 0.2rem;
+}
+
+/* User badge styling in timeline items */
+.timeline-step-number .badge,
+.agent-history-content h6 .badge {
+  font-size: 0.6rem;
+  padding: 0.25rem 0.5rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Responsive design for multi-user sections */
+@media (max-width: 768px) {
+  .user-section {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .user-section .timeline {
+    max-height: 200px;
+  }
+  
+  .user-section .timeline-item {
+    padding-left: 35px;
+  }
+  
+  .user-section .timeline::before {
+    left: 15px;
+  }
+  
+  .user-section .timeline-item::before {
+    left: 9px;
+  }
+}
+
 /* Print Styles */
 @media print {
   .navbar,
@@ -452,5 +558,11 @@ body {
 
   .timeline-item::before {
     background: #000 !important;
+  }
+  
+  .user-section {
+    border: 1px solid #000 !important;
+    break-inside: avoid;
+    margin-bottom: 1rem !important;
   }
 }

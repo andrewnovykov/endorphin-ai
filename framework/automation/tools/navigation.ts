@@ -5,14 +5,14 @@
 
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
+// import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
 
 /**
  * Creates a navigation tool for the framework
  * @param framework - Framework instance
  * @returns LangChain tool for navigation
  */
-export function createNavigationTool(framework: EnhancedBrowserTestFramework) {
+export function createNavigationTool(framework: any) {
   return tool(
     async (params: {
       location: string;

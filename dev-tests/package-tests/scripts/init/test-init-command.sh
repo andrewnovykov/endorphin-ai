@@ -44,7 +44,7 @@ node node_modules/endorphin-ai/dist/bin/endorphin.js init
 # Verify files were created
 echo "📋 Checking created files..."
 
-FILES=(".env" "endorphin.config.ts" "tests/sample-test.ts" ".gitignore" "README-ENDORPHIN.md")
+FILES=(".env" "endorphin.config.ts" "tests/SAMPLE-001.ts" ".gitignore" "README-ENDORPHIN.md")
 ALL_GOOD=true
 
 # Change to test directory for file checks
@@ -72,7 +72,7 @@ done
 
 # Test if example test is valid
 echo "🧪 Validating example test..."
-if [ -f "./tests/sample-test.ts" ] && (grep -q "HEALTH-001\|export const\|export default" "./tests/sample-test.ts"); then
+if [ -f "./tests/SAMPLE-001.ts" ] && (grep -q "SAMPLE-001\|export const\|export default" "./tests/SAMPLE-001.ts"); then
   echo "✅ Example test syntax valid"
 else
   echo "❌ Example test has syntax errors"

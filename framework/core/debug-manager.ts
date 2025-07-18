@@ -3,7 +3,7 @@
  * Manages global debug object for VS Code debugging integration
  */
 
-import type { LangChainTool } from '../ai/types/agent.js';
+import type { LangChainTool } from '../types/agent.js';
 import type { FrameworkConfig, TestSession } from '../types/index.js';
 import { globalLogger } from './logger.js';
 import type { TestFramework } from './test-framework.js';
