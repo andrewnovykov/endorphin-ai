@@ -354,7 +354,7 @@ export function createVerifyTextContentTool(framework: EnhancedBrowserTestFramew
           for (const selector of textSelectors) {
             try {
               await framework.currentPage!.waitForSelector(selector, { timeout: 3000 });
-              _found = true;
+              found = true;
               verificationMethod = `DOM selector: ${selector}`;
               break;
             } catch {
