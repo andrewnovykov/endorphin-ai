@@ -111,6 +111,12 @@ jobs:
         ENDORPHIN_PERF_MONITORING: true
       run: |
         echo "🧪 Running test: ${{ github.event.inputs.test-id }}"
+        if [ -z "$OPENAI_API_KEY" ] || [ "$OPENAI_API_KEY" = "" ]; then
+          echo "⚠️ No OPENAI_API_KEY found in secrets - cannot run AI tests"
+          echo "💡 To run actual tests, add OPENAI_API_KEY to repository secrets"
+          echo "📋 Test validation skipped for: ${{ github.event.inputs.test-id }}"
+          exit 0
+        fi
         npx endorphin-ai run test ${{ github.event.inputs.test-id }}
       timeout-minutes: 15
 
@@ -124,6 +130,13 @@ jobs:
         ENDORPHIN_DISABLE_IMAGES: true
         ENDORPHIN_PERF_MONITORING: true
       run: |
+        if [ -z "$OPENAI_API_KEY" ] || [ "$OPENAI_API_KEY" = "" ]; then
+          echo "⚠️ No OPENAI_API_KEY found in secrets - cannot run AI tests"
+          echo "💡 To run actual tests, add OPENAI_API_KEY to repository secrets"
+          echo "📋 Test validation skipped for filter: ${{ github.event.inputs.test-filter }}"
+          exit 0
+        fi
+        
         if [ "${{ github.event.inputs.test-filter }}" == "all" ]; then
           echo "🚀 Running all tests with ${{ github.event.inputs.parallel-workers }} workers..."
           npx endorphin-ai run test all --parallel ${{ github.event.inputs.parallel-workers }}
