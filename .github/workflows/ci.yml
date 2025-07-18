@@ -151,16 +151,24 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm ci
 
       - name: Build project
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm run build
 
       - name: Run integration tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm run test:integration
 
       - name: Test CLI commands (Unix)
         if: runner.os != 'Windows'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           # Test basic CLI functionality
           node dist/bin/endorphin.js --version
@@ -169,6 +177,8 @@ jobs:
       - name: Test CLI commands (Windows)
         if: runner.os == 'Windows'
         shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           # Test basic CLI functionality on Windows
           node dist/bin/endorphin.js --version
