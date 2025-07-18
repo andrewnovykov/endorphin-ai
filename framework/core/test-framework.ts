@@ -187,7 +187,7 @@ export class TestFramework {
    */
   async runTest(testConfig: TestConfig): Promise<TaskResult> {
     // Run the entire test within the browser manager context for isolation
-    return runWithBrowserManager(this.browserManager, async () => {
+    return await runWithBrowserManager(this.browserManager, async () => {
       this.logger.info(`Running test: ${testConfig.name}`, {
         testId: testConfig.id,
         url: testConfig.url,
