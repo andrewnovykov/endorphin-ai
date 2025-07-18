@@ -69,6 +69,11 @@ jobs:
           exit 0
         fi
 
+    - name: Install Playwright browsers
+      run: |
+        npx playwright install chromium
+        npx playwright install-deps chromium
+
     - name: Run unit tests
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -89,11 +94,6 @@ jobs:
         echo "✅ Build successful - dist directory found"
         ls -la dist/bin/
 
-    - name: Install Playwright browsers
-      run: |
-        npx playwright install chromium
-        npx playwright install-deps chromium
-
     - name: Debug environment
       run: |
         echo "Node version: $(node --version)"
@@ -106,6 +106,7 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         CI: true
         HEADLESS: true
+        ENDORPHIN_HEADLESS: true
         ENDORPHIN_MEMORY_OPTIMIZER: true
         ENDORPHIN_DISABLE_IMAGES: true
         ENDORPHIN_PERF_MONITORING: true
@@ -117,7 +118,7 @@ jobs:
           echo "📋 Test validation skipped for: ${{ github.event.inputs.test-id }}"
           exit 0
         fi
-        npx endorphin-ai run test ${{ github.event.inputs.test-id }}
+        npx endorphin-ai run test ${{ github.event.inputs.test-id }} --headless
       timeout-minutes: 15
 
     - name: Run tests by filter
@@ -126,6 +127,7 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         CI: true
         HEADLESS: true
+        ENDORPHIN_HEADLESS: true
         ENDORPHIN_MEMORY_OPTIMIZER: true
         ENDORPHIN_DISABLE_IMAGES: true
         ENDORPHIN_PERF_MONITORING: true
@@ -139,13 +141,13 @@ jobs:
         
         if [ "${{ github.event.inputs.test-filter }}" == "all" ]; then
           echo "🚀 Running all tests with ${{ github.event.inputs.parallel-workers }} workers..."
-          npx endorphin-ai run test all --parallel ${{ github.event.inputs.parallel-workers }}
+          npx endorphin-ai run test all --parallel ${{ github.event.inputs.parallel-workers }} --headless
         elif [ "${{ github.event.inputs.test-filter }}" == "High" ] || [ "${{ github.event.inputs.test-filter }}" == "Medium" ] || [ "${{ github.event.inputs.test-filter }}" == "Low" ]; then
           echo "🎯 Running tests with priority: ${{ github.event.inputs.test-filter }}"
-          npx endorphin-ai run test --priority ${{ github.event.inputs.test-filter }} --parallel ${{ github.event.inputs.parallel-workers }}
+          npx endorphin-ai run test --priority ${{ github.event.inputs.test-filter }} --parallel ${{ github.event.inputs.parallel-workers }} --headless
         else
           echo "🏷️ Running tests with tag: ${{ github.event.inputs.test-filter }}"
-          npx endorphin-ai run test --tag ${{ github.event.inputs.test-filter }} --parallel ${{ github.event.inputs.parallel-workers }}
+          npx endorphin-ai run test --tag ${{ github.event.inputs.test-filter }} --parallel ${{ github.event.inputs.parallel-workers }} --headless
         fi
       timeout-minutes: 30
 
