@@ -124,6 +124,10 @@ export const PERFORMANCE = {
   MEMORY_WARNING_THRESHOLD: 100 * 1024 * 1024, // 100MB
   CPU_WARNING_THRESHOLD: 80, // 80% CPU usage
   DISK_WARNING_THRESHOLD: 90, // 90% disk usage
+  // CI-specific optimizations
+  CI_MEMORY_THRESHOLD: process.env.CI ? 512 * 1024 * 1024 : 100 * 1024 * 1024, // 512MB in CI, 100MB locally
+  CI_CLEANUP_INTERVAL: process.env.CI ? 30000 : 60000, // 30s in CI, 60s locally
+  GC_THRESHOLD: 80, // Trigger GC when memory usage > 80%
 } as const;
 
 // Browser configuration defaults

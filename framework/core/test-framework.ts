@@ -30,6 +30,7 @@ import { setBrowserManager } from '../utils/user-utils.js';
 import { globalLogger } from './logger.js';
 import { ResourceManager, globalResourceManager } from './resource-manager.js';
 import { TokenTracker } from './token-tracker.js';
+import { ciPerformanceMonitor } from './ci-performance.js';
 
 // Import the new service classes
 import { BrowserManager } from '../automation/browser/browser-manager.js';
@@ -192,6 +193,9 @@ export class TestFramework {
       testId: testConfig.id,
       url: testConfig.url,
     });
+
+    // Record test start for CI performance monitoring
+    ciPerformanceMonitor.recordTestStart();
 
     try {
       // Create test session

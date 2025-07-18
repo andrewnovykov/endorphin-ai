@@ -234,6 +234,9 @@ export class TestRunner {
 
     const summary = this.reporter.endSession();
 
+    // Generate performance report if monitoring is enabled
+    await this.generatePerformanceReport();
+
     return {
       success: summary.success,
       passed: summary.passedTests,
@@ -346,6 +349,9 @@ export class TestRunner {
         console.error('❌ Some workers encountered errors:');
         errors.forEach((error) => console.error(`  ${error}`));
       }
+
+      // Generate performance report if monitoring is enabled
+      await this.generatePerformanceReport();
 
       return {
         success: summary.success,
@@ -508,5 +514,21 @@ export class TestRunner {
       failuresByTag,
       failuresByPriority,
     };
+  }
+
+  /**
+   * Generate performance report if monitoring is enabled
+   */
+  private async generatePerformanceReport(): Promise<void> {
+    try {
+      // Check if performance monitoring is enabled
+      if (process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true' || 
+          process.env.ENDORPHIN_PERF_MONITORING === 'true') {
+        const { ciPerformanceMonitor } = await import('../../core/ci-performance.js');
+        await ciPerformanceMonitor.generateHtmlReport();
+      }
+    } catch (error) {
+      console.error('Failed to generate performance report:', error);
+    }
   }
 }

@@ -1,0 +1,109 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build framework
+      run: npm run build
+
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps chromium
+
+    - name: Run all tests
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        CI: true
+        HEADLESS: true
+        # Performance optimizations for CI
+        ENDORPHIN_MEMORY_OPTIMIZER: true
+        ENDORPHIN_DISABLE_IMAGES: true
+        ENDORPHIN_PERF_MONITORING: true
+      run: |
+        echo "🚀 Running all tests from tests/ folder..."
+        npx endorphin-ai run test all
+      timeout-minutes: 30
+
+    - name: Generate HTML test report
+      if: always()
+      run: |
+        echo "📊 Generating HTML test report..."
+        npx endorphin-ai generate report || echo "Report generation skipped"
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.node-version }}
+        path: |
+          test-results/
+          !test-results/**/node_modules/
+        retention-days: 7
+
+    - name: Upload HTML reports separately
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: html-reports-${{ matrix.node-version }}
+        path: |
+          test-results/reports/report-*.html
+          test-results/reports/assets/
+          test-results/reports/screenshots/
+          test-results/performance-report-*.html
+        retention-days: 7
+
+    - name: Generate test report summary
+      if: always()
+      run: |
+        echo "## 🧪 Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📥 Download Reports" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "1. **Test Report**: Check artifacts → \`html-reports-${{ matrix.node-version }}\` → Download and open \`report-*.html\`" >> $GITHUB_STEP_SUMMARY
+        echo "2. **Performance Report**: Check artifacts → \`html-reports-${{ matrix.node-version }}\` → Download and open \`performance-report-*.html\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # List generated reports
+        echo "### 📋 Generated Reports" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if ls test-results/reports/report-*.html 2>/dev/null; then
+          for report in test-results/reports/report-*.html; do
+            echo "- ✅ Test Report: \`$(basename $report)\`" >> $GITHUB_STEP_SUMMARY
+          done
+        fi
+        if ls test-results/performance-report-*.html 2>/dev/null; then
+          for report in test-results/performance-report-*.html; do
+            echo "- 📊 Performance Report: \`$(basename $report)\`" >> $GITHUB_STEP_SUMMARY
+          done
+        fi
+        
+        # Show test statistics if available
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📈 Test Statistics" >> $GITHUB_STEP_SUMMARY
+        if [ -d "test-results" ]; then
+          TEST_COUNT=$(find test-results -name "test-session.json" | wc -l)
+          echo "- Total test sessions: $TEST_COUNT" >> $GITHUB_STEP_SUMMARY
+        fi

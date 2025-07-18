@@ -485,6 +485,37 @@ export class BrowserManager {
       ],
     };
 
+    // CI-specific optimizations (opt-in via environment variables)
+    if (process.env.CI) {
+      options.args.push(
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process', // Reduce memory usage in CI
+      );
+
+      // Additional memory optimizations if enabled
+      if (process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true') {
+        options.args.push(
+          '--memory-pressure-off',
+          '--max_old_space_size=2048',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding'
+        );
+        this.logger.debug('Memory optimizer enabled for CI');
+      }
+
+      // Disable images if enabled (significant performance boost)
+      if (process.env.ENDORPHIN_DISABLE_IMAGES === 'true') {
+        options.args.push('--blink-settings=imagesEnabled=false');
+        this.logger.debug('Image loading disabled for CI performance');
+      }
+    }
+
     if (this.config.browser.slowMo !== undefined) {
       options.slowMo = this.config.browser.slowMo;
     }
@@ -504,14 +535,47 @@ export class BrowserManager {
       viewport: this.config.browser.viewport,
     };
 
-    if (this.config.browser.recordVideo) {
+    // CI-specific context optimizations
+    if (process.env.CI) {
+      // Basic CI optimizations (always applied in CI)
+      options.ignoreHTTPSErrors = true;
+      options.bypassCSP = true;
+      options.acceptDownloads = false;
+
+      // Disable video recording in CI by default (saves significant resources)
+      if (!this.config.browser.recordVideo) {
+        options.recordVideo = undefined;
+      }
+
+      // Disable HAR recording in CI by default
+      if (!this.config.browser.recordHar) {
+        options.recordHar = undefined;
+      }
+
+      // Additional resource optimizations if enabled
+      if (process.env.ENDORPHIN_DISABLE_IMAGES === 'true') {
+        options.serviceWorkers = 'block';
+        options.javaScriptEnabled = true; // Keep JS enabled for functionality
+        this.logger.debug('Service workers blocked for CI performance');
+      }
+
+      // Memory-conscious screenshot settings
+      if (process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true') {
+        options.screenshot = { mode: 'only-on-failure', fullPage: false };
+        this.logger.debug('Screenshot optimization enabled for CI');
+      }
+    }
+
+    // Apply original video recording if configured
+    if (this.config.browser.recordVideo && !process.env.CI) {
       options.recordVideo = {
         dir: 'test-results/videos/',
         size: this.config.browser.viewport,
       };
     }
 
-    if (this.config.browser.recordHar) {
+    // Apply original HAR recording if configured
+    if (this.config.browser.recordHar && !process.env.CI) {
       options.recordHar = {
         path: 'test-results/network.har',
       };
