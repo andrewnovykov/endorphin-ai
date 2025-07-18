@@ -47,7 +47,14 @@ jobs:
             exit 0
           fi
 
+      - name: Install Playwright browsers
+        run: |
+          npx playwright install chromium
+          npx playwright install-deps chromium
+
       - name: Run development tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm test
 
       - name: Upload test coverage
@@ -55,7 +62,7 @@ jobs:
         if: always()
         with:
           name: test-coverage
-          path: tests/development/coverage/
+          path: dev-tests/development/coverage/
 
   # Build and Package Tests
   package-tests:
@@ -95,7 +102,7 @@ jobs:
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > /tmp/ci-test/.env
 
       - name: Run package tests
-        working-directory: tests/package-tests
+        working-directory: dev-tests/package-tests
         env:
           CI: true
           TEST_TIMEOUT: 300
@@ -121,7 +128,7 @@ jobs:
         if: always()
         with:
           name: package-test-results
-          path: tests/package-tests/results/
+          path: dev-tests/package-tests/results/
 
   # Integration Tests Matrix
   integration-tests:
@@ -159,6 +166,11 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm run build
+
+      - name: Install Playwright browsers
+        run: |
+          npx playwright install chromium
+          npx playwright install-deps chromium
 
       - name: Run integration tests
         env:

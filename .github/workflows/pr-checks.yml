@@ -49,6 +49,11 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm run build
 
+      - name: Install Playwright browsers
+        run: |
+          npx playwright install chromium
+          npx playwright install-deps chromium
+
       - name: Run development tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

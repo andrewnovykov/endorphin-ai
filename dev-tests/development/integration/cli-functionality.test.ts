@@ -109,7 +109,11 @@ describe('CLI Functionality Integration Tests', () => {
           execSync(`npx tsx ${path.join(originalCwd, 'bin/endorphin.ts')} run test NONEXISTENT-001`, {
             cwd: originalCwd,
             encoding: 'utf8',
-            timeout: 15000
+            timeout: 15000,
+            env: {
+              ...process.env,
+              OPENAI_API_KEY: 'test-api-key-for-validation'
+            }
           });
         } catch (error: any) {
           errorThrown = true;
@@ -156,7 +160,11 @@ describe('CLI Functionality Integration Tests', () => {
         // Test that test recorder can be invoked (but timeout quickly)
         const child = spawn('npx', ['tsx', 'bin/endorphin.ts', 'run', 'test-recorder'], {
           cwd: originalCwd,
-          stdio: ['pipe', 'pipe', 'pipe']
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env: {
+            ...process.env,
+            OPENAI_API_KEY: 'test-api-key-for-validation'
+          }
         });
 
         let output = '';
