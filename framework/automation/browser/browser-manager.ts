@@ -364,6 +364,9 @@ export class BrowserManager {
       await this.initialize();
     }
 
+    // Clean up any existing multi-user sessions to prevent session reuse between tests
+    await this.cleanupMultiUser();
+
     // For the first user, reuse the existing context and page
     const firstUserId = userIds[0];
     if (this.context && this.page) {

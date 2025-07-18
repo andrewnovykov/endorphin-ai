@@ -26,7 +26,7 @@ import type {
   TestSession,
   TestSetupResult,
 } from '../types/index.js';
-import { setBrowserManager } from '../utils/user-utils.js';
+import { runWithBrowserManager } from '../utils/user-utils.js';
 import { globalLogger } from './logger.js';
 import { ResourceManager, globalResourceManager } from './resource-manager.js';
 import { TokenTracker } from './token-tracker.js';
@@ -137,9 +137,6 @@ export class TestFramework {
       // Initialize browser
       await this.browserManager.initialize();
 
-      // Set browser manager for user utilities
-      setBrowserManager(this.browserManager);
-
       // Setup tools
       const tools = await this.toolManager.setupTools(this);
 
@@ -189,88 +186,91 @@ export class TestFramework {
    * Run a test with the given configuration
    */
   async runTest(testConfig: TestConfig): Promise<TaskResult> {
-    this.logger.info(`Running test: ${testConfig.name}`, {
-      testId: testConfig.id,
-      url: testConfig.url,
+    // Run the entire test within the browser manager context for isolation
+    return runWithBrowserManager(this.browserManager, async () => {
+      this.logger.info(`Running test: ${testConfig.name}`, {
+        testId: testConfig.id,
+        url: testConfig.url,
+      });
+
+      // Record test start for CI performance monitoring
+      ciPerformanceMonitor.recordTestStart();
+
+      try {
+        // Create test session
+        const session = await this.sessionManager.createSession(testConfig.name, testConfig.id);
+
+        // Update debug manager with new session
+        this.debugManager.updateSession(session);
+
+        // Set the current session for agent token tracking
+        setCurrentTestSession(session);
+
+        // Execute test setup if provided
+        if (testConfig.setup) {
+          try {
+            await this.executeTestSetup(testConfig, session);
+          } catch (error) {
+            // Setup errors are already logged and stored in session by executeTestSetup
+            this.logger.warn('Test setup failed, continuing with test execution', {
+              testId: testConfig.id,
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+        }
+
+        // Execute data generation if provided
+        if (testConfig.data && typeof testConfig.data === 'function') {
+          try {
+            await this.executeDataGeneration(testConfig, session);
+          } catch (error) {
+            // Data generation errors are already logged and stored in session by executeDataGeneration
+            this.logger.warn('Data generation failed, continuing with test execution', {
+              testId: testConfig.id,
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+        }
+
+        // Navigate to test URL
+        if (testConfig.url) {
+          await this.browserManager.navigateToUrl(testConfig.url);
+        }
+
+        // Execute test instructions
+        const result = await this.executeTest(testConfig, session);
+
+        // Complete session
+        await this.sessionManager.completeSession(
+          (result as any).success || false,
+          result.error,
+          (result as any).report
+        );
+
+        // Clear the current session for agent token tracking
+        setCurrentTestSession(null);
+
+        this.logger.info(`Test completed: ${(result as any).success ? 'SUCCESS' : 'FAILED'}`, {
+          testId: testConfig.id,
+          duration: result.duration,
+        });
+
+        return result;
+      } catch (error: any) {
+        this.logger.error('Test execution failed', error, {
+          testId: testConfig.id,
+          testName: testConfig.name,
+        });
+
+        // Complete session with error
+        await this.sessionManager.completeSession(false, error.message);
+
+        // Clear the current session for agent token tracking
+        setCurrentTestSession(null);
+
+        throw error;
+      }
     });
-
-    // Record test start for CI performance monitoring
-    ciPerformanceMonitor.recordTestStart();
-
-    try {
-      // Create test session
-      const session = await this.sessionManager.createSession(testConfig.name, testConfig.id);
-
-      // Update debug manager with new session
-      this.debugManager.updateSession(session);
-
-      // Set the current session for agent token tracking
-      setCurrentTestSession(session);
-
-      // Execute test setup if provided
-      if (testConfig.setup) {
-        try {
-          await this.executeTestSetup(testConfig, session);
-        } catch (error) {
-          // Setup errors are already logged and stored in session by executeTestSetup
-          this.logger.warn('Test setup failed, continuing with test execution', {
-            testId: testConfig.id,
-            error: error instanceof Error ? error.message : String(error),
-          });
-        }
-      }
-
-      // Execute data generation if provided
-      if (testConfig.data && typeof testConfig.data === 'function') {
-        try {
-          await this.executeDataGeneration(testConfig, session);
-        } catch (error) {
-          // Data generation errors are already logged and stored in session by executeDataGeneration
-          this.logger.warn('Data generation failed, continuing with test execution', {
-            testId: testConfig.id,
-            error: error instanceof Error ? error.message : String(error),
-          });
-        }
-      }
-
-      // Navigate to test URL
-      if (testConfig.url) {
-        await this.browserManager.navigateToUrl(testConfig.url);
-      }
-
-      // Execute test instructions
-      const result = await this.executeTest(testConfig, session);
-
-      // Complete session
-      await this.sessionManager.completeSession(
-        (result as any).success || false,
-        result.error,
-        (result as any).report
-      );
-
-      // Clear the current session for agent token tracking
-      setCurrentTestSession(null);
-
-      this.logger.info(`Test completed: ${(result as any).success ? 'SUCCESS' : 'FAILED'}`, {
-        testId: testConfig.id,
-        duration: result.duration,
-      });
-
-      return result;
-    } catch (error: any) {
-      this.logger.error('Test execution failed', error, {
-        testId: testConfig.id,
-        testName: testConfig.name,
-      });
-
-      // Complete session with error
-      await this.sessionManager.completeSession(false, error.message);
-
-      // Clear the current session for agent token tracking
-      setCurrentTestSession(null);
-
-      throw error;
-    }
   }
 
   /**

@@ -177,6 +177,8 @@ jobs:
           test-results/reports/assets/
           test-results/reports/screenshots/
           test-results/performance-report-*.html
+          test-results/**/*.png
+          test-results/**/*.json
         retention-days: 7
     
     - name: Generate job summary

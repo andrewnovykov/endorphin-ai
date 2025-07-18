@@ -305,24 +305,48 @@ export class TestRunner {
         console.log(`🔀 Worker ${workerIndex + 1}: Processing ${chunk.length} tests with fresh browsers`);
 
         for (const test of chunk) {
-          // Create a fresh framework instance for each test in parallel mode too
-          const framework = new EnhancedBrowserTestFramework(this.config || undefined);
           const startTime = performance.now();
           
           try {
             this.reporter.startTest(test.id, test.name);
             
-            // Initialize fresh browser for this test
-            await framework.initialize();
-            
-            const result = await framework.runSingleTest(test);
-            const duration = Math.round(performance.now() - startTime);
-            const status = result.success ? 'SUCCESS' : 'FAILED';
+            // Use same logic as sequential execution - check for multi-user tests
+            if (isMultiUserTest(test)) {
+              console.log(`🔄 Detected multi-user test: ${test.id}`);
+              const { TestFramework } = await import('../../core/test-framework.js');
+              const framework = new TestFramework(this.config || undefined);
+              
+              try {
+                await framework.initialize();
+                const result = await framework.runTest(test);
+                const duration = Math.round(performance.now() - startTime);
+                const status = result.success ? 'SUCCESS' : 'FAILED';
 
-            this.reporter.completeTest(test.id, test.name, status, duration, result.error);
-            const testResult: any = { test, success: result.success, duration };
-            if (result.error) testResult.error = result.error;
-            results.push(testResult);
+                this.reporter.completeTest(test.id, test.name, status, duration, result.error);
+                const testResult: any = { test, success: result.success, duration };
+                if (result.error) testResult.error = result.error;
+                results.push(testResult);
+              } finally {
+                await framework.cleanup();
+              }
+            } else {
+              // Single-user test - use enhanced browser framework
+              const framework = new EnhancedBrowserTestFramework(this.config || undefined);
+              
+              try {
+                await framework.initialize();
+                const result = await framework.runSingleTest(test);
+                const duration = Math.round(performance.now() - startTime);
+                const status = result.success ? 'SUCCESS' : 'FAILED';
+
+                this.reporter.completeTest(test.id, test.name, status, duration, result.error);
+                const testResult: any = { test, success: result.success, duration };
+                if (result.error) testResult.error = result.error;
+                results.push(testResult);
+              } finally {
+                await framework.cleanup();
+              }
+            }
             
           } catch (error) {
             const duration = Math.round(performance.now() - startTime);
@@ -330,13 +354,6 @@ export class TestRunner {
             this.reporter.completeTest(test.id, test.name, 'FAILED', duration, message);
             results.push({ test, success: false, duration, error: message });
             errors.push(`Worker ${workerIndex + 1}, Test ${test.id}: ${message}`);
-          } finally {
-            // Always cleanup browser instance after each test
-            try {
-              await framework.cleanup();
-            } catch (cleanupError) {
-              console.log(`⚠️ Worker ${workerIndex + 1} cleanup error for ${test.id}: ${cleanupError}`);
-            }
           }
         }
       });
