@@ -4,8 +4,8 @@
   "description": "E2E Testing Reinvented with AI - A powerful TypeScript browser automation framework using AI-powered testing with LangChain, OpenAI GPT-4o, and Playwright",
   "main": "dist/framework/index.js",
   "bin": {
-    "endorphin": "./dist/bin/endorphin.js",
-    "endorphin-ai": "./dist/bin/endorphin.js"
+    "endorphin": "dist/bin/endorphin.js",
+    "endorphin-ai": "dist/bin/endorphin.js"
   },
   "type": "module",
   "scripts": {
@@ -44,13 +44,13 @@
     "cleanup": "./scripts/cleanup-test-artifacts.sh",
     "postinstall": "node scripts/postinstall.js",
     "endorphin": "endorphin",
-    "endorphin-ai": "endorphin",
-    "endorphin:init": "./node_modules/.bin/endorphin init",
-    "endorphin:version": "./node_modules/.bin/endorphin --version",
-    "endorphin:help": "./node_modules/.bin/endorphin --help",
-    "endorphin-ai:init": "./node_modules/.bin/endorphin init",
-    "endorphin-ai:version": "./node_modules/.bin/endorphin --version",
-    "endorphin-ai:help": "./node_modules/.bin/endorphin --help",
+    "endorphin-ai": "endorphin-ai",
+    "endorphin:init": "endorphin init",
+    "endorphin:version": "endorphin --version",
+    "endorphin:help": "endorphin --help",
+    "endorphin-ai:init": "endorphin init",
+    "endorphin-ai:version": "endorphin --version",
+    "endorphin-ai:help": "endorphin --help",
     "prepare": "echo 'Husky disabled temporarily'",
     "precommit": "echo 'Pre-commit hooks disabled temporarily'",
     "prepublishOnly": "npm run build && npm run test:unit"
