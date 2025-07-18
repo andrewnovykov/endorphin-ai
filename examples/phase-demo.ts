@@ -13,7 +13,7 @@ export const PHASE_DEMO_SIMPLE: TestCase = {
   priority: 'High',
   tags: ['demo', 'phases'],
   users: ['admin', 'user'], // Just 2 browser sessions
-  tasks: async () => ({
+  tasks: () => ({
     'admin.phase1': 'STEP 1: Navigate to google.com as admin',
     'user.phase1': 'STEP 1: Navigate to tesla.com as user',
     'admin.phase2': 'STEP 2: Search for "admin tools"',
@@ -30,7 +30,7 @@ export const PHASE_DEMO_COMPLEX: TestCase = {
   priority: 'High',
   tags: ['demo', 'phases'],
   users: ['super-admin-v2', 'regular-user-123', 'qa-tester'], // 3 browser sessions
-  tasks: async () => ({
+  tasks: () => ({
     'super-admin-v2.phase1': 'STEP 1: Login as super admin',
     'regular-user-123.phase1': 'STEP 1: Login as regular user',
     'qa-tester.phase1': 'STEP 1: Access QA environment',
@@ -51,7 +51,7 @@ export const PHASE_DEMO_MIXED: TestCase = {
   priority: 'Medium',
   tags: ['demo', 'phases'],
   users: ['reviewer', 'approver'], // 2 browser sessions
-  tasks: async () => ({
+  tasks: () => ({
     'reviewer.phase1': 'STEP 1: Review document draft',
     'reviewer.phase2': 'STEP 2: Add review comments',
     'approver.phase1': 'STEP 1: Receive notification',

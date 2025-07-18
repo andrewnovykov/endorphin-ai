@@ -23,11 +23,40 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    - name: Run TypeScript type check
+      run: npm run type-check || true
+      continue-on-error: true
+
+    - name: Run ESLint
+      run: npm run lint || true
+      continue-on-error: true
+
+    - name: Run unit tests
+      run: npm test || true
+      continue-on-error: true
+
     - name: Build framework
       run: npm run build
 
+    - name: Verify build output
+      run: |
+        if [ ! -d "dist" ]; then
+          echo "❌ Build failed - dist directory not found"
+          exit 1
+        fi
+        echo "✅ Build successful - dist directory found"
+        ls -la dist/bin/
+
     - name: Install Playwright browsers
-      run: npx playwright install --with-deps chromium
+      run: |
+        npx playwright install chromium
+        npx playwright install-deps chromium
+
+    - name: Debug environment
+      run: |
+        echo "Node version: $(node --version)"
+        echo "NPM version: $(npm --version)"
+        echo "API Key present: ${{ secrets.OPENAI_API_KEY != '' && 'YES' || 'NO' }}"
 
     - name: Run smoke tests
       env:

@@ -4,7 +4,6 @@
  */
 
 import type { TestCase } from 'endorphin-ai';
-import { getPage } from 'endorphin-ai';
 
 export const MULTI_USER_001: TestCase = {
   id: 'MULTI-USER-001',
@@ -52,7 +51,7 @@ export const MULTI_USER_001: TestCase = {
   },
 
   // Multi-user tasks function that returns user-specific task instructions
-  tasks: async (data, setupData, users) => {
+  tasks: async (data, setupData, _users) => {
     console.log('Generating user-specific tasks...', { users });
 
     return {
@@ -115,7 +114,7 @@ export const MULTI_USER_002: TestCase = {
     };
   },
 
-  tasks: async (data, setupData, users) => {
+  tasks: async (data, setupData, _users) => {
     return {
       'admin': `
         STEP 1: Navigate to ${setupData?.adminUrl || 'https://qafromla.herokuapp.com/'}

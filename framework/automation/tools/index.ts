@@ -3,7 +3,6 @@
  * Provides all LangChain tools for browser automation
  */
 
-import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
 import { createContentOptimizationTool } from './content-optimization.js';
 import { createGetPageContentTool, createGetSimplePageContentTool } from './content.js';
 import { createDifferentialContentTool } from './differential-content.js';

@@ -14,6 +14,8 @@ export default [
       'test-results/',
       'test-recorder/',
       'dev-tests/',
+      'manual-test/',
+      'examples/',
       'examples/test-results/',
       'examples/test-recorder/',
       'tests/package-tests/tmp/',

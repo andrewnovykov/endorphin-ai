@@ -26,9 +26,20 @@ jobs:
       - name: TypeScript type checking
         run: npm run type-check
 
-      - name: Run ESLint
-        run: npm run lint
-        continue-on-error: true
+      - name: Run ESLint (warnings allowed, errors fail)
+        run: |
+          npm run lint
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -eq 2 ]; then
+            echo "❌ ESLint errors found - failing build"
+            exit 1
+          elif [ $EXIT_CODE -eq 1 ]; then
+            echo "⚠️ ESLint warnings found - continuing build"
+            exit 0
+          else
+            echo "✅ ESLint passed with no issues"
+            exit 0
+          fi
 
       - name: Build check
         run: npm run build

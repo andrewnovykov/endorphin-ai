@@ -430,7 +430,7 @@ export class BrowserManager {
     if (this.page) {
       try {
         await this.page.waitForLoadState('networkidle', { timeout: 3000 });
-      } catch (error) {
+      } catch (_error) {
         // If networkidle times out, just wait for domcontentloaded
         await this.page.waitForLoadState('domcontentloaded', { timeout: 2000 });
       }
