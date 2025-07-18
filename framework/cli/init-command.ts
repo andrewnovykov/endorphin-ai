@@ -268,13 +268,15 @@ export default {
   const testContent = `// Example Endorphin AI Test
 // This is a sample test to help you get started
 
-export const HEALTH_001 = {
+import type { TestCase } from 'endorphin-ai';
+
+export const HEALTH_001: TestCase = {
   id: 'HEALTH-001',
   name: 'Health Check Test',
   description: 'Basic health check to verify the testing framework is working',
   priority: 'High',
   tags: ['health', 'smoke'],
-  site: 'https://example.com',
+  url: 'https://example.com',
   data: async () => {
     return {};
   },

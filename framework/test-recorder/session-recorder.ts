@@ -283,18 +283,19 @@ export class TestRecorder {
   }
 
   /**
-   * Generate test file in tests/ folder
+   * Generate test file in recording directory
    * @returns Promise resolving to test file path
    */
   private async generateTestFile(): Promise<string> {
+    if (!this.recordingPath) {
+      throw new Error('Recording path not initialized');
+    }
+    
     const testId = this.testData.id || 'QE-NEW';
     const filename = `${testId.toLowerCase()}-recorded-test.ts`;
 
-    // Ensure tests directory exists
-    const testsDir = path.join(process.cwd(), 'tests');
-    await fs.mkdir(testsDir, { recursive: true });
-
-    const testPath = path.join(testsDir, filename);
+    // Create test file in the recording directory instead of tests/
+    const testPath = path.join(this.recordingPath, filename);
 
     // Build task from recorded steps
     const taskSteps = this.steps

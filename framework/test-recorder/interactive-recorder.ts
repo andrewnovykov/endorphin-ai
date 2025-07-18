@@ -366,7 +366,7 @@ export async function runInteractiveRecorder(config: Partial<FrameworkConfig> = 
       console.log(`📁 Recording ID: ${recordingResult.recordingId}`);
       console.log(`📂 Artifacts: ${recordingResult.recordingPath}`);
       console.log(`🧪 Steps recorded: ${recordingResult.steps}`);
-      console.log(`📝 Test file generated in tests/ folder`);
+      console.log(`📝 Test file generated in recording folder`);
     } else {
       console.log('\n⚠️ Recording completed but no result data available');
     }
