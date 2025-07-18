@@ -51,7 +51,7 @@ describe('Init Command Integration', () => {
       const expectedFiles = [
         '.env',
         'endorphin.config.ts',
-        'tests/sample-test.ts',
+        'tests/SAMPLE-001.ts',
         '.gitignore',
         'README-ENDORPHIN.md'
       ];
@@ -94,7 +94,7 @@ describe('Init Command Integration', () => {
     it('should create sample test file', async () => {
       await initProject(testDir);
       
-      const testFilePath = path.join(testDir, 'tests/sample-test.ts');
+      const testFilePath = path.join(testDir, 'tests/SAMPLE-001.ts');
       const testContent = await fs.readFile(testFilePath, 'utf8');
       
       // Verify it contains a valid test structure
