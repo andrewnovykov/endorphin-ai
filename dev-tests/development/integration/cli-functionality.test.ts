@@ -184,8 +184,16 @@ describe('CLI Functionality Integration Tests', () => {
           child.kill('SIGTERM');
         }, 5000);
 
-        await new Promise((resolve) => {
-          child.on('exit', resolve);
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            child.kill('SIGKILL'); // Force kill if SIGTERM didn't work
+            reject(new Error('Test recorder process did not exit within timeout'));
+          }, 10000); // 10 second timeout for process to exit
+
+          child.on('exit', () => {
+            clearTimeout(timeout);
+            resolve(undefined);
+          });
         });
 
         // Should start the recorder process without import errors
