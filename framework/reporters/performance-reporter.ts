@@ -11,7 +11,7 @@ export class PerformanceReporter {
   /**
    * Generate a simple HTML performance report
    */
-  async generateReport(metrics: CIPerformanceMetrics, outputDir: string = 'test-results'): Promise<string> {
+  generateReport(metrics: CIPerformanceMetrics, outputDir: string = 'test-results'): string {
     // Ensure output directory exists
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
@@ -34,7 +34,7 @@ export class PerformanceReporter {
       ((metrics.endTime - metrics.startTime) / 1000).toFixed(1) : 
       ((Date.now() - metrics.startTime) / 1000).toFixed(1);
 
-    const optimizerStatus = metrics.memoryOptimizerEnabled ? 'ON' : 'OFF';
+    const _optimizerStatus = metrics.memoryOptimizerEnabled ? 'ON' : 'OFF';
     const optimizerBadge = metrics.memoryOptimizerEnabled ? 
       '<span class="badge enabled">ENABLED</span>' : 
       '<span class="badge disabled">DISABLED</span>';

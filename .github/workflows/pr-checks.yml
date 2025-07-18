@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [main, develop]
 
+env:
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
 jobs:
   # Quick checks for PRs
   quick-checks:
@@ -42,9 +45,13 @@ jobs:
           fi
 
       - name: Build check
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm run build
 
       - name: Run development tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm test
 
       - name: Verify CLI builds

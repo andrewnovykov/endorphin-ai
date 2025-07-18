@@ -42,7 +42,7 @@ export function createVerifyElementTool(framework: EnhancedBrowserTestFramework)
             `*:has-text("${textToFind}")`,
           ];
           
-          let found = false;
+          let _found = false;
           let lastError: any = null;
           
           for (const textSelector of textSelectors) {
@@ -51,7 +51,7 @@ export function createVerifyElementTool(framework: EnhancedBrowserTestFramework)
                 state, 
                 timeout: Math.floor(timeout / textSelectors.length) // Divide timeout among attempts
               });
-              found = true;
+              _found = true;
               await framework.takeStepScreenshot(`Verified text "${textToFind}" is ${state}`);
               
               const result = `Text "${textToFind}" is ${state} on the page`;
@@ -204,7 +204,7 @@ export function createVerifyTitleTool(framework: EnhancedBrowserTestFramework) {
           true
         );
         return `✅ ${result}`;
-      } catch (error: any) {
+      } catch {
         const actualTitle = await framework.currentPage!.title().catch(() => 'unknown');
         await framework.takeStepScreenshot(`Failed to verify title`);
         framework.logTestStep(
@@ -277,7 +277,7 @@ export function createVerifyURLTool(framework: EnhancedBrowserTestFramework) {
           true
         );
         return `✅ ${result}`;
-      } catch (error: any) {
+      } catch {
         const actualUrl = framework.currentPage!.url();
         await framework.takeStepScreenshot(`Failed to verify URL`);
         framework.logTestStep(
@@ -354,7 +354,7 @@ export function createVerifyTextContentTool(framework: EnhancedBrowserTestFramew
           for (const selector of textSelectors) {
             try {
               await framework.currentPage!.waitForSelector(selector, { timeout: 3000 });
-              found = true;
+              _found = true;
               verificationMethod = `DOM selector: ${selector}`;
               break;
             } catch {
@@ -373,8 +373,8 @@ export function createVerifyTextContentTool(framework: EnhancedBrowserTestFramew
             );
             let textContent = '';
             let node;
-            while (node = walker.nextNode()) {
-              textContent += node.textContent + ' ';
+            while ((node = walker.nextNode())) {
+              textContent += `${node.textContent} `;
             }
             return textContent;
           });

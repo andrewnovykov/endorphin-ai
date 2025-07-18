@@ -429,7 +429,7 @@ export class TestFramework {
   /**
    * Take step screenshot (tools compatibility)
    */
-  async takeStepScreenshot(description: string): Promise<string | null> {
+  async takeStepScreenshot(_description: string): Promise<string | null> {
     try {
       const session = this.sessionManager.getCurrentSession();
       if (!session) {

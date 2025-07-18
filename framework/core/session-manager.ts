@@ -179,7 +179,7 @@ export class SessionManager {
   /**
    * Update session with validation conclusion
    */
-  async updateSessionConclusion(conclusion: string): Promise<void> {
+  updateSessionConclusion(conclusion: string): void {
     const session = this.requireCurrentSession();
 
     this.logger.info('Updating session with validation conclusion', {

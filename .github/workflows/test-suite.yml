@@ -30,6 +30,9 @@ on:
           - '3'
           - '4'
 
+env:
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -67,10 +70,14 @@ jobs:
         fi
 
     - name: Run unit tests
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: npm test || true
       continue-on-error: true
 
     - name: Build framework
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: npm run build
 
     - name: Verify build output

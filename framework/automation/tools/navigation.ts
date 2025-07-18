@@ -5,7 +5,7 @@
 
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
+// import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
 
 /**
  * Creates a navigation tool for the framework
