@@ -75,8 +75,8 @@ export class CIPerformanceMonitor {
     this.lastCpuUsage = process.cpuUsage();
     
     // Sample performance every 10 seconds to reduce data volume
-    this.monitoringInterval = setInterval(() => {
-      this.collectPerformanceData();
+    this.monitoringInterval = setInterval(async () => {
+      await this.collectPerformanceData();
     }, 10000);
     
     // Show console updates every 20 seconds

@@ -257,7 +257,11 @@ export async function main(): Promise<void> {
       case 'run': {
         if (subcommand === 'test-recorder') {
           // Test recorder doesn't need AI validation until recording starts
-          const recorderConfig = await getConfig({ cwd: process.cwd(), cliFlags, validateAI: false });
+          const recorderConfig = await getConfig({ 
+            cwd: process.cwd(), 
+            cliFlags, 
+            validateAI: false 
+          });
           await handleTestRecorderCommand(recorderConfig);
         } else {
           // Other run commands need full AI validation

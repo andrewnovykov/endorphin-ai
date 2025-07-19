@@ -161,7 +161,7 @@ export async function handleOpenCommand(subcommand: string, target?: string): Pr
 async function handleTestByTag(
   args: string[],
   config: FrameworkConfig,
-  options: Record<string, any> = {}
+  _options: Record<string, any> = {}
 ): Promise<void> {
   const tagIndex = args.indexOf('--tag');
   if (tagIndex === -1 || !args[tagIndex + 1]) {
@@ -183,7 +183,7 @@ async function handleTestByTag(
 async function handleTestByPriority(
   args: string[],
   config: FrameworkConfig,
-  options: Record<string, any> = {}
+  _options: Record<string, any> = {}
 ): Promise<void> {
   const priorityIndex = args.indexOf('--priority');
   if (priorityIndex === -1 || !args[priorityIndex + 1]) {

@@ -6,7 +6,7 @@
 import { resolve } from 'path';
 import type { DiscoveryResult, FrameworkConfig, TestConfig } from '../../types/index.js';
 import { TestRunner } from '../runner/test-runner.js';
-import type { DiscoveredTest, TestExecutionOptions } from './discovery-types.js';
+import type { DiscoveredTest } from './discovery-types.js';
 import { TestDiscoverer } from './test-discoverer.js';
 
 // Standalone functions for CLI usage

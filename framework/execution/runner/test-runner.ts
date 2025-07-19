@@ -40,7 +40,7 @@ function isMultiUserTest(test: DiscoveredTest): boolean {
 /**
  * Safe exit that doesn't break tests
  */
-function safeExit(code: number): never {
+function _safeExit(code: number): never {
   if (isTestEnvironment()) {
     throw new Error(`process.exit called with code ${code}`);
   } else {

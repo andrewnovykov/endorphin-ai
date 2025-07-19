@@ -6,6 +6,7 @@
 import { Browser, BrowserContext, Page, chromium, firefox, webkit } from 'playwright';
 import type { BrowserConfig } from '../types/browser.js';
 import { globalLogger } from '../../core/logger.js';
+import { ciPerformanceMonitor } from '../../core/ci-performance.js';
 
 export interface BrowserManagerConfig {
   browser: BrowserConfig;
@@ -55,6 +56,9 @@ export class BrowserManager {
 
     // Setup page event handlers
     this.setupPageEventHandlers();
+
+    // Set current page for performance monitoring
+    ciPerformanceMonitor.setCurrentPage(this.page);
 
     this.logger.info('Browser initialized successfully');
   }
