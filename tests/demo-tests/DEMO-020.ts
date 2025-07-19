@@ -2,9 +2,9 @@ import type { TestCase } from '../../framework/types/index.js';
 
 export const DEMO_020: TestCase = {
   id: 'DEMO-020',
-  name: 'Demo Test 020',
-  description: 'Demo navigation test number 020',
+  name: 'Conduit Demo Test 020',
+  description: 'Demo navigation test for Conduit tagline',
   priority: 'Medium',
-  tags: ['demo', 'navigation'],
-  task: 'Navigate to https://example.com and verify the text "This domain is for use in illustrative examples" is visible on page'
+  tags: ['demo', 'navigation', 'conduit'],
+  task: 'Navigate to https://qafromla.herokuapp.com/ and verify the text "A place to share your knowledge." is visible on page'
 };

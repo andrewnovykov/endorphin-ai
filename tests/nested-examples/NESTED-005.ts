@@ -2,9 +2,9 @@ import type { TestCase } from '../../framework/types/index.js';
 
 export const NESTED_005: TestCase = {
   id: 'NESTED-005',
-  name: 'HTTPBin Main Page Test',
-  description: 'Navigate to HTTPBin home and verify title',
+  name: 'Conduit Sign In Button Test',
+  description: 'Navigate to Conduit and verify Sign In button',
   priority: 'Medium',
-  tags: ['nested', 'navigation', 'home'],
-  task: 'Navigate to https://httpbin.org/ and verify the heading "httpbin.org" is visible on page'
+  tags: ['nested', 'navigation', 'auth'],
+  task: 'Navigate to https://qafromla.herokuapp.com/ and verify the button "Sign in" is visible on page'
 };

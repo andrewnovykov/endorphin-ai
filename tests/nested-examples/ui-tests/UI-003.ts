@@ -2,9 +2,9 @@ import type { TestCase } from '../../../framework/types/index.js';
 
 export const UI_003: TestCase = {
   id: 'UI-003',
-  name: 'Customer Name Input Test',
-  description: 'Fill customer name field and verify visibility',
+  name: 'Conduit Global Feed Text Test',
+  description: 'Navigate to Conduit and verify Global Feed text is visible',
   priority: 'Medium',
-  tags: ['nested', 'ui', 'input'],
-  task: 'Navigate to https://httpbin.org/forms/post, fill the "custname" field with "John Doe", and verify the field contains "John Doe"'
+  tags: ['nested', 'ui', 'conduit'],
+  task: 'Navigate to https://qafromla.herokuapp.com/ and verify the text "Global Feed" is visible on page'
 };

@@ -2,9 +2,9 @@ import type { TestCase } from '../../framework/types/index.js';
 
 export const NESTED_009: TestCase = {
   id: 'NESTED-009',
-  name: 'Example Domain Link Verification',
-  description: 'Navigate and verify More information link',
-  priority: 'Low',
-  tags: ['nested', 'navigation', 'links'],
-  task: 'Navigate to https://example.com and verify the link "More information..." is visible on page'
+  name: 'Conduit Navigation Test 009',
+  description: 'Navigate to Conduit and verify Sign Up button',
+  priority: 'Medium',
+  tags: ['nested', 'navigation', 'conduit'],
+  task: 'Navigate to https://qafromla.herokuapp.com/ and verify the button "Sign up" is visible on page'
 };

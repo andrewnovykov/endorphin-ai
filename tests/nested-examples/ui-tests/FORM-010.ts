@@ -2,9 +2,9 @@ import type { TestCase } from '../../../framework/types/index.js';
 
 export const FORM_010: TestCase = {
   id: 'FORM-010',
-  name: 'Form Test 010',
-  description: 'Form interaction test number 010',
+  name: 'Conduit Login Form Test 010',
+  description: 'Test login form with invalid credentials',
   priority: 'Medium',
-  tags: ['nested', 'forms', 'interaction'],
-  task: 'Navigate to https://httpbin.org/forms/post, fill the "custname" field with "User010", and verify the field contains "User010"'
+  tags: ['nested', 'forms', 'login'],
+  task: 'Navigate to https://qafromla.herokuapp.com/, click "Login" button, fill email with "test010@example.com", fill password with "wrongpass", click "Sign In" button, and verify the text "Email not found sign in first" is visible on page'
 };

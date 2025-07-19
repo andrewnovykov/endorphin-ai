@@ -2,9 +2,9 @@ import type { TestCase } from '../../../framework/types/index.js';
 
 export const COMP_001: TestCase = {
   id: 'COMP-001',
-  name: 'Component Form Elements Test',
-  description: 'Verify form components are visible',
+  name: 'Conduit Component Test 001',
+  description: 'Verify Conduit Home button component is visible',
   priority: 'Medium',
-  tags: ['demo', 'components', 'forms'],
-  task: 'Navigate to https://httpbin.org/forms/post and verify the form element is visible on page'
+  tags: ['demo', 'components', 'conduit'],
+  task: 'Navigate to https://qafromla.herokuapp.com/ and verify the "Home" button is visible on page'
 };

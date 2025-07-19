@@ -2,9 +2,9 @@ import type { TestCase } from '../../../framework/types/index.js';
 
 export const UI_007: TestCase = {
   id: 'UI-007',
-  name: 'UI Component Test 007',
-  description: 'UI component test number 007',
+  name: 'Conduit UI Test 007',
+  description: 'Navigate to Conduit and verify Global Feed',
   priority: 'Medium',
-  tags: ['nested', 'ui', 'component'],
-  task: 'Navigate to https://httpbin.org/forms/post and verify the submit button is visible on page'
+  tags: ['nested', 'ui', 'conduit'],
+  task: 'Navigate to https://qafromla.herokuapp.com/ and verify the text "Global Feed" is visible on page'
 };
