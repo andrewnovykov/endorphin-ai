@@ -482,7 +482,7 @@ export class BrowserManager {
    */
   private getLaunchOptions() {
     const options: any = {
-      headless: this.config.browser.headless,
+      headless: process.env.CI ? true : this.config.browser.headless, // Force headless in CI environments
       args: [
         '--window-size=1300,750',  // Small window size (slightly bigger than viewport for window chrome)
         '--disable-web-security',
