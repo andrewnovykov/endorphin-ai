@@ -7,7 +7,54 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { CIPerformanceMetrics } from '../core/ci-performance.js';
 
+interface TestSummary {
+  testName: string;
+  sessionId: string;
+  status: 'SUCCESS' | 'FAILED';
+  startTime: string;
+  endTime: string;
+  duration: number;
+  totalSteps: number;
+  successfulSteps: number;
+  failedSteps: number;
+  totalScreenshots: number;
+}
+
 export class PerformanceReporter {
+  /**
+   * Read all test summary files from the output directory
+   */
+  private readTestSummaries(outputDir: string): TestSummary[] {
+    const summaries: TestSummary[] = [];
+    
+    try {
+      if (!fs.existsSync(outputDir)) {
+        return summaries;
+      }
+
+      const entries = fs.readdirSync(outputDir, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const summaryPath = path.join(outputDir, entry.name, 'summary.json');
+          if (fs.existsSync(summaryPath)) {
+            try {
+              const summaryContent = fs.readFileSync(summaryPath, 'utf8');
+              const summary: TestSummary = JSON.parse(summaryContent);
+              summaries.push(summary);
+            } catch (error) {
+              console.warn(`Failed to read summary file: ${summaryPath}`, error);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to read test summaries from ${outputDir}`, error);
+    }
+
+    return summaries.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  }
+
   /**
    * Generate a simple HTML performance report
    */
@@ -17,10 +64,13 @@ export class PerformanceReporter {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
+    // Read test summaries
+    const testSummaries = this.readTestSummaries(outputDir);
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const reportPath = path.join(outputDir, `performance-report-${timestamp}.html`);
 
-    const html = this.generateHtmlContent(metrics);
+    const html = this.generateHtmlContent(metrics, testSummaries);
     
     fs.writeFileSync(reportPath, html, 'utf8');
     
@@ -29,14 +79,22 @@ export class PerformanceReporter {
     return reportPath;
   }
 
-  private generateHtmlContent(metrics: CIPerformanceMetrics): string {
+  private generateHtmlContent(metrics: CIPerformanceMetrics, testSummaries: TestSummary[] = []): string {
     const duration = metrics.endTime ? 
       ((metrics.endTime - metrics.startTime) / 1000).toFixed(1) : 
       ((Date.now() - metrics.startTime) / 1000).toFixed(1);
 
+    // Calculate test stats from summaries
+    const totalTests = testSummaries.length;
+    const passedTests = testSummaries.filter(t => t.status === 'SUCCESS').length;
+    const failedTests = testSummaries.filter(t => t.status === 'FAILED').length;
 
-    // Generate timeline data for chart
+    // Check if browser memory data is available
+    const hasBrowserMemory = metrics.peakBrowserHeapMB > 0 || metrics.peakDomNodes > 0;
+
+    // Generate timeline data for charts
     const chartData = this.generateChartData(metrics.samples);
+    const browserChartData = hasBrowserMemory ? this.generateBrowserChartData(metrics.samples) : null;
     
     return `<!DOCTYPE html>
 <html lang="en">
@@ -174,6 +232,52 @@ export class PerformanceReporter {
             color: #2d3436;
         }
         
+        .test-results-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .test-results-container h3 {
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+        
+        .test-results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .test-results-table th,
+        .test-results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .test-results-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2d3436;
+        }
+        
+        .test-results-table .status-success {
+            color: #00b894;
+            font-weight: bold;
+        }
+        
+        .test-results-table .status-failed {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .test-results-table .duration {
+            text-align: right;
+        }
+        
         .timestamp {
             text-align: center;
             color: #636e72;
@@ -200,8 +304,20 @@ export class PerformanceReporter {
             
             <div class="stat-card">
                 <div class="icon">🧪</div>
-                <div class="value">${metrics.testCount}</div>
+                <div class="value">${totalTests}</div>
                 <div class="label">Tests Executed</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon">✅</div>
+                <div class="value">${passedTests}</div>
+                <div class="label">Tests Passed</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon">❌</div>
+                <div class="value">${failedTests}</div>
+                <div class="label">Tests Failed</div>
             </div>
             
             <div class="stat-card">
@@ -239,17 +355,106 @@ export class PerformanceReporter {
                 <div class="value">${metrics.cleanupCount}</div>
                 <div class="label">Cleanups</div>
             </div>
+            
+            ${hasBrowserMemory ? `
+            <div class="stat-card">
+                <div class="icon">🌐</div>
+                <div class="value">${metrics.peakBrowserHeapMB.toFixed(1)}MB</div>
+                <div class="label">Peak Browser Heap</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon">📊</div>
+                <div class="value">${metrics.avgBrowserHeapMB.toFixed(1)}MB</div>
+                <div class="label">Avg Browser Heap</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon">📄</div>
+                <div class="value">${metrics.peakDomNodes}</div>
+                <div class="label">Peak DOM Nodes</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="icon">📋</div>
+                <div class="value">${Math.round(metrics.avgDomNodes)}</div>
+                <div class="label">Avg DOM Nodes</div>
+            </div>
+            ` : ''}
         </div>
 
         <div class="chart-container">
-            <h3>📊 Performance Timeline</h3>
+            <h3>💾 Memory Usage Timeline</h3>
             <div class="chart-wrapper">
-                <canvas id="performanceChart"></canvas>
+                <canvas id="memoryChart"></canvas>
             </div>
             <p style="margin-top: 10px; color: #636e72; font-size: 12px; text-align: center;">
                 ${metrics.samples.length > 50 ? `Showing ${Math.min(51, metrics.samples.length)} of ${metrics.samples.length} samples for clarity` : `Showing all ${metrics.samples.length} samples`}
             </p>
         </div>
+
+        <div class="chart-container">
+            <h3>⚡ CPU Usage Timeline</h3>
+            <div class="chart-wrapper">
+                <canvas id="cpuChart"></canvas>
+            </div>
+            <p style="margin-top: 10px; color: #636e72; font-size: 12px; text-align: center;">
+                ${metrics.samples.length > 50 ? `Showing ${Math.min(51, metrics.samples.length)} of ${metrics.samples.length} samples for clarity` : `Showing all ${metrics.samples.length} samples`}
+            </p>
+        </div>
+
+        ${hasBrowserMemory && browserChartData ? `
+        <div class="chart-container">
+            <h3>🌐 Browser Heap Memory Timeline</h3>
+            <div class="chart-wrapper">
+                <canvas id="browserHeapChart"></canvas>
+            </div>
+            <p style="margin-top: 10px; color: #636e72; font-size: 12px; text-align: center;">
+                Browser JavaScript heap usage over time
+            </p>
+        </div>
+
+        <div class="chart-container">
+            <h3>📄 DOM Nodes Timeline</h3>
+            <div class="chart-wrapper">
+                <canvas id="domNodesChart"></canvas>
+            </div>
+            <p style="margin-top: 10px; color: #636e72; font-size: 12px; text-align: center;">
+                Number of DOM nodes over time
+            </p>
+        </div>
+        ` : ''}
+
+        ${testSummaries.length > 0 ? `
+        <div class="test-results-container">
+            <h3>📋 Test Results Summary</h3>
+            <p>All tests executed during this session:</p>
+            <table class="test-results-table">
+                <thead>
+                    <tr>
+                        <th>Test ID</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                        <th>Steps</th>
+                        <th>Start Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${testSummaries.map(test => `
+                    <tr>
+                        <td><strong>${test.sessionId}</strong></td>
+                        <td class="${test.status === 'SUCCESS' ? 'status-success' : 'status-failed'}">
+                            ${test.status === 'SUCCESS' ? '✅ PASSED' : '❌ FAILED'}
+                        </td>
+                        <td class="duration">${(test.duration / 1000).toFixed(1)}s</td>
+                        <td>${test.successfulSteps}/${test.totalSteps}</td>
+                        <td>${new Date(test.startTime).toLocaleString()}</td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        ` : ''}
 
         <div class="timestamp">
             Generated on ${new Date().toLocaleString()}
@@ -257,11 +462,12 @@ export class PerformanceReporter {
     </div>
 
     <script>
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        
         const chartData = ${chartData};
+        ${hasBrowserMemory && browserChartData ? `const browserChartData = ${browserChartData};` : ''}
         
-        const chart = new Chart(ctx, {
+        // Memory Chart
+        const memoryCtx = document.getElementById('memoryChart').getContext('2d');
+        const memoryChart = new Chart(memoryCtx, {
             type: 'line',
             data: {
                 labels: chartData.labels,
@@ -272,26 +478,16 @@ export class PerformanceReporter {
                         borderColor: '#6c5ce7',
                         backgroundColor: 'rgba(108, 92, 231, 0.1)',
                         tension: 0.4,
-                        yAxisID: 'memory',
                         pointRadius: 3,
-                        pointHoverRadius: 5
-                    },
-                    {
-                        label: 'CPU (%)',
-                        data: chartData.cpu,
-                        borderColor: '#00b894',
-                        backgroundColor: 'rgba(0, 184, 148, 0.1)',
-                        tension: 0.4,
-                        yAxisID: 'cpu',
-                        pointRadius: 3,
-                        pointHoverRadius: 5
+                        pointHoverRadius: 5,
+                        fill: true
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                aspectRatio: 2,
+                aspectRatio: 2.5,
                 interaction: {
                     mode: 'index',
                     intersect: false,
@@ -307,26 +503,72 @@ export class PerformanceReporter {
                             minRotation: 45
                         }
                     },
-                    memory: {
+                    y: {
                         type: 'linear',
                         display: true,
-                        position: 'left',
                         title: {
                             display: true,
                             text: 'Memory (MB)'
                         },
                         beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
                     },
-                    cpu: {
+                    title: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // CPU Chart
+        const cpuCtx = document.getElementById('cpuChart').getContext('2d');
+        const cpuChart = new Chart(cpuCtx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'CPU (%)',
+                        data: chartData.cpu,
+                        borderColor: '#00b894',
+                        backgroundColor: 'rgba(0, 184, 148, 0.1)',
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 2.5,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    },
+                    y: {
                         type: 'linear',
                         display: true,
-                        position: 'right',
                         title: {
                             display: true,
                             text: 'CPU (%)'
-                        },
-                        grid: {
-                            drawOnChartArea: false,
                         },
                         beginAtZero: true,
                         max: 100
@@ -336,13 +578,143 @@ export class PerformanceReporter {
                     legend: {
                         display: true,
                         position: 'top'
+                    },
+                    title: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        ${hasBrowserMemory && browserChartData ? `
+        // Browser Heap Memory Chart
+        const browserHeapCtx = document.getElementById('browserHeapChart').getContext('2d');
+        const browserHeapChart = new Chart(browserHeapCtx, {
+            type: 'line',
+            data: {
+                labels: browserChartData.labels,
+                datasets: [
+                    {
+                        label: 'Browser Heap (MB)',
+                        data: browserChartData.browserHeap,
+                        borderColor: '#fd79a8',
+                        backgroundColor: 'rgba(253, 121, 168, 0.1)',
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 2.5,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Heap Memory (MB)'
+                        },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    title: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // DOM Nodes Chart
+        const domNodesCtx = document.getElementById('domNodesChart').getContext('2d');
+        const domNodesChart = new Chart(domNodesCtx, {
+            type: 'line',
+            data: {
+                labels: browserChartData.labels,
+                datasets: [
+                    {
+                        label: 'DOM Nodes',
+                        data: browserChartData.domNodes,
+                        borderColor: '#fdcb6e',
+                        backgroundColor: 'rgba(253, 203, 110, 0.1)',
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 2.5,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Nodes'
+                        },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    title: {
+                        display: false
                     }
                 }
             }
         });
         
-        // Force resize to prevent chart growing
-        chart.resize();
+        // Force resize to prevent charts growing
+        browserHeapChart.resize();
+        domNodesChart.resize();
+        ` : ''}
+        
+        // Force resize to prevent charts growing
+        memoryChart.resize();
+        cpuChart.resize();
     </script>
 </body>
 </html>`;
@@ -383,6 +755,51 @@ export class PerformanceReporter {
       }),
       memory: processedSamples.map(sample => Math.round(sample.memoryMB * 10) / 10),
       cpu: processedSamples.map(sample => Math.round(sample.cpuPercent * 10) / 10)
+    };
+
+    return JSON.stringify(chartData);
+  }
+
+  private generateBrowserChartData(samples: Array<{ timestamp: number; browserHeapUsedMB?: number; domNodes?: number }>): string {
+    // Filter samples that have browser memory data
+    const browserSamples = samples.filter(sample => 
+      sample.browserHeapUsedMB !== undefined && sample.domNodes !== undefined
+    );
+
+    if (browserSamples.length === 0) {
+      return JSON.stringify({
+        labels: [],
+        browserHeap: [],
+        domNodes: []
+      });
+    }
+
+    // Limit data points to prevent chart overload
+    const maxPoints = 50;
+    let processedSamples = browserSamples;
+    
+    // If we have too many samples, downsample them
+    if (browserSamples.length > maxPoints) {
+      const step = Math.ceil(browserSamples.length / maxPoints);
+      processedSamples = [];
+      for (let i = 0; i < browserSamples.length; i += step) {
+        processedSamples.push(browserSamples[i]);
+      }
+      // Always include the last sample
+      if (processedSamples[processedSamples.length - 1] !== browserSamples[browserSamples.length - 1]) {
+        processedSamples.push(browserSamples[browserSamples.length - 1]);
+      }
+    }
+
+    const startTime = browserSamples[0].timestamp;
+    
+    const chartData = {
+      labels: processedSamples.map(sample => {
+        const secondsElapsed = Math.round((sample.timestamp - startTime) / 1000);
+        return `${secondsElapsed}s`;
+      }),
+      browserHeap: processedSamples.map(sample => Math.round((sample.browserHeapUsedMB || 0) * 10) / 10),
+      domNodes: processedSamples.map(sample => sample.domNodes || 0)
     };
 
     return JSON.stringify(chartData);
