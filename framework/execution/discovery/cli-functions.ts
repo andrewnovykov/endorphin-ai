@@ -248,8 +248,7 @@ export async function runSingleTestById(
  */
 export async function runTestsByTag(
   tag: string,
-  config: FrameworkConfig | null = null,
-  options: { parallel?: number } = {}
+  config: FrameworkConfig | null = null
 ): Promise<DiscoveryResult> {
   // Execute global setup first, before any test discovery or framework initialization
   await executeGlobalSetupOnce(config);
@@ -292,12 +291,7 @@ export async function runTestsByTag(
   }
 
   const runner = new TestRunner(config);
-  const executionOptions: TestExecutionOptions = {
-    parallel: (options.parallel || 1) > 1,
-    workers: options.parallel || 1,
-  };
-
-  return runner.runTests(testsToRun, executionOptions);
+  return runner.runTests(testsToRun);
 }
 
 /**
@@ -305,8 +299,7 @@ export async function runTestsByTag(
  */
 export async function runTestsByPriority(
   priority: string,
-  config: FrameworkConfig | null = null,
-  options: { parallel?: number } = {}
+  config: FrameworkConfig | null = null
 ): Promise<DiscoveryResult> {
   // Execute global setup first, before any test discovery or framework initialization
   await executeGlobalSetupOnce(config);
@@ -349,20 +342,14 @@ export async function runTestsByPriority(
   }
 
   const runner = new TestRunner(config);
-  const executionOptions: TestExecutionOptions = {
-    parallel: (options.parallel || 1) > 1,
-    workers: options.parallel || 1,
-  };
-
-  return runner.runTests(testsToRun, executionOptions);
+  return runner.runTests(testsToRun);
 }
 
 /**
  * Run all tests
  */
 export async function runAllTests(
-  config: FrameworkConfig | null = null,
-  options: { parallel?: number } = {}
+  config: FrameworkConfig | null = null
 ): Promise<DiscoveryResult> {
   // Execute global setup first, before any test discovery or framework initialization
   await executeGlobalSetupOnce(config);
@@ -398,12 +385,7 @@ export async function runAllTests(
   }
 
   const runner = new TestRunner(config);
-  const executionOptions: TestExecutionOptions = {
-    parallel: (options.parallel || 1) > 1,
-    workers: options.parallel || 1,
-  };
-
-  return runner.runTests(testsToRun, executionOptions);
+  return runner.runTests(testsToRun);
 }
 
 /**

@@ -242,7 +242,7 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
     const browserManager = getCurrentBrowserManager();
     const isMultiUser =
       browserManager && browserManager.isMultiUserMode && browserManager.isMultiUserMode();
-    const maxMessages = isMultiUser ? 60 : 30; // Double the limit for multi-user tests
+    const maxMessages = isMultiUser ? 200 : 100; // Higher limits for complex tests
 
     if (messages.length > maxMessages) {
       console.log(

@@ -57,12 +57,6 @@ const FLAG_PARSERS: Record<string, FlagParser> = {
     }
     return {};
   },
-  '--parallel': (nextArg) => {
-    if (nextArg && !isNaN(Number(nextArg))) {
-      return { parallel: parseInt(nextArg, 10), consumed: 1 };
-    }
-    return { parallel: 2 }; // Default to 2 workers when flag is used without value
-  },
   '--model': (nextArg) => {
     if (nextArg) {
       return { model: nextArg, consumed: 1 };
@@ -90,12 +84,6 @@ const FLAG_PARSERS: Record<string, FlagParser> = {
   '--temperature': (nextArg) => {
     if (nextArg && !isNaN(Number(nextArg))) {
       return { temperature: parseFloat(nextArg), consumed: 1 };
-    }
-    return {};
-  },
-  '--retries': (nextArg) => {
-    if (nextArg && !isNaN(Number(nextArg))) {
-      return { maxRetries: parseInt(nextArg, 10), consumed: 1 };
     }
     return {};
   },
@@ -169,7 +157,6 @@ Options:
   --no-headless          Run browser with visible UI
   --viewport <WxH>       Set browser viewport (e.g., 1920x1080)
   --timeout <ms>         Set test timeout in milliseconds
-  --parallel <n>         Run tests in parallel (default: 2)
   --model <n>         Set AI model to use (e.g., gpt-4o-mini)
   --env <environment>    Set environment (development/staging/production)
 
@@ -177,7 +164,7 @@ Examples:
   endorphin init                               # Set up new project
   endorphin run test HEALTH-001                # Run example test
   endorphin run test all --headless            # Run all tests headless
-  endorphin run test --tag smoke --parallel 3  # Run smoke tests with 3 workers
+  endorphin run test --tag smoke               # Run smoke tests
   endorphin run test --priority High --env staging # Run high priority tests on staging
   endorphin run test-recorder                  # Start test recorder
   endorphin list                               # Show all available tests
@@ -279,9 +266,7 @@ export async function main(): Promise<void> {
             console.log('🔧 Loaded configuration:', JSON.stringify(runConfig, null, 2));
           }
           if (subcommand === 'test') {
-            // Extract parallel/workers option from cliFlags
-            const options = { parallel: cliFlags.parallel || 1 };
-            await handleTestCommand(args, target, runConfig, options);
+            await handleTestCommand(args, target, runConfig);
           } else {
             console.error(`❌ Unknown run command: ${subcommand}`);
             console.log('Use "endorphin help" for usage information');

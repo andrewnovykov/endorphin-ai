@@ -280,7 +280,7 @@ https://github.com/user-attachments/assets/83a900c6-9279-496d-bc12-f16fb98cf6dc
 - **Built-in tools system** - 12 comprehensive automation tools included
 - **VS Code debugging** - Professional debugging with debug object access
 - **Multiple browsers** - Chrome, Firefox, Safari support
-- **Parallel execution** for faster test runs
+- **Sequential execution** for reliable test runs
 
 ### 🎮 Interactive Tools
 
@@ -544,7 +544,7 @@ npm run test:single QE-001 -- --no-headless
 npx endorphin run test all --browser firefox
 npx endorphin run test QE-001 --no-headless
 npx endorphin run test all --viewport 1920x1080
-npx endorphin run test all --parallel 3
+npx endorphin run test all
 npx endorphin run test all --model gpt-4
 npx endorphin run test all --env staging
 ```

@@ -64,7 +64,7 @@ export { getPage, getCurrentUserId, getUserIds, isMultiUserMode } from './utils/
 
 // Individual tool creators for custom setups
 export { createGetPageContentTool, createGetSimplePageContentTool } from './automation/tools/content.js';
-export { createContentOptimizationTool } from './automation/tools/content-optimization.js';
+// Content optimization removed - using basic content extraction only
 export { createDifferentialContentTool } from './automation/tools/differential-content.js';
 export { 
   createClearFieldTool, 

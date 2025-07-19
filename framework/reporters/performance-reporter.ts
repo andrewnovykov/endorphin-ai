@@ -34,10 +34,6 @@ export class PerformanceReporter {
       ((metrics.endTime - metrics.startTime) / 1000).toFixed(1) : 
       ((Date.now() - metrics.startTime) / 1000).toFixed(1);
 
-    const _optimizerStatus = metrics.memoryOptimizerEnabled ? 'ON' : 'OFF';
-    const optimizerBadge = metrics.memoryOptimizerEnabled ? 
-      '<span class="badge enabled">ENABLED</span>' : 
-      '<span class="badge disabled">DISABLED</span>';
 
     // Generate timeline data for chart
     const chartData = this.generateChartData(metrics.samples);
@@ -194,13 +190,6 @@ export class PerformanceReporter {
             <div class="subtitle">Endorphin AI Test Execution Performance</div>
         </div>
         
-        <div class="optimizer-info">
-            <h3>🔧 Memory Optimizer Status</h3>
-            <p>Memory Optimizer: ${optimizerBadge}</p>
-            <p style="margin-top: 10px; color: #636e72; font-size: 14px;">
-                Memory optimization ${metrics.memoryOptimizerEnabled ? 'reduces browser memory usage through advanced Chrome flags and resource management.' : 'was not enabled. Enable with ENDORPHIN_MEMORY_OPTIMIZER=true'}
-            </p>
-        </div>
 
         <div class="stats-grid">
             <div class="stat-card">

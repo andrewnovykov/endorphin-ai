@@ -33,9 +33,8 @@ export class CIPerformanceMonitor {
   private lastCpuUsage: NodeJS.CpuUsage | null = null;
 
   constructor() {
-    // Enable monitoring with ENDORPHIN_MEMORY_OPTIMIZER or ENDORPHIN_PERF_MONITORING
-    this.enabled = process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true' || 
-                   process.env.ENDORPHIN_PERF_MONITORING === 'true';
+    // Enable monitoring with ENDORPHIN_PERF_MONITORING
+    this.enabled = process.env.ENDORPHIN_PERF_MONITORING === 'true';
     
     this.metrics = {
       startTime: Date.now(),
@@ -46,16 +45,13 @@ export class CIPerformanceMonitor {
       testCount: 0,
       gcCount: 0,
       cleanupCount: 0,
-      memoryOptimizerEnabled: process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true',
+      memoryOptimizerEnabled: false,
       samples: []
     };
 
     if (this.enabled) {
       this.startMonitoring();
       console.log('📊 Performance monitoring enabled');
-      if (this.metrics.memoryOptimizerEnabled) {
-        console.log('🔧 Memory optimizer: ON');
-      }
     }
   }
 
@@ -122,9 +118,8 @@ export class CIPerformanceMonitor {
     
     const memoryMB = Math.round(this.metrics.avgMemoryMB);
     const cpuPercent = Math.round(this.metrics.avgCpuPercent);
-    const optimizerStatus = this.metrics.memoryOptimizerEnabled ? 'ON' : 'OFF';
     
-    console.log(`💾 Memory: ${memoryMB}MB | ⚡ CPU: ${cpuPercent}% | 🔧 Optimizer: ${optimizerStatus}`);
+    console.log(`💾 Memory: ${memoryMB}MB | ⚡ CPU: ${cpuPercent}%`);
   }
 
   recordTestStart(): void {
@@ -159,7 +154,6 @@ export class CIPerformanceMonitor {
     }
 
     const duration = (Date.now() - this.metrics.startTime) / 1000;
-    const optimizerStatus = this.metrics.memoryOptimizerEnabled ? 'ON' : 'OFF';
     
     return `
 📊 Performance Summary:
@@ -169,7 +163,6 @@ export class CIPerformanceMonitor {
 📈 Avg Memory: ${this.metrics.avgMemoryMB.toFixed(1)}MB
 ⚡ Peak CPU: ${this.metrics.peakCpuPercent.toFixed(1)}%
 🔄 Avg CPU: ${this.metrics.avgCpuPercent.toFixed(1)}%
-🔧 Memory Optimizer: ${optimizerStatus}
 🗑️  GC Triggers: ${this.metrics.gcCount}
 🧹 Cleanups: ${this.metrics.cleanupCount}
     `.trim();

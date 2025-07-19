@@ -31,11 +31,9 @@ export class ConfigManager {
    * Get execution configuration
    */
   getExecutionConfig(): ExecutionConfig {
-    const execution = this.config.execution || { timeout: 30000, parallel: false, retries: 0 };
+    const execution = this.config.execution || { timeout: 30000 };
     return {
       timeout: execution.timeout,
-      parallel: execution.parallel,
-      retries: execution.retries,
     };
   }
 
@@ -100,15 +98,11 @@ export class ConfigManager {
       },
       execution: {
         timeout: 30000,
-        parallel: false,
-        retries: 0,
       } as ExecutionConfig,
       testsDirectory: 'tests',
       dataDirectory: 'test-data',
       resultsDirectory: 'test-results',
       environment: 'development' as const,
-      parallel: 1,
-      maxRetries: 0,
     };
 
     const base = baseConfig || defaultConfig;
@@ -135,8 +129,6 @@ export class ConfigManager {
       },
       execution: {
         timeout: userConfig.execution?.timeout ?? base.execution?.timeout ?? 30000,
-        parallel: userConfig.execution?.parallel ?? base.execution?.parallel ?? false,
-        retries: userConfig.execution?.retries ?? base.execution?.retries ?? 0,
       },
     };
   }
@@ -177,13 +169,9 @@ export class ConfigManager {
     }
 
     // Execution validation
-    const execution = this.config.execution || { timeout: 30000, parallel: false, retries: 0 };
+    const execution = this.config.execution || { timeout: 30000 };
     if (execution.timeout < 1000) {
       throw new Error('Execution timeout must be at least 1000ms');
-    }
-
-    if (execution.retries < 0) {
-      throw new Error('Retries must be non-negative');
     }
 
     // Directory validation

@@ -16,7 +16,7 @@ import type {
   SnapshotCaptureOptions,
   SnapshotMetadata,
 } from '../../content/types/snapshot-types.js';
-import { ContentProcessor, type OptimizationContext } from '../../content/processors/content-processor.js';
+// Content optimization removed - using basic content extraction only
 
 export class PageSnapshotManager {
   private snapshots: Map<string, PageSnapshot> = new Map();
@@ -26,45 +26,29 @@ export class PageSnapshotManager {
   private maxSnapshots: number = 3; // Reduced from 10 to save memory
   private maxTextLength: number = 100; // Reduced from 200
   private elementCache: WeakMap<object, ElementSnapshot> = new WeakMap(); // Use WeakMap for auto cleanup
-  private contentOptimizer: ContentProcessor = new ContentProcessor();
+  // Content optimizer removed - using basic extraction only
 
   /**
-   * Create optimized content for AI consumption
+   * Create basic content snapshot for HTML snapshots
    */
   async createOptimizedSnapshot(
     page: Page,
-    context: OptimizationContext = {},
+    _context: any = {},
     _id?: string
   ): Promise<string> {
     try {
-      const optimizedContent = await this.contentOptimizer.optimizePageContent(page, context);
+      // Basic content extraction for HTML snapshots
+      const content = await page.evaluate(() => {
+        // Remove scripts and styles for clean snapshot
+        const clone = document.body.cloneNode(true) as Element;
+        clone.querySelectorAll('script, style, noscript').forEach((el) => el.remove());
+        return clone.textContent?.trim() || '';
+      });
 
-      // Store the optimized content in the latest snapshot if available
-      if (this.currentSnapshotId) {
-        const currentSnapshot = this.snapshots.get(this.currentSnapshotId);
-        if (currentSnapshot) {
-          currentSnapshot.optimizedContent = optimizedContent;
-          this.snapshots.set(this.currentSnapshotId, currentSnapshot);
-        }
-      }
-
-      return optimizedContent.formattedContent;
+      return content.substring(0, 5000); // Limit content length for snapshots
     } catch (error) {
-      console.warn('Failed to create optimized content, falling back to basic extraction:', error);
-
-      // Fallback to basic content extraction
-      try {
-        const content = await page.evaluate(() => {
-          // Remove scripts and styles
-          const clone = document.body.cloneNode(true) as Element;
-          clone.querySelectorAll('script, style, noscript').forEach((el) => el.remove());
-          return clone.textContent?.trim() || '';
-        });
-
-        return content.substring(0, 5000); // Limit content length
-      } catch {
-        return 'Unable to extract page content';
-      }
+      console.warn('Failed to extract snapshot content:', error);
+      return 'Unable to extract page content';
     }
   }
 
@@ -72,7 +56,7 @@ export class PageSnapshotManager {
    * Create a new page snapshot
    */
   async createSnapshot(page: Page, url?: string): Promise<string> {
-    // For backward compatibility, this method now returns optimized content
+    // Create basic content snapshot for HTML snapshots
     return await this.createOptimizedSnapshot(page, {}, url);
   }
 
