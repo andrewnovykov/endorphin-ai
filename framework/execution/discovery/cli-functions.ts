@@ -48,50 +48,22 @@ function safeExit(code: number): never {
  * Find a single test without full discovery (optimized for single test runs)
  */
 async function findSingleTest(testId: string, config: FrameworkConfig | null = null): Promise<DiscoveredTest | null> {
-  const testsDirectory = resolve(process.cwd(), config?.testsDirectory || 'tests');
+  // Use the full discovery system to ensure recursive search works
+  const discovery = await ensureDiscovery(config);
+  const test = discovery.getTest(testId);
   
-  try {
-    // Try to find the test file by common naming patterns
-    const possibleFiles = [
-      `${testId}.ts`,
-      `${testId}.js`,
-      `${testId.toLowerCase()}.ts`,
-      `${testId.toLowerCase()}.js`,
-    ];
-    
-    const { readdir } = await import('fs/promises');
-    const files = await readdir(testsDirectory);
-    
-    // First try exact file matches
-    for (const possibleFile of possibleFiles) {
-      if (files.includes(possibleFile)) {
-        console.log(`🔍 Loading test from: ${possibleFile}`);
-        return await loadSingleTestFile(possibleFile, testsDirectory, testId);
-      }
-    }
-    
-    // If not found by filename, scan all test files for the testId
-    console.log(`🔍 Scanning for test ID: ${testId}`);
-    const testFiles = files.filter(file => file.endsWith('.ts') || file.endsWith('.js'));
-    
-    for (const file of testFiles) {
-      const test = await loadSingleTestFile(file, testsDirectory, testId);
-      if (test) {
-        return test;
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.error(`❌ Error searching for test ${testId}:`, error);
-    return null;
+  if (test) {
+    console.log(`🔍 Found test ${testId} in: ${test.sourceFile}`);
+    return test;
   }
+  
+  return null;
 }
 
 /**
  * Load a single test file and check if it contains the target test ID
  */
-async function loadSingleTestFile(filename: string, testsDirectory: string, targetTestId: string): Promise<DiscoveredTest | null> {
+async function _loadSingleTestFile(filename: string, testsDirectory: string, targetTestId: string): Promise<DiscoveredTest | null> {
   try {
     const filePath = resolve(testsDirectory, filename);
     const { pathToFileURL } = await import('url');

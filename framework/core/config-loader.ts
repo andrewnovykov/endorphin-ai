@@ -44,8 +44,6 @@ export class ConfigLoader {
       dataDirectory: 'test-data',
       resultsDirectory: 'test-results',
       environment: 'development' as const,
-      parallel: 1,
-      maxRetries: 3,
       baseUrl: '',
 
       // Custom Tools
@@ -185,13 +183,6 @@ export class ConfigLoader {
       envConfig.environment = process.env.ENDORPHIN_ENVIRONMENT;
     }
 
-    if (process.env.ENDORPHIN_PARALLEL) {
-      const parallel = parseInt(process.env.ENDORPHIN_PARALLEL, 10);
-      if (!isNaN(parallel)) {
-        envConfig.parallel = parallel;
-      }
-    }
-
     if (process.env.ENDORPHIN_BASE_URL) {
       envConfig.baseUrl = process.env.ENDORPHIN_BASE_URL;
     }
@@ -234,9 +225,6 @@ export class ConfigLoader {
     if (cliFlags.timeout !== undefined) {
       config.browser.timeout = cliFlags.timeout;
     }
-    if (cliFlags.parallel !== undefined) {
-      config.parallel = cliFlags.parallel;
-    }
     if (cliFlags.model) {
       config.ai.openai.modelName = cliFlags.model;
     }
@@ -248,9 +236,6 @@ export class ConfigLoader {
     }
     if (cliFlags.temperature !== undefined) {
       config.ai.openai.temperature = cliFlags.temperature;
-    }
-    if (cliFlags.maxRetries !== undefined) {
-      config.maxRetries = cliFlags.maxRetries;
     }
     if (cliFlags.testsDirectory) {
       config.testsDirectory = cliFlags.testsDirectory;
@@ -279,11 +264,6 @@ export class ConfigLoader {
     // Validate timeout
     if (config.browser.timeout <= 0) {
       throw new Error('Invalid timeout: must be positive number');
-    }
-
-    // Validate parallel execution
-    if (config.parallel <= 0) {
-      throw new Error('Invalid parallel setting: must be positive number');
     }
 
     // Validate OpenAI API key only if AI validation is required

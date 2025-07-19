@@ -57,31 +57,20 @@ export class TestDiscoverer {
     let totalFiles = 0;
 
     try {
-      // Use only the configured tests directory
-      const searchDirectories = [
-        this.testsDirectory
-      ];
-
+      console.log(`🔍 Discovering tests recursively in: ${this.testsDirectory}`);
+      
       const allTestFiles: { file: string, directory: string }[] = [];
 
-      // Search in configured directories
-      for (const directory of searchDirectories) {
-        try {
-          await stat(directory);
-          console.log(`🔍 Discovering tests in: ${directory}`);
-          
-          const files = await readdir(directory);
-          const testFiles = files.filter((file) => this.isTestFile(file));
-          
-          testFiles.forEach(file => {
-            allTestFiles.push({ file, directory });
-          });
-          
-          console.log(`📋 Found ${testFiles.length} test file(s) in ${directory}:`);
-          testFiles.forEach(file => console.log(`   📄 ${file}`));
-        } catch {
-          console.log(`📁 Directory not found: ${directory}`);
-        }
+      // Recursively scan the tests directory
+      await this.scanDirectoryRecursively(this.testsDirectory, allTestFiles, 0, 3);
+
+      if (allTestFiles.length > 0) {
+        console.log(`📋 Found ${allTestFiles.length} test file(s) across all directories:`);
+        allTestFiles.forEach(({ file, directory }) => {
+          const relativePath = directory.replace(this.testsDirectory, '').replace(/^\//, '');
+          const displayPath = relativePath ? `${relativePath}/${file}` : file;
+          console.log(`   📄 ${displayPath}`);
+        });
       }
 
       totalFiles = allTestFiles.length;
@@ -584,6 +573,44 @@ export class TestDiscoverer {
       console.log('💡 Set ENDORPHIN_RUN_QUARANTINED=true to run quarantined tests');
     }
     console.log('');
+  }
+
+  /**
+   * Recursively scan directory for test files up to maxDepth levels
+   */
+  private async scanDirectoryRecursively(
+    directory: string,
+    allTestFiles: { file: string, directory: string }[],
+    currentDepth: number,
+    maxDepth: number
+  ): Promise<void> {
+    try {
+      await stat(directory);
+      const files = await readdir(directory);
+      
+      // Process files in current directory
+      const testFiles = files.filter((file) => this.isTestFile(file));
+      testFiles.forEach(file => {
+        allTestFiles.push({ file, directory });
+      });
+      
+      // If we haven't reached max depth, scan subdirectories
+      if (currentDepth < maxDepth) {
+        for (const file of files) {
+          const fullPath = join(directory, file);
+          try {
+            const fileStat = await stat(fullPath);
+            if (fileStat.isDirectory()) {
+              await this.scanDirectoryRecursively(fullPath, allTestFiles, currentDepth + 1, maxDepth);
+            }
+          } catch {
+            // Skip files that can't be accessed
+          }
+        }
+      }
+    } catch {
+      // Directory doesn't exist or can't be accessed
+    }
   }
 
   /**

@@ -56,12 +56,12 @@ export class TestHelpers {
         toolArgs: params,
         result,
         status: isImportant ? 'SUCCESS' : 'SUCCESS',
-        screenshots: screenshots.map(path => ({
+        screenshots: screenshots.map((path) => ({
           filepath: path,
           filename: path.split('/').pop() || 'screenshot.png',
           description: `${description} screenshot`,
           timestamp,
-          stepNumber: session.steps.length + 1
+          stepNumber: session.steps.length + 1,
         })),
       };
 
@@ -97,7 +97,7 @@ export class TestHelpers {
 
       if (session) {
         session.screenshotCounter = stepNumber;
-        
+
         // Add screenshot to the current step if one exists
         if (session.steps.length > 0) {
           const currentStep = session.steps[session.steps.length - 1];
@@ -109,7 +109,7 @@ export class TestHelpers {
             filepath: `screenshots/${filename}`,
             description: description || `Step ${stepNumber} screenshot`,
             timestamp: new Date().toISOString(),
-            stepNumber
+            stepNumber,
           });
         }
       }
@@ -257,7 +257,7 @@ Session ID: ${session.sessionId}
    * Log test summary
    */
   static logTestSummary(session: TestSession): void {
-    console.log(`\n${  TestHelpers.generateTestSummary(session)  }\n`);
+    console.log(`\n${TestHelpers.generateTestSummary(session)}\n`);
   }
 
   /**
@@ -290,34 +290,5 @@ Session ID: ${session.sessionId}
    */
   static wait(milliseconds: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, milliseconds));
-  }
-
-  /**
-   * Retry an operation with exponential backoff
-   */
-  static async retryWithBackoff<T>(
-    operation: () => Promise<T>,
-    maxRetries: number = 3,
-    baseDelay: number = 1000
-  ): Promise<T> {
-    let lastError: Error;
-
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        return await operation();
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-
-        if (attempt === maxRetries) {
-          throw lastError;
-        }
-
-        const delay = baseDelay * Math.pow(2, attempt);
-        console.log(`⏳ Retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
-        await TestHelpers.wait(delay);
-      }
-    }
-
-    throw lastError!;
   }
 }

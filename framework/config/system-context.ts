@@ -3,8 +3,12 @@
  * Defines the system context/prompt for the AI agent
  */
 
-import { parseSteps, generateStepSummary, generateCompletionMessage } from '../utils/step-parser.js';
 import { STRUCTURED_FORMAT_INSTRUCTIONS } from '../types/structured-response.js';
+import {
+  generateCompletionMessage,
+  generateStepSummary,
+  parseSteps,
+} from '../utils/step-parser.js';
 
 /**
  * Generate system context message for the browser automation agent
@@ -15,11 +19,13 @@ export function createSystemContext(taskDescription: string): string {
   // Parse steps dynamically from task description
   const stepParseResult = parseSteps(taskDescription);
   const { totalSteps, hasValidSteps } = stepParseResult;
-  
+
   // Generate dynamic step summary and completion message
   const stepSummary = generateStepSummary(stepParseResult);
-  const completionMessage = hasValidSteps ? generateCompletionMessage(totalSteps) : 'Complete all steps and say "test completed successfully"';
-  
+  const completionMessage = hasValidSteps
+    ? generateCompletionMessage(totalSteps)
+    : 'Complete all steps and say "test completed successfully"';
+
   console.log(`🔍 Parsed ${totalSteps} steps from task description`);
   if (hasValidSteps) {
     console.log(`📋 Steps found:\n${stepSummary}`);
@@ -38,20 +44,20 @@ export function createSystemContext(taskDescription: string): string {
 CRITICAL EXECUTION RULES:
 1. You MUST execute each numbered STEP in EXACT sequential order (STEP 1, then STEP 2, then STEP 3, etc.)
 2. You MUST complete ALL ${totalSteps} numbered steps listed in the task - do NOT stop early
-3. If a step fails, retry it up to 3 times before marking the test as failed
+3. If a step fails, mark the test as failed
 4. Only say "test completed successfully" when you have finished the LAST numbered step (step ${totalSteps})
    NEVER say intermediate completion phrases like "login process was successfully completed" - these are NOT test completion
 5. Take a screenshot after each major step for documentation
-6. NEVER stop until ALL steps are completed or a step fails after 3 retries
+6. NEVER stop until ALL steps are completed or a step fails
 7. You must respond with structured JSON format for each action
-8. TOOL RESULT TRUST: When verification tools return ✅ SUCCESS, TRUST the result completely. Do NOT second-guess or re-verify unless explicitly asked to retry.
+8. TOOL RESULT TRUST: When verification tools return ✅ SUCCESS, TRUST the result completely. Do NOT second-guess or re-verify unless explicitly asked.
 
 STEP EXECUTION PROCESS:
 - There are ${totalSteps} total steps to complete
 - Announce which step you are starting: "Starting STEP X of ${totalSteps}: [description]"
 - Perform the step using the appropriate tools
 - If the step succeeds, announce completion and move to next step
-- If the step fails, announce retry with attempt number
+- If the step fails, mark the test as failed
 - Move to the next step only after the current step succeeds
 - ${completionMessage}
 
@@ -70,11 +76,10 @@ VERIFICATION CONFIDENCE:
 - Success tool responses mean the verification passed - proceed with confidence
 
 ERROR RECOVERY:
-- If a step fails, immediately respond with retry status and attempt number
-- Try alternative selectors or strategies
+- If a step fails, mark the test as failed immediately
+- Try alternative selectors or strategies before giving up
 - For "Sign In" buttons, use button strategy first: locator('button').filter({ hasText: 'Sign In' })
 - Never enter chat mode or ask "need help?" - always continue with structured responses
-- Maximum 3 attempts per step before marking as failed
 
 TOOL USAGE EXAMPLES:
 - Click button with text: {"selector": "Log In", "strategy": "text"}

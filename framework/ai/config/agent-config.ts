@@ -37,7 +37,5 @@ export const AGENT_CONFIG = {
   // Test execution settings
   execution: {
     stepDelay: 3000, // 2 seconds between test steps
-    maxRetries: 5,
-    retryDelay: 2000,
   },
 } as const;

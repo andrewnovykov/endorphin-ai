@@ -42,6 +42,8 @@ export class CIPerformanceMonitor {
   private enabled: boolean;
   private lastCpuUsage: NodeJS.CpuUsage | null = null;
   private currentPage: any = null; // Reference to current Playwright page
+  private summaryPrinted: boolean = false;
+  private isDisposed: boolean = false;
 
   constructor() {
     // Enable monitoring with ENDORPHIN_PERF_MONITORING
@@ -346,6 +348,8 @@ export class CIPerformanceMonitor {
   }
 
   dispose(): void {
+    if (this.isDisposed) return;
+
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
@@ -356,10 +360,13 @@ export class CIPerformanceMonitor {
       this.consoleInterval = null;
     }
 
-    if (this.enabled) {
+    if (this.enabled && !this.summaryPrinted) {
       console.log(this.generateSummary());
+      this.summaryPrinted = true;
       // Note: HTML report generation is now handled by TestRunner to ensure it completes
     }
+
+    this.isDisposed = true;
   }
 }
 

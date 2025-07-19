@@ -60,8 +60,6 @@ export default {
   // Execution configuration
   execution: {
     timeout: 30000,
-    parallel: false,
-    retries: 0,
   },
 
   // Directory configuration
@@ -71,8 +69,6 @@ export default {
 
   // Environment
   environment: 'development',
-  parallel: 1,
-  maxRetries: 0,
 
   // Base URL for relative navigation (optional)
   // baseUrl: 'https://your-app.com',
