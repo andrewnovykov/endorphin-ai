@@ -497,8 +497,8 @@ export class BrowserManager {
         '--disable-dev-shm-usage',
         '--disable-gpu',
         '--no-first-run',
-        '--no-zygote',
-        '--single-process', // Reduce memory usage in CI
+        '--no-zygote'
+        // Removed --single-process as it causes issues with multi-context tests
       );
 
     }
