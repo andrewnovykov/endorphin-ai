@@ -713,8 +713,8 @@ export class BrowserEngine {
       'cannot continue with test execution',
       'test aborted due to error',
       'critical error in test execution',
-      'maximum retries exceeded - test failed',
-      'step failed after 3 attempts',
+      'test failed',
+      'step failed',
       'unable to complete all steps',
     ];
 

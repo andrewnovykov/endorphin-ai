@@ -10,6 +10,10 @@ export interface CIPerformanceMetrics {
   avgMemoryMB: number;
   peakCpuPercent: number;
   avgCpuPercent: number;
+  peakBrowserHeapMB: number;
+  avgBrowserHeapMB: number;
+  peakDomNodes: number;
+  avgDomNodes: number;
   testCount: number;
   gcCount: number;
   cleanupCount: number;
@@ -21,21 +25,29 @@ export interface PerformanceSample {
   timestamp: number;
   memoryMB: number;
   cpuPercent: number;
+  browserHeapUsedMB?: number;
+  browserHeapTotalMB?: number;
+  domNodes?: number;
+  domDocuments?: number;
 }
 
 export class CIPerformanceMonitor {
   private metrics: CIPerformanceMetrics;
   private memorySnapshots: number[] = [];
   private cpuSnapshots: number[] = [];
+  private browserHeapSnapshots: number[] = [];
+  private domNodesSnapshots: number[] = [];
   private monitoringInterval: NodeJS.Timeout | null = null;
   private consoleInterval: NodeJS.Timeout | null = null;
   private enabled: boolean;
   private lastCpuUsage: NodeJS.CpuUsage | null = null;
+  private currentPage: any = null; // Reference to current Playwright page
+  private summaryPrinted: boolean = false;
+  private isDisposed: boolean = false;
 
   constructor() {
-    // Enable monitoring with ENDORPHIN_MEMORY_OPTIMIZER or ENDORPHIN_PERF_MONITORING
-    this.enabled = process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true' || 
-                   process.env.ENDORPHIN_PERF_MONITORING === 'true';
+    // Enable monitoring with ENDORPHIN_PERF_MONITORING
+    this.enabled = process.env.ENDORPHIN_PERF_MONITORING === 'true';
     
     this.metrics = {
       startTime: Date.now(),
@@ -43,19 +55,20 @@ export class CIPerformanceMonitor {
       avgMemoryMB: 0,
       peakCpuPercent: 0,
       avgCpuPercent: 0,
+      peakBrowserHeapMB: 0,
+      avgBrowserHeapMB: 0,
+      peakDomNodes: 0,
+      avgDomNodes: 0,
       testCount: 0,
       gcCount: 0,
       cleanupCount: 0,
-      memoryOptimizerEnabled: process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true',
+      memoryOptimizerEnabled: false,
       samples: []
     };
 
     if (this.enabled) {
       this.startMonitoring();
       console.log('📊 Performance monitoring enabled');
-      if (this.metrics.memoryOptimizerEnabled) {
-        console.log('🔧 Memory optimizer: ON');
-      }
     }
   }
 
@@ -64,8 +77,8 @@ export class CIPerformanceMonitor {
     this.lastCpuUsage = process.cpuUsage();
     
     // Sample performance every 10 seconds to reduce data volume
-    this.monitoringInterval = setInterval(() => {
-      this.collectPerformanceData();
+    this.monitoringInterval = setInterval(async () => {
+      await this.collectPerformanceData();
     }, 10000);
     
     // Show console updates every 20 seconds
@@ -74,7 +87,7 @@ export class CIPerformanceMonitor {
     }, 20000);
   }
 
-  private collectPerformanceData(): void {
+  private async collectPerformanceData(): Promise<void> {
     const memUsage = process.memoryUsage();
     const memoryMB = memUsage.heapUsed / 1024 / 1024;
     
@@ -91,12 +104,39 @@ export class CIPerformanceMonitor {
     this.memorySnapshots.push(memoryMB);
     this.cpuSnapshots.push(cpuPercent);
     
-    // Store sample for report
-    this.metrics.samples.push({
+    // Create sample object
+    const sample: PerformanceSample = {
       timestamp: Date.now(),
       memoryMB: Math.round(memoryMB * 10) / 10,
       cpuPercent: Math.round(cpuPercent * 10) / 10
-    });
+    };
+    
+    // Collect browser memory data if page is available
+    if (this.currentPage) {
+      try {
+        const browserMemory = await this.collectBrowserMemoryData();
+        if (browserMemory) {
+          sample.browserHeapUsedMB = browserMemory.heapUsedMB;
+          sample.browserHeapTotalMB = browserMemory.heapTotalMB;
+          sample.domNodes = browserMemory.domNodes;
+          sample.domDocuments = browserMemory.domDocuments;
+          
+          // Update browser memory tracking
+          this.recordBrowserMemory(
+            browserMemory.heapUsedMB,
+            browserMemory.heapTotalMB,
+            browserMemory.domNodes,
+            browserMemory.domDocuments
+          );
+        }
+      } catch (error) {
+        // Silently continue if browser memory collection fails
+        console.debug('Browser memory collection failed:', error);
+      }
+    }
+    
+    // Store sample for report
+    this.metrics.samples.push(sample);
     
     // Update peaks
     if (memoryMB > this.metrics.peakMemoryMB) {
@@ -122,14 +162,117 @@ export class CIPerformanceMonitor {
     
     const memoryMB = Math.round(this.metrics.avgMemoryMB);
     const cpuPercent = Math.round(this.metrics.avgCpuPercent);
-    const optimizerStatus = this.metrics.memoryOptimizerEnabled ? 'ON' : 'OFF';
+    const browserHeapMB = Math.round(this.metrics.avgBrowserHeapMB);
+    const domNodes = Math.round(this.metrics.avgDomNodes);
     
-    console.log(`💾 Memory: ${memoryMB}MB | ⚡ CPU: ${cpuPercent}% | 🔧 Optimizer: ${optimizerStatus}`);
+    let consoleMsg = `💾 Memory: ${memoryMB}MB | ⚡ CPU: ${cpuPercent}%`;
+    
+    if (browserHeapMB > 0) {
+      consoleMsg += ` | 🌐 Browser Heap: ${browserHeapMB}MB`;
+    }
+    
+    if (domNodes > 0) {
+      consoleMsg += ` | 📄 DOM Nodes: ${domNodes}`;
+    }
+    
+    console.log(consoleMsg);
   }
 
   recordTestStart(): void {
     if (this.enabled) {
       this.metrics.testCount++;
+    }
+  }
+
+  setCurrentPage(page: any): void {
+    if (this.enabled) {
+      this.currentPage = page;
+    }
+  }
+
+  private async collectBrowserMemoryData(): Promise<{
+    heapUsedMB: number;
+    heapTotalMB: number;
+    domNodes: number;
+    domDocuments: number;
+  } | null> {
+    if (!this.currentPage) {
+      return null;
+    }
+
+    try {
+      // Use Chrome DevTools Protocol to get heap usage
+      const heapUsage = await this.currentPage.evaluate(() => {
+        // @ts-ignore - performance.memory is Chrome-specific
+        if (performance.memory) {
+          return {
+            // @ts-ignore
+            usedJSHeapSize: performance.memory.usedJSHeapSize,
+            // @ts-ignore
+            totalJSHeapSize: performance.memory.totalJSHeapSize
+          };
+        }
+        return null;
+      });
+
+      // Get DOM nodes count
+      const domStats = await this.currentPage.evaluate(() => {
+        const allElements = document.querySelectorAll('*');
+        const documents = document.querySelectorAll('iframe').length + 1; // Main document + iframes
+        return {
+          nodeCount: allElements.length,
+          documentCount: documents
+        };
+      });
+
+      if (!heapUsage) {
+        return null;
+      }
+
+      return {
+        heapUsedMB: Math.round((heapUsage.usedJSHeapSize / 1024 / 1024) * 10) / 10,
+        heapTotalMB: Math.round((heapUsage.totalJSHeapSize / 1024 / 1024) * 10) / 10,
+        domNodes: domStats.nodeCount,
+        domDocuments: domStats.documentCount
+      };
+    } catch (error) {
+      console.debug('Failed to collect browser memory data:', error);
+      return null;
+    }
+  }
+
+  recordBrowserMemory(heapUsedMB: number, heapTotalMB: number, domNodes: number, domDocuments: number): void {
+    if (this.enabled) {
+      // Store snapshots for averaging
+      this.browserHeapSnapshots.push(heapUsedMB);
+      this.domNodesSnapshots.push(domNodes);
+
+      // Update peaks
+      if (heapUsedMB > this.metrics.peakBrowserHeapMB) {
+        this.metrics.peakBrowserHeapMB = heapUsedMB;
+      }
+      if (domNodes > this.metrics.peakDomNodes) {
+        this.metrics.peakDomNodes = domNodes;
+      }
+
+      // Keep only last 20 snapshots
+      if (this.browserHeapSnapshots.length > 20) {
+        this.browserHeapSnapshots.shift();
+        this.domNodesSnapshots.shift();
+      }
+
+      // Calculate averages
+      this.metrics.avgBrowserHeapMB = this.browserHeapSnapshots.reduce((sum, heap) => sum + heap, 0) / this.browserHeapSnapshots.length;
+      this.metrics.avgDomNodes = this.domNodesSnapshots.reduce((sum, nodes) => sum + nodes, 0) / this.domNodesSnapshots.length;
+
+      // Update the latest sample with browser memory data if it exists
+      if (this.metrics.samples.length > 0) {
+        const latestSample = this.metrics.samples[this.metrics.samples.length - 1];
+        latestSample.browserHeapUsedMB = Math.round(heapUsedMB * 10) / 10;
+        latestSample.browserHeapTotalMB = Math.round(heapTotalMB * 10) / 10;
+        latestSample.domNodes = domNodes;
+        latestSample.domDocuments = domDocuments;
+      }
     }
   }
 
@@ -159,20 +302,34 @@ export class CIPerformanceMonitor {
     }
 
     const duration = (Date.now() - this.metrics.startTime) / 1000;
-    const optimizerStatus = this.metrics.memoryOptimizerEnabled ? 'ON' : 'OFF';
     
-    return `
+    let summary = `
 📊 Performance Summary:
 ⏱️  Duration: ${duration.toFixed(1)}s
 🧪 Tests: ${this.metrics.testCount}
 💾 Peak Memory: ${this.metrics.peakMemoryMB.toFixed(1)}MB
 📈 Avg Memory: ${this.metrics.avgMemoryMB.toFixed(1)}MB
 ⚡ Peak CPU: ${this.metrics.peakCpuPercent.toFixed(1)}%
-🔄 Avg CPU: ${this.metrics.avgCpuPercent.toFixed(1)}%
-🔧 Memory Optimizer: ${optimizerStatus}
+🔄 Avg CPU: ${this.metrics.avgCpuPercent.toFixed(1)}%`;
+
+    // Add browser memory stats if available
+    if (this.metrics.peakBrowserHeapMB > 0) {
+      summary += `
+🌐 Peak Browser Heap: ${this.metrics.peakBrowserHeapMB.toFixed(1)}MB
+📊 Avg Browser Heap: ${this.metrics.avgBrowserHeapMB.toFixed(1)}MB`;
+    }
+
+    if (this.metrics.peakDomNodes > 0) {
+      summary += `
+📄 Peak DOM Nodes: ${this.metrics.peakDomNodes}
+📋 Avg DOM Nodes: ${Math.round(this.metrics.avgDomNodes)}`;
+    }
+
+    summary += `
 🗑️  GC Triggers: ${this.metrics.gcCount}
-🧹 Cleanups: ${this.metrics.cleanupCount}
-    `.trim();
+🧹 Cleanups: ${this.metrics.cleanupCount}`;
+
+    return summary.trim();
   }
 
   async generateHtmlReport(outputDir: string = 'test-results'): Promise<string | null> {
@@ -191,6 +348,8 @@ export class CIPerformanceMonitor {
   }
 
   dispose(): void {
+    if (this.isDisposed) return;
+
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
@@ -201,10 +360,13 @@ export class CIPerformanceMonitor {
       this.consoleInterval = null;
     }
 
-    if (this.enabled) {
+    if (this.enabled && !this.summaryPrinted) {
       console.log(this.generateSummary());
+      this.summaryPrinted = true;
       // Note: HTML report generation is now handled by TestRunner to ensure it completes
     }
+
+    this.isDisposed = true;
   }
 }
 

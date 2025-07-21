@@ -6,6 +6,7 @@
 import { Browser, BrowserContext, Page, chromium, firefox, webkit } from 'playwright';
 import type { BrowserConfig } from '../types/browser.js';
 import { globalLogger } from '../../core/logger.js';
+import { ciPerformanceMonitor } from '../../core/ci-performance.js';
 
 export interface BrowserManagerConfig {
   browser: BrowserConfig;
@@ -55,6 +56,9 @@ export class BrowserManager {
 
     // Setup page event handlers
     this.setupPageEventHandlers();
+
+    // Set current page for performance monitoring
+    ciPerformanceMonitor.setCurrentPage(this.page);
 
     this.logger.info('Browser initialized successfully');
   }
@@ -478,14 +482,14 @@ export class BrowserManager {
    */
   private getLaunchOptions() {
     const options: any = {
-      headless: this.config.browser.headless,
+      headless: process.env.CI ? true : this.config.browser.headless, // Force headless in CI environments
       args: [
         '--window-size=1300,750',  // Small window size (slightly bigger than viewport for window chrome)
         '--disable-web-security',
       ],
     };
 
-    // CI-specific optimizations (opt-in via environment variables)
+    // CI-specific basic settings
     if (process.env.CI) {
       options.args.push(
         '--no-sandbox',
@@ -493,27 +497,10 @@ export class BrowserManager {
         '--disable-dev-shm-usage',
         '--disable-gpu',
         '--no-first-run',
-        '--no-zygote',
-        '--single-process', // Reduce memory usage in CI
+        '--no-zygote'
+        // Removed --single-process as it causes issues with multi-context tests
       );
 
-      // Additional memory optimizations if enabled
-      if (process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true') {
-        options.args.push(
-          '--memory-pressure-off',
-          '--max_old_space_size=2048',
-          '--disable-background-timer-throttling',
-          '--disable-backgrounding-occluded-windows',
-          '--disable-renderer-backgrounding'
-        );
-        this.logger.debug('Memory optimizer enabled for CI');
-      }
-
-      // Disable images if enabled (significant performance boost)
-      if (process.env.ENDORPHIN_DISABLE_IMAGES === 'true') {
-        options.args.push('--blink-settings=imagesEnabled=false');
-        this.logger.debug('Image loading disabled for CI performance');
-      }
     }
 
     if (this.config.browser.slowMo !== undefined) {
@@ -552,18 +539,6 @@ export class BrowserManager {
         options.recordHar = undefined;
       }
 
-      // Additional resource optimizations if enabled
-      if (process.env.ENDORPHIN_DISABLE_IMAGES === 'true') {
-        options.serviceWorkers = 'block';
-        options.javaScriptEnabled = true; // Keep JS enabled for functionality
-        this.logger.debug('Service workers blocked for CI performance');
-      }
-
-      // Memory-conscious screenshot settings
-      if (process.env.ENDORPHIN_MEMORY_OPTIMIZER === 'true') {
-        options.screenshot = { mode: 'only-on-failure', fullPage: false };
-        this.logger.debug('Screenshot optimization enabled for CI');
-      }
     }
 
     // Apply original video recording if configured

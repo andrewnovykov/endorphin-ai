@@ -201,6 +201,6 @@ jobs:
               issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 📊 Test Reports Published!\n\n🔗 **View Reports**: ${reportUrl}\n\n- 🧪 Test execution reports with screenshots\n- 📈 Performance monitoring reports\n- 💾 Memory optimization metrics\n\nReports are automatically updated after each test run.`
+              body: `## 📊 Test Reports Published!\n\n🔗 **View Reports**: ${reportUrl}\n\n- 🧪 Test execution reports with screenshots\n- 📈 Performance monitoring reports\n\nReports are automatically updated after each test run.`
             });
           }

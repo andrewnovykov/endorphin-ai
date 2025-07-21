@@ -16,8 +16,6 @@ export interface FrameworkConfig {
   dataDirectory: string;
   resultsDirectory: string;
   environment: 'development' | 'staging' | 'production';
-  parallel: number;
-  maxRetries: number;
   baseUrl?: string;
   globalSetup?: string; // Path to global setup file
   [key: string]: any; // Allow dynamic access
@@ -25,8 +23,6 @@ export interface FrameworkConfig {
 
 export interface ExecutionConfig {
   timeout: number;
-  parallel: boolean;
-  retries: number;
 }
 
 export interface ResultsConfig {

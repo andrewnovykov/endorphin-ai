@@ -57,15 +57,11 @@ export class FrameworkManager {
       },
       execution: {
         timeout: 30000,
-        parallel: false,
-        retries: 0,
       } as ExecutionConfig,
       testsDirectory: 'tests',
       dataDirectory: 'test-data',
       resultsDirectory: 'test-results',
       environment: 'development' as const,
-      parallel: 1,
-      maxRetries: 0,
     };
 
     // Deep merge: defaults first, then user config for nested objects
@@ -82,8 +78,6 @@ export class FrameworkManager {
       },
       execution: {
         timeout: config.execution?.timeout ?? 30000,
-        parallel: config.execution?.parallel ?? false,
-        retries: config.execution?.retries ?? 0,
       },
     };
 
@@ -338,8 +332,6 @@ export class FrameworkManager {
       },
       execution: {
         timeout: this.config.execution?.timeout || 30000,
-        parallel: this.config.execution?.parallel || false,
-        retries: this.config.execution?.retries || 0,
         ...this.config.execution,
         ...(updates.execution || {}),
       },
@@ -408,7 +400,6 @@ export class FrameworkManager {
     };
     features: {
       interactiveMode: boolean;
-      parallelExecution: boolean;
     };
   } {
     return {
@@ -423,7 +414,6 @@ export class FrameworkManager {
       },
       features: {
         interactiveMode: this.isInteractiveMode,
-        parallelExecution: this.config.execution?.parallel || false,
       },
     };
   }

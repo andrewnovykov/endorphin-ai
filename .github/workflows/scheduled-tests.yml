@@ -66,12 +66,10 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         CI: true
         HEADLESS: true
-        ENDORPHIN_MEMORY_OPTIMIZER: true
-        ENDORPHIN_DISABLE_IMAGES: true
         ENDORPHIN_PERF_MONITORING: true
       run: |
         echo "🌙 Running nightly smoke tests..."
-        npx endorphin-ai run test --tag smoke --parallel 2
+        npx endorphin-ai run test --tag smoke
       timeout-minutes: 20
       continue-on-error: true
 
@@ -80,12 +78,10 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         CI: true
         HEADLESS: true
-        ENDORPHIN_MEMORY_OPTIMIZER: true
-        ENDORPHIN_DISABLE_IMAGES: true
         ENDORPHIN_PERF_MONITORING: true
       run: |
         echo "🔥 Running high priority tests..."
-        npx endorphin-ai run test --priority High --parallel 2
+        npx endorphin-ai run test --priority High
       timeout-minutes: 30
 
     - name: Upload test results

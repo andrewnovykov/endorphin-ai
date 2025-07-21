@@ -74,7 +74,7 @@ export async function handleTestCommand(
   args: string[],
   target: string | undefined,
   config: FrameworkConfig,
-  options: { parallel?: number } = {}
+  options: Record<string, any> = {}
 ): Promise<void> {
   if (args.includes('--tag')) {
     return handleTestByTag(args, config, options);
@@ -85,11 +85,9 @@ export async function handleTestCommand(
   }
 
   if (target === 'all') {
-    const parallelInfo =
-      options.parallel && options.parallel > 1 ? ` with ${options.parallel} workers` : '';
-    console.log(`🚀 Running all tests${parallelInfo}...`);
+    console.log('🚀 Running all tests...');
     const { runAllTests } = await import('../framework/execution/discovery/cli-functions.js');
-    await runAllTests(config, options);
+    await runAllTests(config);
     process.exit(0);
   }
 
@@ -163,7 +161,7 @@ export async function handleOpenCommand(subcommand: string, target?: string): Pr
 async function handleTestByTag(
   args: string[],
   config: FrameworkConfig,
-  options: { parallel?: number } = {}
+  _options: Record<string, any> = {}
 ): Promise<void> {
   const tagIndex = args.indexOf('--tag');
   if (tagIndex === -1 || !args[tagIndex + 1]) {
@@ -172,12 +170,10 @@ async function handleTestByTag(
   }
 
   const tag = args[tagIndex + 1];
-  const parallelInfo =
-    options.parallel && options.parallel > 1 ? ` with ${options.parallel} workers` : '';
-  console.log(`🏷️ Running tests with tag: ${tag}${parallelInfo}`);
+  console.log(`🏷️ Running tests with tag: ${tag}`);
 
   const { runTestsByTag } = await import('../framework/execution/discovery/cli-functions.js');
-  await runTestsByTag(tag, config, options);
+  await runTestsByTag(tag, config);
   process.exit(0);
 }
 
@@ -187,7 +183,7 @@ async function handleTestByTag(
 async function handleTestByPriority(
   args: string[],
   config: FrameworkConfig,
-  options: { parallel?: number } = {}
+  _options: Record<string, any> = {}
 ): Promise<void> {
   const priorityIndex = args.indexOf('--priority');
   if (priorityIndex === -1 || !args[priorityIndex + 1]) {
@@ -196,11 +192,9 @@ async function handleTestByPriority(
   }
 
   const priority = args[priorityIndex + 1];
-  const parallelInfo =
-    options.parallel && options.parallel > 1 ? ` with ${options.parallel} workers` : '';
-  console.log(`🎯 Running tests with priority: ${priority}${parallelInfo}`);
+  console.log(`🎯 Running tests with priority: ${priority}`);
 
   const { runTestsByPriority } = await import('../framework/execution/discovery/cli-functions.js');
-  await runTestsByPriority(priority, config, options);
+  await runTestsByPriority(priority, config);
   process.exit(0);
 }

@@ -6,7 +6,7 @@
 import { resolve } from 'path';
 import type { DiscoveryResult, FrameworkConfig, TestConfig } from '../../types/index.js';
 import { TestRunner } from '../runner/test-runner.js';
-import type { DiscoveredTest, TestExecutionOptions } from './discovery-types.js';
+import type { DiscoveredTest } from './discovery-types.js';
 import { TestDiscoverer } from './test-discoverer.js';
 
 // Standalone functions for CLI usage
@@ -48,50 +48,22 @@ function safeExit(code: number): never {
  * Find a single test without full discovery (optimized for single test runs)
  */
 async function findSingleTest(testId: string, config: FrameworkConfig | null = null): Promise<DiscoveredTest | null> {
-  const testsDirectory = resolve(process.cwd(), config?.testsDirectory || 'tests');
+  // Use the full discovery system to ensure recursive search works
+  const discovery = await ensureDiscovery(config);
+  const test = discovery.getTest(testId);
   
-  try {
-    // Try to find the test file by common naming patterns
-    const possibleFiles = [
-      `${testId}.ts`,
-      `${testId}.js`,
-      `${testId.toLowerCase()}.ts`,
-      `${testId.toLowerCase()}.js`,
-    ];
-    
-    const { readdir } = await import('fs/promises');
-    const files = await readdir(testsDirectory);
-    
-    // First try exact file matches
-    for (const possibleFile of possibleFiles) {
-      if (files.includes(possibleFile)) {
-        console.log(`🔍 Loading test from: ${possibleFile}`);
-        return await loadSingleTestFile(possibleFile, testsDirectory, testId);
-      }
-    }
-    
-    // If not found by filename, scan all test files for the testId
-    console.log(`🔍 Scanning for test ID: ${testId}`);
-    const testFiles = files.filter(file => file.endsWith('.ts') || file.endsWith('.js'));
-    
-    for (const file of testFiles) {
-      const test = await loadSingleTestFile(file, testsDirectory, testId);
-      if (test) {
-        return test;
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.error(`❌ Error searching for test ${testId}:`, error);
-    return null;
+  if (test) {
+    console.log(`🔍 Found test ${testId} in: ${test.sourceFile}`);
+    return test;
   }
+  
+  return null;
 }
 
 /**
  * Load a single test file and check if it contains the target test ID
  */
-async function loadSingleTestFile(filename: string, testsDirectory: string, targetTestId: string): Promise<DiscoveredTest | null> {
+async function _loadSingleTestFile(filename: string, testsDirectory: string, targetTestId: string): Promise<DiscoveredTest | null> {
   try {
     const filePath = resolve(testsDirectory, filename);
     const { pathToFileURL } = await import('url');
@@ -248,8 +220,7 @@ export async function runSingleTestById(
  */
 export async function runTestsByTag(
   tag: string,
-  config: FrameworkConfig | null = null,
-  options: { parallel?: number } = {}
+  config: FrameworkConfig | null = null
 ): Promise<DiscoveryResult> {
   // Execute global setup first, before any test discovery or framework initialization
   await executeGlobalSetupOnce(config);
@@ -292,12 +263,7 @@ export async function runTestsByTag(
   }
 
   const runner = new TestRunner(config);
-  const executionOptions: TestExecutionOptions = {
-    parallel: (options.parallel || 1) > 1,
-    workers: options.parallel || 1,
-  };
-
-  return runner.runTests(testsToRun, executionOptions);
+  return runner.runTests(testsToRun);
 }
 
 /**
@@ -305,8 +271,7 @@ export async function runTestsByTag(
  */
 export async function runTestsByPriority(
   priority: string,
-  config: FrameworkConfig | null = null,
-  options: { parallel?: number } = {}
+  config: FrameworkConfig | null = null
 ): Promise<DiscoveryResult> {
   // Execute global setup first, before any test discovery or framework initialization
   await executeGlobalSetupOnce(config);
@@ -349,20 +314,14 @@ export async function runTestsByPriority(
   }
 
   const runner = new TestRunner(config);
-  const executionOptions: TestExecutionOptions = {
-    parallel: (options.parallel || 1) > 1,
-    workers: options.parallel || 1,
-  };
-
-  return runner.runTests(testsToRun, executionOptions);
+  return runner.runTests(testsToRun);
 }
 
 /**
  * Run all tests
  */
 export async function runAllTests(
-  config: FrameworkConfig | null = null,
-  options: { parallel?: number } = {}
+  config: FrameworkConfig | null = null
 ): Promise<DiscoveryResult> {
   // Execute global setup first, before any test discovery or framework initialization
   await executeGlobalSetupOnce(config);
@@ -398,12 +357,7 @@ export async function runAllTests(
   }
 
   const runner = new TestRunner(config);
-  const executionOptions: TestExecutionOptions = {
-    parallel: (options.parallel || 1) > 1,
-    workers: options.parallel || 1,
-  };
-
-  return runner.runTests(testsToRun, executionOptions);
+  return runner.runTests(testsToRun);
 }
 
 /**

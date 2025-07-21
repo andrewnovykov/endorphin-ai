@@ -57,8 +57,6 @@ describe('Global Setup Integration', () => {
         dataDirectory: 'data',
         resultsDirectory: 'results',
         environment: 'development',
-        parallel: 1,
-        maxRetries: 0,
       });
 
       const config = configManager.getConfig();
@@ -88,8 +86,6 @@ describe('Global Setup Integration', () => {
         dataDirectory: 'data',
         resultsDirectory: 'results',
         environment: 'development',
-        parallel: 1,
-        maxRetries: 0,
       });
 
       const config = configManager.getConfig();
@@ -119,8 +115,6 @@ describe('Global Setup Integration', () => {
         dataDirectory: 'data',
         resultsDirectory: 'results',
         environment: 'development',
-        parallel: 1,
-        maxRetries: 0,
       });
 
       const config = configManager.getConfig();

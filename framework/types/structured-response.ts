@@ -9,11 +9,10 @@ import { z } from 'zod';
  * Step execution status enum
  */
 export const StepStatus = z.enum([
-  'starting',     // Step is beginning
-  'in_progress',  // Step is currently executing
-  'completed',    // Step completed successfully
-  'failed',       // Step failed after retries
-  'retrying'      // Step failed, attempting retry
+  'starting', // Step is beginning
+  'in_progress', // Step is currently executing
+  'completed', // Step completed successfully
+  'failed', // Step failed
 ]);
 
 export type StepStatusType = z.infer<typeof StepStatus>;
@@ -22,10 +21,9 @@ export type StepStatusType = z.infer<typeof StepStatus>;
  * Agent action types
  */
 export const AgentAction = z.enum([
-  'execute_step',    // Execute a test step
-  'retry_step',      // Retry a failed step
-  'complete_test',   // Test is complete
-  'error'           // Error occurred
+  'execute_step', // Execute a test step
+  'complete_test', // Test is complete
+  'error', // Error occurred
 ]);
 
 export type AgentActionType = z.infer<typeof AgentAction>;
@@ -40,11 +38,9 @@ export const StepExecutionResponse = z.object({
   stepDescription: z.string(),
   status: StepStatus,
   message: z.string(),
-  attemptNumber: z.number().int().positive().optional(),
-  maxAttempts: z.number().int().positive().optional(),
   isComplete: z.boolean(),
   toolCalls: z.array(z.string()).optional(),
-  errorDetails: z.string().optional()
+  errorDetails: z.string().optional(),
 });
 
 export type StepExecutionResponseType = z.infer<typeof StepExecutionResponse>;
@@ -60,7 +56,7 @@ export const TestCompletionResponse = z.object({
   message: z.literal('test completed successfully'),
   summary: z.string(),
   duration: z.number().optional(),
-  errors: z.array(z.string()).optional()
+  errors: z.array(z.string()).optional(),
 });
 
 export type TestCompletionResponseType = z.infer<typeof TestCompletionResponse>;
@@ -68,10 +64,7 @@ export type TestCompletionResponseType = z.infer<typeof TestCompletionResponse>;
 /**
  * Union type for all possible structured responses
  */
-export const StructuredResponse = z.union([
-  StepExecutionResponse,
-  TestCompletionResponse
-]);
+export const StructuredResponse = z.union([StepExecutionResponse, TestCompletionResponse]);
 
 export type StructuredResponseType = z.infer<typeof StructuredResponse>;
 
@@ -83,14 +76,12 @@ You must respond with a valid JSON object that matches one of these schemas:
 
 FOR STEP EXECUTION:
 {
-  "action": "execute_step" | "retry_step" | "error",
+  "action": "execute_step" | "error",
   "stepNumber": number,
   "totalSteps": number,
   "stepDescription": "description of current step",
-  "status": "starting" | "in_progress" | "completed" | "failed" | "retrying",
+  "status": "starting" | "in_progress" | "completed" | "failed",
   "message": "human readable message about step progress",
-  "attemptNumber": number (optional, for retries),
-  "maxAttempts": number (optional, for retries),
   "isComplete": boolean (true only if this is the final step),
   "toolCalls": ["tool1", "tool2"] (optional),
   "errorDetails": "error description" (optional)
@@ -113,7 +104,6 @@ CRITICAL RULES:
 2. Use "complete_test" action ONLY after completing ALL steps
 3. Set "isComplete": true ONLY for the final step
 4. Include step progress in every response
-5. For retries, increment "attemptNumber"
 `;
 
 /**
@@ -130,9 +120,10 @@ export function validateStructuredResponse(response: unknown): {
     const parsed = StructuredResponse.parse(response);
     return { isValid: true, data: parsed };
   } catch (error) {
-    const errorMessage = error instanceof z.ZodError 
-      ? error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
-      : String(error);
+    const errorMessage =
+      error instanceof z.ZodError
+        ? error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
+        : String(error);
     return { isValid: false, error: errorMessage };
   }
 }
@@ -148,23 +139,19 @@ export function createStepResponse(params: {
   stepDescription: string;
   status: StepStatusType;
   message: string;
-  attemptNumber?: number;
-  maxAttempts?: number;
   toolCalls?: string[];
   errorDetails?: string;
 }): StepExecutionResponseType {
   return {
-    action: params.status === 'retrying' ? 'retry_step' : 'execute_step',
+    action: 'execute_step',
     stepNumber: params.stepNumber,
     totalSteps: params.totalSteps,
     stepDescription: params.stepDescription,
     status: params.status,
     message: params.message,
-    attemptNumber: params.attemptNumber,
-    maxAttempts: params.maxAttempts,
     isComplete: params.stepNumber === params.totalSteps && params.status === 'completed',
     toolCalls: params.toolCalls,
-    errorDetails: params.errorDetails
+    errorDetails: params.errorDetails,
   };
 }
 
@@ -189,6 +176,6 @@ export function createCompletionResponse(params: {
     message: 'test completed successfully',
     summary: params.summary,
     duration: params.duration,
-    errors: params.errors
+    errors: params.errors,
   };
 }

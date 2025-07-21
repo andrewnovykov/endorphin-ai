@@ -2,7 +2,7 @@ export default {
   // Browser configuration
   browser: {
     type: 'chromium',
-    headless: false, // Set to true for faster execution in CI/CD
+    headless: false, // Set to true for faster execution, automatically forced to true in CI environments
     viewport: { width: 1280, height: 720 },
     timeout: 30000,
     devtools: false,
@@ -60,8 +60,6 @@ export default {
   // Execution configuration
   execution: {
     timeout: 30000,
-    parallel: false,
-    retries: 0,
   },
 
   // Directory configuration
@@ -71,8 +69,6 @@ export default {
 
   // Environment
   environment: 'development',
-  parallel: 1,
-  maxRetries: 0,
 
   // Base URL for relative navigation (optional)
   // baseUrl: 'https://your-app.com',
@@ -81,7 +77,7 @@ export default {
 // 🎯 Configuration Tips:
 //
 // Browser Settings:
-// - Set headless: true for faster execution in CI/CD
+// - Set headless: true for faster execution (automatically enabled in CI/CD)
 // - Increase timeout for slow websites
 // - Change viewport for mobile testing
 // - Use 'firefox' or 'webkit' for cross-browser testing

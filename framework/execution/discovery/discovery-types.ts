@@ -20,7 +20,7 @@ export interface DiscoveryConfig {
   testsDirectory?: string;
   includePatterns?: string[];
   excludePatterns?: string[];
-  maxConcurrency?: number;
+  maxConcurrency?: number; // Maximum concurrent file loading (also matches max multi-user limit of 5)
   enableTypeScript?: boolean;
 }
 
@@ -49,11 +49,8 @@ export interface TestFileResult {
  * Test execution options
  */
 export interface TestExecutionOptions {
-  parallel?: boolean;
-  workers?: number;
   includeQuarantined?: boolean;
   timeout?: number;
-  retries?: number;
 }
 
 /**

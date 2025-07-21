@@ -20,7 +20,6 @@ export const TIMEOUTS = {
 // Resource limits
 export const LIMITS = {
   MAX_CONTENT_LENGTH: 8000,
-  MAX_RETRY_ATTEMPTS: 3,
   MAX_SNAPSHOTS: 50,
   MAX_TOKENS: 8000,
   MAX_SCREENSHOTS: 100,
@@ -91,7 +90,6 @@ export const NETWORK = {
 
 // Test execution configuration
 export const TEST_EXECUTION = {
-  MAX_PARALLEL_TESTS: 5,
   DEFAULT_PRIORITY: 'medium',
   VALID_PRIORITIES: ['low', 'medium', 'high', 'critical'] as const,
   VALID_STATUSES: ['pending', 'running', 'passed', 'failed', 'skipped'] as const,
@@ -113,9 +111,6 @@ export const FILE_SYSTEM = {
 export const ERROR_HANDLING = {
   MAX_STACK_TRACE_LENGTH: 1000,
   MAX_ERROR_MESSAGE_LENGTH: 500,
-  RETRY_BACKOFF_MULTIPLIER: 2,
-  INITIAL_RETRY_DELAY: 100,
-  MAX_RETRY_DELAY: 5000,
 } as const;
 
 // Performance thresholds

@@ -3,7 +3,6 @@
  * Provides all LangChain tools for browser automation
  */
 
-import { createContentOptimizationTool } from './content-optimization.js';
 import { createGetPageContentTool, createGetSimplePageContentTool } from './content.js';
 import { createDifferentialContentTool } from './differential-content.js';
 import { 
@@ -34,11 +33,10 @@ export function createAllTools(framework: any): any[] {
     // Navigation tools
     createNavigationTool(framework),
 
-    // Content analysis tools (optimized & differential)
+    // Content analysis tools
     createDifferentialContentTool(framework), // Primary: differential snapshots
-    createGetPageContentTool(framework), // Fallback: uses automatic optimization
+    createGetPageContentTool(framework), // Standard content extraction
     createGetSimplePageContentTool(framework), // Simple content extraction
-    createContentOptimizationTool(framework), // Direct access to optimization
 
     // Interaction tools
     createClickTool(framework),

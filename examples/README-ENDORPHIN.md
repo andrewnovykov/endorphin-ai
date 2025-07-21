@@ -145,7 +145,7 @@ export default {
 
   ai: {
     model: 'gpt-4o', // AI model to use
-    maxRetries: 3, // Retry failed tests
+    maxRetries: 3, // Retry failed AI API calls
     temperature: 0.1, // Low randomness
   },
 };
