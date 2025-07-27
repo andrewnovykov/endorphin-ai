@@ -26,7 +26,7 @@ comprehensive test management.
 ## 🎬 Watch Demo
 
 <div align="center">
-  <a href="https://youtu.be/ev_71RBO6g8?si=F9xTPSJNp36Mr1wx" target="_blank">
+  <a href="https://youtu.be/X7fe1FI67gE?si=-rCvzNZKcHSGyEAR" target="_blank">
     <img src="https://img.shields.io/badge/🎬_WATCH_DEMO-FF0000?style=for-the-badge&logo=youtube&logoColor=white&labelColor=000000&scale=1.5" alt="Watch Demo" style="transform: scale(1.5); margin: 20px 0;" width="300" />
   </a>
   <br />
