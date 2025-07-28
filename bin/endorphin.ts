@@ -99,6 +99,7 @@ const FLAG_PARSERS: Record<string, FlagParser> = {
     }
     return {};
   },
+  '--jira-sync': () => ({ jiraSync: true }),
 };
 
 /**
@@ -142,6 +143,7 @@ Commands:
   run test all                   Run all tests
   run test --tag <tag>           Run tests by tag (e.g., authentication)
   run test --priority <level>    Run tests by priority (High, Medium, Low)
+  run test --jira-sync           Sync tests from JIRA before running
   run test-recorder              Start interactive test recorder
   list                           List all available tests
   list tools                     List all available built-in tools
@@ -159,6 +161,7 @@ Options:
   --timeout <ms>         Set test timeout in milliseconds
   --model <n>         Set AI model to use (e.g., gpt-4o-mini)
   --env <environment>    Set environment (development/staging/production)
+  --jira-sync            Sync tests from JIRA before running
 
 Examples:
   endorphin init                               # Set up new project
@@ -166,6 +169,7 @@ Examples:
   endorphin run test all --headless            # Run all tests headless
   endorphin run test --tag smoke               # Run smoke tests
   endorphin run test --priority High --env staging # Run high priority tests on staging
+  endorphin run test --jira-sync               # Sync JIRA tests and run all
   endorphin run test-recorder                  # Start test recorder
   endorphin list                               # Show all available tests
   endorphin list tools                         # Show all available built-in tools

@@ -1,0 +1,15 @@
+{
+  "id": "10006",
+  "key": "QE-1",
+  "summary": "Login with Credentials",
+  "description": "@DATA('Generate realistic test user credentials')\nemail: valid email address for testing\npassword: simple password for testing\nusername: simple for username testing\n\n@STEPS\n@USER1\nNavigate to <https://qafromla.herokuapp.com/>\nClick on \"LogIn\" button\nWait 2 seconds for page load\nEnter ${data.email} in the email field\nWait 2 seconds\nEnter ${data.password} in the password field\nClick \"Sign In\" button\nVerify “Email not found sign in first” is visible on page",
+  "issueType": "Test Case",
+  "status": "To Do",
+  "labels": [
+    "ai-test-case"
+  ],
+  "created": "2025-07-24T19:25:07.850-0700",
+  "updated": "2025-07-27T19:07:28.903-0700",
+  "fetchedAt": "2025-07-28T02:07:59.780Z",
+  "source": "jira-api"
+}

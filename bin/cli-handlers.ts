@@ -76,6 +76,22 @@ export async function handleTestCommand(
   config: FrameworkConfig,
   options: Record<string, any> = {}
 ): Promise<void> {
+  // Handle JIRA sync if requested
+  if (args.includes('--jira-sync')) {
+    console.log('🔄 JIRA sync requested, syncing tests first...');
+    const { JiraSyncCommand } = await import('../framework/cli/jira-sync-command.js');
+    const syncResult = await JiraSyncCommand.execute();
+    
+    if (!syncResult.success) {
+      console.error('❌ JIRA sync failed, aborting test run');
+      console.error('Errors:', syncResult.errors);
+      process.exit(1);
+    }
+    
+    console.log(`✅ JIRA sync completed: ${syncResult.testsGenerated} tests generated`);
+    console.log('📝 Proceeding with test execution...\n');
+  }
+
   if (args.includes('--tag')) {
     return handleTestByTag(args, config, options);
   }

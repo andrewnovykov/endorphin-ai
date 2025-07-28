@@ -44,6 +44,17 @@ export default {
     // }
   },
 
+  // JIRA integration configuration (optional)
+  // Uncomment to enable JIRA test synchronization
+  // jira: {
+  //   url: 'https://yourcompany.atlassian.net',
+  //   email: 'your-email@company.com',
+  //   apiToken: 'your-api-token', // Create at: Account Settings > Security > API tokens
+  //   projectId: '10001', // Your JIRA project ID (numeric)
+  //   issueTypeId: '10013', // Issue type ID for test cases (e.g., "Test Case")
+  //   label: 'ai-test-case' // Label to filter test tickets
+  // },
+
   // Custom tools configuration
   customTools: [
     './tools', // Load all tools from the tools directory
@@ -92,6 +103,13 @@ export default {
 // - Add custom/private model pricing
 // - Set free pricing for local models
 // - Prices are per 1,000 tokens in USD
+//
+// JIRA Integration:
+// - Sync test cases from JIRA tickets automatically
+// - Use --jira-sync flag to fetch tests before running
+// - Tickets must contain @GENERATE.DATA and @USER1.PHASE1 blocks
+// - Tests are saved to tests/jira/ directory
+// - Alternative: use environment variables (JIRA_URL, JIRA_EMAIL, etc.)
 //
 // Custom Tools:
 // - Use './tools' to load all tools from directory

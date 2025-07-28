@@ -12,6 +12,7 @@ export interface FrameworkConfig {
   pricing?: PricingConfig; // Custom token pricing configuration
   execution?: ExecutionConfig;
   results?: ResultsConfig;
+  jira?: JiraConfig; // JIRA integration configuration
   testsDirectory: string;
   dataDirectory: string;
   resultsDirectory: string;
@@ -27,6 +28,34 @@ export interface ExecutionConfig {
 
 export interface ResultsConfig {
   directory?: string;
+}
+
+export interface JiraConfig {
+  url: string;
+  email: string;
+  apiToken: string;
+  projectId: string;
+  issueTypeId: string;
+  label: string;
+}
+
+export interface JiraTicket {
+  id: string;
+  key: string;
+  summary: string;
+  description: string;
+  issueType: string;
+  status: string;
+  labels: string[];
+  created: string;
+  updated: string;
+}
+
+export interface JiraSyncResult {
+  success: boolean;
+  ticketsFetched: number;
+  testsGenerated: number;
+  errors: string[];
 }
 
 /**

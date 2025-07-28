@@ -30,6 +30,15 @@ export default {
   environment: 'development',
 
   globalSetup: './global-setup.ts',
+
+  jira: {
+    url: 'https://qafromla.atlassian.net',
+    email: 'papapin777@gmail.com',
+    apiToken: process.env.JIRA_API_TOKEN,
+    projectId: '10001',
+    issueTypeId: '10013',
+    label: 'ai-test-case',
+  },
 };
 
 // 🎯 Configuration Tips:

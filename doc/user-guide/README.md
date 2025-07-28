@@ -41,6 +41,7 @@ npx endorphin generate report
 - **[Project-Setup-Guide.md](./Project-Setup-Guide.md)** - Complete project setup
 - **[Environment-Variables-Guide.md](./Environment-Variables-Guide.md)** - Environment configuration
 - **[Global-Setup-Guide.md](./Global-Setup-Guide.md)** - Run code before all tests
+- **[JIRA-Integration-Guide.md](./JIRA-Integration-Guide.md)** - Sync tests from JIRA tickets
 
 ### ✍️ Writing Tests
 
@@ -90,11 +91,12 @@ npx endorphin generate report
 **Goal**: Set up professional workflows and optimization
 
 1. [Environment-Variables-Guide.md](./Environment-Variables-Guide.md) - Advanced configuration
-2. [VSCode-Debugging-Guide.md](./VSCode-Debugging-Guide.md) - Development workflow
-3. [CI-CD-Setup-Guide.md](./CI-CD-Setup-Guide.md) - Automated testing
-4. **Performance optimization** and **cost management**
+2. [JIRA-Integration-Guide.md](./JIRA-Integration-Guide.md) - Sync tests from JIRA
+3. [VSCode-Debugging-Guide.md](./VSCode-Debugging-Guide.md) - Development workflow
+4. [CI-CD-Setup-Guide.md](./CI-CD-Setup-Guide.md) - Automated testing
+5. **Performance optimization** and **cost management**
 
-**Estimated time**: 4 hours
+**Estimated time**: 5 hours
 
 ## 🔧 Common Workflows
 
@@ -132,6 +134,17 @@ npx endorphin run test-recorder
 
 # 2. Add secrets (OPENAI_API_KEY)
 # 3. Tests run automatically on push
+```
+
+### Syncing Tests from JIRA
+
+```bash
+# 1. Configure JIRA credentials in .env
+# See: JIRA-Integration-Guide.md
+
+# 2. Format JIRA tickets with @DATA and @STEPS
+# 3. Sync and run JIRA tests
+npx endorphin run test --jira-sync TICKET-001
 ```
 
 ## 🆕 What's New in v0.9.0
@@ -197,6 +210,7 @@ npx endorphin list             # List available tests
 npx endorphin run test TEST-ID  # Run specific test
 npx endorphin run test all      # Run all tests
 npx endorphin run test --tag smoke  # Run tests by tag
+npx endorphin run test --jira-sync TICKET-ID  # Sync and run JIRA test
 
 # Test Creation
 npx endorphin run test-recorder # Interactive test recording
@@ -223,6 +237,14 @@ OPENAI_API_KEY=your_api_key_here
 HEADLESS=true                   # Run in headless mode
 BASE_URL=https://myapp.com     # Override test URLs
 ENDORPHIN_DEBUG=verbose        # Enable debug output
+
+# JIRA Integration (optional)
+JIRA_URL=https://company.atlassian.net
+JIRA_EMAIL=user@company.com
+JIRA_API_TOKEN=your_token_here
+JIRA_PROJECT_ID=10001
+JIRA_ISSUE_TYPE_ID=10013
+JIRA_LABEL=ai-test-case
 ```
 
 ## 🆘 Need Help?
