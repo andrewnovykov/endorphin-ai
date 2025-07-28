@@ -112,9 +112,9 @@ export class JiraConverter {
       .map(user => user.trim())
       .filter(user => user)
       .map(user => {
-        // Remove @ prefix and convert to lowercase
+        // Remove @ prefix but keep hyphens and original case for pattern matching
         const cleanUser = user.startsWith('@') ? user.substring(1) : user;
-        return cleanUser.toLowerCase().replace(/[^a-z0-9]/g, ''); // Remove special chars
+        return cleanUser.toLowerCase(); // Keep hyphens: admin-1, user1, etc.
       })
       .filter(user => user); // Remove empty strings
 
@@ -219,8 +219,11 @@ export class JiraConverter {
     
     // If we have declared users, look for role-based patterns like @ADMIN.PHASE1, @SELLER.PHASE1
     if (declaredUsers && declaredUsers.length > 0) {
-      // Create pattern for declared user roles
-      const userRolePattern = declaredUsers.map(user => user.toUpperCase()).join('|');
+      // Create pattern for declared user roles - need to escape special regex characters like hyphens
+      const userRolePattern = declaredUsers.map(user => {
+        // Escape special regex characters but preserve the original case and hyphens
+        return user.toUpperCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }).join('|');
       const roleRegex = new RegExp(`@(${userRolePattern})(?:\\.PHASE(\\d+))?([\s\S]*?)(?=@(?:${userRolePattern})|$)`, 'g');
       
       let match;
@@ -523,7 +526,9 @@ export class JiraConverter {
         const declaredUsers = this.extractUsersSection(ticket.description);
         if (declaredUsers && declaredUsers.length > 0) {
           for (const user of declaredUsers) {
-            const userPattern = new RegExp(`@${user.toUpperCase()}(?:\\.PHASE\\d+)?`, 'i');
+            // Escape special regex characters in user names (like hyphens)
+            const escapedUser = user.toUpperCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const userPattern = new RegExp(`@${escapedUser}(?:\\.PHASE\\d+)?`, 'i');
             if (!userPattern.test(ticket.description)) {
               errors.push(`Declared user @${user.toUpperCase()} not found in @STEPS section`);
             }

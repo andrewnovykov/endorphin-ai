@@ -566,3 +566,18 @@ body {
     margin-bottom: 1rem !important;
   }
 }
+
+/* Purple color for duration card */
+.text-purple {
+  color: #6f42c1 !important;
+}
+
+/* Sortable table headers */
+.sortable {
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.sortable:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}

@@ -203,6 +203,11 @@ export class HtmlGenerator {
     const totalCost = data.testResults.reduce((total: number, result: ParsedTestResult) => {
       return total + (result.tokenSummary?.totalCost || 0);
     }, 0);
+    
+    // Calculate total duration from all results
+    const totalDuration = data.testResults.reduce((total: number, result: ParsedTestResult) => {
+      return total + (result.duration || 0);
+    }, 0);
 
     // Replace summary data
     const replacements = {
@@ -213,6 +218,7 @@ export class HtmlGenerator {
       '{{successRate}}': data.summary.successRate.toFixed(1),
       '{{totalTokens}}': totalTokens.toLocaleString(),
       '{{totalCost}}': totalCost.toFixed(4),
+      '{{totalDuration}}': this.formatDuration(totalDuration),
       '{{generatedAt}}': new Date().toLocaleString(),
       '{{testStatsTable}}': this.generateTestStatsTable(data.testResults),
       '{{recentResultsTable}}': this.generateRecentResultsTable(data.testResults),
@@ -322,8 +328,8 @@ export class HtmlGenerator {
       return '<tr><td colspan="7" class="text-center">No recent test results</td></tr>';
     }
 
-    // Take most recent 10 results
-    const recentResults = testResults.slice(0, 10);
+    // Show all results instead of limiting to 10
+    const recentResults = testResults;
 
     return recentResults
       .map((result, index) => {
