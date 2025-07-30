@@ -32,7 +32,7 @@ echo "location, test"         # Tags
 echo "https://qafromla.herokuapp.com/" # Site URL
 sleep 2
 echo "done"                   # Finish recording
-) | npx endorphin run test-recorder &
+) | npx endorphin-ai run test-recorder &
 
 # Wait a bit for the recorder to start
 sleep 5
@@ -60,7 +60,7 @@ else
 fi
 
 # Kill the test recorder process
-pkill -f "endorphin run test-recorder" 2>/dev/null || true
+pkill -f "endorphin-ai run test-recorder" 2>/dev/null || true
 
 echo ""
 echo "🔍 Final verification:"

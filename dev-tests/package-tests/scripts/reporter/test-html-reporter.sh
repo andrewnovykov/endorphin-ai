@@ -61,7 +61,7 @@ fi
 
 # Test 1: Generate basic HTML report
 echo -e "\n${YELLOW}🔍 Test 1: Generate Basic HTML Report${NC}"
-echo "Running: npx endorphin generate report"
+echo "Running: npx endorphin-ai generate report"
 if node node_modules/endorphin-ai/dist/bin/endorphin.js generate report; then
     echo -e "${GREEN}✅ Basic HTML report generated${NC}"
 else
@@ -70,7 +70,7 @@ fi
 
 # Test 2: Generate summary HTML report
 echo -e "\n${YELLOW}🔍 Test 2: Generate Summary HTML Report${NC}"
-echo "Running: npx endorphin generate report --summary"
+echo "Running: npx endorphin-ai generate report --summary"
 if node node_modules/endorphin-ai/dist/bin/endorphin.js generate report --summary; then
     echo -e "${GREEN}✅ Summary HTML report generated${NC}"
 else
@@ -79,7 +79,7 @@ fi
 
 # Test 3: Generate custom filename report
 echo -e "\n${YELLOW}🔍 Test 3: Generate Custom Filename Report${NC}"
-echo "Running: npx endorphin generate report --filename test-console-html-reporter.html"
+echo "Running: npx endorphin-ai generate report --filename test-console-html-reporter.html"
 if node node_modules/endorphin-ai/dist/bin/endorphin.js generate report --filename test-console-html-reporter.html; then
     echo -e "${GREEN}✅ Custom filename report generated${NC}"
 else
@@ -88,7 +88,7 @@ fi
 
 # Test 4: List available reports
 echo -e "\n${YELLOW}🔍 Test 4: List Available Reports${NC}"
-echo "Running: npx endorphin generate report --list"
+echo "Running: npx endorphin-ai generate report --list"
 node node_modules/endorphin-ai/dist/bin/endorphin.js generate report --list || print_status $YELLOW "⚠️ Listing reports had issues"
 
 # Test 5: Check report files exist
@@ -150,7 +150,7 @@ echo -e "${BLUE}💡 Note: Report opening is available but not executed in test 
 # Test 7: Cleanup and stats
 echo -e "\n${YELLOW}🔍 Test 7: Report Statistics${NC}"
 if [ -d "$REPORTS_DIR" ]; then
-    echo "Running: npx endorphin generate report --cleanup"
+    echo "Running: npx endorphin-ai generate report --cleanup"
     node node_modules/endorphin-ai/dist/bin/endorphin.js generate report --cleanup || echo -e "${YELLOW}⚠️  Cleanup command may not be implemented yet${NC}"
 fi
 

@@ -35,7 +35,7 @@ export const MULTI_USER_TEST: TestCase = {
 
 ### 1. Automatic Detection
 - Framework automatically detects tests with `users` array and `tasks` function
-- No CLI changes needed - use existing `npx endorphin run test TEST-001` command
+- No CLI changes needed - use existing `npx endorphin-ai run test TEST-001` command
 - Backward compatible with single-user tests
 
 ### 2. Multiple Browser Sessions

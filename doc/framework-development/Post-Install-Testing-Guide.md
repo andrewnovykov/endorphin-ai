@@ -30,7 +30,7 @@ npm pkg set type="module"
 npm install endorphin-ai@latest
 
 # Verify installation
-npx endorphin --version
+npx endorphin-ai --version
 ```
 
 ### Automated Post-Install Validation
@@ -59,14 +59,14 @@ echo "📦 Installing published package..."
 npm install endorphin-ai@latest
 
 echo "🔍 Testing CLI commands..."
-npx endorphin --version
-npx endorphin --help
+npx endorphin-ai --version
+npx endorphin-ai --help
 
 echo "🚀 Testing initialization..."
-npx endorphin init
+npx endorphin-ai init
 
 echo "📋 Testing test discovery..."
-npx endorphin list
+npx endorphin-ai list
 
 echo "✅ Post-install validation completed successfully!"
 
@@ -93,10 +93,10 @@ RUN npm pkg set type="module"
 RUN npm install endorphin-ai
 
 # Test basic functionality
-RUN npx endorphin --version
-RUN npx endorphin --help
-RUN npx endorphin init
-RUN npx endorphin list
+RUN npx endorphin-ai --version
+RUN npx endorphin-ai --help
+RUN npx endorphin-ai init
+RUN npx endorphin-ai list
 
 CMD ["echo", "Post-install test completed"]
 ```
@@ -140,10 +140,10 @@ jobs:
     - name: Test CLI functionality
       run: |
         cd endorphin-test
-        npx endorphin --version
-        npx endorphin --help
-        npx endorphin init
-        npx endorphin list
+        npx endorphin-ai --version
+        npx endorphin-ai --help
+        npx endorphin-ai init
+        npx endorphin-ai list
         
     - name: Test with sample test
       env:
@@ -151,7 +151,7 @@ jobs:
       run: |
         cd endorphin-test
         echo "OPENAI_API_KEY=$OPENAI_API_KEY" > .env
-        npx endorphin run test HEALTH-001 --headless || echo "Expected to fail without proper setup"
+        npx endorphin-ai run test HEALTH-001 --headless || echo "Expected to fail without proper setup"
         
     - name: Validate package contents
       run: |
@@ -179,8 +179,8 @@ npm pkg set type="module"
 npm install endorphin-ai
 
 # Follow documentation exactly
-npx endorphin --help
-npx endorphin init
+npx endorphin-ai --help
+npx endorphin-ai init
 
 # Check what was created
 ls -la
@@ -189,12 +189,12 @@ ls -la tests/
 cat tests/sample-test.ts
 
 # Try to run a test
-npx endorphin list
+npx endorphin-ai list
 echo "OPENAI_API_KEY=sk-dummy" > .env
-npx endorphin run test HEALTH-001 --headless
+npx endorphin-ai run test HEALTH-001 --headless
 
 # Generate report
-npx endorphin generate report
+npx endorphin-ai generate report
 ls -la test-results/
 ```
 
@@ -218,7 +218,7 @@ echo "export const myTest = () => 'test';" > tests/unit.test.js
 npm install endorphin-ai
 
 # Initialize Endorphin
-npx endorphin init
+npx endorphin-ai init
 
 # Verify it doesn't conflict with existing structure
 ls -la
@@ -235,21 +235,21 @@ mkdir /tmp/yarn-test
 cd /tmp/yarn-test
 yarn init -y
 yarn add endorphin-ai
-yarn endorphin --version
+yarn endorphin-ai --version
 
 # pnpm testing
 mkdir /tmp/pnpm-test
 cd /tmp/pnpm-test
 pnpm init -y
 pnpm add endorphin-ai
-pnpm endorphin --version
+pnpm endorphin-ai --version
 
 # npm alternative registries
 mkdir /tmp/registry-test
 cd /tmp/registry-test
 npm init -y
 npm install endorphin-ai --registry https://registry.npmjs.org/
-npx endorphin --version
+npx endorphin-ai --version
 ```
 
 ## Version Compatibility Testing
@@ -264,7 +264,7 @@ cd /tmp/node18-test
 npm init -y
 npm pkg set type="module"
 npm install endorphin-ai
-npx endorphin --version
+npx endorphin-ai --version
 
 # Node 20 testing
 nvm use 20
@@ -273,7 +273,7 @@ cd /tmp/node20-test
 npm init -y
 npm pkg set type="module"
 npm install endorphin-ai
-npx endorphin --version
+npx endorphin-ai --version
 
 # Node 22 testing
 nvm use 22
@@ -282,7 +282,7 @@ cd /tmp/node22-test
 npm init -y
 npm pkg set type="module"
 npm install endorphin-ai
-npx endorphin --version
+npx endorphin-ai --version
 ```
 
 ### Test Version Updates
@@ -296,14 +296,14 @@ npm pkg set type="module"
 
 # Install previous version (if exists)
 npm install endorphin-ai@0.8.0  # Example previous version
-npx endorphin init
+npx endorphin-ai init
 
 # Upgrade to latest
 npm install endorphin-ai@latest
-npx endorphin --version
+npx endorphin-ai --version
 
 # Test that existing config still works
-npx endorphin list
+npx endorphin-ai list
 ```
 
 ## Platform-Specific Testing
@@ -321,9 +321,9 @@ npm pkg set type="module"
 npm install endorphin-ai
 
 # Test macOS-specific functionality
-npx endorphin init
-npx endorphin list
-npx endorphin run test HEALTH-001 --headless
+npx endorphin-ai init
+npx endorphin-ai list
+npx endorphin-ai run test HEALTH-001 --headless
 ```
 
 ### Linux Testing
@@ -339,12 +339,12 @@ npm pkg set type="module"
 npm install endorphin-ai
 
 # Test Linux-specific functionality
-npx endorphin init
-npx endorphin list
+npx endorphin-ai init
+npx endorphin-ai list
 
 # Test Playwright browser installation
 npx playwright install
-npx endorphin run test HEALTH-001 --headless
+npx endorphin-ai run test HEALTH-001 --headless
 ```
 
 ### Windows Testing (WSL)
@@ -360,8 +360,8 @@ npm pkg set type="module"
 npm install endorphin-ai
 
 # Test Windows/WSL-specific functionality
-npx endorphin init
-npx endorphin list
+npx endorphin-ai init
+npx endorphin-ai list
 ```
 
 ## Integration Testing
@@ -382,7 +382,7 @@ npm install endorphin-ai
 npm pkg set scripts.test:e2e="endorphin run test all"
 
 # Initialize and test
-npx endorphin init
+npx endorphin-ai init
 npm run test:e2e
 ```
 
@@ -397,8 +397,8 @@ cd react-endorphin-test
 npm install endorphin-ai
 
 # Initialize and test
-npx endorphin init
-npx endorphin list
+npx endorphin-ai init
+npx endorphin-ai list
 ```
 
 #### Express.js Integration
@@ -415,9 +415,9 @@ npm install express
 npm install endorphin-ai
 
 # Initialize and test local server testing
-npx endorphin init
+npx endorphin-ai init
 # Edit tests to point to localhost:3000
-npx endorphin list
+npx endorphin-ai list
 ```
 
 ## Performance Validation
@@ -437,10 +437,10 @@ du -sh node_modules/endorphin-ai/
 
 ```bash
 # Measure command execution times
-time npx endorphin --version
-time npx endorphin --help
-time npx endorphin init
-time npx endorphin list
+time npx endorphin-ai --version
+time npx endorphin-ai --help
+time npx endorphin-ai init
+time npx endorphin-ai list
 ```
 
 ## Security Testing
@@ -563,9 +563,9 @@ npm pkg set type="module"
 npm install endorphin-ai@latest
 
 # Basic functionality test
-npx endorphin --version > /dev/null
-npx endorphin init > /dev/null
-npx endorphin list > /dev/null
+npx endorphin-ai --version > /dev/null
+npx endorphin-ai init > /dev/null
+npx endorphin-ai list > /dev/null
 
 echo "✅ Package monitoring completed successfully"
 
@@ -597,9 +597,9 @@ jobs:
         npm init -y
         npm pkg set type="module"
         npm install endorphin-ai@latest
-        npx endorphin --version
-        npx endorphin init
-        npx endorphin list
+        npx endorphin-ai --version
+        npx endorphin-ai init
+        npx endorphin-ai list
         
     - name: Notify on failure
       if: failure()

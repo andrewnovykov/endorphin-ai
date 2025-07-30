@@ -189,19 +189,19 @@ export const QE001: TestCase = {
 
 ```bash
 # Suorita tietty testi
-npx endorphin run test TEST-001
+npx endorphin-ai run test TEST-001
 
 # Suorita kaikki testit
-npx endorphin run test all
+npx endorphin-ai run test all
 
 # Suorita testejä tagin mukaan
-npx endorphin run test --tag smoke
+npx endorphin-ai run test --tag smoke
 
 # Generoi HTML-raportti
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # Avaa raportti
-npx endorphin open report
+npx endorphin-ai open report
 ```
 
 ## 🔄 Pysy ajan tasalla

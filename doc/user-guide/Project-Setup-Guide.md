@@ -20,7 +20,7 @@ npm install -g endorphin-ai
 
 ### Quick Setup with Init
 ```bash
-npx endorphin init
+npx endorphin-ai init
 ```
 
 This creates:
@@ -79,23 +79,23 @@ export const GOOGLE_TEST = {
 
 ```bash
 # List all tests
-npx endorphin list
+npx endorphin-ai list
 
 # Run specific test
-npx endorphin run test TEST-001
+npx endorphin-ai run test TEST-001
 
 # Run all tests
-npx endorphin run test all
+npx endorphin-ai run test all
 ```
 
 ## 📊 View Results
 
 ```bash
 # Generate report
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # Open in browser
-npx endorphin open report
+npx endorphin-ai open report
 ```
 
 ## ⚙️ Configuration Options
@@ -146,7 +146,7 @@ export default {
 
 Use environments:
 ```bash
-npx endorphin run test TEST-001 --env staging
+npx endorphin-ai run test TEST-001 --env staging
 ```
 
 ## 📂 Project Structure

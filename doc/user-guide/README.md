@@ -24,13 +24,13 @@ Welcome to **Endorphin AI** - the TypeScript-first browser automation testing fr
 npm install endorphin-ai
 
 # Initialize project
-npx endorphin init
+npx endorphin-ai init
 
 # Run tests
-npx endorphin run test all
+npx endorphin-ai run test all
 
 # Generate reports
-npx endorphin generate report
+npx endorphin-ai generate report
 ```
 
 ## 📚 Complete Guide Index
@@ -104,23 +104,23 @@ npx endorphin generate report
 
 ```bash
 # 1. Initialize project
-npx endorphin init
+npx endorphin-ai init
 
 # 2. Write a simple test
 # Edit tests/my-first-test.ts
 
 # 3. Run the test
-npx endorphin run test my-first-test
+npx endorphin-ai run test my-first-test
 
 # 4. View results
-npx endorphin generate report
+npx endorphin-ai generate report
 ```
 
 ### Recording Interactive Tests
 
 ```bash
 # Start test recorder
-npx endorphin run test-recorder
+npx endorphin-ai run test-recorder
 
 # Follow prompts to record actions
 # Test file automatically generated
@@ -144,7 +144,7 @@ npx endorphin run test-recorder
 
 # 2. Format JIRA tickets with @DATA and @STEPS
 # 3. Sync and run JIRA tests
-npx endorphin run test --jira-sync TICKET-001
+npx endorphin-ai run test --jira-sync TICKET-001
 ```
 
 ## 🆕 What's New in v0.9.0
@@ -203,21 +203,21 @@ export const SMART_TEST: TestCase = {
 
 ```bash
 # Project Management
-npx endorphin init              # Initialize new project
-npx endorphin list             # List available tests
+npx endorphin-ai init              # Initialize new project
+npx endorphin-ai list             # List available tests
 
 # Test Execution
-npx endorphin run test TEST-ID  # Run specific test
-npx endorphin run test all      # Run all tests
-npx endorphin run test --tag smoke  # Run tests by tag
-npx endorphin run test --jira-sync TICKET-ID  # Sync and run JIRA test
+npx endorphin-ai run test TEST-ID  # Run specific test
+npx endorphin-ai run test all      # Run all tests
+npx endorphin-ai run test --tag smoke  # Run tests by tag
+npx endorphin-ai run test --jira-sync TICKET-ID  # Sync and run JIRA test
 
 # Test Creation
-npx endorphin run test-recorder # Interactive test recording
+npx endorphin-ai run test-recorder # Interactive test recording
 
 # Reporting
-npx endorphin generate report   # Generate HTML report
-npx endorphin list tools       # Show available tools
+npx endorphin-ai generate report   # Generate HTML report
+npx endorphin-ai list tools       # Show available tools
 ```
 
 ### Configuration Files

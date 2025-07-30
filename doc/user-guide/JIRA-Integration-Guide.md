@@ -287,10 +287,10 @@ This generates a test with:
 
 ```bash
 # Sync from JIRA and run specific test
-npx endorphin run test --jira-sync TICKET-123
+npx endorphin-ai run test --jira-sync TICKET-123
 
 # Sync from JIRA and run all tests
-npx endorphin run test --jira-sync all
+npx endorphin-ai run test --jira-sync all
 ```
 
 ### Sync Only (No Test Execution)
@@ -400,7 +400,7 @@ Verify insurance ${data.insurance_id} is accepted
 Enable detailed logging:
 
 ```bash
-ENDORPHIN_DEBUG=verbose npx endorphin run test --jira-sync TICKET-123
+ENDORPHIN_DEBUG=verbose npx endorphin-ai run test --jira-sync TICKET-123
 ```
 
 ### Checking Raw Data
@@ -461,7 +461,7 @@ Verify welcome message shows ${data.username}
 
 ### 2. Run Sync and Test
 ```bash
-npx endorphin run test --jira-sync QE-001
+npx endorphin-ai run test --jira-sync QE-001
 ```
 
 ### 3. Review Results

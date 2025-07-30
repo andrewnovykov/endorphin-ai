@@ -224,7 +224,7 @@ export class JiraConverter {
         // Escape special regex characters but preserve the original case and hyphens
         return user.toUpperCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       }).join('|');
-      const roleRegex = new RegExp(`@(${userRolePattern})(?:\\.PHASE(\\d+))?([\s\S]*?)(?=@(?:${userRolePattern})|$)`, 'g');
+      const roleRegex = new RegExp(`@(${userRolePattern})(?:\\.PHASE(\\d+))?([\\s\\S]*?)(?=@(?:${userRolePattern})|$)`, 'gi');
       
       let match;
       while ((match = roleRegex.exec(stepsContent)) !== null) {

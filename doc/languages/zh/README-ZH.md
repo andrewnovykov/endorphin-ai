@@ -179,19 +179,19 @@ export const QE001: TestCase = {
 
 ```bash
 # 运行特定测试
-npx endorphin run test TEST-001
+npx endorphin-ai run test TEST-001
 
 # 运行所有测试
-npx endorphin run test all
+npx endorphin-ai run test all
 
 # 按标签运行测试
-npx endorphin run test --tag smoke
+npx endorphin-ai run test --tag smoke
 
 # 生成HTML报告
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # 打开报告
-npx endorphin open report
+npx endorphin-ai open report
 ```
 
 ## 🔄 保持更新

@@ -180,19 +180,19 @@ export const QE001: TestCase = {
 
 ```bash
 # 특정 테스트 실행
-npx endorphin run test TEST-001
+npx endorphin-ai run test TEST-001
 
 # 모든 테스트 실행
-npx endorphin run test all
+npx endorphin-ai run test all
 
 # 태그로 테스트 실행
-npx endorphin run test --tag smoke
+npx endorphin-ai run test --tag smoke
 
 # HTML 보고서 생성
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # 보고서 열기
-npx endorphin open report
+npx endorphin-ai open report
 ```
 
 ## 🔄 최신 상태 유지

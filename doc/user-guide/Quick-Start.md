@@ -22,7 +22,7 @@ OPENAI_API_KEY=your_key_here
 
 2. Initialize your project:
 ```bash
-npx endorphin init
+npx endorphin-ai init
 ```
 
 ## ✨ Your First Test
@@ -45,7 +45,7 @@ export const MY_FIRST_TEST: TestCase = {
 
 Run it:
 ```bash
-npx endorphin run test TEST-001
+npx endorphin-ai run test TEST-001
 ```
 
 ## 🎯 Smart Tests with Data
@@ -103,7 +103,7 @@ Endorphin AI includes 12 tools that understand natural language:
 
 See all tools:
 ```bash
-npx endorphin list tools
+npx endorphin-ai list tools
 ```
 
 ## 📊 Interactive Reports
@@ -112,10 +112,10 @@ After running tests, generate beautiful reports:
 
 ```bash
 # Generate report
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # Open in browser
-npx endorphin open report
+npx endorphin-ai open report
 ```
 
 ### Report Features:
@@ -156,19 +156,19 @@ data: async () => ({
 
 ```bash
 # Run a specific test
-npx endorphin run test TEST-ID
+npx endorphin-ai run test TEST-ID
 
 # Run all tests
-npx endorphin run all
+npx endorphin-ai run all
 
 # Generate report
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # List available tools
-npx endorphin list tools
+npx endorphin-ai list tools
 
 # Create a new test
-npx endorphin create test
+npx endorphin-ai create test
 ```
 
 ## 🆘 Need Help?

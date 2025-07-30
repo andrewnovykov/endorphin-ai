@@ -180,19 +180,19 @@ export const QE001: TestCase = {
 
 ```bash
 # הרצת בדיקה ספציפית
-npx endorphin run test TEST-001
+npx endorphin-ai run test TEST-001
 
 # הרצת כל הבדיקות
-npx endorphin run test all
+npx endorphin-ai run test all
 
 # הרצת בדיקות לפי תג
-npx endorphin run test --tag smoke
+npx endorphin-ai run test --tag smoke
 
 # יצירת דוח HTML
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # פתיחת דוח
-npx endorphin open report
+npx endorphin-ai open report
 ```
 
 ## 🔄 להישאר מעודכנים

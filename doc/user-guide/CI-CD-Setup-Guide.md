@@ -44,11 +44,11 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         HEADLESS: true
       run: |
-        npx endorphin run test all
+        npx endorphin-ai run test all
         
     - name: Generate test report
       if: always()
-      run: npx endorphin generate report
+      run: npx endorphin-ai generate report
       
     - name: Upload test results
       if: always()
@@ -132,11 +132,11 @@ jobs:
         BASE_URL: ${{ matrix.environment == 'production' && 'https://app.com' || 'https://staging.app.com' }}
       run: |
         echo "Testing against: $BASE_URL"
-        npx endorphin run test all
+        npx endorphin-ai run test all
         
     - name: Generate test report
       if: always()
-      run: npx endorphin generate report
+      run: npx endorphin-ai generate report
       
     - name: Upload test results for ${{ matrix.environment }}
       if: always()
@@ -185,11 +185,11 @@ jobs:
         ENDORPHIN_DEBUG: verbose
       run: |
         # Run all tests with verbose logging
-        npx endorphin run test all
+        npx endorphin-ai run test all
         
     - name: Generate detailed report
       if: always()
-      run: npx endorphin generate report
+      run: npx endorphin-ai generate report
       
     - name: Upload nightly results
       if: always()
@@ -249,12 +249,12 @@ jobs:
         HEADLESS: true
       run: |
         # Run only smoke tests for quick feedback
-        npx endorphin list --tag smoke
-        npx endorphin run test --tag smoke
+        npx endorphin-ai list --tag smoke
+        npx endorphin-ai run test --tag smoke
         
     - name: Generate report
       if: always()
-      run: npx endorphin generate report
+      run: npx endorphin-ai generate report
       
   regression-tests:
     runs-on: ubuntu-latest
@@ -283,12 +283,12 @@ jobs:
         HEADLESS: true
       run: |
         # Run comprehensive regression tests
-        npx endorphin run test --priority High
-        npx endorphin run test --tag regression
+        npx endorphin-ai run test --priority High
+        npx endorphin-ai run test --tag regression
         
     - name: Generate comprehensive report
       if: always()
-      run: npx endorphin generate report
+      run: npx endorphin-ai generate report
       
     - name: Upload regression results
       if: always()
@@ -338,7 +338,7 @@ jobs:
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         HEADLESS: true
-      run: npx endorphin run test --tag smoke
+      run: npx endorphin-ai run test --tag smoke
       
     - name: Upload results for ${{ matrix.os }}-node${{ matrix.node-version }}
       if: always()
@@ -388,14 +388,14 @@ jobs:
         NODE_ENV: ci
       run: |
         # List tests to verify discovery
-        npx endorphin list
+        npx endorphin-ai list
         
         # Run tests that use setup() and data() functions
-        npx endorphin run test all
+        npx endorphin-ai run test all
         
     - name: Generate report with cost tracking
       if: always()
-      run: npx endorphin generate report
+      run: npx endorphin-ai generate report
       
     - name: Display cost summary
       if: always()
@@ -453,12 +453,12 @@ jobs:
         ENDORPHIN_DEBUG: verbose
       run: |
         echo "🚀 Starting Endorphin AI tests with cost tracking..."
-        npx endorphin run test all
+        npx endorphin-ai run test all
         
     - name: Generate cost report
       if: always()
       run: |
-        npx endorphin generate report
+        npx endorphin-ai generate report
         echo "💰 Cost tracking report generated"
         
     - name: Extract cost summary
@@ -513,7 +513,7 @@ env:
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     HEADLESS: true
   timeout-minutes: 30  # Increase timeout
-  run: npx endorphin run test all
+  run: npx endorphin-ai run test all
 ```
 
 #### 2. Browser installation issues
@@ -546,10 +546,10 @@ env:
     ENDORPHIN_DEBUG: verbose
   run: |
     # List tests first
-    npx endorphin list
+    npx endorphin-ai list
     
     # Run with verbose output
-    npx endorphin run test all
+    npx endorphin-ai run test all
 ```
 
 ## Security Best Practices
@@ -575,11 +575,11 @@ on:
 # Limit test execution to prevent runaway costs
 - name: Run limited test suite for PR
   if: github.event_name == 'pull_request'
-  run: npx endorphin run test --tag smoke
+  run: npx endorphin-ai run test --tag smoke
 
 - name: Run full suite for main branch
   if: github.ref == 'refs/heads/main'
-  run: npx endorphin run test all
+  run: npx endorphin-ai run test all
 ```
 
 ## Example Project Structure

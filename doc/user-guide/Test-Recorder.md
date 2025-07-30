@@ -16,7 +16,7 @@ No coding required!
 
 Start recording:
 ```bash
-npx endorphin run test-recorder
+npx endorphin-ai run test-recorder
 ```
 
 You'll see:
@@ -61,7 +61,7 @@ Type what you want the AI to do:
 
 ### Step 3: Run Your Test
 ```bash
-npx endorphin run test LOGIN-001
+npx endorphin-ai run test LOGIN-001
 ```
 
 ## 💬 Command Examples
@@ -190,7 +190,7 @@ export default {
 After recording:
 ```bash
 # List all tests
-npx endorphin list
+npx endorphin-ai list
 
 # Check tests folder
 ls tests/

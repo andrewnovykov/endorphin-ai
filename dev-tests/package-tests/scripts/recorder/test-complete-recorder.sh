@@ -58,7 +58,7 @@ echo "   - Action: navigate to main page"
 echo "   - End: done"
 
 # Run the recorder with complete input
-timeout 30 npx endorphin run test-recorder < /tmp/complete_recorder_input.txt 2>&1 || echo "   (Timeout or error - checking results...)"
+timeout 30 npx endorphin-ai run test-recorder < /tmp/complete_recorder_input.txt 2>&1 || echo "   (Timeout or error - checking results...)"
 
 sleep 3
 

@@ -7,7 +7,7 @@ set timeout 60
 set env(FORCE_COLOR) 0
 
 # Spawn the endorphin test recorder
-spawn npx endorphin run test-recorder
+spawn npx endorphin-ai run test-recorder
 
 # Handle the interactive prompts
 expect "Test ID*" { send "TEST-REC-001\r" }

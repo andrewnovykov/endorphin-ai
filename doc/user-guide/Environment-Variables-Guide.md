@@ -154,7 +154,7 @@ Load the right one:
 ```bash
 # Use staging environment
 cp .env.staging .env
-npx endorphin run test
+npx endorphin-ai run test
 ```
 
 ## 🚨 Common Issues
@@ -206,7 +206,7 @@ Instead of `.env` files, use secrets:
 - name: Run Tests
   env:
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-  run: npx endorphin run all
+  run: npx endorphin-ai run all
 ```
 
 **GitLab CI:**
@@ -215,7 +215,7 @@ test:
   variables:
     OPENAI_API_KEY: $OPENAI_API_KEY
   script:
-    - npx endorphin run all
+    - npx endorphin-ai run all
 ```
 
 ## 📚 Next Steps

@@ -68,6 +68,15 @@ export async function handleTestRecorderCommand(config: FrameworkConfig): Promis
 }
 
 /**
+ * Handle JIRA sync command
+ */
+export async function handleJiraSyncCommand(config: FrameworkConfig): Promise<void> {
+  const { JiraSyncCommand } = await import('../framework/cli/jira-sync-command.js');
+  const result = await JiraSyncCommand.execute();
+  process.exit(result.success ? 0 : 1);
+}
+
+/**
  * Handle test command with different options
  */
 export async function handleTestCommand(

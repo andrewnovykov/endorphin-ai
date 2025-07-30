@@ -180,19 +180,19 @@ export const QE001: TestCase = {
 
 ```bash
 # 特定のテストを実行
-npx endorphin run test TEST-001
+npx endorphin-ai run test TEST-001
 
 # すべてのテストを実行
-npx endorphin run test all
+npx endorphin-ai run test all
 
 # タグでテストを実行
-npx endorphin run test --tag smoke
+npx endorphin-ai run test --tag smoke
 
 # HTMLレポートを生成
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # レポートを開く
-npx endorphin open report
+npx endorphin-ai open report
 ```
 
 ## 🔄 最新状態を保つ

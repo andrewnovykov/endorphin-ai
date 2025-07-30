@@ -117,10 +117,10 @@ EOF
 # Create package.json scripts for convenience
 echo "🔧 Adding convenience scripts to package.json..."
 npm pkg set type="module"
-npm pkg set scripts.test:e2e="endorphin run test all"
-npm pkg set scripts.test:smoke="endorphin run test --tag smoke"
-npm pkg set scripts.test:list="endorphin list"
-npm pkg set scripts.test:recorder="endorphin run test-recorder"
+npm pkg set scripts.test:e2e="endorphin-ai run test all"
+npm pkg set scripts.test:smoke="endorphin-ai run test --tag smoke"
+npm pkg set scripts.test:list="endorphin-ai list"
+npm pkg set scripts.test:recorder="endorphin-ai run test-recorder"
 
 echo ""
 echo "✅ User project setup complete!"
@@ -133,7 +133,7 @@ echo "🎯 Next steps:"
 echo "1. cd tmp/test-endorphin"
 echo "2. Run: ./test-recorder.sh (to test recorder)"
 echo "3. Run: ./run-test.sh USER-001 (to run test)"
-echo "4. Run: npx endorphin list (to see available tests)"
+echo "4. Run: npx endorphin-ai list (to see available tests)"
 
 echo ""
 echo "📁 Project location: $USER_PROJECT_DIR"
