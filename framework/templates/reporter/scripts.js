@@ -7,6 +7,9 @@ class TestReportViewer {
   constructor() {
     this.testData = [];
     this.currentTestIndex = null;
+    this.durationChart = null;
+    this.chartOptions = { view: 'top50', sortBy: 'duration' };
+    this.tableSortOrder = {};
     this.init();
   }
 
@@ -17,6 +20,7 @@ class TestReportViewer {
     this.loadTestData();
     this.attachEventListeners();
     this.animateCards();
+    this.initializeCharts();
   }
 
   /**
@@ -47,6 +51,9 @@ class TestReportViewer {
         this.showTestDetails(resultIndex);
       });
     });
+
+    // Table sorting
+    this.attachTableSortingListeners();
 
     // Test result rows (clickable)
     document.querySelectorAll('.test-result-row').forEach((row) => {
@@ -642,6 +649,486 @@ class TestReportViewer {
   }
 
   /**
+   * Attach table sorting event listeners
+   */
+  attachTableSortingListeners() {
+    document.querySelectorAll('.sortable').forEach(header => {
+      header.addEventListener('click', () => {
+        const sortBy = header.getAttribute('data-sort');
+        this.sortTable(sortBy);
+      });
+    });
+  }
+
+  /**
+   * Sort table by specified column
+   */
+  sortTable(sortBy) {
+    const table = document.getElementById('results-table');
+    const tbody = document.getElementById('results-table-body');
+    
+    if (!table || !tbody) return;
+
+    // Toggle sort order for this column
+    this.tableSortOrder[sortBy] = this.tableSortOrder[sortBy] === 'asc' ? 'desc' : 'asc';
+    const isAscending = this.tableSortOrder[sortBy] === 'asc';
+
+    // Get all rows
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    // Sort rows based on the column data
+    rows.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'duration':
+          aValue = this.extractDurationValue(a);
+          bValue = this.extractDurationValue(b);
+          break;
+        case 'tokens':
+          aValue = this.extractTokenValue(a);
+          bValue = this.extractTokenValue(b);
+          break;
+        case 'cost':
+          aValue = this.extractCostValue(a);
+          bValue = this.extractCostValue(b);
+          break;
+        default:
+          return 0;
+      }
+
+      if (isAscending) {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
+    });
+
+    // Clear table body and re-append sorted rows
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+
+    // Update header indicators
+    this.updateSortIndicators(sortBy, isAscending);
+  }
+
+  /**
+   * Extract duration value from table row for sorting
+   */
+  extractDurationValue(row) {
+    const durationCell = row.children[2]; // Duration is 3rd column (0-indexed)
+    if (!durationCell) return 0;
+    
+    const text = durationCell.textContent.trim();
+    // Extract number from formats like "34.379s" or "1m 23s"
+    if (text.includes('m')) {
+      const parts = text.split('m');
+      const minutes = parseFloat(parts[0]) || 0;
+      const seconds = parseFloat(parts[1].replace('s', '')) || 0;
+      return minutes * 60 + seconds;
+    } else {
+      return parseFloat(text.replace('s', '')) || 0;
+    }
+  }
+
+  /**
+   * Extract token value from table row for sorting
+   */
+  extractTokenValue(row) {
+    const tokenCell = row.children[3]; // Tokens is 4th column (0-indexed)
+    if (!tokenCell) return 0;
+    
+    const badgeElement = tokenCell.querySelector('.badge');
+    if (badgeElement) {
+      const text = badgeElement.textContent.trim();
+      return parseInt(text.replace(/,/g, '')) || 0;
+    }
+    return 0;
+  }
+
+  /**
+   * Extract cost value from table row for sorting
+   */
+  extractCostValue(row) {
+    const costCell = row.children[4]; // Cost is 5th column (0-indexed)
+    if (!costCell) return 0;
+    
+    const badgeElement = costCell.querySelector('.badge');
+    if (badgeElement) {
+      const text = badgeElement.textContent.trim();
+      return parseFloat(text.replace('$', '')) || 0;
+    }
+    return 0;
+  }
+
+  /**
+   * Update sort indicators in table headers
+   */
+  updateSortIndicators(sortBy, isAscending) {
+    // Reset all indicators
+    document.querySelectorAll('.sortable i').forEach(icon => {
+      icon.className = 'bi bi-arrow-down-up ms-1';
+    });
+
+    // Set indicator for current sort column
+    const currentHeader = document.querySelector(`[data-sort="${sortBy}"] i`);
+    if (currentHeader) {
+      if (isAscending) {
+        currentHeader.className = 'bi bi-arrow-up ms-1';
+      } else {
+        currentHeader.className = 'bi bi-arrow-down ms-1';
+      }
+    }
+  }
+
+  /**
+   * Initialize charts for the statistics tab
+   */
+  initializeCharts() {
+    // Initialize on tab switch to statistics
+    const statisticsTab = document.getElementById('statistics-tab');
+    if (statisticsTab) {
+      statisticsTab.addEventListener('shown.bs.tab', () => {
+        // Small delay to ensure tab is fully rendered
+        setTimeout(() => {
+          this.createDurationChart();
+          this.attachChartEventListeners();
+        }, 100);
+      });
+    }
+  }
+
+  /**
+   * Attach event listeners for chart controls
+   */
+  attachChartEventListeners() {
+    // Chart view controls
+    document.getElementById('chart-view-top50')?.addEventListener('click', () => {
+      this.updateChart({ view: 'top50' });
+    });
+    
+    document.getElementById('chart-view-all')?.addEventListener('click', () => {
+      this.updateChart({ view: 'all' });
+    });
+    
+    document.getElementById('chart-sort-duration')?.addEventListener('click', () => {
+      this.updateChart({ sortBy: 'duration' });
+    });
+    
+    document.getElementById('chart-sort-name')?.addEventListener('click', () => {
+      this.updateChart({ sortBy: 'name' });
+    });
+  }
+
+  /**
+   * Update chart with new options
+   */
+  updateChart(options = {}) {
+    if (this.durationChart) {
+      this.durationChart.destroy();
+      this.durationChart = null;
+    }
+    
+    this.chartOptions = { 
+      ...this.chartOptions, 
+      ...options 
+    };
+    
+    this.createDurationChart();
+    
+    // Update active button states
+    const controls = document.querySelectorAll('#chart-controls button');
+    controls.forEach(btn => btn.classList.remove('active'));
+    
+    if (options.view === 'top50') {
+      document.getElementById('chart-view-top50')?.classList.add('active');
+    } else if (options.view === 'all') {
+      document.getElementById('chart-view-all')?.classList.add('active');
+    }
+  }
+
+  /**
+   * Create test duration chart
+   */
+  createDurationChart() {
+    const canvas = document.getElementById('durationChart');
+    if (!canvas || this.durationChart) {
+      return; // Chart already exists or canvas not found
+    }
+
+    console.log('Creating duration chart with test data:', this.testData.length, 'results');
+
+    if (this.testData.length === 0) {
+      console.warn('No test data available for chart');
+      const ctx = canvas.getContext('2d');
+      this.durationChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['No Data'],
+          datasets: [{
+            label: 'No test data available',
+            data: [0],
+            backgroundColor: ['#cccccc']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'No test data available'
+            }
+          }
+        }
+      });
+      return;
+    }
+
+    // Group tests by name and calculate average duration
+    const testGroups = {};
+    this.testData.forEach(result => {
+      // Extract test data from the correct structure
+      const session = result.session || result;
+      
+      // Try multiple ways to get test name
+      const testName = session.testName || 
+                      session.testId ||
+                      result.testName ||
+                      result.testId ||
+                      result.summary?.testName ||
+                      result.summary?.testId ||
+                      'Unknown Test';
+      
+      if (!testGroups[testName]) {
+        testGroups[testName] = {
+          durations: [],
+          totalDuration: 0,
+          count: 0,
+          rawDurations: []
+        };
+      }
+      
+      // Try multiple ways to get duration (session structure has priority)
+      let duration = session.duration || 
+                     result.duration || 
+                     result.summary?.duration || 
+                     session.executionTime ||
+                     result.executionTime ||
+                     0;
+      
+      // Convert duration to number if it's a string
+      if (typeof duration === 'string') {
+        duration = parseFloat(duration) || 0;
+      }
+      
+      console.log(`Test: ${testName}, Duration: ${duration}ms, Session:`, session, 'Result:', result);
+      
+      if (duration > 0) { // Only add tests with valid duration
+        testGroups[testName].durations.push(duration);
+        testGroups[testName].totalDuration += duration;
+        testGroups[testName].count++;
+        testGroups[testName].rawDurations.push(duration);
+      } else {
+        console.warn(`Test ${testName} has invalid duration: ${duration}`);
+      }
+    });
+
+    console.log('Test groups found:', Object.keys(testGroups).length, testGroups);
+
+    if (Object.keys(testGroups).length === 0) {
+      console.warn('No test groups found after processing');
+      // Create a simple test chart for debugging
+      const ctx = canvas.getContext('2d');
+      this.durationChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Sample Test'],
+          datasets: [{
+            label: 'Duration (seconds)',
+            data: [20],
+            backgroundColor: ['#007bff'],
+            indexAxis: 'y'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            title: {
+              display: true,
+              text: 'Sample Chart - No test data processed'
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Duration (seconds)'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Test Name'
+              }
+            }
+          }
+        }
+      });
+      return;
+    }
+
+    // Prepare chart data - sort based on user preference
+    let sortedTests = Object.entries(testGroups)
+      .map(([name, group]) => ({
+        name: name,
+        avgDuration: group.totalDuration / group.count,
+        count: group.count,
+        maxDuration: Math.max(...group.rawDurations),
+        minDuration: Math.min(...group.rawDurations)
+      }));
+
+    // Apply sorting based on user preference
+    if (this.chartOptions.sortBy === 'duration') {
+      sortedTests.sort((a, b) => b.avgDuration - a.avgDuration); // Sort by duration descending
+    } else if (this.chartOptions.sortBy === 'name') {
+      sortedTests.sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+    }
+
+    // Handle view options - top 50 vs all tests
+    let displayTests;
+    let chartTitle;
+    
+    if (this.chartOptions.view === 'top50' && sortedTests.length > 50) {
+      displayTests = sortedTests.slice(0, 50);
+      chartTitle = `Test Duration Analysis (Top 50 of ${sortedTests.length} tests)`;
+    } else {
+      displayTests = sortedTests;
+      chartTitle = `Test Duration Analysis (${sortedTests.length} tests)`;
+      
+      // For very large numbers of tests, limit to 200 for performance
+      if (displayTests.length > 200) {
+        displayTests = displayTests.slice(0, 200);
+        chartTitle = `Test Duration Analysis (Top 200 of ${sortedTests.length} tests)`;
+      }
+    }
+    
+    const labels = displayTests.map(test => {
+      // Truncate long test names for better display
+      const maxLength = 25;
+      return test.name.length > maxLength ? 
+        test.name.substring(0, maxLength) + '...' : 
+        test.name;
+    });
+    
+    const avgDurations = displayTests.map(test => (test.avgDuration / 1000).toFixed(2)); // Convert to seconds
+
+    // Create gradient colors based on duration (red for slow, green for fast)
+    const maxDuration = Math.max(...displayTests.map(t => t.avgDuration));
+    const colors = displayTests.map(test => {
+      const ratio = test.avgDuration / maxDuration;
+      const hue = (1 - ratio) * 120; // 120 = green, 0 = red
+      return `hsla(${hue}, 70%, 60%, 0.8)`;
+    });
+
+    // Canvas will use container height from CSS
+    console.log(`Preparing chart for ${displayTests.length} tests with title: ${chartTitle}`);
+
+    const ctx = canvas.getContext('2d');
+    this.durationChart = new Chart(ctx, {
+      type: 'bar', // Use bar chart with indexAxis: 'y' for horizontal bars
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Average Duration (seconds)',
+          data: avgDurations,
+          backgroundColor: colors,
+          borderColor: colors.map(color => color.replace('0.8', '1')),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y', // Chart.js 3+ syntax for horizontal bars
+        layout: {
+          padding: {
+            left: 10,
+            right: 30,
+            top: 10,
+            bottom: 10
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: chartTitle
+          },
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              title: function(context) {
+                const index = context[0].dataIndex;
+                return displayTests[index].name; // Show full name in tooltip
+              },
+              label: function(context) {
+                const index = context.dataIndex;
+                const test = displayTests[index];
+                return [
+                  `Average: ${context.parsed.x}s`,
+                  `Runs: ${test.count}`,
+                  `Min: ${(test.minDuration / 1000).toFixed(2)}s`,
+                  `Max: ${(test.maxDuration / 1000).toFixed(2)}s`
+                ];
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Average Duration (seconds)'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Test Name'
+            },
+            ticks: {
+              maxRotation: 0,
+              minRotation: 0,
+              font: {
+                size: 11
+              }
+            }
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        }
+      }
+    });
+
+    // Update chart info
+    const chartInfo = document.getElementById('chart-info');
+    if (chartInfo) {
+      const sortText = this.chartOptions.sortBy === 'duration' ? 'sorted by duration' : 'sorted alphabetically';
+      chartInfo.innerHTML = `<small class="text-muted">Showing ${displayTests.length} of ${sortedTests.length} tests, ${sortText}</small>`;
+    }
+
+    console.log('Duration chart created successfully');
+  }
+
+  /**
    * Animate timeline items when modal is shown
    */
   animateTimeline() {
@@ -1049,6 +1536,7 @@ function showTestDetails(sessionId) {
     console.error('Report viewer not initialized');
   }
 }
+
 
 // Make function available globally
 window.showTestDetails = showTestDetails;

@@ -206,9 +206,9 @@ npm pkg set type="module"
 npm install /Users/papapin777/Documents/CODE/AI/endorphin-ai/endorphin-ai-*.tgz
 
 # Test basic functionality
-npx endorphin --version
-npx endorphin init
-npx endorphin list
+npx endorphin-ai --version
+npx endorphin-ai init
+npx endorphin-ai list
 
 # Cleanup
 cd /Users/papapin777/Documents/CODE/AI/endorphin-ai
@@ -270,10 +270,10 @@ npm pkg set type="module"
 npm install endorphin-ai@latest
 
 # Test basic functionality
-npx endorphin --version
-npx endorphin --help
-npx endorphin init
-npx endorphin list
+npx endorphin-ai --version
+npx endorphin-ai --help
+npx endorphin-ai init
+npx endorphin-ai list
 
 # Cleanup
 cd /Users/papapin777/Documents/CODE/AI/endorphin-ai
@@ -312,9 +312,9 @@ for NODE_VERSION in 18 20 22; do
   npm pkg set type="module"
   npm install endorphin-ai@latest
   
-  npx endorphin --version
-  npx endorphin init
-  npx endorphin list
+  npx endorphin-ai --version
+  npx endorphin-ai init
+  npx endorphin-ai list
   
   echo "✅ Node.js $NODE_VERSION test passed"
   
@@ -413,7 +413,7 @@ cd /tmp/fix-test
 npm init -y
 npm pkg set type="module"
 npm install endorphin-ai@latest
-npx endorphin --version
+npx endorphin-ai --version
 
 # Cleanup
 cd /Users/papapin777/Documents/CODE/AI/endorphin-ai
@@ -509,7 +509,7 @@ cd /tmp/publish-test
 npm init -y
 npm pkg set type="module"
 npm install /Users/papapin777/Documents/CODE/AI/endorphin-ai/endorphin-ai-*.tgz
-npx endorphin --version
+npx endorphin-ai --version
 cd /Users/papapin777/Documents/CODE/AI/endorphin-ai
 rm -rf /tmp/publish-test
 
@@ -533,7 +533,7 @@ cd /tmp/post-publish-test
 npm init -y
 npm pkg set type="module"
 npm install endorphin-ai@latest
-npx endorphin --version
+npx endorphin-ai --version
 cd /Users/papapin777/Documents/CODE/AI/endorphin-ai
 rm -rf /tmp/post-publish-test
 

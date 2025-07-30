@@ -391,7 +391,7 @@ npx endorphin-ai init
 npm run test:single QE-001
 
 # Using npx
-npx endorphin run test QE-001
+npx endorphin-ai run test QE-001
 
 # Global installation
 endorphin run test QE-001
@@ -405,8 +405,8 @@ npm run test:smoke
 npm run test:auth
 
 # Using npx/global
-npx endorphin run test --tag authentication
-npx endorphin run test --priority High
+npx endorphin-ai run test --tag authentication
+npx endorphin-ai run test --priority High
 ```
 
 #### 🎯 Run All Tests
@@ -416,7 +416,7 @@ npx endorphin run test --priority High
 npm test
 
 # Using npx/global
-npx endorphin run test all
+npx endorphin-ai run test all
 ```
 
 #### 🎬 Test Recorder Mode
@@ -426,7 +426,7 @@ npx endorphin run test all
 npm run test:record
 
 # Using npx/global
-npx endorphin run test-recorder
+npx endorphin-ai run test-recorder
 ```
 
 ## 📊 HTML Reports & Analytics
@@ -438,16 +438,16 @@ comprehensive insights into your test execution results.
 
 ```bash
 # Generate a full interactive HTML report
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # Generate a lightweight summary report
-npx endorphin generate report --summary
+npx endorphin-ai generate report --summary
 
 # Open the latest report in your browser
-npx endorphin open report
+npx endorphin-ai open report
 
 # Open a specific report file
-npx endorphin open report report-2025-06-22.html
+npx endorphin-ai open report report-2025-06-22.html
 ```
 
 ### ✨ Report Features
@@ -541,12 +541,12 @@ npm test -- --browser firefox
 npm run test:single QE-001 -- --no-headless
 
 # Using npx/global
-npx endorphin run test all --browser firefox
-npx endorphin run test QE-001 --no-headless
-npx endorphin run test all --viewport 1920x1080
-npx endorphin run test all
-npx endorphin run test all --model gpt-4
-npx endorphin run test all --env staging
+npx endorphin-ai run test all --browser firefox
+npx endorphin-ai run test QE-001 --no-headless
+npx endorphin-ai run test all --viewport 1920x1080
+npx endorphin-ai run test all
+npx endorphin-ai run test all --model gpt-4
+npx endorphin-ai run test all --env staging
 ```
 
 ## 📝 Test Categories
@@ -739,7 +739,7 @@ Each test execution creates:
 npm run test:record
 
 # Using npx/global
-npx endorphin run test-recorder
+npx endorphin-ai run test-recorder
 ```
 
 Create tests on-the-fly with guided prompts:

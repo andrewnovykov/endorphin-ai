@@ -74,15 +74,15 @@ ls -la node_modules/.bin/endorphin
 
 ```bash
 # Test version command
-npx endorphin --version
+npx endorphin-ai --version
 node node_modules/.bin/endorphin --version
 
 # Test help command  
-npx endorphin --help
+npx endorphin-ai --help
 npx endorphin help
 
 # Test init command
-npx endorphin init
+npx endorphin-ai init
 
 # Verify files created
 ls -la
@@ -97,16 +97,16 @@ ls -la tests/
 echo "OPENAI_API_KEY=your_key_here" > .env
 
 # List tests
-npx endorphin list
+npx endorphin-ai list
 
 # Test discovery
-npx endorphin list --verbose
+npx endorphin-ai list --verbose
 
 # Run a test (requires API key)
-npx endorphin run test HEALTH-001 --headless
+npx endorphin-ai run test HEALTH-001 --headless
 
 # Generate report
-npx endorphin generate report
+npx endorphin-ai generate report
 ```
 
 ### Step 5: Test Interactive Recorder
@@ -116,7 +116,7 @@ npx endorphin generate report
 npx playwright install
 
 # Test recorder (interactive - requires manual input)
-npx endorphin run test-recorder
+npx endorphin-ai run test-recorder
 
 # Verify recorder creates files in USER project
 ls -la test-recorder/
@@ -217,10 +217,10 @@ npm pkg set type="module"
 npm install /Users/papapin777/Documents/CODE/AI/endorphin-ai/endorphin-ai-*.tgz
 
 # Follow getting started workflow
-npx endorphin init
-npx endorphin list
+npx endorphin-ai init
+npx endorphin-ai list
 echo "OPENAI_API_KEY=sk-test" > .env
-npx endorphin run test HEALTH-001 --headless
+npx endorphin-ai run test HEALTH-001 --headless
 
 # Verify user experience
 echo "✅ Fresh user test completed"
@@ -244,7 +244,7 @@ npx tsc --init
 npm install /Users/papapin777/Documents/CODE/AI/endorphin-ai/endorphin-ai-*.tgz
 
 # Test TypeScript integration
-npx endorphin init
+npx endorphin-ai init
 # Verify endorphin.config.ts is created (TypeScript)
 file endorphin.config.ts
 ```
@@ -255,17 +255,17 @@ file endorphin.config.ts
 # Test with Node 18
 nvm use 18
 npm install /Users/papapin777/Documents/CODE/AI/endorphin-ai/endorphin-ai-*.tgz
-npx endorphin --version
+npx endorphin-ai --version
 
 # Test with Node 20  
 nvm use 20
 npm install /Users/papapin777/Documents/CODE/AI/endorphin-ai/endorphin-ai-*.tgz
-npx endorphin --version
+npx endorphin-ai --version
 
 # Test with Node 22
 nvm use 22
 npm install /Users/papapin777/Documents/CODE/AI/endorphin-ai/endorphin-ai-*.tgz
-npx endorphin --version
+npx endorphin-ai --version
 ```
 
 ### Scenario 4: Global Installation
@@ -321,10 +321,10 @@ Test execution:
 
 ```bash
 # Run smart test
-npx endorphin run test SMART-001
+npx endorphin-ai run test SMART-001
 
 # Verify setup/data results in debug output or reports
-npx endorphin generate report
+npx endorphin-ai generate report
 ```
 
 ## Cost Tracking Testing
@@ -333,10 +333,10 @@ Test the cost tracking features:
 
 ```bash
 # Run test with cost tracking enabled
-ENDORPHIN_DEBUG=verbose npx endorphin run test HEALTH-001
+ENDORPHIN_DEBUG=verbose npx endorphin-ai run test HEALTH-001
 
 # Generate report and check cost information
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # Look for cost data in HTML report
 grep -i "cost\|token" test-results/reports/report-*.html
@@ -349,7 +349,7 @@ grep -i "cost\|token" test-results/reports/report-*.html
 ```bash
 # Test with invalid API key
 echo "OPENAI_API_KEY=invalid-key" > .env
-npx endorphin run test HEALTH-001
+npx endorphin-ai run test HEALTH-001
 
 # Should show clear error message
 ```
@@ -359,7 +359,7 @@ npx endorphin run test HEALTH-001
 ```bash
 # Test without Playwright browsers
 rm -rf ~/.cache/ms-playwright/
-npx endorphin run test HEALTH-001
+npx endorphin-ai run test HEALTH-001
 
 # Should show browser installation message
 ```
@@ -369,7 +369,7 @@ npx endorphin run test HEALTH-001
 ```bash
 # Test with missing files (simulate corruption)
 rm node_modules/endorphin-ai/dist/bin/endorphin.js
-npx endorphin --version
+npx endorphin-ai --version
 
 # Should fail gracefully
 ```
@@ -380,20 +380,20 @@ npx endorphin --version
 
 ```bash
 # Measure init command performance
-time npx endorphin init
+time npx endorphin-ai init
 
 # Measure test discovery performance
-time npx endorphin list
+time npx endorphin-ai list
 
 # Measure test execution performance
-time npx endorphin run test HEALTH-001 --headless
+time npx endorphin-ai run test HEALTH-001 --headless
 ```
 
 ### Memory Usage Testing
 
 ```bash
 # Monitor memory usage during test execution
-npx endorphin run test HEALTH-001 --headless &
+npx endorphin-ai run test HEALTH-001 --headless &
 PID=$!
 
 # Monitor memory (requires activity monitor or htop)
@@ -410,8 +410,8 @@ done
 ```bash
 # Test on macOS
 system_profiler SPSoftwareDataType | grep "System Version"
-npx endorphin init
-npx endorphin list
+npx endorphin-ai init
+npx endorphin-ai list
 ```
 
 ### Linux Testing (Docker)
@@ -421,7 +421,7 @@ npx endorphin list
 docker run -it --rm -v $(pwd):/app node:20 bash
 cd /app
 npm install endorphin-ai-*.tgz
-npx endorphin --version
+npx endorphin-ai --version
 ```
 
 ### Windows Testing (WSL)
@@ -429,8 +429,8 @@ npx endorphin --version
 ```bash
 # Test in WSL environment
 wsl --version
-npx endorphin init
-npx endorphin list
+npx endorphin-ai init
+npx endorphin-ai list
 ```
 
 ## Validation Checklist

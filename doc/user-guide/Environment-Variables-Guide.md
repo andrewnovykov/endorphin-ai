@@ -45,6 +45,24 @@ BASE_URL=https://myapp.com
 
 Default: `https://qafromla.herokuapp.com/`
 
+### JIRA Integration (Optional)
+
+Configure JIRA integration to sync tests from tickets:
+
+```bash
+# JIRA Connection
+JIRA_URL=https://yourcompany.atlassian.net
+JIRA_EMAIL=your-email@company.com
+JIRA_API_TOKEN=your_api_token_here
+
+# JIRA Project Settings
+JIRA_PROJECT_ID=10001
+JIRA_ISSUE_TYPE_ID=10013
+JIRA_LABEL=ai-test-case
+```
+
+**Setup instructions**: See [JIRA Integration Guide](./JIRA-Integration-Guide.md)
+
 ## 💡 Example Configurations
 
 ### Local Development
@@ -74,6 +92,24 @@ Test your live environment:
 OPENAI_API_KEY=sk-proj-abc123...
 HEADLESS=true
 BASE_URL=https://myapp.com
+```
+
+### JIRA Integration Enabled
+Sync tests from JIRA tickets:
+
+```bash
+# Core settings
+OPENAI_API_KEY=sk-proj-abc123...
+HEADLESS=true
+BASE_URL=https://myapp.com
+
+# JIRA integration
+JIRA_URL=https://company.atlassian.net
+JIRA_EMAIL=tester@company.com
+JIRA_API_TOKEN=ATBBxyz789...
+JIRA_PROJECT_ID=10001
+JIRA_ISSUE_TYPE_ID=10013
+JIRA_LABEL=ai-test-case
 ```
 
 ## 🔧 Using Environment Variables in Tests
@@ -118,7 +154,7 @@ Load the right one:
 ```bash
 # Use staging environment
 cp .env.staging .env
-npx endorphin run test
+npx endorphin-ai run test
 ```
 
 ## 🚨 Common Issues
@@ -170,7 +206,7 @@ Instead of `.env` files, use secrets:
 - name: Run Tests
   env:
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-  run: npx endorphin run all
+  run: npx endorphin-ai run all
 ```
 
 **GitLab CI:**
@@ -179,7 +215,7 @@ test:
   variables:
     OPENAI_API_KEY: $OPENAI_API_KEY
   script:
-    - npx endorphin run all
+    - npx endorphin-ai run all
 ```
 
 ## 📚 Next Steps

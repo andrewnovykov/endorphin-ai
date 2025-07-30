@@ -99,6 +99,7 @@ const FLAG_PARSERS: Record<string, FlagParser> = {
     }
     return {};
   },
+  '--jira-sync': () => ({ jiraSync: true }),
 };
 
 /**
@@ -134,7 +135,7 @@ function showHelp(): void {
 🎉 Endorphin AI v${packageInfo.version} - E2E Testing Reinvented with AI
 
 Usage:
-  endorphin <command> [options]
+  endorphin-ai <command> [options]
 
 Commands:
   init                           Initialize new project with examples
@@ -142,7 +143,9 @@ Commands:
   run test all                   Run all tests
   run test --tag <tag>           Run tests by tag (e.g., authentication)
   run test --priority <level>    Run tests by priority (High, Medium, Low)
+  run test --jira-sync           Sync tests from JIRA before running
   run test-recorder              Start interactive test recorder
+  run jira-sync                  Sync tests from JIRA to tests/jira
   list                           List all available tests
   list tools                     List all available built-in tools
   generate report                Generate HTML test report
@@ -159,22 +162,24 @@ Options:
   --timeout <ms>         Set test timeout in milliseconds
   --model <n>         Set AI model to use (e.g., gpt-4o-mini)
   --env <environment>    Set environment (development/staging/production)
+  --jira-sync            Sync tests from JIRA before running
 
 Examples:
-  endorphin init                               # Set up new project
-  endorphin run test HEALTH-001                # Run example test
-  endorphin run test all --headless            # Run all tests headless
-  endorphin run test --tag smoke               # Run smoke tests
-  endorphin run test --priority High --env staging # Run high priority tests on staging
-  endorphin run test-recorder                  # Start test recorder
-  endorphin list                               # Show all available tests
-  endorphin list tools                         # Show all available built-in tools
-  endorphin generate report                    # Generate interactive HTML report
-  endorphin generate report --summary          # Generate lightweight summary report
-  endorphin generate report --file custom.html # Generate report with custom filename
-  endorphin open report                        # Open latest report in browser
-  endorphin cleanup results 5                  # Keep only 5 recent results per test
-  endorphin cleanup reports 7                  # Remove reports older than 7 days
+  endorphin-ai init                               # Set up new project
+  endorphin-ai run test HEALTH-001                # Run example test
+  endorphin-ai run test all --headless            # Run all tests headless
+  endorphin-ai run test --tag smoke               # Run smoke tests
+  endorphin-ai run test --priority High --env staging # Run high priority tests on staging
+  endorphin-ai run test --jira-sync               # Sync JIRA tests and run all
+  endorphin-ai run test-recorder                  # Start test recorder
+  endorphin-ai list                               # Show all available tests
+  endorphin-ai list tools                         # Show all available built-in tools
+  endorphin-ai generate report                    # Generate interactive HTML report
+  endorphin-ai generate report --summary          # Generate lightweight summary report
+  endorphin-ai generate report --file custom.html # Generate report with custom filename
+  endorphin-ai open report                        # Open latest report in browser
+  endorphin-ai cleanup results 5                  # Keep only 5 recent results per test
+  endorphin-ai cleanup reports 7                  # Remove reports older than 7 days
 
 Configuration:
   Create endorphin.config.ts in your project root for default settings
@@ -263,6 +268,11 @@ export async function main(): Promise<void> {
             validateAI: false 
           });
           await handleTestRecorderCommand(recorderConfig);
+        } else if (subcommand === 'jira-sync') {
+          // JIRA sync doesn't need AI validation
+          const jiraConfig = await getConfig({ cwd: process.cwd(), cliFlags, validateAI: false });
+          const { handleJiraSyncCommand } = await import('./cli-handlers.js');
+          await handleJiraSyncCommand(jiraConfig);
         } else {
           // Other run commands need full AI validation
           const runConfig = await getConfig({ cwd: process.cwd(), cliFlags });
@@ -273,7 +283,7 @@ export async function main(): Promise<void> {
             await handleTestCommand(args, target, runConfig);
           } else {
             console.error(`❌ Unknown run command: ${subcommand}`);
-            console.log('Use "endorphin help" for usage information');
+            console.log('Use "endorphin-ai help" for usage information');
             process.exit(1);
           }
         }

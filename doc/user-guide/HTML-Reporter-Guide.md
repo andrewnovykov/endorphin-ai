@@ -17,17 +17,17 @@ After running tests, Endorphin AI creates interactive web reports showing:
 
 Run tests first:
 ```bash
-npx endorphin run test HEALTH-001
+npx endorphin-ai run test HEALTH-001
 ```
 
 Then generate the report:
 ```bash
-npx endorphin generate report
+npx endorphin-ai generate report
 ```
 
 Open it:
 ```bash
-npx endorphin open report
+npx endorphin-ai open report
 ```
 
 That's it! Your report opens in the browser.
@@ -154,36 +154,36 @@ Press `Ctrl+E` to export test data as JSON for:
 ### Clean Up Old Reports
 ```bash
 # Remove reports older than 30 days
-npx endorphin cleanup reports
+npx endorphin-ai cleanup reports
 
 # Keep only last 7 days
-npx endorphin cleanup reports 7
+npx endorphin-ai cleanup reports 7
 ```
 
 ### Clean Up Test Results
 ```bash
 # Keep only 10 most recent results per test
-npx endorphin cleanup results
+npx endorphin-ai cleanup results
 
 # Keep only 5 most recent
-npx endorphin cleanup results 5
+npx endorphin-ai cleanup results 5
 ```
 
 ## 🎨 Report Customization
 
 ### Change Report Name
 ```bash
-npx endorphin generate report --filename my-custom-report.html
+npx endorphin-ai generate report --filename my-custom-report.html
 ```
 
 ### Multiple Reports
 Generate different reports for different purposes:
 ```bash
 # Smoke test report
-npx endorphin generate report --filename smoke-tests.html
+npx endorphin-ai generate report --filename smoke-tests.html
 
 # Full regression report  
-npx endorphin generate report --filename regression.html
+npx endorphin-ai generate report --filename regression.html
 ```
 
 ## 🚨 Troubleshooting
@@ -191,7 +191,7 @@ npx endorphin generate report --filename regression.html
 ### "No test results found"
 Run some tests first:
 ```bash
-npx endorphin run test HEALTH-001
+npx endorphin-ai run test HEALTH-001
 ```
 
 ### Screenshots Not Loading
@@ -209,10 +209,10 @@ npx endorphin run test HEALTH-001
 ### GitHub Actions Example
 ```yaml
 - name: Run Tests
-  run: npx endorphin run all
+  run: npx endorphin-ai run all
 
 - name: Generate Report
-  run: npx endorphin generate report
+  run: npx endorphin-ai generate report
   
 - name: Upload Report
   uses: actions/upload-artifact@v2
@@ -225,8 +225,8 @@ npx endorphin run test HEALTH-001
 ```yaml
 test:
   script:
-    - npx endorphin run all
-    - npx endorphin generate report
+    - npx endorphin-ai run all
+    - npx endorphin-ai generate report
   artifacts:
     paths:
       - test-results/reports/

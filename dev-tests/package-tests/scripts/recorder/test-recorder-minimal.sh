@@ -41,7 +41,7 @@ echo "🚀 Running minimal test recorder session..."
 echo "   Input: TEST-MINIMAL, Minimal Test, High priority, https://httpbin.org/get, done"
 
 # Try to run the recorder
-timeout 20 npx endorphin run test-recorder < /tmp/minimal_recorder_input.txt 2>&1 || echo "   (Timeout or error - expected)"
+timeout 20 npx endorphin-ai run test-recorder < /tmp/minimal_recorder_input.txt 2>&1 || echo "   (Timeout or error - expected)"
 
 sleep 2
 

@@ -31,8 +31,8 @@ echo ""
 echo "🎯 Running a quick Endorphin command to see where files get created..."
 
 # Run a simple list command
-echo "Running: npx endorphin list"
-npx endorphin list
+echo "Running: npx endorphin-ai list"
+npx endorphin-ai list
 
 echo ""
 echo "📋 After 'list' command - Directory contents:"
@@ -59,7 +59,7 @@ echo "🎬 Testing test recorder (quick simulation)..."
 echo "Running test recorder for 3 seconds..."
 
 # Start recorder in background and kill it quickly
-timeout 3s npx endorphin run test-recorder &> /dev/null || true
+timeout 3s npx endorphin-ai run test-recorder &> /dev/null || true
 
 echo ""
 echo "📋 After test recorder - User project contents:"

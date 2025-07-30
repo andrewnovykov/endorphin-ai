@@ -27,13 +27,13 @@ rm -rf "$REPO_ROOT/test-recorder/"* 2>/dev/null || true
 
 echo ""
 echo "🎬 Debug: Step 1 - Testing basic CLI invocation"
-echo "Running: npx endorphin --help"
-npx endorphin --help | head -10
+echo "Running: npx endorphin-ai --help"
+npx endorphin-ai --help | head -10
 
 echo ""
 echo "🎬 Debug: Step 2 - Testing recorder CLI without input"
 echo "This should show the recorder prompt..."
-timeout 3 npx endorphin run test-recorder || echo "  (Expected timeout)"
+timeout 3 npx endorphin-ai run test-recorder || echo "  (Expected timeout)"
 
 echo ""
 echo "🎬 Debug: Step 3 - Check if config is loaded correctly"
@@ -50,7 +50,7 @@ DEBUG-001
 EOF
 
 echo "Input: DEBUG-001"
-timeout 5 npx endorphin run test-recorder < /tmp/debug_input.txt 2>&1 || echo "  (Expected timeout)"
+timeout 5 npx endorphin-ai run test-recorder < /tmp/debug_input.txt 2>&1 || echo "  (Expected timeout)"
 
 echo ""
 echo "🔍 Debug: Final directory check"

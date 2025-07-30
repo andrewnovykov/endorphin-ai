@@ -586,7 +586,7 @@ cd dev-tests/package-tests && ./run-all-tests.sh
    npm install ../endorphin-ai-*.tgz
 
    # Test compiled CLI (production-ready)
-   npx endorphin --version
+   npx endorphin-ai --version
    node node_modules/.bin/endorphin --version
 
    cd .. && rm -rf temp-test

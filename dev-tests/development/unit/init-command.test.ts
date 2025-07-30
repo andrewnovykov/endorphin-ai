@@ -141,7 +141,7 @@ describe('Init Command', () => {
 # 2. Create new secret key
 # 3. Replace "your_openai_api_key_here" above with your actual key
 # 4. Save this file
-# 5. Run: npx endorphin run test HEALTH-001`;
+# 5. Run: npx endorphin-ai run test HEALTH-001`;
 
       // Since examples directory doesn't exist, it should create basic files
       // Check that the basic .env file was created

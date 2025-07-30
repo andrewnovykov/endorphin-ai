@@ -187,19 +187,19 @@ export const QE001: TestCase = {
 
 ```bash
 # Запустити конкретний тест
-npx endorphin run test TEST-001
+npx endorphin-ai run test TEST-001
 
 # Запустити всі тести
-npx endorphin run test all
+npx endorphin-ai run test all
 
 # Запустити тести за тегом
-npx endorphin run test --tag smoke
+npx endorphin-ai run test --tag smoke
 
 # Згенерувати HTML звіт
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # Відкрити звіт
-npx endorphin open report
+npx endorphin-ai open report
 ```
 
 ## 🔄 Залишатися в курсі

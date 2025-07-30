@@ -188,19 +188,19 @@ export const QE001: TestCase = {
 
 ```bash
 # Jalankan tes tertentu
-npx endorphin run test TEST-001
+npx endorphin-ai run test TEST-001
 
 # Jalankan semua tes
-npx endorphin run test all
+npx endorphin-ai run test all
 
 # Jalankan tes berdasarkan tag
-npx endorphin run test --tag smoke
+npx endorphin-ai run test --tag smoke
 
 # Buat laporan HTML
-npx endorphin generate report
+npx endorphin-ai generate report
 
 # Buka laporan
-npx endorphin open report
+npx endorphin-ai open report
 ```
 
 ## 🔄 Tetap Terkini

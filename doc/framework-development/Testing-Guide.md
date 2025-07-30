@@ -78,15 +78,15 @@ npm pkg set type="module"
 npm install ../endorphin-ai-*.tgz
 
 # 5. Test CLI functionality
-npx endorphin --version
-npx endorphin --help
-npx endorphin init
+npx endorphin-ai --version
+npx endorphin-ai --help
+npx endorphin-ai init
 
 # 6. Test core features
 echo "OPENAI_API_KEY=your_key_here" > .env
-npx endorphin list
-npx endorphin run test HEALTH-001 --headless
-npx endorphin generate report
+npx endorphin-ai list
+npx endorphin-ai run test HEALTH-001 --headless
+npx endorphin-ai generate report
 
 # 7. Cleanup
 cd ..
@@ -130,7 +130,7 @@ cd /tmp/npm-test
 npm init -y
 npm pkg set type="module"
 npm install endorphin-ai@latest
-npx endorphin --version
+npx endorphin-ai --version
 ```
 
 ### 4. 📋 NPM Publishing Process
@@ -196,8 +196,8 @@ npm pack
 mkdir manual-test && cd manual-test
 npm init -y && npm pkg set type="module"
 npm install ../endorphin-ai-*.tgz
-npx endorphin --version
-npx endorphin init
+npx endorphin-ai --version
+npx endorphin-ai init
 cd .. && rm -rf manual-test
 
 # 5. Version bump and publish
@@ -212,8 +212,8 @@ npm publish
 mkdir /tmp/post-test && cd /tmp/post-test
 npm init -y && npm pkg set type="module"
 npm install endorphin-ai@latest
-npx endorphin --version
-npx endorphin init
+npx endorphin-ai --version
+npx endorphin-ai init
 cd / && rm -rf /tmp/post-test
 
 # 2. Run comprehensive post-install tests
@@ -263,16 +263,16 @@ npm install $TARBALL_PATH
 
 echo "✅ Manual test environment ready!"
 echo "🔍 Test commands:"
-echo "  npx endorphin --version"
-echo "  npx endorphin --help"
-echo "  npx endorphin init"
-echo "  npx endorphin list"
+echo "  npx endorphin-ai --version"
+echo "  npx endorphin-ai --help"
+echo "  npx endorphin-ai init"
+echo "  npx endorphin-ai list"
 
 # Test basic functionality
 echo "🧪 Running basic tests..."
-npx endorphin --version
-npx endorphin --help
-npx endorphin init
+npx endorphin-ai --version
+npx endorphin-ai --help
+npx endorphin-ai init
 
 echo "✅ Manual testing setup completed!"
 ```
