@@ -6,7 +6,7 @@
 // Simple console logging to avoid circular dependencies
 const log = {
   info: (msg: string, data?: any) => console.log(`[DI] ${msg}`, data || ''),
-  debug: (msg: string, data?: any) => console.debug(`[DI] ${msg}`, data || ''),
+  debug: (msg: string, data?: any) => console.debug(`🐞 [DI] ${msg}`, data || ''),
   warn: (msg: string, data?: any) => console.warn(`[DI] ${msg}`, data || ''),
   error: (msg: string, error?: any) => console.error(`[DI] ${msg}`, error || ''),
 };

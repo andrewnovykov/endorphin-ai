@@ -9,6 +9,7 @@ import {
   generateStepSummary,
   parseSteps,
 } from '../utils/step-parser.js';
+import { logWithIcon, LogLevel } from '../core/logger.js';
 
 /**
  * Generate system context message for the browser automation agent
@@ -26,9 +27,9 @@ export function createSystemContext(taskDescription: string): string {
     ? generateCompletionMessage(totalSteps)
     : 'Complete all steps and say "test completed successfully"';
 
-  console.log(`🔍 Parsed ${totalSteps} steps from task description`);
+  logWithIcon(LogLevel.DEBUG, 'debug', `Parsed ${totalSteps} steps from task description`, { totalSteps, hasValidSteps }, 'SystemContext');
   if (hasValidSteps) {
-    console.log(`📋 Steps found:\n${stepSummary}`);
+    logWithIcon(LogLevel.DEBUG, 'debug', `Steps found: ${stepSummary}`, { stepSummary }, 'SystemContext');
   }
   return `You are a browser automation agent with access to the following tools:
 - navigate: Navigate to any URL

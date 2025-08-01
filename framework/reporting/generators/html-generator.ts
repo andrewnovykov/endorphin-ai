@@ -55,9 +55,15 @@ function getPackageTemplatePaths(): string[] {
     // Alternative paths for tarballs and packages with flattened structure
     path.join(cwd, 'node_modules', 'endorphin-ai', 'dist', 'templates'),
     path.join(cwd, 'node_modules', 'endorphin-ai', 'dist', 'dist', 'framework', 'templates'),
-    // Global node_modules (common paths)
+    // Global node_modules (common paths for different OS and npm versions)
     path.join(process.env.HOME || '/', '.npm', 'node_modules', 'endorphin-ai', 'dist', 'framework', 'templates'),
-    path.join('/usr/local/lib/node_modules', 'endorphin-ai', 'dist', 'framework', 'templates')
+    path.join('/usr/local/lib/node_modules', 'endorphin-ai', 'dist', 'framework', 'templates'),
+    // Additional global paths for different npm configurations
+    path.join(process.env.APPDATA || '/', 'npm', 'node_modules', 'endorphin-ai', 'dist', 'framework', 'templates'), // Windows
+    path.join(process.env.PREFIX || '/usr/local', 'lib', 'node_modules', 'endorphin-ai', 'dist', 'framework', 'templates'),
+    // Alternative paths for yarn global and pnpm global
+    path.join(process.env.HOME || '/', '.yarn', 'global', 'node_modules', 'endorphin-ai', 'dist', 'framework', 'templates'),
+    path.join(process.env.HOME || '/', '.local', 'share', 'pnpm', 'global', '5', 'node_modules', 'endorphin-ai', 'dist', 'framework', 'templates')
   );
 
   return packagePaths.filter(p => p); // Remove any undefined/null paths
@@ -67,6 +73,8 @@ function getPackageTemplatePaths(): string[] {
  * Get templates directory - works both in development and when installed as package
  */
 function getTemplatesDir(): string {
+  // Debug mode: show all paths being tried
+  const debugMode = process.env.ENDORPHIN_DEBUG === 'verbose' || process.env.ENDORPHIN_DEBUG === 'true';
   // Get the directory path of the current file (ES modules compatible)
   // Handle Jest environment where import.meta.url might not be available
   let currentDir: string;
@@ -107,12 +115,36 @@ function getTemplatesDir(): string {
   ];
 
   for (const templatePath of possiblePaths) {
-    if (fs.existsSync(path.join(templatePath, 'reporter', 'report-template.html'))) {
+    const templateFile = path.join(templatePath, 'reporter', 'report-template.html');
+    if (debugMode) {
+      console.log(`🔍 Checking template path: ${templatePath}`);
+      console.log(`   Looking for: ${templateFile}`);
+      console.log(`   Exists: ${fs.existsSync(templateFile)}`);
+    }
+    
+    if (fs.existsSync(templateFile)) {
+      if (debugMode) {
+        console.log(`✅ Found templates at: ${templatePath}`);
+      }
       return templatePath;
     }
   }
 
-  throw new Error(`Templates directory not found. Searched paths: ${possiblePaths.join(', ')}`);
+  // Enhanced error message for troubleshooting
+  const errorMessage = [
+    `Templates directory not found. This usually happens with global installations.`,
+    ``,
+    `Searched ${possiblePaths.length} possible paths:`,
+    ...possiblePaths.map(p => `  - ${p}`),
+    ``,
+    `Troubleshooting:`,
+    `1. Try installing locally: npm install endorphin-ai --save-dev`,
+    `2. Check global installation: npm list -g endorphin-ai`,
+    `3. Enable debug mode: ENDORPHIN_DEBUG=verbose npx endorphin-ai generate report`,
+    `4. Manual check: find /usr/local/lib/node_modules -name "report-template.html" 2>/dev/null`
+  ].join('\n');
+
+  throw new Error(errorMessage);
 }
 
 export interface ReportOptions {

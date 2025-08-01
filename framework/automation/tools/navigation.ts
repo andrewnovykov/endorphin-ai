@@ -5,6 +5,8 @@
 
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { info, logSuccess, error as logError } from '../../core/logger.js';
+import { ICONS } from '../../config/icons.js';
 // import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
 
 /**
@@ -22,21 +24,25 @@ export function createNavigationTool(framework: any) {
       const waitUntil = params.waitUntil ?? 'domcontentloaded';
 
       const stepDesc = `Navigate to: ${location}`;
-      console.log(`🌍 ${stepDesc}`);
+      
+      info(`${ICONS.tools} ${ICONS.web} ${stepDesc}`, { tool: 'navigate', params: { location, waitUntil } }, 'Tool');
 
       try {
         await framework.currentPage!.goto(location, { waitUntil, timeout: 60000 });
         await framework.takeStepScreenshot(`Page loaded: ${location}`);
 
+        const result = `Successfully navigated to: ${location}`;
+        logSuccess(`Result: ${result}`, { tool: 'navigate', result }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'navigate',
           { location, waitUntil },
-          `Successfully navigated to: ${location}`,
+          result,
           true
         );
-        return `Successfully navigated to: ${location}`;
+        return result;
       } catch (error: any) {
+        logError(`Result: Navigation failed: ${error.message}`, error instanceof Error ? error : undefined, { tool: 'navigate', error: error.message }, 'Tool');
         framework.logTestStep(stepDesc, 'navigate', { location, waitUntil }, error.message, false);
         throw error;
       }

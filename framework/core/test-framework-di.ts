@@ -21,7 +21,7 @@ import { PageSnapshotManager } from '../managers/content/snapshot-manager.js';
 import { HtmlReporter } from '../reporters/html-reporter.js';
 import { ConfigManager } from './config-manager.js';
 import { DependencyContainer, createContainer } from './dependency-container.js';
-import { Logger } from './logger.js';
+import { Logger, logWithIcon, LogLevel } from './logger.js';
 import { ResourceManager } from './resource-manager.js';
 import { SERVICE_NAMES, ServiceRegistry } from './service-registry.js';
 import { SessionManager } from './session-manager.js';
@@ -252,8 +252,7 @@ export class TestFrameworkDI {
 
       await browserManager.takeScreenshot({ path: screenshotPath });
 
-      const logger = await this.getLogger();
-      logger.debug('Screenshot captured', { path: screenshotPath });
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Screenshot captured', { path: screenshotPath }, 'TestFrameworkDI');
 
       return screenshotPath;
     } catch (error: any) {
@@ -423,7 +422,7 @@ export class TestFrameworkDI {
 
   private async setupAgent(): Promise<void> {
     const logger = await this.getLogger();
-    logger.debug('Setting up AI agent');
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Setting up AI agent', {}, 'TestFrameworkDI');
 
     try {
       const configManager = await this.container.resolve<ConfigManager>(

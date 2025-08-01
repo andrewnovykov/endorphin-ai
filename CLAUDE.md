@@ -654,6 +654,246 @@ When helping with documentation:
 - **Test all code examples**
 - **Update CLAUDE.md** if framework architecture changes
 
+## Centralized Logging System (v0.9.0)
+
+### Overview
+
+Endorphin AI uses a comprehensive centralized logging system that provides structured, color-coded, and contextual logging across the entire framework. The system is designed to be flexible, configurable, and consistent.
+
+### Core Components
+
+#### Logger Architecture
+
+- **Logger Class** (`framework/core/logger.ts`): Main logging implementation with levels, colors, icons, and context
+- **Global Instances**: `globalLogger` (framework) and `agentLogger` (AI agent messages) 
+- **Icons System** (`framework/config/icons.ts`): Centralized emoji icons for different message types
+- **Colors System** (`framework/config/colors.ts`): ANSI color codes for terminal output
+
+#### Log Levels
+
+```typescript
+enum LogLevel {
+  DEBUG = 0,    // Detailed debug information
+  INFO = 1,     // General information  
+  WARN = 2,     // Warning messages
+  ERROR = 3,    // Error conditions
+  CRITICAL = 4, // Critical system failures
+}
+```
+
+### Environment Variable Configuration
+
+The logging system supports comprehensive environment-based configuration:
+
+#### Log Level Control
+
+```bash
+# Explicit log level (recommended)
+ENDORPHIN_LOG_LEVEL=DEBUG|INFO|WARN|ERROR|CRITICAL
+
+# Backward compatibility (DEBUG level)
+ENDORPHIN_DEBUG=true|verbose
+
+# Examples
+ENDORPHIN_LOG_LEVEL=DEBUG     # Show all messages
+ENDORPHIN_LOG_LEVEL=WARN      # Show only warnings and errors
+ENDORPHIN_DEBUG=true          # Legacy debug mode
+```
+
+#### Visual Configuration
+
+```bash
+# Color control
+ENDORPHIN_COLORS=true|false   # Force enable/disable colors
+NO_COLOR=1                    # Standard NO_COLOR support (disables colors)
+
+# File logging
+ENDORPHIN_LOG_FILE=/path/to/logfile.log  # Enable file logging
+ENDORPHIN_LOG_FORMAT=json               # Use JSON format for logs
+```
+
+### Usage Patterns
+
+#### Basic Logging
+
+```typescript
+import { info, warn, error, debug } from '../core/logger.js';
+
+// Simple messages
+info('Operation completed successfully');
+warn('Configuration issue detected');
+error('Failed to connect to service', errorObject);
+debug('Detailed debug information');
+
+// With context and component
+info('User authenticated', { userId: 123, method: 'oauth' }, 'AuthService');
+error('Database connection failed', dbError, { host, port }, 'DatabaseManager');
+```
+
+#### Icon-Based Logging
+
+```typescript
+import { logWithIcon, LogLevel } from '../core/logger.js';
+
+// Using predefined icons
+logWithIcon(LogLevel.INFO, 'rocket', 'Application starting up', {}, 'Application');
+logWithIcon(LogLevel.INFO, 'target', 'Processing test target', { testId }, 'TestRunner');
+logWithIcon(LogLevel.INFO, 'brain', 'AI agent processing request', { tokens }, 'Agent');
+logWithIcon(LogLevel.WARN, 'warning', 'Resource usage high', { memory: '85%' }, 'Monitor');
+```
+
+#### Component-Specific Logging
+
+```typescript
+import { globalLogger } from '../core/logger.js';
+
+// Create component-specific logger
+const componentLogger = globalLogger.createChild('MyComponent');
+
+componentLogger.info('Component initialized');
+componentLogger.warn('Non-critical issue detected');
+componentLogger.error('Component failure', error);
+```
+
+#### Performance Logging
+
+```typescript
+import { globalLogger } from '../core/logger.js';
+
+// Timer logging
+const stopTimer = globalLogger.startTimer('DatabaseQuery');
+await performDatabaseQuery();
+stopTimer(); // Automatically logs duration
+
+// Memory usage logging
+globalLogger.logMemoryUsage('AfterLargeOperation');
+```
+
+### Best Practices
+
+#### When to Use Centralized Logging
+
+✅ **Use centralized logging for:**
+- Framework internal operations
+- Error handling and debugging
+- Performance monitoring
+- State changes and important events
+- Development debugging
+
+#### When to Use Direct Console Output
+
+✅ **Keep console.* for:**
+- CLI user-facing output (`bin/endorphin.ts` help text)
+- Console reporter output (`framework/reporters/console-reporter.ts`)
+- User setup experience (`create-endorphin-ai` project creation)
+- Logger fallback mechanisms (error recovery in logger itself)
+
+#### Message Guidelines
+
+1. **Use meaningful messages**: Describe what happened, not just that something happened
+2. **Include context**: Add relevant data as context objects
+3. **Use appropriate levels**: DEBUG for detailed info, INFO for general, WARN for issues, ERROR for failures
+4. **Add component names**: Help identify the source of messages
+5. **Use icons appropriately**: Enhance readability with semantic icons
+
+#### Context Data Best Practices
+
+```typescript
+// Good - structured context data
+info('Test completed successfully', {
+  testId: 'TEST-001',
+  duration: 1250,
+  steps: 5,
+  screenshots: 3
+}, 'TestRunner');
+
+// Avoid - mixing data in message
+info('Test TEST-001 completed in 1250ms with 5 steps and 3 screenshots');
+```
+
+### Color Coding System
+
+The logging system uses semantic color coding:
+
+- **🟣 Purple**: Framework/Endorphin branding, agent messages
+- **🔵 Blue**: General info messages  
+- **🟡 Yellow**: Warning messages
+- **🔴 Red**: Error and critical messages
+- **⚫ Gray**: Debug messages
+- **🟢 Green**: Success messages (ValidationAgent)
+- **🟦 Cyan**: Tool-related messages
+
+### Migration Strategy
+
+For files with existing `console.*` usage, follow this migration approach:
+
+#### Phase 1: Framework Core (High Priority)
+```typescript
+// Before
+console.error('Failed to load config:', error);
+
+// After  
+import { error as logError } from '../core/logger.js';
+logError('Failed to load config', error, { configPath }, 'ConfigLoader');
+```
+
+#### Phase 2: Replace Patterns
+```typescript
+// Warning pattern
+console.warn('⚠️ Message'); 
+// → logWithIcon(LogLevel.WARN, 'warning', 'Message', {}, 'Component');
+
+// Success pattern  
+console.log('✅ Operation complete');
+// → logSuccess('Operation complete', {}, 'Component');
+
+// Debug pattern
+if (process.env.ENDORPHIN_DEBUG) console.log('Debug info');
+// → debug('Debug info', {}, 'Component'); // Automatic level filtering
+```
+
+### Common Issues and Solutions
+
+#### Import Errors
+- Always import from `'../core/logger.js'` (note the `.js` extension)
+- Use proper TypeScript imports: `import { logWithIcon, LogLevel } from '...'`
+- Don't forget to import `ICONS` if using icon-based logging
+
+#### Performance Considerations
+- Context objects are only serialized if the message passes the log level filter
+- Use `debug()` liberally - it's automatically filtered in production
+- File logging is async and won't block execution
+
+#### Testing Integration
+- Logger automatically adjusts levels in test environment (`NODE_ENV=test`)
+- Mock the logger in unit tests if needed: `jest.mock('../core/logger.js')`
+- Test environment defaults to WARN level to reduce noise
+
+### Advanced Features
+
+#### Structured JSON Logging
+```bash
+ENDORPHIN_LOG_FORMAT=json node app.js
+# Outputs structured JSON for log aggregation systems
+```
+
+#### Log Buffer and Analysis
+```typescript
+// Get recent log entries for debugging
+const recentLogs = globalLogger.getRecentLogs(50);
+const errorLogs = globalLogger.getLogsByLevel(LogLevel.ERROR);
+
+// Clear buffer if needed
+globalLogger.clearBuffer();
+```
+
+#### Dynamic Log Level Changes
+```typescript
+// Change log level at runtime
+globalLogger.setLevel(LogLevel.DEBUG);
+// Automatically logs the level change
+```
+
 ## Environment Variables
 
 ### Required for Development
@@ -668,8 +908,13 @@ HEADLESS=false                      # Show browser during development
 
 ### Debug Environment Variables
 
-- `ENDORPHIN_DEBUG=verbose` - Detailed framework debug output
-- `DEBUG=endorphin:*` - Enable all debug namespaces
+- `ENDORPHIN_LOG_LEVEL=DEBUG|INFO|WARN|ERROR|CRITICAL` - Set explicit log level
+- `ENDORPHIN_DEBUG=true|verbose` - Enable debug logging (legacy, use LOG_LEVEL)
+- `ENDORPHIN_COLORS=true|false` - Force enable/disable colors
+- `ENDORPHIN_LOG_FILE=/path/to/logfile.log` - Enable file logging
+- `ENDORPHIN_LOG_FORMAT=json` - Use structured JSON logging
+- `NO_COLOR=1` - Standard environment variable to disable colors
+- `DEBUG=endorphin:*` - Enable all debug namespaces (legacy)
 - `HEADLESS=false` - Show browser during testing (development)
 - `BASE_URL` - Override default test URL
 

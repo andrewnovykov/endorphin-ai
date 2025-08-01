@@ -15,6 +15,14 @@ jest.mock('../../../framework/core/logger', () => ({
       warn: jest.fn(),
       error: jest.fn()
     })
+  },
+  logWithIcon: jest.fn(),
+  LogLevel: {
+    DEBUG: 'DEBUG',
+    INFO: 'INFO',
+    WARN: 'WARN',
+    ERROR: 'ERROR',
+    CRITICAL: 'CRITICAL'
   }
 }));
 

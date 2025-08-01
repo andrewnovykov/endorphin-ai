@@ -10,6 +10,7 @@ import { ChatOpenAI } from '@langchain/openai';
 import type { TokenTracker } from '../core/token-tracker.js';
 import { trackAICall } from './agent-setup.js';
 import { AGENT_CONFIG } from './config/agent-config.js';
+import { logWithIcon, LogLevel, info, error as logError } from '../core/logger.js';
 
 export interface ValidationResult {
   status: 'SUCCESS' | 'FAILED';
@@ -91,7 +92,7 @@ Provide your analysis in the specified JSON format.`;
       // Estimate token usage before making the call
       if (this.tokenTracker) {
         const promptTokens = this.tokenTracker.estimateTokens(systemPrompt + prompt);
-        console.log(`\n 🧠 Validation Agent: Estimated ${promptTokens} input tokens`);
+        logWithIcon(LogLevel.INFO, 'brain', `Validation Agent: Estimated ${promptTokens} input tokens`, { promptTokens });
       }
 
       const startTime = Date.now();
@@ -141,7 +142,22 @@ Provide your analysis in the specified JSON format.`;
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const result = JSON.parse(jsonMatch[0]) as ValidationResult;
-        console.log(`🔍 Validation Agent Analysis:`, result);
+        // Use info logger for both SUCCESS and FAILED to trigger ValidationAgent-specific coloring
+        if (result.status === 'SUCCESS') {
+          info('✅ Validation Agent Analysis: SUCCESS', { 
+            status: result.status, 
+            confidence: result.confidence,
+            conclusion: result.conclusion,
+            reasoning: result.reasoning 
+          }, 'ValidationAgent');
+        } else {
+          info('❌ Validation Agent Analysis: FAILED', { 
+            status: result.status, 
+            confidence: result.confidence,
+            conclusion: result.conclusion,
+            reasoning: result.reasoning 
+          }, 'ValidationAgent');
+        }
         return result;
       }
 
@@ -153,7 +169,7 @@ Provide your analysis in the specified JSON format.`;
         reasoning: 'JSON parsing failed',
       };
     } catch (error) {
-      console.error('Validation agent error:', error);
+      logError('Validation agent error', error instanceof Error ? error : undefined, { message: String(error) }, 'ValidationAgent');
       return {
         status: 'FAILED',
         conclusion: 'Validation agent encountered an error',

@@ -7,7 +7,10 @@ import { performance } from 'perf_hooks';
 import { ConsoleReporter } from '../../reporters/console-reporter.js';
 import type { DiscoveryResult, FrameworkConfig, TaskResult } from '../../types/index.js';
 import { DirectoryManager } from '../../utils/directory-manager.js';
+import { info, logWithIcon, LogLevel } from '../../core/logger.js';
 import type { DiscoveredTest, TestExecutionOptions } from '../discovery/discovery-types.js';
+import { RecommendationsAgent } from '../../ai/recommendations-agent.js';
+import { TokenTracker } from '../../core/token-tracker.js';
 
 /**
  * Check if we're running in test environment
@@ -74,7 +77,7 @@ export class TestRunner {
 
     // Clean up test results directory before single test run
     const resultBaseDir = this.config?.resultBaseDir || 'test-results';
-    console.log('🧹 Cleaning up test results directory before single test...');
+    info('Cleaning up test results directory before single test', {}, 'TestRunner');
     await DirectoryManager.cleanupDirectories(resultBaseDir);
 
     // Check if this is a multi-user test
@@ -104,6 +107,10 @@ export class TestRunner {
       try {
         await framework.initialize();
         const result = await framework.runSingleTest(test);
+        
+        // Generate AI recommendations if there were failures
+        await this.generateTestRecommendations(framework, test);
+        
         return result;
       } finally {
         await framework.cleanup();
@@ -119,10 +126,10 @@ export class TestRunner {
 
     // Clean up test results directory once before the entire test session
     const resultBaseDir = this.config?.resultBaseDir || 'test-results';
-    console.log('🧹 Cleaning up test results directory before test session...');
+    info('Cleaning up test results directory before test session', {}, 'TestRunner');
     await DirectoryManager.cleanupDirectories(resultBaseDir);
 
-    console.log(`🚀 Running ${tests.length} tests sequentially with fresh browser per test...`);
+    logWithIcon(LogLevel.INFO, 'rocket', `Running ${tests.length} tests sequentially with fresh browser per test`, { testCount: tests.length }, 'TestRunner');
 
     const results: Array<{
       test: DiscoveredTest;
@@ -131,7 +138,10 @@ export class TestRunner {
       error?: string;
     }> = [];
 
-    for (const test of tests) {
+    for (let i = 0; i < tests.length; i++) {
+      const test = tests[i];
+      const progress = `${i + 1}/${tests.length}`;
+      
       // Skip quarantined tests unless explicitly enabled
       if (isTestQuarantined(test) && !shouldRunQuarantined()) {
         console.log(`⚠️ Skipping quarantined test: ${test.id}`);
@@ -139,7 +149,8 @@ export class TestRunner {
       }
 
       // Create a fresh framework instance for each test
-      console.log(`🌟 Creating fresh browser instance for test: ${test.id}`);
+      logWithIcon(LogLevel.INFO, 'testTube', `Test ${progress}: ${test.id} - ${test.name}`, { progress, testId: test.id, testName: test.name }, 'TestRunner');
+      info(`Creating fresh browser instance for test: ${test.id}`, { testId: test.id }, 'TestRunner');
 
       const startTime = performance.now();
       this.reporter.startTest(test.id, test.name);
@@ -218,6 +229,9 @@ export class TestRunner {
           results.push(testResult);
 
           console.log(`✅ Test ${test.id} completed in ${duration}ms`);
+
+          // Generate AI recommendations if there were failures
+          await this.generateTestRecommendations(framework, test);
 
           // Cleanup single-user test framework
           await framework.cleanup();
@@ -406,6 +420,62 @@ export class TestRunner {
       }
     } catch (error) {
       console.error('Failed to generate performance report:', error);
+    }
+  }
+
+  /**
+   * Generate AI-powered test recommendations based on failure data
+   */
+  private async generateTestRecommendations(
+    framework: any, 
+    test: DiscoveredTest
+  ): Promise<void> {
+    try {
+      // Only generate recommendations for single-user tests with failure data collection
+      if (!framework.getFailureData || typeof framework.getFailureData !== 'function') {
+        return; // Multi-user tests or frameworks without failure collection
+      }
+
+      const failureData = framework.getFailureData();
+      
+      // Only analyze if there were failures
+      if (!failureData || failureData.length === 0) {
+        return;
+      }
+
+      info(`🔍 Analyzing ${failureData.length} failure(s) for test recommendations`, {
+        testId: test.id,
+        failureCount: failureData.length
+      }, 'TestRunner');
+
+      // Create token tracker for recommendations agent
+      const tokenTracker = framework.getConfig ? 
+        new TokenTracker(framework.getConfig()) : 
+        new TokenTracker();
+
+      const recommendationsAgent = new RecommendationsAgent(tokenTracker);
+      
+      const recommendations = await recommendationsAgent.analyzeFailures(
+        failureData,
+        test.name,
+        typeof test.task === 'string' ? test.task : 'Complex test task'
+      );
+
+      // Display recommendations to user
+      const report = recommendationsAgent.formatRecommendationsReport(recommendations, test.name);
+      console.log(report);
+
+      // Clear failure data for next test
+      if (framework.clearFailureData && typeof framework.clearFailureData === 'function') {
+        framework.clearFailureData();
+      }
+
+    } catch (error) {
+      // Silent failure - don't disrupt test execution
+      info(`Failed to generate recommendations for test ${test.id}: ${error}`, {
+        testId: test.id,
+        error: error instanceof Error ? error.message : String(error)
+      }, 'TestRunner');
     }
   }
 }

@@ -8,6 +8,7 @@ import { HtmlGenerator, type ReportOptions } from '../reporting/generators/html-
 import { AssetManager } from '../reporting/processors/asset-manager.js';
 import { ResultsParser } from '../reporting/processors/results-parser.js';
 import type { TestSession } from '../types/index.js';
+import { info, logSuccess, error as logError } from '../core/logger.js';
 
 export interface HtmlReporterOptions {
   testResultsDir?: string;
@@ -50,7 +51,7 @@ export class HtmlReporter {
   async generateReport(options?: ReportOptions): Promise<string>;
   async generateReport(optionsOrSessions: ReportOptions | TestSession[] = {}): Promise<string> {
     try {
-      console.log('📊 Generating HTML test report...');
+      info('Generating HTML test report', {}, 'HTMLReporter');
 
       let reportData;
       let options: ReportOptions = {};
@@ -67,20 +68,22 @@ export class HtmlReporter {
       }
 
       if (reportData.testResults.length === 0) {
-        console.log('📁 Looking for test results in:', this.testResultsDir);
-        console.log('💡 To generate a report, you need to run some tests first:');
-        console.log('   1. Run: npx endorphin run test HEALTH-001');
-        console.log('   2. Or run: npx endorphin run test all');
-        console.log('   3. Then try: npx endorphin generate report');
+        info(`Looking for test results in: ${  this.testResultsDir}`, {}, 'HTMLReporter');
+        info('To generate a report, you need to run some tests first:', {}, 'HTMLReporter');
+        info('1. Run: npx endorphin run test HEALTH-001', {}, 'HTMLReporter');
+        info('2. Or run: npx endorphin run test all', {}, 'HTMLReporter');
+        info('3. Then try: npx endorphin generate report', {}, 'HTMLReporter');
         throw new Error('No test results found. Run some tests first.');
       }
 
       // Generate HTML report
       const reportPath = await this.htmlGenerator.generateReport(reportData, options);
 
-      console.log(`✅ Report generated: ${reportPath}`);
-      console.log(`📈 Report includes ${reportData.testResults.length} test results`);
-      console.log(`🎯 Success rate: ${reportData.summary.successRate.toFixed(1)}%`);
+      logSuccess(`Report generated: ${reportPath}`, { 
+        reportPath, 
+        testResultsCount: reportData.testResults.length,
+        successRate: reportData.summary.successRate 
+      }, 'HTMLReporter');
 
       return reportPath;
     } catch (error) {
@@ -106,15 +109,15 @@ export class HtmlReporter {
         const openModule = await import('open' as any);
         const open = openModule.default || openModule;
         await open(targetPath);
-        console.log(`🌐 Opened report: ${targetPath}`);
+        info(`Opened report: ${targetPath}`, { targetPath }, 'HTMLReporter');
       } catch {
-        console.log(`📄 Report generated: ${targetPath}`);
-        console.log('💡 Install "open" package to automatically open reports in browser');
+        info(`Report generated: ${targetPath}`, { targetPath }, 'HTMLReporter');
+        info('Install "open" package to automatically open reports in browser', {}, 'HTMLReporter');
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`Failed to open report: ${message}`);
-      console.log(`💡 You can manually open: ${reportPath || 'latest report'}`);
+      logError(`Failed to open report: ${message}`, error instanceof Error ? error : undefined, { message }, 'HTMLReporter');
+      info(`You can manually open: ${reportPath || 'latest report'}`, { reportPath }, 'HTMLReporter');
     }
   }
 
@@ -160,7 +163,7 @@ export class HtmlReporter {
     } = {}
   ): Promise<string> {
     try {
-      console.log('📊 Generating custom HTML report...');
+      info('Generating custom HTML report', {}, 'HTMLReporter');
 
       // Parse test results
       const reportData = this.resultsParser.collectTestResults(options.resultDirs);
@@ -183,8 +186,10 @@ export class HtmlReporter {
       // Generate HTML report with custom options
       const reportPath = await this.htmlGenerator.generateReport(reportData, options);
 
-      console.log(`✅ Custom report generated: ${reportPath}`);
-      console.log(`📈 Report includes ${reportData.testResults.length} filtered test results`);
+      logSuccess(`Custom report generated: ${reportPath}`, { 
+        reportPath,
+        testResultsCount: reportData.testResults.length 
+      }, 'HTMLReporter');
 
       return reportPath;
     } catch (error) {
@@ -222,17 +227,18 @@ export class HtmlReporter {
     freedSpaceMB: number;
   }> {
     try {
-      console.log(`🧹 Cleaning up test results (keeping ${keepPerTest} per test)...`);
+      info(`Cleaning up test results (keeping ${keepPerTest} per test)`, { keepPerTest }, 'HTMLReporter');
 
       // Clean up reports and screenshots
       const cleanupResult = await this.assetManager.cleanupResults(keepPerTest);
 
       const freedSpaceMB = Math.round((cleanupResult.freedSpace / (1024 * 1024)) * 100) / 100;
 
-      console.log(`✅ Cleanup completed:`);
-      console.log(`   📄 Deleted ${cleanupResult.deletedReports} old reports`);
-      console.log(`   🖼️  Deleted ${cleanupResult.deletedScreenshots} orphaned screenshots`);
-      console.log(`   💾 Freed ${freedSpaceMB} MB of space`);
+      logSuccess('Cleanup completed', {
+        deletedReports: cleanupResult.deletedReports,
+        deletedScreenshots: cleanupResult.deletedScreenshots,
+        freedSpaceMB
+      }, 'HTMLReporter');
 
       return {
         deletedSessions: 0, // Legacy compatibility
@@ -253,14 +259,15 @@ export class HtmlReporter {
     freedSpaceMB: number;
   } {
     try {
-      console.log(`🧹 Cleaning up reports older than ${maxAge} days...`);
+      info(`Cleaning up reports older than ${maxAge} days`, { maxAge }, 'HTMLReporter');
 
       const cleanupResult = this.assetManager.cleanupOldReports(maxAge);
       const freedSpaceMB = Math.round((cleanupResult.freedSpace / (1024 * 1024)) * 100) / 100;
 
-      console.log(`✅ Cleanup completed:`);
-      console.log(`   📄 Deleted ${cleanupResult.deletedReports} old reports`);
-      console.log(`   💾 Freed ${freedSpaceMB} MB of space`);
+      logSuccess('Cleanup completed', {
+        deletedReports: cleanupResult.deletedReports,
+        freedSpaceMB
+      }, 'HTMLReporter');
 
       return {
         deleted: cleanupResult.deletedReports,
@@ -268,7 +275,7 @@ export class HtmlReporter {
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`Cleanup failed: ${message}`);
+      logError(`Cleanup failed: ${message}`, error instanceof Error ? error : undefined, { message }, 'HTMLReporter');
       return { deleted: 0, freedSpaceMB: 0 };
     }
   }
@@ -314,7 +321,7 @@ export class HtmlReporter {
       return this.assetManager.verifyAssetIntegrity();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`Integrity check failed: ${message}`);
+      logError(`Integrity check failed: ${message}`, error instanceof Error ? error : undefined, { message }, 'HTMLReporter');
       return {
         missingAssets: [],
         brokenLinks: [],

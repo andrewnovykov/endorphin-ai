@@ -42,7 +42,7 @@ export const QE_1: TestCase = {
     // Join steps and replace variables with actual data values
     let taskContent = taskSteps.join('\n');
     taskContent = taskContent.replace(/\$\{data\.(\w+)\}/g, (match, fieldName) => {
-      if (data && data.hasOwnProperty(fieldName)) {
+      if (data && Object.prototype.hasOwnProperty.call(data, fieldName)) {
         return data[fieldName];
       }
       console.warn(`Warning: Variable ${match} not found in data object`);

@@ -25,6 +25,8 @@ import { ChatOpenAI } from '@langchain/openai';
 import type { TestSession } from '../types/test.js';
 import { getCurrentBrowserManager } from '../utils/user-utils.js';
 import { AGENT_CONFIG } from './config/agent-config.js';
+import { info, logSuccess, logWithIcon, LogLevel, error as logError, warn } from '../core/logger.js';
+import { ICONS } from '../config/icons.js';
 
 // Global variables to track session and token tracking
 let currentSession: TestSession | null = null;
@@ -73,9 +75,13 @@ export function trackAICall(
   };
 
   currentSession.agentHistory.push(agentEntry);
-  console.log(
-    `\n 💰 ${callType} ${agentCallCounter}: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms \n`
-  );
+  logWithIcon(LogLevel.INFO, 'brain', `${callType} ${agentCallCounter}: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`, {
+    callType,
+    callNumber: agentCallCounter,
+    totalTokens: tokenUsage.totalTokens,
+    cost: tokenUsage.cost,
+    duration
+  });
 }
 
 // Simplified State Annotation for Proper Memory Management
@@ -118,13 +124,13 @@ const memorySaver = new MemorySaver();
  * @returns Compiled agent workflow
  */
 export function setupAgent(tools: any[], config?: { thread_id?: string }): AgentWorkflow {
-  console.log('\n 🤖 Configuring AI agent with tools...');
+  info(`${ICONS.brain} Configuring AI agent with tools`, {}, 'Agent');
 
   // Log memory configuration
   if (config?.thread_id) {
-    console.log(`\n 🧠 Memory persistence enabled with thread_id: ${config.thread_id}`);
+    info(`${ICONS.brain} Memory persistence enabled with thread_id: ${config.thread_id}`, { threadId: config.thread_id }, 'Agent');
   } else {
-    console.log(`\n 🧠 Using session-based memory (no thread_id specified)`);
+    info(`${ICONS.brain} Using session-based memory (no thread_id specified)`, {}, 'Agent');
   }
 
   // Enhanced tool node with better error handling
@@ -135,7 +141,7 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
     try {
       return await baseToolNode.invoke(state);
     } catch (error: any) {
-      console.error('❌ Tool execution failed:', error);
+      logError(`${ICONS.brain} Tool execution failed`, error instanceof Error ? error : undefined, { message: String(error) }, 'Agent');
       
       // Create a proper tool response message even if the tool failed
       const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
@@ -220,9 +226,9 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
     const lastMessage = messages[messages.length - 1] as AIMessage;
 
     // Debug logging (simplified to avoid confusion with tracking)
-    console.log(`\n🔍 Decision logic - Message count: ${messages.length}`);
-    console.log(`🔍 Last message content: "${lastMessage.content || 'no content'}"`);
-    console.log(`🔍 Tool calls: ${lastMessage.tool_calls?.length || 0}`);
+    info(`${ICONS.brain} Decision logic - Message count: ${messages.length}`, { messageCount: messages.length }, 'Agent');
+    info(`${ICONS.brain} Last message content: "${lastMessage.content || 'no content'}"`, { content: lastMessage.content || 'no content' }, 'Agent');
+    info(`${ICONS.brain} Tool calls: ${lastMessage.tool_calls?.length || 0}`, { toolCallCount: lastMessage.tool_calls?.length || 0 }, 'Agent');
 
     const content =
       typeof lastMessage.content === 'string' ? lastMessage.content.toLowerCase() : '';
@@ -233,7 +239,7 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
     );
 
     if (hasStopPhrase) {
-      console.log(`🛑 Stop condition detected: ${content}`);
+      info(`${ICONS.brain} Stop condition detected: ${content}`, { content }, 'Agent');
       return '__end__';
     }
 
@@ -245,8 +251,10 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
     const maxMessages = isMultiUser ? 200 : 100; // Higher limits for complex tests
 
     if (messages.length > maxMessages) {
-      console.log(
-        `\n ⚠️ Maximum conversation length reached, ending test (${messages.length}/${maxMessages})`
+      warn(
+        `${ICONS.brain} Maximum conversation length reached, ending test (${messages.length}/${maxMessages})`,
+        { messageCount: messages.length, maxMessages },
+        'Agent'
       );
       return '__end__';
     }
@@ -265,8 +273,7 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
       ).length;
 
       if (identicalCount >= 3) {
-        console.log(`\n 🔄 Message repetition detected, agent stuck in loop - FAILING test`);
-        console.log(`\n 🔄 Repeated message: "${lastContent.substring(0, 100)}..."`);
+        warn(`${ICONS.brain} Message repetition detected, agent stuck in loop - FAILING test`, { repeatedMessage: lastContent.substring(0, 100) }, 'Agent');
         return '__end__';
       }
 
@@ -294,8 +301,10 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
           );
 
           if (maxToolCount >= 4) {
-            console.log(
-              `\n 🔄 Tool repetition detected: "${repeatedTool}" used ${maxToolCount} times recently - FAILING test`
+            warn(
+              `${ICONS.brain} Tool repetition detected: "${repeatedTool}" used ${maxToolCount} times recently - FAILING test`,
+              { repeatedTool, maxToolCount },
+              'Agent'
             );
             return '__end__';
           }
@@ -305,12 +314,12 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
 
     // Continue if there are tool calls to make
     if (lastMessage.tool_calls?.length) {
-      console.log(`\n➡️ Continuing to tools node`);
+      info(`${ICONS.brain} Continuing to tools node`, { toolCount: lastMessage.tool_calls?.length || 0 }, 'Agent');
       return 'tools';
     }
 
     // KEY BEHAVIOR FROM ORIGINAL: If no tool calls, end the test
-    console.log(`\n 🏁 No tool calls remaining - ending test`);
+    info(`${ICONS.brain} No tool calls remaining - ending test`, {}, 'Agent');
     return '__end__';
   }
 
@@ -326,12 +335,14 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
         ...newTestContext,
         startTime: Date.now(),
       };
-      console.log(`\n 🚀 Test session started - conversation memory will track progress naturally`);
+      info(`${ICONS.brain} Test session started - conversation memory will track progress naturally`, {}, 'Agent');
     }
 
     // Log conversation progress
-    console.log(
-      `\n 💬 Agent processing message ${state.messages.length + 1} - Memory persisted via thread_id`
+    info(
+      `Agent processing message ${state.messages.length + 1} - Memory persisted via thread_id`,
+      { messageNumber: state.messages.length + 1 },
+      'Agent'
     );
 
     try {
@@ -416,16 +427,16 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
         testContext: newTestContext,
       };
     } catch (error: any) {
-      console.error('❌ Agent model invocation failed:', error);
+      logError(`${ICONS.brain} Agent model invocation failed`, error instanceof Error ? error : undefined, { message: String(error) }, 'Agent');
       
       // Handle specific error types
       if (error.lc_error_code === 'INVALID_TOOL_RESULTS') {
-        console.error('🔧 Tool results error - checking tool call responses');
+        logError(`${ICONS.brain} Tool results error - checking tool call responses`, error instanceof Error ? error : undefined, { errorCode: error.lc_error_code }, 'Agent');
         throw new Error(`Tool results error: ${error.message}`);
       }
       
       if (error.lc_error_code === 'GRAPH_RECURSION_LIMIT') {
-        console.error('🔄 Recursion limit reached - test may be stuck in loop');
+        logError(`${ICONS.brain} Recursion limit reached - test may be stuck in loop`, error instanceof Error ? error : undefined, { errorCode: error.lc_error_code }, 'Agent');
         throw new Error(`Recursion limit reached: ${error.message}`);
       }
       
@@ -445,6 +456,6 @@ export function setupAgent(tools: any[], config?: { thread_id?: string }): Agent
     checkpointer: memorySaver,
   });
 
-  console.log('✅ AI agent configured successfully');
+  logSuccess(`${ICONS.brain} AI agent configured successfully`, {}, 'Agent');
   return agent;
 }

@@ -21,6 +21,8 @@ import {
   createVerifyTitleTool,
   createVerifyURLTool
 } from './verification.js';
+import { info } from '../../core/logger.js';
+import { ICONS } from '../../config/icons.js';
 
 /**
  * Create all browser automation tools for the framework
@@ -57,7 +59,7 @@ export function createAllTools(framework: any): any[] {
     createScreenshotTool(framework),
   ];
 
-  console.log(`🛠️ Total built-in tools available: ${builtInTools.length}`);
+  info(`${ICONS.tools} Total built-in tools available: ${builtInTools.length}`, { toolCount: builtInTools.length }, 'Tool');
 
   return builtInTools;
 }

@@ -1,7 +1,10 @@
 /**
  * Centralized Logging System
- * Provides structured logging with different levels and outputs
+ * Provides structured logging with different levels, colors, and icons
  */
+
+import { COLORS } from '../config/colors.js';
+import { ICONS } from '../config/icons.js';
 
 export enum LogLevel {
   DEBUG = 0,
@@ -29,6 +32,8 @@ export interface LoggerConfig {
   enableStructured: boolean;
   maxLogFileSize?: number; // in bytes
   component?: string;
+  enableColors: boolean;
+  enableIcons: boolean;
 }
 
 export class Logger {
@@ -43,6 +48,8 @@ export class Logger {
       enableFile: false,
       enableStructured: false,
       maxLogFileSize: 10 * 1024 * 1024, // 10MB
+      enableColors: true,
+      enableIcons: true,
       ...config,
     };
   }
@@ -71,6 +78,11 @@ export class Logger {
   ): void {
     this.log(LogLevel.CRITICAL, message, context, error, component);
   }
+
+  success(message: string, context?: Record<string, any>, component?: string): void {
+    this.log(LogLevel.INFO, message, context, undefined, component);
+  }
+
 
   private log(
     level: LogLevel,
@@ -108,18 +120,74 @@ export class Logger {
   }
 
   private logToConsole(entry: LogEntry): void {
-    const timestamp = entry.timestamp.split('T')[1].split('.')[0];
+    // Format timestamp to local time HH:MM:SS
+    const date = new Date(entry.timestamp);
+    const timestamp = date.toLocaleTimeString('en-US', { 
+      hour12: false, 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    });
     const component = entry.component ? `[${entry.component}]` : '';
     const levelStr = LogLevel[entry.level].padEnd(8);
 
-    let message = `${timestamp} ${levelStr} ${component} ${entry.message}`;
+    // Apply colors based on log level
+    let colorCode = '';
+    const resetCode = this.config.enableColors ? COLORS.reset : '';
+    
+    if (this.config.enableColors) {
+      switch (entry.level) {
+        case LogLevel.ERROR:
+        case LogLevel.CRITICAL:
+          colorCode = COLORS.brightRed;
+          break;
+        case LogLevel.WARN:
+          colorCode = COLORS.yellow;
+          break;
+        case LogLevel.INFO:
+          // Special handling for ValidationAgent SUCCESS messages
+          if (entry.component?.toLowerCase() === 'validationagent' && 
+              entry.message.toLowerCase().includes('success')) {
+            colorCode = COLORS.brightGreen; // Green for ValidationAgent SUCCESS messages
+          } else if (entry.component?.toLowerCase() === 'validationagent' && 
+              entry.message.toLowerCase().includes('failed')) {
+            colorCode = COLORS.brightRed; // Red for ValidationAgent FAILED messages
+          } else if (entry.component?.toLowerCase().includes('agent') || 
+              entry.component?.toLowerCase().includes('endorphin') ||
+              entry.message.toLowerCase().includes('endorphin')) {
+            colorCode = COLORS.purple;
+          } else if (entry.component?.toLowerCase() === 'tool') {
+            colorCode = COLORS.brightCyan; // Bright cyan for tool components (matches "Running Endorphin AI Tests")
+          } else {
+            colorCode = COLORS.blue;
+          }
+          break;
+        case LogLevel.DEBUG:
+          colorCode = COLORS.gray;
+          break;
+        default:
+          colorCode = COLORS.white;
+      }
+    }
+
+    // Icons are now included in the message by the caller
+    // No need to add icons here since they're part of the message
+    let message = `${colorCode}${timestamp} ${levelStr} ${component} ${entry.message}${resetCode}`;
 
     if (entry.context && Object.keys(entry.context).length > 0) {
       if (this.config.enableStructured) {
         message += ` ${JSON.stringify(entry.context)}`;
       } else {
         const contextStr = Object.entries(entry.context)
-          .map(([k, v]) => `${k}=${v}`)
+          .map(([k, v]) => {
+            // Handle different value types properly
+            if (v === null) return `${k}=null`;
+            if (v === undefined) return `${k}=undefined`;
+            if (typeof v === 'object') {
+              return `${k}=${JSON.stringify(v)}`;
+            }
+            return `${k}=${v}`;
+          })
           .join(' ');
         message += ` {${contextStr}}`;
       }
@@ -248,13 +316,93 @@ export class Logger {
   }
 }
 
+// Helper function to parse log level from environment variables
+const parseLogLevel = (): LogLevel => {
+  // Check for explicit log level first
+  const explicitLevel = process.env.ENDORPHIN_LOG_LEVEL?.toUpperCase();
+  if (explicitLevel) {
+    switch (explicitLevel) {
+      case 'DEBUG': return LogLevel.DEBUG;
+      case 'INFO': return LogLevel.INFO;
+      case 'WARN': case 'WARNING': return LogLevel.WARN;
+      case 'ERROR': return LogLevel.ERROR;
+      case 'CRITICAL': return LogLevel.CRITICAL;
+    }
+  }
+
+  // Check for ENDORPHIN_DEBUG for backward compatibility
+  const debugEnv = process.env.ENDORPHIN_DEBUG;
+  if (debugEnv === 'true' || debugEnv === 'verbose') {
+    return LogLevel.DEBUG;
+  }
+
+  // Default based on NODE_ENV
+  return process.env.NODE_ENV === 'test' ? LogLevel.WARN : LogLevel.INFO;
+};
+
+// Helper function to determine if colors should be enabled
+const shouldEnableColors = (): boolean => {
+  if (process.env.ENDORPHIN_COLORS !== undefined) {
+    return process.env.ENDORPHIN_COLORS.toLowerCase() === 'true';
+  }
+  // Disable colors in test environment or when NO_COLOR is set
+  return process.env.NODE_ENV !== 'test' && !process.env.NO_COLOR;
+};
+
+// Helper function to determine if file logging should be enabled
+const shouldEnableFileLogging = (): boolean => {
+  return process.env.ENDORPHIN_LOG_FILE !== undefined && process.env.ENDORPHIN_LOG_FILE !== '';
+};
+
+// Helper function to create logger config
+const createLoggerConfig = (component: string): Partial<LoggerConfig> => {
+  const config: Partial<LoggerConfig> = {
+    level: parseLogLevel(),
+    enableConsole: true,
+    enableFile: shouldEnableFileLogging(),
+    enableStructured: process.env.ENDORPHIN_LOG_FORMAT === 'json',
+    enableColors: shouldEnableColors(),
+    enableIcons: shouldEnableColors(), // Icons follow color settings
+    component,
+  };
+
+  // Only set logFilePath if it's defined
+  if (process.env.ENDORPHIN_LOG_FILE) {
+    config.logFilePath = process.env.ENDORPHIN_LOG_FILE;
+  }
+
+  return config;
+};
+
 // Global logger instance
-export const globalLogger = new Logger({
-  level: process.env.NODE_ENV === 'test' ? LogLevel.WARN : LogLevel.INFO,
-  enableConsole: true,
-  enableFile: false,
-  component: 'FRAMEWORK',
-});
+export const globalLogger = new Logger(createLoggerConfig('FRAMEWORK'));
+
+// Specialized logger for agent messages
+export const agentLogger = new Logger(createLoggerConfig('AGENT'));
+
+// Helper functions for common logging patterns
+export const logWithIcon = (level: LogLevel, icon: keyof typeof ICONS, message: string, context?: Record<string, any>, component?: string) => {
+  const iconStr = ICONS[icon];
+  const fullMessage = `${iconStr} ${message}`;
+  
+  switch (level) {
+    case LogLevel.DEBUG:
+      globalLogger.debug(fullMessage, context, component);
+      break;
+    case LogLevel.INFO:
+      globalLogger.info(fullMessage, context, component);
+      break;
+    case LogLevel.WARN:
+      globalLogger.warn(fullMessage, context, component);
+      break;
+    case LogLevel.ERROR:
+      globalLogger.error(fullMessage, undefined, context, component);
+      break;
+    case LogLevel.CRITICAL:
+      globalLogger.critical(fullMessage, undefined, context, component);
+      break;
+  }
+};
 
 // Convenience functions
 export const debug = (message: string, context?: Record<string, any>, component?: string) =>
@@ -279,3 +427,10 @@ export const critical = (
   context?: Record<string, any>,
   component?: string
 ) => globalLogger.critical(message, err, context, component);
+
+export const success = (message: string, context?: Record<string, any>, component?: string) =>
+  globalLogger.success(message, context, component);
+
+// Convenience functions with icons
+export const logSuccess = (message: string, context?: Record<string, any>, component?: string) =>
+  globalLogger.success(message, context, component);

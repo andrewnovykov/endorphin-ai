@@ -6,6 +6,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { CIPerformanceMetrics } from '../core/ci-performance.js';
+import { warn, logSuccess } from '../core/logger.js';
 
 interface TestSummary {
   testName: string;
@@ -43,13 +44,13 @@ export class PerformanceReporter {
               const summary: TestSummary = JSON.parse(summaryContent);
               summaries.push(summary);
             } catch (error) {
-              console.warn(`Failed to read summary file: ${summaryPath}`, error);
+              warn(`Failed to read summary file: ${summaryPath}`, { summaryPath, error: String(error) }, 'PerformanceReporter');
             }
           }
         }
       }
     } catch (error) {
-      console.warn(`Failed to read test summaries from ${outputDir}`, error);
+      warn(`Failed to read test summaries from ${outputDir}`, { outputDir, error: String(error) }, 'PerformanceReporter');
     }
 
     return summaries.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
@@ -74,7 +75,7 @@ export class PerformanceReporter {
     
     fs.writeFileSync(reportPath, html, 'utf8');
     
-    console.log(`📊 Performance report generated: ${reportPath}`);
+    logSuccess(`Performance report generated: ${reportPath}`, { reportPath }, 'PerformanceReporter');
     
     return reportPath;
   }

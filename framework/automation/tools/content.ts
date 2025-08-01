@@ -6,6 +6,8 @@
 import type { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { info, logSuccess, error as logError } from '../../core/logger.js';
+import { ICONS } from '../../config/icons.js';
 // Content optimization removed - using basic content extraction only
 
 /**
@@ -20,7 +22,7 @@ export function createGetPageContentTool(framework: EnhancedBrowserTestFramework
       const maxLength = params.maxLength ?? 8000;
 
       const stepDesc = 'Get page content for analysis';
-      console.log(`📄 ${stepDesc}`);
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'getPageContent', params: { includeTitle, maxLength } }, 'Tool');
 
       try {
         let content = '';
@@ -38,15 +40,18 @@ export function createGetPageContentTool(framework: EnhancedBrowserTestFramework
             : htmlContent;
         content += truncatedContent;
 
+        const result = `Retrieved ${content.length} characters`;
+        logSuccess(`Result: ${result}`, { tool: 'getPageContent', result }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'getPageContent',
           { includeTitle, maxLength },
-          `Retrieved ${content.length} characters`,
+          result,
           true
         );
         return content;
       } catch (error: any) {
+        logError(`Result: Error getting page content: ${error.message}`, error instanceof Error ? error : undefined, { tool: 'getPageContent', error: error.message }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'getPageContent',
@@ -77,13 +82,16 @@ export function createGetPageContentTool(framework: EnhancedBrowserTestFramework
 export function createGetSimplePageContentTool(framework: EnhancedBrowserTestFramework) {
   return tool(
     async () => {
-      console.log('📄 Getting page content');
+      const stepDesc = 'Get simple page content';
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'getSimplePageContent' }, 'Tool');
       const content = await framework.currentPage!.content();
+      const result = `Retrieved ${content.length} characters`;
+      logSuccess(`Result: ${result}`, { tool: 'getSimplePageContent', result }, 'Tool');
       framework.logTestStep(
-        'Get simple page content',
+        stepDesc,
         'getSimplePageContent',
         {},
-        `Retrieved ${content.length} characters`,
+        result,
         true
       );
       return content;

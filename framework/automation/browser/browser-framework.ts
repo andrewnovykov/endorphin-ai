@@ -5,6 +5,7 @@
 
 import { BrowserEngine } from '../engines/browser-engine.js';
 import { FrameworkManager } from '../../managers/system/framework-manager.js';
+import { info, logSuccess, logWithIcon, LogLevel } from '../../core/logger.js';
 import type {
   FrameworkConfig,
   TaskResult,
@@ -31,17 +32,17 @@ export class EnhancedBrowserTestFramework {
   async initialize(): Promise<void> {
     // Only initialize if not already initialized
     if (this.browserEngine) {
-      console.log('⚡ Framework already initialized, reusing existing instance');
+      info('Framework already initialized, reusing existing instance', {}, 'EnhancedBrowserTestFramework');
       return;
     }
 
-    console.log('🚀 Initializing Enhanced Browser Test Framework...');
+    logWithIcon(LogLevel.INFO, 'rocket', 'Initializing Enhanced Browser Test Framework', {}, 'EnhancedBrowserTestFramework');
 
     // Create and initialize browser engine
     this.browserEngine = this.frameworkManager.createBrowserEngine(this);
     await this.browserEngine.initialize();
 
-    console.log('✅ Framework initialized successfully!');
+    logSuccess('Framework initialized successfully', {}, 'EnhancedBrowserTestFramework');
   }
 
   /**
@@ -64,7 +65,7 @@ export class EnhancedBrowserTestFramework {
       throw new Error('Framework not initialized. Call initialize() first.');
     }
 
-    console.log(`\n🚀 Running ${tasks.length} tasks sequentially...\n`);
+    logWithIcon(LogLevel.INFO, 'rocket', `Running ${tasks.length} tasks sequentially`, { taskCount: tasks.length }, 'EnhancedBrowserTestFramework');
 
     const results: TaskResult[] = [];
     for (let i = 0; i < tasks.length; i++) {
@@ -76,7 +77,7 @@ export class EnhancedBrowserTestFramework {
 
       // Add delay between tasks
       if (i < tasks.length - 1) {
-        console.log('⏱️ Waiting before next task...\n');
+        info('Waiting before next task', { currentTask: i + 1, totalTasks: tasks.length }, 'EnhancedBrowserTestFramework');
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
@@ -113,7 +114,7 @@ export class EnhancedBrowserTestFramework {
       throw new Error('Framework not initialized. Call initialize() first.');
     }
 
-    console.log(`\n🎯 Running ${tests.length} tests with enhanced result tracking...`);
+    logWithIcon(LogLevel.INFO, 'target', `Running ${tests.length} tests with enhanced result tracking`, { testCount: tests.length }, 'EnhancedBrowserTestFramework');
     const results: Array<{
       testId: string;
       testName: string;
@@ -262,6 +263,97 @@ export class EnhancedBrowserTestFramework {
       return await this.browserEngine.createTestSession(testName, testId);
     }
     return null;
+  }
+
+  // 🤖 Failure Data Collection for AI Recommendations
+  private failureData: Array<{
+    type: string;
+    selector?: string;
+    state?: string;
+    error: string;
+    stepDescription?: string;
+    pageSnapshot?: {
+      url: string;
+      title: string;
+      html: string;
+      visibleText: string;
+    } | undefined;
+    alternatives?: Array<{
+      selector: string;
+      element: string;
+      text: string;
+      confidence: number;
+    }>;
+    screenshot?: string;
+    timestamp: string;
+  }> = [];
+
+  /**
+   * Collect failure data for post-test AI analysis
+   */
+  collectFailureData(failureInfo: {
+    type: string;
+    selector?: string;
+    state?: string;
+    error: string;
+    stepDescription?: string;
+    pageSnapshot?: {
+      url: string;
+      title: string;
+      html: string;
+      visibleText: string;
+    } | undefined;
+    alternatives?: any[];
+    screenshot?: string;
+    timestamp: string;
+  }): void {
+    this.failureData.push(failureInfo);
+  }
+
+  /**
+   * Capture current page snapshot for failure analysis
+   */
+  async capturePageSnapshot(): Promise<{
+    url: string;
+    title: string;
+    html: string;
+    visibleText: string;
+  } | null> {
+    if (!this.currentPage) {
+      return null;
+    }
+
+    try {
+      const url = this.currentPage.url();
+      const title = await this.currentPage.title();
+      
+      // Get full HTML content
+      const html = await this.currentPage.content();
+      
+      // Get visible text content
+      const visibleText = await this.currentPage.evaluate(() => {
+        return document.body.innerText || document.body.textContent || '';
+      });
+
+      return { url, title, html, visibleText };
+    } catch {
+      // Silent failure - don't disrupt test flow
+      return null;
+    }
+  }
+
+  /**
+   * Get collected failure data for AI analysis
+   */
+  getFailureData(): Array<any> {
+    return this.failureData;
+  }
+
+  /**
+   * Clear failure data (called at start of new test)
+   */
+  clearFailureData(): void {
+    this.failureData = [];
   }
 }
 

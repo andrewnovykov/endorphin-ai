@@ -7,6 +7,7 @@ import * as path from 'node:path';
 import { BrowserEngine, type BrowserEngineConfig } from '../../automation/engines/browser-engine.js';
 import { HtmlReporter } from '../../reporters/html-reporter.js';
 import { TestResultsManager } from '../../results/test-results-manager.js';
+import { info, logSuccess, logWithIcon, LogLevel } from '../../core/logger.js';
 import type {
   BrowserConfig,
   ExecutionConfig,
@@ -90,8 +91,7 @@ export class FrameworkManager {
     this.recorderBaseDir = path.join(process.cwd(), 'test-recorder');
 
     // Debug logging
-    console.log(`🔧 Results config:`, this.config.results);
-    console.log(`📁 Resolved results directory: ${this.resultBaseDir}`);
+    info('Results configuration', { config: this.config.results, resultBaseDir: this.resultBaseDir }, 'FrameworkManager');
 
     // Initialize results manager
     this.resultsManager = new TestResultsManager({
@@ -136,7 +136,7 @@ export class FrameworkManager {
   async runMultipleTasks(
     tasks: Array<{ name?: string; description: string }>
   ): Promise<TaskResult[]> {
-    console.log(`\n🚀 Running ${tasks.length} tasks sequentially...\n`);
+    logWithIcon(LogLevel.INFO, 'rocket', `Running ${tasks.length} tasks sequentially`, { taskCount: tasks.length }, 'FrameworkManager');
 
     const results: TaskResult[] = [];
     for (let i = 0; i < tasks.length; i++) {
@@ -148,7 +148,7 @@ export class FrameworkManager {
 
       // Add delay between tasks
       if (i < tasks.length - 1) {
-        console.log('⏱️ Waiting before next task...\n');
+        info('Waiting before next task', { currentTask: i + 1, totalTasks: tasks.length }, 'FrameworkManager');
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
@@ -185,7 +185,7 @@ export class FrameworkManager {
     }>;
     report: TestReport;
   }> {
-    console.log(`\n🎯 Running ${tests.length} tests with enhanced result tracking...`);
+    logWithIcon(LogLevel.INFO, 'target', `Running ${tests.length} tests with enhanced result tracking`, { testCount: tests.length }, 'FrameworkManager');
     const results: Array<{
       testId: string;
       testName: string;
@@ -259,11 +259,13 @@ export class FrameworkManager {
       })),
     };
 
-    console.log(`\n🎉 All tests completed!`);
-    console.log(
-      `📊 Final Results: ${results.filter((r) => r.success).length}/${results.length} passed`
-    );
-    console.log(`📄 HTML Report: ${reportPath}`);
+    const passedCount = results.filter((r) => r.success).length;
+    logSuccess('All tests completed', {
+      total: results.length,
+      passed: passedCount,
+      failed: results.length - passedCount,
+      reportPath
+    }, 'FrameworkManager');
 
     return { results, report };
   }
@@ -273,7 +275,7 @@ export class FrameworkManager {
    */
   enableInteractiveMode(): void {
     this.isInteractiveMode = true;
-    console.log('📼 Interactive mode enabled - results will be recorded in test-recorder folder');
+    info('Interactive mode enabled - results will be recorded in test-recorder folder', { recorderBaseDir: this.recorderBaseDir }, 'FrameworkManager');
 
     // Update results manager to enable recorder copy
     this.resultsManager = new TestResultsManager({

@@ -3,6 +3,8 @@
  * Lightweight performance tracking that can be safely enabled in CI environments
  */
 
+import { info, error as logError } from './logger.js';
+
 export interface CIPerformanceMetrics {
   startTime: number;
   endTime?: number;
@@ -68,7 +70,7 @@ export class CIPerformanceMonitor {
 
     if (this.enabled) {
       this.startMonitoring();
-      console.log('📊 Performance monitoring enabled');
+      info('Performance monitoring enabled', {}, 'CIPerformance');
     }
   }
 
@@ -129,9 +131,9 @@ export class CIPerformanceMonitor {
             browserMemory.domDocuments
           );
         }
-      } catch (error) {
+      } catch {
         // Silently continue if browser memory collection fails
-        console.debug('Browser memory collection failed:', error);
+        // Skip logging debug info as it's expected to sometimes fail
       }
     }
     
@@ -165,17 +167,22 @@ export class CIPerformanceMonitor {
     const browserHeapMB = Math.round(this.metrics.avgBrowserHeapMB);
     const domNodes = Math.round(this.metrics.avgDomNodes);
     
-    let consoleMsg = `💾 Memory: ${memoryMB}MB | ⚡ CPU: ${cpuPercent}%`;
+    let consoleMsg = `Memory: ${memoryMB}MB | CPU: ${cpuPercent}%`;
     
     if (browserHeapMB > 0) {
-      consoleMsg += ` | 🌐 Browser Heap: ${browserHeapMB}MB`;
+      consoleMsg += ` | Browser Heap: ${browserHeapMB}MB`;
     }
     
     if (domNodes > 0) {
-      consoleMsg += ` | 📄 DOM Nodes: ${domNodes}`;
+      consoleMsg += ` | DOM Nodes: ${domNodes}`;
     }
     
-    console.log(consoleMsg);
+    info(consoleMsg, {
+      memoryMB,
+      cpuPercent,
+      browserHeapMB,
+      domNodes
+    }, 'Performance');
   }
 
   recordTestStart(): void {
@@ -235,8 +242,8 @@ export class CIPerformanceMonitor {
         domNodes: domStats.nodeCount,
         domDocuments: domStats.documentCount
       };
-    } catch (error) {
-      console.debug('Failed to collect browser memory data:', error);
+    } catch {
+      // Skip logging debug info as it's expected to sometimes fail
       return null;
     }
   }
@@ -279,7 +286,7 @@ export class CIPerformanceMonitor {
   recordGC(): void {
     if (this.enabled) {
       this.metrics.gcCount++;
-      console.log(`🗑️ GC triggered (${this.metrics.gcCount} total)`);
+      info(`GC triggered (${this.metrics.gcCount} total)`, { gcCount: this.metrics.gcCount }, 'Performance');
     }
   }
 
@@ -342,7 +349,7 @@ export class CIPerformanceMonitor {
       const reporter = new PerformanceReporter();
       return await reporter.generateReport(this.getMetrics(), outputDir);
     } catch (error) {
-      console.error('Failed to generate performance report:', error);
+      logError('Failed to generate performance report', error instanceof Error ? error : undefined, { message: String(error) }, 'Performance');
       return null;
     }
   }
@@ -361,7 +368,7 @@ export class CIPerformanceMonitor {
     }
 
     if (this.enabled && !this.summaryPrinted) {
-      console.log(this.generateSummary());
+      info(this.generateSummary(), {}, 'Performance');
       this.summaryPrinted = true;
       // Note: HTML report generation is now handled by TestRunner to ensure it completes
     }

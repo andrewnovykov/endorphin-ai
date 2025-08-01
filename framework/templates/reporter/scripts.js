@@ -3,6 +3,8 @@
  * Handles interactive functionality for the HTML report
  */
 
+/* global Chart */
+
 class TestReportViewer {
   constructor() {
     this.testData = [];
@@ -861,7 +863,7 @@ class TestReportViewer {
     if (this.testData.length === 0) {
       console.warn('No test data available for chart');
       const ctx = canvas.getContext('2d');
-      this.durationChart = new Chart(ctx, {
+      this.durationChart = typeof Chart !== 'undefined' ? new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['No Data'],
@@ -881,7 +883,7 @@ class TestReportViewer {
             }
           }
         }
-      });
+      }) : null;
       return;
     }
 
@@ -940,7 +942,7 @@ class TestReportViewer {
       console.warn('No test groups found after processing');
       // Create a simple test chart for debugging
       const ctx = canvas.getContext('2d');
-      this.durationChart = new Chart(ctx, {
+      this.durationChart = typeof Chart !== 'undefined' ? new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['Sample Test'],
@@ -977,14 +979,14 @@ class TestReportViewer {
             }
           }
         }
-      });
+      }) : null;
       return;
     }
 
     // Prepare chart data - sort based on user preference
-    let sortedTests = Object.entries(testGroups)
+    const sortedTests = Object.entries(testGroups)
       .map(([name, group]) => ({
-        name: name,
+        name,
         avgDuration: group.totalDuration / group.count,
         count: group.count,
         maxDuration: Math.max(...group.rawDurations),
@@ -1020,7 +1022,7 @@ class TestReportViewer {
       // Truncate long test names for better display
       const maxLength = 25;
       return test.name.length > maxLength ? 
-        test.name.substring(0, maxLength) + '...' : 
+        `${test.name.substring(0, maxLength)  }...` : 
         test.name;
     });
     
@@ -1038,10 +1040,10 @@ class TestReportViewer {
     console.log(`Preparing chart for ${displayTests.length} tests with title: ${chartTitle}`);
 
     const ctx = canvas.getContext('2d');
-    this.durationChart = new Chart(ctx, {
+    this.durationChart = typeof Chart !== 'undefined' ? new Chart(ctx, {
       type: 'bar', // Use bar chart with indexAxis: 'y' for horizontal bars
       data: {
-        labels: labels,
+        labels,
         datasets: [{
           label: 'Average Duration (seconds)',
           data: avgDurations,
@@ -1072,11 +1074,11 @@ class TestReportViewer {
           },
           tooltip: {
             callbacks: {
-              title: function(context) {
+              title(context) {
                 const index = context[0].dataIndex;
                 return displayTests[index].name; // Show full name in tooltip
               },
-              label: function(context) {
+              label(context) {
                 const index = context.dataIndex;
                 const test = displayTests[index];
                 return [
@@ -1116,7 +1118,7 @@ class TestReportViewer {
           mode: 'index'
         }
       }
-    });
+    }) : null;
 
     // Update chart info
     const chartInfo = document.getElementById('chart-info');

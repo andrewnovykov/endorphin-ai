@@ -3,9 +3,9 @@
  * Uses examples folder as templates for consistent setup
  */
 
+import { execSync } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
-import { execSync } from 'child_process';
 
 // Get the framework root directory by going up from this file's location
 // This works both in compiled JS and during testing
@@ -86,10 +86,13 @@ export async function initProject(targetDir: string = process.cwd()): Promise<vo
     console.log('');
     console.log('🚀 Next steps:');
     console.log('  1. Edit .env and add your OpenAI API key');
-    console.log('  2. Run: npx endorphin-ai run test HEALTH-001');
-    console.log('  3. Try the UI demo: npx endorphin-ai run test UI-DEMO-001');
-    console.log('  4. Try: npx endorphin-ai generate report');
-    console.log('  5. Try: npx endorphin-ai run test-recorder');
+    console.log('  2. Run: npx endorphin-ai list (see all available tests)');
+    console.log('  3. Run: npx endorphin-ai run test HEALTH-001');
+    console.log('  4. Try: npx endorphin-ai run test SAMPLE-001');
+    console.log('  5. Try: npx endorphin-ai run test MULTI-USER-001 (multi-user test)');
+    console.log('  6. Try: npx endorphin-ai generate report');
+    console.log('  7. Try: npx endorphin-ai run test-recorder');
+    console.log('  8. Set ENDORPHIN_DEBUG=verbose in .env for detailed logs');
     console.log('');
     console.log('📚 Learn more: https://github.com/andrewnovykov/endorphin-ai');
   } catch (error: any) {
@@ -129,13 +132,36 @@ async function copyExampleFiles(targetDir: string): Promise<void> {
   const files = [
     { src: '.env.example', dest: '.env' },
     { src: 'endorphin.config.ts', dest: 'endorphin.config.ts' },
-    { src: 'tests/SAMPLE-001.ts', dest: 'tests/SAMPLE-001.ts' },
-    { src: 'tests/HEALTH-001.ts', dest: 'tests/HEALTH-001.ts' },
-    { src: 'tests/HEALTH-002.ts', dest: 'tests/HEALTH-002.ts' },
-    { src: 'tests/QUARANTINE-001.ts', dest: 'tests/QUARANTINE-001.ts' },
+    { src: 'global-setup.ts', dest: 'global-setup.ts' },
     { src: '.gitignore.example', dest: '.gitignore' },
     { src: 'README-ENDORPHIN.md', dest: 'README-ENDORPHIN.md' },
   ];
+
+  // Copy all test files from examples/tests directory
+  try {
+    const testsDir = path.join(examplesDir, 'tests');
+    const testFiles = await fs.readdir(testsDir);
+    
+    for (const testFile of testFiles) {
+      if (testFile.endsWith('.ts')) {
+        files.push({
+          src: `tests/${testFile}`,
+          dest: `tests/${testFile}`
+        });
+      }
+    }
+    console.log(`📋 Found ${testFiles.length} test files to copy`);
+  } catch {
+    console.warn('⚠️  Could not read tests directory, using fallback test files');
+    // Fallback to specific files if directory reading fails
+    files.push(
+      { src: 'tests/SAMPLE-001.ts', dest: 'tests/SAMPLE-001.ts' },
+      { src: 'tests/HEALTH-001.ts', dest: 'tests/HEALTH-001.ts' },
+      { src: 'tests/HEALTH-002.ts', dest: 'tests/HEALTH-002.ts' },
+      { src: 'tests/QUARANTINE-001.ts', dest: 'tests/QUARANTINE-001.ts' },
+      { src: 'tests/MULTI-USER-001.ts', dest: 'tests/MULTI-USER-001.ts' }
+    );
+  }
 
   for (const file of files) {
     const srcPath = path.join(examplesDir, file.src);
@@ -172,7 +198,11 @@ function processEnvFile(content: string): string {
 # 2. Create new secret key
 # 3. Replace "your_openai_api_key_here" above with your actual key
 # 4. Save this file
-# 5. Run: npx endorphin-ai run test HEALTH-001`;
+# 5. Run: npx endorphin-ai run test HEALTH-001
+
+# 💡 Pro tip: Set ENDORPHIN_DEBUG=verbose for detailed logging
+# 💡 Pro tip: Use JIRA integration for test management
+# 💡 Pro tip: Set HEADLESS=true for faster CI/CD execution`;
 }
 
 function processConfigFile(content: string): string {
@@ -201,34 +231,34 @@ async function fileExists(filePath: string): Promise<boolean> {
 }
 
 async function createBasicFiles(targetDir: string): Promise<void> {
-  console.log('🛠️ Creating basic configuration files...');
-  
+  console.log('🛠️  Creating basic configuration files...');
+
   // Initialize npm package.json first
   try {
     console.log('📦 Initializing npm package...');
-    execSync('npm init -y', { 
+    execSync('npm init -y', {
       cwd: targetDir,
-      stdio: 'pipe' // Suppress output
+      stdio: 'pipe', // Suppress output
     });
     console.log('📄 Created: package.json');
-    
+
     // Add endorphin-ai dependency
     const packageJsonPath = path.join(targetDir, 'package.json');
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
-    
+
     packageJson.type = 'module';
-    
+
     packageJson.dependencies = {
       'endorphin-ai': '^0.8.0',
-      ...packageJson.dependencies
+      ...packageJson.dependencies,
     };
-    
+
     packageJson.devDependencies = {
       '@types/node': '^20.0.0',
-      'typescript': '^5.0.0',
-      ...packageJson.devDependencies
+      typescript: '^5.0.0',
+      ...packageJson.devDependencies,
     };
-    
+
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
     console.log('📄 Updated: package.json (added dependencies)');
   } catch (error: any) {
@@ -393,4 +423,3 @@ Happy testing! 🚀`;
 
   // No custom tools needed - functionality removed
 }
-

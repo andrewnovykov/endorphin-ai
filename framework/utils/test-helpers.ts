@@ -6,6 +6,8 @@
 import * as path from 'node:path';
 import { BrowserManager } from '../automation/browser/browser-manager.js';
 import type { TestSession, TestStep } from '../types/index.js';
+import { info, warn, logSuccess, error as logError } from '../core/logger.js';
+import { ICONS } from '../config/icons.js';
 
 export class TestHelpers {
   /**
@@ -30,20 +32,24 @@ export class TestHelpers {
       isImportant,
     };
 
-    // Console output with formatting
-    const prefix = isImportant ? '🔥' : '📝';
-    console.log(`${prefix} ${description}`);
-
-    if (tool) {
-      console.log(`   🔧 Tool: ${tool}`);
-    }
-
-    if (params && Object.keys(params).length > 0) {
-      console.log(`   📊 Params: ${JSON.stringify(params, null, 2)}`);
-    }
-
-    if (result) {
-      console.log(`   ✅ Result: ${result}`);
+    // Use logger with proper formatting and combined tool icons
+    const toolIconMap: Record<string, string> = {
+      'click': `${ICONS.tools} ${ICONS.button}`,
+      'fill': `${ICONS.tools} ${ICONS.keyboard}`,
+      'navigate': `${ICONS.tools} ${ICONS.web}`,
+      'wait': `${ICONS.tools} ${ICONS.hourglass}`,
+      'screenshot': `${ICONS.tools} ${ICONS.camera}`,
+      'verify': `${ICONS.tools} ${ICONS.checkmark}`,
+      'found': `${ICONS.tools} ${ICONS.search}`,
+      'default': ICONS.tools
+    };
+    
+    const toolIcon = tool ? (toolIconMap[tool.toLowerCase()] || toolIconMap['default']) : ICONS.tools;
+    
+    if (isImportant) {
+      logSuccess(`${toolIcon} ${description}`, { tool, params: JSON.stringify(params), result }, 'Tool');
+    } else {
+      info(`${toolIcon} ${description}`, { tool, params: JSON.stringify(params), result }, 'Tool');
     }
 
     // Add to session if provided
@@ -79,7 +85,7 @@ export class TestHelpers {
   ): Promise<string | null> {
     try {
       if (!browserManager.isInitialized()) {
-        console.log('⚠️ Browser not initialized, skipping screenshot');
+        warn(`${ICONS.tools} ${ICONS.warning} Browser not initialized, skipping screenshot`, {}, 'Tool');
         return null;
       }
 
@@ -118,11 +124,11 @@ export class TestHelpers {
         ? `Screenshot: ${description}`
         : `Screenshot step ${stepNumber}`;
 
-      console.log(`📸 ${logDescription} -> ${filename}`);
+      info(`${ICONS.tools} ${ICONS.camera} ${logDescription} -> ${filename}`, { filename, stepNumber }, 'Tool');
 
       return screenshotPath;
     } catch (error: any) {
-      console.error('❌ Failed to take screenshot:', error.message);
+      logError(`${ICONS.tools} ${ICONS.failure} Failed to take screenshot`, error instanceof Error ? error : undefined, { message: String(error) }, 'Tool');
       return null;
     }
   }
@@ -257,7 +263,13 @@ Session ID: ${session.sessionId}
    * Log test summary
    */
   static logTestSummary(session: TestSession): void {
-    console.log(`\n${TestHelpers.generateTestSummary(session)}\n`);
+    info(`${ICONS.gear} ${TestHelpers.generateTestSummary(session)}`, { 
+      sessionId: session.sessionId,
+      testId: session.testId,
+      status: session.status,
+      duration: session.duration,
+      steps: session.steps.length
+    }, 'TestHelper');
   }
 
   /**

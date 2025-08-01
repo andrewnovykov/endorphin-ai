@@ -5,6 +5,7 @@
 
 import type { JiraTicket } from '../types/config.js';
 import type { TestCase } from '../types/test.js';
+import { warn } from '../core/logger.js';
 
 export interface ConversionResult {
   success: boolean;
@@ -129,7 +130,7 @@ export class JiraConverter {
     if (!dataMatch) return null;
 
     const prompt = dataMatch[1];
-    let fieldsContent = dataMatch[2].trim();
+    const fieldsContent = dataMatch[2].trim();
     const fields: Record<string, string> = {};
 
     // Split on actual newlines (not escaped ones)
@@ -148,7 +149,7 @@ export class JiraConverter {
       
       // Find all known field names in the text
       for (const fieldName of knownFields) {
-        const fieldIndex = concatenatedLine.toLowerCase().indexOf(fieldName + ':');
+        const fieldIndex = concatenatedLine.toLowerCase().indexOf(`${fieldName  }:`);
         if (fieldIndex !== -1) {
           fieldBoundaries.push({
             name: fieldName,
@@ -278,16 +279,16 @@ export class JiraConverter {
   private static createDataFunction(fields: Record<string, string>, prompt: string): string {
     // Return a function string that will be written to the test file
     return `async () => {
-    console.log('Generating test data...');
+    info('Generating test data for JIRA ticket', {}, 'JiraConverter');
 
     // Use AI to generate realistic user data
     const { generateData } = await import('../../framework/utils/generate-data.js');
     const userData = await generateData(
-      ${JSON.stringify(fields, null, 6).split('\n').map((line, i) => i === 0 ? line : '      ' + line).join('\n')},
+      ${JSON.stringify(fields, null, 6).split('\n').map((line, i) => i === 0 ? line : `      ${  line}`).join('\n')},
       '${prompt}'
     );
 
-    console.log('Generated test data...', userData);
+    info('Generated test data for JIRA ticket', { userData }, 'JiraConverter');
     return userData;
   }`;
   }
@@ -429,10 +430,10 @@ export class JiraConverter {
     // Replace ${data.fieldName} patterns
     const variableRegex = /\$\{data\.(\w+)\}/g;
     result = result.replace(variableRegex, (match, fieldName) => {
-      if (data.hasOwnProperty(fieldName)) {
+      if (Object.prototype.hasOwnProperty.call(data, fieldName)) {
         return data[fieldName];
       }
-      console.warn(`Warning: Variable ${match} not found in data object`);
+      warn(`Variable ${match} not found in data object`, { variable: match }, 'JiraConverter');
       return match; // Keep the original if not found
     });
 

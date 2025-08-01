@@ -4,6 +4,7 @@
  */
 
 import { Page } from 'playwright';
+import { warn, logWithIcon, LogLevel } from '../../core/logger.js';
 import type {
   ChangeRecord,
   DeltaSummary,
@@ -47,7 +48,7 @@ export class PageSnapshotManager {
 
       return content.substring(0, 5000); // Limit content length for snapshots
     } catch (error) {
-      console.warn('Failed to extract snapshot content:', error);
+      warn('Failed to extract snapshot content', { error: String(error) }, 'SnapshotManager');
       return 'Unable to extract page content';
     }
   }
@@ -79,7 +80,7 @@ export class PageSnapshotManager {
 
       // Check if URL has changed - if so, clear all snapshots
       if (this.currentUrl && this.currentUrl !== url) {
-        console.log(`🔄 URL changed from ${this.currentUrl} to ${url} - clearing snapshots`);
+        logWithIcon(LogLevel.DEBUG, 'debug', `URL changed from ${this.currentUrl} to ${url} - clearing snapshots`, { oldUrl: this.currentUrl, newUrl: url }, 'SnapshotManager');
         this.clearAll();
       }
       this.currentUrl = url;
@@ -284,7 +285,7 @@ export class PageSnapshotManager {
     const currentUrl = await page.url();
 
     if (this.currentUrl && this.currentUrl !== currentUrl) {
-      console.log(`🔄 URL changed from ${this.currentUrl} to ${currentUrl} - clearing snapshots`);
+      logWithIcon(LogLevel.DEBUG, 'debug', `URL changed from ${this.currentUrl} to ${currentUrl} - clearing snapshots`, { oldUrl: this.currentUrl, newUrl: currentUrl }, 'SnapshotManager');
       this.clearAll();
       this.currentUrl = currentUrl;
       return true; // URL changed
@@ -308,7 +309,7 @@ export class PageSnapshotManager {
 
     if (global.gc) {
       global.gc();
-      console.log('🧹 Forced garbage collection');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Forced garbage collection', {}, 'SnapshotManager');
     }
   }
 

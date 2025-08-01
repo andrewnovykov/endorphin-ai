@@ -5,6 +5,7 @@
 
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
+import { info } from './logger.js';
 import type { TestSession } from '../types/test.js';
 
 interface SessionSummary {
@@ -59,7 +60,7 @@ export async function createTestSession(
     status: 'RUNNING',
   };
 
-  console.log(`📁 Created test session: ${sessionName}`);
+  info(`Created test session: ${sessionName}`, { sessionId, sessionName, sessionDir }, 'TestSession');
   return session;
 }
 
@@ -109,6 +110,6 @@ export async function saveTestSession(session: TestSession): Promise<SessionSumm
   const summaryFile = path.join(session.sessionDir, 'summary.json');
   await fs.writeFile(summaryFile, JSON.stringify(summary, null, 2));
 
-  console.log(`💾 Session data saved to: ${session.sessionDir}`);
+  info(`Session data saved to: ${session.sessionDir}`, { sessionDir: session.sessionDir, sessionId: session.sessionId }, 'TestSession');
   return summary;
 }

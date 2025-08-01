@@ -7,6 +7,8 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import type { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
 import { TIMEOUTS } from '../../config/constants.js';
+import { info, logSuccess, error as logError, warn, logWithIcon, LogLevel } from '../../core/logger.js';
+import { ICONS } from '../../config/icons.js';
 
 /**
  * Creates a click tool for the framework
@@ -36,16 +38,15 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
       const force = params.force ?? false;
 
       const stepDesc = `Click ${selector} using ${strategy} strategy`;
-      console.log(`🔘 ${stepDesc}`);
+      
+      info(`${ICONS.tools} ${ICONS.button} ${stepDesc}`, { tool: 'click', params: { selector, strategy, timeout, force } }, 'Tool');
 
-      // Debug logging for  tool calls
+      // Debug logging for tool calls
       if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
-        console.log(`🔧 Build-in tool called! Name: click, Parameters:`, {
-          selector,
-          strategy,
-          timeout,
-          force,
-        });
+        logWithIcon(LogLevel.DEBUG, 'debug', `${ICONS.tools} ${ICONS.button} Built-in tool called`, { 
+          toolName: 'click', 
+          parameters: { selector, strategy, timeout, force }
+        }, 'Tool');
       }
 
       try {
@@ -59,8 +60,10 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
               .filter({ hasText: selector });
             const buttonCount = await buttonLocator.count();
             if (buttonCount > 0) {
-              console.log(
-                `🎯 Found ${buttonCount} button(s) with text "${selector}", using button strategy`
+              info(
+                `${ICONS.tools} ${ICONS.button} Found ${buttonCount} button(s) with text "${selector}", using button strategy`,
+                { buttonCount, selector, strategy: 'button' },
+                'Tool'
               );
               locator = buttonLocator.first();
             } else {
@@ -76,8 +79,10 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
             });
             const buttonCount = await buttonLocator.count();
             if (buttonCount > 0) {
-              console.log(
-                `🎯 Found ${buttonCount} button(s) with exact text "${selector}", using button strategy`
+              info(
+                `${ICONS.tools} ${ICONS.button} Found ${buttonCount} button(s) with exact text "${selector}", using button strategy`,
+                { buttonCount, selector, strategy: 'button' },
+                'Tool'
               );
               locator = buttonLocator.first();
             } else {
@@ -91,14 +96,18 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
                 });
               const clickableCount = await clickableLocator.count();
               if (clickableCount > 0) {
-                console.log(
-                  `🎯 Found ${clickableCount} clickable element(s) with exact text "${selector}", using first clickable element`
+                info(
+                  `${ICONS.tools} ${ICONS.button} Found ${clickableCount} clickable element(s) with exact text "${selector}", using first clickable element`,
+                  { clickableCount, selector, strategy: 'clickable' },
+                  'Tool'
                 );
                 locator = clickableLocator.first();
               } else {
                 // Fallback to general exact text search (may cause strict mode violation)
-                console.log(
-                  `⚠️ Using fallback exact text search for "${selector}" - may cause strict mode violation if multiple elements match`
+                warn(
+                  `Using fallback exact text search for "${selector}" - may cause strict mode violation if multiple elements match`,
+                  { selector, strategy: 'fallback-exact-text' },
+                  'Tool'
                 );
                 locator = framework.currentPage!.getByText(selector, { exact: true });
               }
@@ -112,8 +121,10 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
               locator = framework.currentPage!.getByRole(role as any, { name });
             } else {
               // If no name provided, get all elements of that role and use first
-              console.log(
-                `⚠️ Role "${role}" without name may cause strict mode violation - using first match`
+              warn(
+                `Role "${role}" without name may cause strict mode violation - using first match`,
+                { role, strategy: 'role-without-name' },
+                'Tool'
               );
               locator = framework.currentPage!.getByRole(role as any).first();
             }
@@ -137,8 +148,10 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
             const elementCount = await cssLocator.count();
             
             if (elementCount > 1) {
-              console.log(
-                `⚠️ CSS selector "${selector}" matches ${elementCount} elements - using first element to avoid strict mode violation`
+              warn(
+                `CSS selector "${selector}" matches ${elementCount} elements - using first element to avoid strict mode violation`,
+                { selector, elementCount, strategy: 'css-multiple' },
+                'Tool'
               );
               locator = cssLocator.first();
             } else {
@@ -152,6 +165,7 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
         const count = await locator.count();
         if (count === 0) {
           const result = `Element ${selector} not found on page`;
+          logError(`Result: ${result}`, undefined, { tool: 'click', error: result }, 'Tool');
           framework.logTestStep(
             stepDesc,
             'click',
@@ -167,6 +181,7 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
         const screenshotPath = await framework.takeStepScreenshot(`After clicking ${selector}`);
 
         const result = `Successfully clicked ${selector} using ${strategy} strategy`;
+        logSuccess(`Result: ${result}`, { tool: 'click', result }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'click',
@@ -178,7 +193,7 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
 
         // Debug logging for successful tool completion
         if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
-          console.log(`✅ Built-in tool completed! Name: click, Result: ${result}`);
+          info(`${ICONS.tools} ${ICONS.button} ${ICONS.success} Built-in tool completed! Name: click, Result: ${result}`, { toolName: 'click', result }, 'Tool');
         }
 
         return result;
@@ -195,7 +210,7 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
 
         // Debug logging for failed tool execution
         if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
-          console.error(`❌ Built-in tool failed! Name: click, Error: ${error.message}`);
+          logError(`${ICONS.tools} ${ICONS.button} ${ICONS.failure} Built-in tool failed! Name: click, Error: ${error.message}`, error instanceof Error ? error : undefined, { toolName: 'click', error: error.message }, 'Tool');
         }
 
         return `❌ Error clicking ${selector}: ${error.message}`;
@@ -243,7 +258,7 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
       const pressEnter = params.pressEnter ?? false;
 
       const stepDesc = `Fill ${selector} with "${value}"`;
-      console.log(`📝 ${stepDesc}`);
+      info(`${ICONS.tools} ${ICONS.keyboard} ${stepDesc}`, { tool: 'fill', params: { selector, value, strategy, clearFirst, pressEnter } }, 'Tool');
 
       try {
         // Try multiple strategies for common field types
@@ -266,7 +281,7 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
               locator = framework.currentPage!.locator(sel);
               if ((await locator.count()) > 0) {
                 finalSelector = sel;
-                console.log(`📧 Found email field using selector: ${sel}`);
+                info(`${ICONS.tools} ${ICONS.keyboard} Found email field using selector: ${sel}`, { selector: sel, fieldType: 'email' }, 'Tool');
                 break;
               }
             } catch {
@@ -290,7 +305,7 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
               locator = framework.currentPage!.locator(sel);
               if ((await locator.count()) > 0) {
                 finalSelector = sel;
-                console.log(`🔒 Found password field using selector: ${sel}`);
+                info(`${ICONS.tools} ${ICONS.keyboard} Found password field using selector: ${sel}`, { selector: sel, fieldType: 'password' }, 'Tool');
                 break;
               }
             } catch {
@@ -315,8 +330,10 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
           // Double-check clearing worked by trying alternative method if needed
           const currentValue = await locator.inputValue();
           if (currentValue && currentValue.length > 0) {
-            console.log(
-              `⚠️ Field still contains "${currentValue}", trying alternative clearing...`
+            warn(
+              `Field still contains "${currentValue}", trying alternative clearing...`,
+              { currentValue, field: finalSelector },
+              'Tool'
             );
             await locator.fill(''); // Force empty
             await framework.currentPage!.waitForTimeout(100);
@@ -342,6 +359,11 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
           ? `Successfully filled ${finalSelector} with "${value}"`
           : `Filled ${finalSelector} but value is "${actualValue}" instead of "${value}"`;
 
+        if (success) {
+          logSuccess(`Result: ${result}`, { tool: 'fill', result }, 'Tool');
+        } else {
+          warn(`Result: ${result}`, { tool: 'fill', actualValue, expectedValue: value }, 'Tool');
+        }
         framework.logTestStep(
           stepDesc,
           'fill',
@@ -353,6 +375,7 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
         return success ? `✅ ${result}` : `⚠️ ${result}`;
       } catch (error: any) {
         const screenshotPath = await framework.takeStepScreenshot(`Failed to fill ${selector}`);
+        logError(`Result: Error filling ${selector}: ${error.message}`, error instanceof Error ? error : undefined, { tool: 'fill', error: error.message }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'fill',
@@ -392,7 +415,7 @@ export function createClearFieldTool(framework: EnhancedBrowserTestFramework) {
   return tool(
     async ({ selector }: { selector: string }) => {
       const stepDesc = `Clear field: ${selector}`;
-      console.log(`🧹 ${stepDesc}`);
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'clearField', params: { selector } }, 'Tool');
 
       try {
         await framework.currentPage!.waitForSelector(selector, {
@@ -414,10 +437,16 @@ export function createClearFieldTool(framework: EnhancedBrowserTestFramework) {
           ? `Successfully cleared field ${selector}`
           : `Field ${selector} still contains: "${value}"`;
 
+        if (isCleared) {
+          logSuccess(`Result: ${result}`, { tool: 'clearField', result }, 'Tool');
+        } else {
+          warn(`Result: ${result}`, { tool: 'clearField', value }, 'Tool');
+        }
         framework.logTestStep(stepDesc, 'clearField', { selector }, result, isCleared, screenshotPath ? [screenshotPath] : []);
         return isCleared ? `✅ ${result}` : `⚠️ ${result}`;
       } catch (error: any) {
         const screenshotPath = await framework.takeStepScreenshot(`Failed to clear ${selector}`);
+        logError(`Result: Error clearing field ${selector}: ${error.message}`, error instanceof Error ? error : undefined, { tool: 'clearField', error: error.message }, 'Tool');
         framework.logTestStep(stepDesc, 'clearField', { selector }, error.message, false, screenshotPath ? [screenshotPath] : []);
         return `❌ Error clearing field ${selector}: ${error.message}`;
       }
@@ -441,17 +470,18 @@ export function createDescribeTool(framework: EnhancedBrowserTestFramework) {
   return tool(
     async ({ selector, description }: { selector: string; description: string }) => {
       const stepDesc = `Describe element: ${selector} as "${description}"`;
-      console.log(`📝 ${stepDesc}`);
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'describe', params: { selector, description } }, 'Tool');
 
       try {
         // Create locator and add description through logging for better debugging
         const locator = framework.currentPage!.locator(selector);
-        console.log(`📝 Element described: "${description}"`);
+        info(`${ICONS.tools} Element described: "${description}"`, { selector, description }, 'Tool');
         
         // Verify the element exists
         const count = await locator.count();
         if (count === 0) {
           const result = `Element ${selector} not found on page`;
+          logError(`Result: ${result}`, undefined, { tool: 'describe', error: result }, 'Tool');
           framework.logTestStep(
             stepDesc,
             'describe',
@@ -463,6 +493,7 @@ export function createDescribeTool(framework: EnhancedBrowserTestFramework) {
         }
 
         const result = `Element ${selector} described as "${description}" (found ${count} element${count > 1 ? 's' : ''})`;
+        logSuccess(`Result: ${result}`, { tool: 'describe', result }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'describe',
@@ -472,6 +503,7 @@ export function createDescribeTool(framework: EnhancedBrowserTestFramework) {
         );
         return `✅ ${result}`;
       } catch (error: any) {
+        logError(`Result: Error describing element ${selector}: ${error.message}`, error instanceof Error ? error : undefined, { tool: 'describe', error: error.message }, 'Tool');
         framework.logTestStep(stepDesc, 'describe', { selector, description }, error.message, false);
         return `❌ Error describing element ${selector}: ${error.message}`;
       }
@@ -504,7 +536,7 @@ export function createPressSequentiallyTool(framework: EnhancedBrowserTestFramew
       const actualDelay: number = delay ?? 100;
       const actualStrategy = strategy ?? 'css';
       const stepDesc = `Type sequentially "${text}" into ${selector}`;
-      console.log(`⌨️ ${stepDesc}`);
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'pressSequentially', params: { selector, text, delay: actualDelay, strategy: actualStrategy } }, 'Tool');
 
       try {
         // Get locator based on strategy
@@ -530,6 +562,7 @@ export function createPressSequentiallyTool(framework: EnhancedBrowserTestFramew
         const count = await locator.count();
         if (count === 0) {
           const result = `Element ${selector} not found on page`;
+          logError(`Result: ${result}`, undefined, { tool: 'pressSequentially', error: result }, 'Tool');
           framework.logTestStep(
             stepDesc,
             'pressSequentially',
@@ -546,6 +579,7 @@ export function createPressSequentiallyTool(framework: EnhancedBrowserTestFramew
         await framework.takeStepScreenshot(`After typing sequentially into ${selector}`);
 
         const result = `Successfully typed "${text}" sequentially into ${selector} with ${actualDelay}ms delay`;
+        logSuccess(`Result: ${result}`, { tool: 'pressSequentially', result }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'pressSequentially',
@@ -556,6 +590,7 @@ export function createPressSequentiallyTool(framework: EnhancedBrowserTestFramew
         return `✅ ${result}`;
       } catch (error: any) {
         await framework.takeStepScreenshot(`Failed to type sequentially into ${selector}`);
+        logError(`Result: Error typing sequentially into ${selector}: ${error.message}`, error instanceof Error ? error : undefined, { tool: 'pressSequentially', error: error.message }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'pressSequentially',

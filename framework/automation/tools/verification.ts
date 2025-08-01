@@ -7,6 +7,9 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
 import { TIMEOUTS } from '../../config/constants.js';
+import { info, logSuccess, error as logError } from '../../core/logger.js';
+import { ICONS } from '../../config/icons.js';
+import { ElementAnalyzer } from '../../utils/element-analyzer.js';
 
 /**
  * Creates a verify element tool for the framework
@@ -24,14 +27,14 @@ export function createVerifyElementTool(framework: EnhancedBrowserTestFramework)
       const state = params.state ?? 'visible';
       const timeout = params.timeout ?? TIMEOUTS.VERIFICATION_TIMEOUT;
       const stepDesc = `Verify ${selector} is ${state}`;
-      console.log(`🔍 ${stepDesc}`);
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'verifyElement', params: { selector, state, timeout } }, 'Tool');
 
       try {
         // For text-based verification, also try to find element containing text
         if (selector.startsWith('"') && selector.endsWith('"')) {
           // This is a text selector, try multiple approaches
           const textToFind = selector.slice(1, -1); // Remove quotes
-          console.log(`🔍 Looking for text: "${textToFind}"`);
+          info(`${ICONS.tools} Looking for text: "${textToFind}"`, { textToFind }, 'Tool');
           
           // Try different text-based selectors
           const textSelectors = [
@@ -55,6 +58,7 @@ export function createVerifyElementTool(framework: EnhancedBrowserTestFramework)
               await framework.takeStepScreenshot(`Verified text "${textToFind}" is ${state}`);
               
               const result = `Text "${textToFind}" is ${state} on the page`;
+              logSuccess(`Result: ${result}`, { tool: 'verifyElement', result }, 'Tool');
               framework.logTestStep(
                 stepDesc,
                 'verifyElement',
@@ -77,6 +81,7 @@ export function createVerifyElementTool(framework: EnhancedBrowserTestFramework)
           await framework.takeStepScreenshot(`Verified ${selector} is ${state}`);
 
           const result = `Element ${selector} is ${state} on the page`;
+          logSuccess(`Result: ${result}`, { tool: 'verifyElement', result }, 'Tool');
           framework.logTestStep(
             stepDesc,
             'verifyElement',
@@ -88,6 +93,35 @@ export function createVerifyElementTool(framework: EnhancedBrowserTestFramework)
         }
       } catch (error: any) {
         await framework.takeStepScreenshot(`Failed to verify ${selector}`);
+        
+        // 🔧 Silently collect failure data for post-test AI analysis
+        try {
+          const analysisResult = await ElementAnalyzer.findAlternatives(
+            framework.currentPage!, 
+            selector, 
+            selector.startsWith('"') && selector.endsWith('"') ? selector.slice(1, -1) : undefined
+          );
+          
+          // Capture page snapshot for detailed analysis
+          const pageSnapshot = await framework.capturePageSnapshot();
+          
+          // Store comprehensive failure data for AI recommendations at test end
+          framework.collectFailureData({
+            type: 'verification_failed',
+            selector,
+            state,
+            error: error.message,
+            stepDescription: stepDesc,
+            pageSnapshot: pageSnapshot || undefined,
+            alternatives: analysisResult.alternatives,
+            screenshot: `Failed to verify ${selector}`,
+            timestamp: new Date().toISOString()
+          });
+        } catch {
+          // Silent failure in analysis - don't disrupt test flow
+        }
+        
+        logError(`Result: Could not verify element ${selector} as ${state}: ${error.message}`, error instanceof Error ? error : undefined, { tool: 'verifyElement', error: error.message }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'verifyElement',
@@ -119,7 +153,7 @@ export function createGetElementInfoTool(framework: EnhancedBrowserTestFramework
   return tool(
     async ({ selector }: { selector: string }) => {
       const stepDesc = `Get element info: ${selector}`;
-      console.log(`🔍 ${stepDesc}`);
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'getElementInfo', params: { selector } }, 'Tool');
 
       try {
         await framework.currentPage!.waitForSelector(selector, { timeout: TIMEOUTS.VERIFICATION_TIMEOUT });
@@ -139,9 +173,11 @@ export function createGetElementInfoTool(framework: EnhancedBrowserTestFramework
         }));
 
         const result = `Element info: ${JSON.stringify(elementInfo, null, 2)}`;
+        logSuccess(`Result: ${result}`, { tool: 'getElementInfo', result }, 'Tool');
         framework.logTestStep(stepDesc, 'getElementInfo', { selector }, result, true);
         return result;
       } catch (error: any) {
+        logError(`Result: Could not get info for ${selector}: ${error.message}`, error instanceof Error ? error : undefined, { tool: 'getElementInfo', error: error.message }, 'Tool');
         framework.logTestStep(stepDesc, 'getElementInfo', { selector }, error.message, false);
         return `❌ Could not get info for ${selector}: ${error.message}`;
       }
@@ -172,7 +208,7 @@ export function createVerifyTitleTool(framework: EnhancedBrowserTestFramework) {
       const exact = params.exact ?? false;
       const timeout = params.timeout ?? TIMEOUTS.VERIFICATION_TIMEOUT;
       const stepDesc = `Verify page title ${exact ? 'equals' : 'contains'} "${expectedTitle}"`;
-      console.log(`🔍 ${stepDesc}`);
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'verifyTitle', params: { title: expectedTitle, exact, timeout } }, 'Tool');
 
       try {
         const page = framework.currentPage!;
@@ -196,6 +232,7 @@ export function createVerifyTitleTool(framework: EnhancedBrowserTestFramework) {
         await framework.takeStepScreenshot(`Verified page title: ${actualTitle}`);
         
         const result = `Page title "${actualTitle}" ${exact ? 'equals' : 'contains'} "${expectedTitle}"`;
+        logSuccess(`Result: ${result}`, { tool: 'verifyTitle', result }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'verifyTitle',
@@ -207,6 +244,8 @@ export function createVerifyTitleTool(framework: EnhancedBrowserTestFramework) {
       } catch {
         const actualTitle = await framework.currentPage!.title().catch(() => 'unknown');
         await framework.takeStepScreenshot(`Failed to verify title`);
+        const result = `Expected title to ${exact ? 'equal' : 'contain'} "${expectedTitle}", but got "${actualTitle}"`;
+        logError(`Result: ${result}`, undefined, { tool: 'verifyTitle', actualTitle, expectedTitle }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'verifyTitle',
@@ -214,7 +253,7 @@ export function createVerifyTitleTool(framework: EnhancedBrowserTestFramework) {
           `Actual title: "${actualTitle}"`,
           false
         );
-        return `❌ Expected title to ${exact ? 'equal' : 'contain'} "${expectedTitle}", but got "${actualTitle}"`;
+        return `❌ ${result}`;
       }
     },
     {
@@ -245,7 +284,7 @@ export function createVerifyURLTool(framework: EnhancedBrowserTestFramework) {
       const exact = params.exact ?? true; // Default to exact match for URLs
       const timeout = params.timeout ?? TIMEOUTS.VERIFICATION_TIMEOUT;
       const stepDesc = `Verify page URL ${exact ? 'equals' : 'contains'} "${expectedUrl}"`;
-      console.log(`🔍 ${stepDesc}`);
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'verifyURL', params: { url: expectedUrl, exact, timeout } }, 'Tool');
 
       try {
         const page = framework.currentPage!;
@@ -269,6 +308,7 @@ export function createVerifyURLTool(framework: EnhancedBrowserTestFramework) {
         await framework.takeStepScreenshot(`Verified page URL: ${actualUrl}`);
         
         const result = `Page URL "${actualUrl}" ${exact ? 'equals' : 'contains'} "${expectedUrl}"`;
+        logSuccess(`Result: ${result}`, { tool: 'verifyURL', result }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'verifyURL',
@@ -280,6 +320,8 @@ export function createVerifyURLTool(framework: EnhancedBrowserTestFramework) {
       } catch {
         const actualUrl = framework.currentPage!.url();
         await framework.takeStepScreenshot(`Failed to verify URL`);
+        const result = `Expected URL to ${exact ? 'equal' : 'contain'} "${expectedUrl}", but got "${actualUrl}"`;
+        logError(`Result: ${result}`, undefined, { tool: 'verifyURL', actualUrl, expectedUrl }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'verifyURL',
@@ -287,7 +329,7 @@ export function createVerifyURLTool(framework: EnhancedBrowserTestFramework) {
           `Actual URL: "${actualUrl}"`,
           false
         );
-        return `❌ Expected URL to ${exact ? 'equal' : 'contain'} "${expectedUrl}", but got "${actualUrl}"`;
+        return `❌ ${result}`;
       }
     },
     {
@@ -318,7 +360,7 @@ export function createVerifyTextContentTool(framework: EnhancedBrowserTestFramew
       const timeout = params.timeout ?? TIMEOUTS.VERIFICATION_TIMEOUT;
       const exact = params.exact ?? false;
       const stepDesc = `Verify text "${text}" is visible on page`;
-      console.log(`🔍 ${stepDesc}`);
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'verifyTextContent', params: { text, timeout, exact } }, 'Tool');
 
       try {
         // Extended waiting and verification for better accuracy
@@ -411,6 +453,7 @@ export function createVerifyTextContentTool(framework: EnhancedBrowserTestFramew
           await framework.takeStepScreenshot(`Verified text "${text}" is visible`);
           
           const result = `Text "${text}" is DEFINITELY visible on the page (verified using ${verificationMethod})`;
+          logSuccess(`Result: ${result}`, { tool: 'verifyTextContent', result, verificationMethod }, 'Tool');
           framework.logTestStep(
             stepDesc,
             'verifyTextContent',
@@ -433,6 +476,7 @@ export function createVerifyTextContentTool(framework: EnhancedBrowserTestFramew
         }
       } catch (error: any) {
         await framework.takeStepScreenshot(`Failed to verify text "${text}"`);
+        logError(`Result: Could not verify text "${text}": ${error.message}`, error instanceof Error ? error : undefined, { tool: 'verifyTextContent', error: error.message }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'verifyTextContent',

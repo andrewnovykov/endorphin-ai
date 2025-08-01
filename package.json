@@ -19,6 +19,7 @@
     "test:dev": "jest --selectProjects='Development Tests'",
     "test:all": "jest --selectProjects='Development Tests'",
     "test:package": "cd dev-tests/package-tests && ./run-all-tests.sh",
+    "test:node-22": "echo 'Testing Node.js compatibility...' && node --version && npm test && npm run test:package",
     "build": "tsc && node scripts/fix-imports.js && cp package.json dist/ && cp framework/templates/reporter/*.html framework/templates/reporter/*.css framework/templates/reporter/*.js dist/framework/templates/reporter/ && cp -r examples dist/ && chmod +x dist/bin/endorphin.js && chmod +x dist/bin/cli-handlers.js",
     "build:watch": "tsc --watch",
     "pack:local": "npm run build && npm pack --pack-destination dist",
@@ -81,7 +82,8 @@
     "url": "https://github.com/andrewnovykov/endorphin-ai/issues"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   },
   "files": [
     "dist/",
@@ -100,7 +102,7 @@
     "langchain": "^0.3.19",
     "openai": "^4.85.3",
     "playwright": "^1.50.1",
-    "tsx": "^4.9.3",
+    "tsx": "^4.20.3",
     "zod": "^3.25.67"
   },
   "directories": {
@@ -123,7 +125,6 @@
     "lint-staged": "^15.5.2",
     "prettier": "^3.6.0",
     "ts-jest": "^29.4.0",
-    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "typescript-transform-paths": "^3.5.5"
   },

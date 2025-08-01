@@ -16,6 +16,7 @@ import { globalResourceManager } from './resource-manager.js';
 import { SessionManager } from './session-manager.js';
 import { TokenTracker } from './token-tracker.js';
 import { ToolManager } from './tool-manager.js';
+import { info, logSuccess, logWithIcon, LogLevel, error as logError } from './logger.js';
 
 // Service names constants
 export const SERVICE_NAMES = {
@@ -61,7 +62,7 @@ export class ServiceRegistry {
     const { enableLogging = false, customConfig = {} } = options;
 
     if (enableLogging) {
-      console.log('🔧 Registering framework services...');
+      logWithIcon(LogLevel.INFO, 'rocket', 'Registering framework services', {}, 'ServiceRegistry');
     }
 
     // Register core configuration
@@ -186,9 +187,8 @@ export class ServiceRegistry {
     this.registered = true;
 
     if (enableLogging) {
-      console.log(
-        `✅ Registered ${this.container.getRegisteredServices().length} framework services`
-      );
+      logSuccess(`Registered ${this.container.getRegisteredServices().length} framework services`, 
+        { serviceCount: this.container.getRegisteredServices().length }, 'ServiceRegistry');
     }
   }
 
@@ -200,7 +200,7 @@ export class ServiceRegistry {
       throw new Error('Services must be registered before initialization');
     }
 
-    console.log('🚀 Initializing framework services...');
+    logWithIcon(LogLevel.INFO, 'rocket', 'Initializing framework services', {}, 'ServiceRegistry');
 
     // Initialize core services in dependency order
     const initOrder = [
@@ -218,9 +218,9 @@ export class ServiceRegistry {
     for (const serviceName of initOrder) {
       try {
         await this.container.resolve(serviceName);
-        console.log(`  ✓ ${serviceName} initialized`);
+        info(`${serviceName} initialized`, { serviceName }, 'ServiceRegistry');
       } catch (error: any) {
-        console.error(`  ❌ Failed to initialize ${serviceName}:`, error.message);
+        logError(`Failed to initialize ${serviceName}`, error, { serviceName }, 'ServiceRegistry');
         throw error;
       }
     }
@@ -237,7 +237,7 @@ export class ServiceRegistry {
     );
     await browserManager.initialize();
 
-    console.log('✅ All framework services initialized successfully');
+    logSuccess('All framework services initialized successfully', { initOrder }, 'ServiceRegistry');
   }
 
   /**
@@ -263,10 +263,10 @@ export class ServiceRegistry {
    * Dispose all services
    */
   async dispose(): Promise<void> {
-    console.log('🧹 Disposing framework services...');
+    info('Disposing framework services', {}, 'ServiceRegistry');
     await this.container.dispose();
     this.registered = false;
-    console.log('✅ Framework services disposed');
+    logSuccess('Framework services disposed', {}, 'ServiceRegistry');
   }
 }
 
