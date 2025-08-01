@@ -7,7 +7,8 @@ import * as path from 'node:path';
 import { BrowserEngine, type BrowserEngineConfig } from '../../automation/engines/browser-engine.js';
 import { HtmlReporter } from '../../reporters/html-reporter.js';
 import { TestResultsManager } from '../../results/test-results-manager.js';
-import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from '../../core/logger.js';
+import { info, logSuccess, logWithIcon, LogLevel, error as logError, warn } from '../../core/logger.js';
+import { ICONS } from '../../config/icons.js';
 import type {
   BrowserConfig,
   ExecutionConfig,
@@ -136,7 +137,7 @@ export class FrameworkManager {
   async runMultipleTasks(
     tasks: Array<{ name?: string; description: string }>
   ): Promise<TaskResult[]> {
-    logRocket(`Running ${tasks.length} tasks sequentially`, { taskCount: tasks.length }, 'FrameworkManager');
+    logWithIcon(LogLevel.INFO, 'rocket', `Running ${tasks.length} tasks sequentially`, { taskCount: tasks.length }, 'FrameworkManager');
 
     const results: TaskResult[] = [];
     for (let i = 0; i < tasks.length; i++) {
@@ -185,7 +186,7 @@ export class FrameworkManager {
     }>;
     report: TestReport;
   }> {
-    logTarget(`Running ${tests.length} tests with enhanced result tracking`, { testCount: tests.length }, 'FrameworkManager');
+    logWithIcon(LogLevel.INFO, 'target', `Running ${tests.length} tests with enhanced result tracking`, { testCount: tests.length }, 'FrameworkManager');
     const results: Array<{
       testId: string;
       testName: string;

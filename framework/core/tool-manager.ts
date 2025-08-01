@@ -5,7 +5,7 @@
 
 import type { FrameworkConfig, LangChainTool } from '../types/index.js';
 import { createAllTools } from '../automation/tools/index.js';
-import { globalLogger } from './logger.js';
+import { globalLogger, logWithIcon, LogLevel } from './logger.js';
 
 export class ToolManager {
   private toolsArray: LangChainTool[] = [];
@@ -88,7 +88,7 @@ export class ToolManager {
    * Load built-in tools
    */
   private async loadBuiltInTools(framework: any): Promise<void> {
-    this.logger.debug('Loading built-in tools');
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Loading built-in tools', {}, 'ToolManager');
 
     try {
       const builtInTools = await createAllTools(framework);
@@ -177,7 +177,7 @@ export class ToolManager {
    * Clear all tools
    */
   clearTools(): void {
-    this.logger.debug('Clearing all tools');
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Clearing all tools', {}, 'ToolManager');
     this.toolsArray = [];
   }
 }

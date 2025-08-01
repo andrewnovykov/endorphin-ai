@@ -6,6 +6,7 @@
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import type { JiraTicket } from '../types/config.js';
+import { info, warn, logSuccess } from '../core/logger.js';
 
 export class JiraStorage {
   private rawDataDir: string;
@@ -24,7 +25,7 @@ export class JiraStorage {
     const savePromises = tickets.map(ticket => this.saveTicket(ticket));
     await Promise.all(savePromises);
 
-    console.log(`✅ Saved ${tickets.length} tickets to ${this.rawDataDir}/`);
+    logSuccess(`Saved ${tickets.length} tickets`, { count: tickets.length, directory: this.rawDataDir }, 'JiraStorage');
   }
 
   /**
@@ -61,7 +62,7 @@ export class JiraStorage {
           const ticket = await this.loadTicket(file);
           tickets.push(ticket);
         } catch (error) {
-          console.warn(`Warning: Failed to load ticket from ${file}:`, error);
+          warn(`Failed to load ticket from ${file}`, { file, error: String(error) }, 'JiraStorage');
         }
       }
 
@@ -133,7 +134,7 @@ export class JiraStorage {
           ticketsNeedingUpdate.push(remoteTicket);
         }
       } catch (error) {
-        console.warn(`Warning: Error checking ticket ${remoteTicket.key}:`, error);
+        warn(`Error checking ticket ${remoteTicket.key}`, { ticketKey: remoteTicket.key, error: String(error) }, 'JiraStorage');
         ticketsNeedingUpdate.push(remoteTicket); // Include in update list if error
       }
     }
@@ -158,13 +159,13 @@ export class JiraStorage {
           const filepath = join(this.rawDataDir, file);
           await fs.unlink(filepath);
           deletedCount++;
-          console.log(`🗑️  Deleted old ticket: ${ticketKey}`);
+          info(`Deleted old ticket: ${ticketKey}`, { ticketKey }, 'JiraStorage');
         }
       }
       
       return deletedCount;
     } catch (error) {
-      console.warn('Warning: Failed to cleanup old tickets:', error);
+      warn('Failed to cleanup old tickets', { error: String(error) }, 'JiraStorage');
       return 0;
     }
   }
@@ -252,7 +253,7 @@ export class JiraStorage {
     };
     
     await fs.writeFile(outputPath, JSON.stringify(exportData, null, 2), 'utf8');
-    console.log(`📤 Exported ${tickets.length} tickets to ${outputPath}`);
+    logSuccess(`Exported ${tickets.length} tickets to ${outputPath}`, { count: tickets.length, outputPath }, 'JiraStorage');
   }
 
   /**

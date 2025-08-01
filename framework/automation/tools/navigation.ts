@@ -25,7 +25,7 @@ export function createNavigationTool(framework: any) {
 
       const stepDesc = `Navigate to: ${location}`;
       
-      info(`${ICONS.tools} ${stepDesc}`, { tool: 'navigate', params: { location, waitUntil } }, 'Tool');
+      info(`${ICONS.tools} ${ICONS.web} ${stepDesc}`, { tool: 'navigate', params: { location, waitUntil } }, 'Tool');
 
       try {
         await framework.currentPage!.goto(location, { waitUntil, timeout: 60000 });

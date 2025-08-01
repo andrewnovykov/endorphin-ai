@@ -5,7 +5,7 @@
 
 import { existsSync, promises as fs } from 'node:fs';
 import * as path from 'node:path';
-import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from '../core/logger.js';
+import { info, logSuccess } from '../core/logger.js';
 
 export class DirectoryManager {
   /**

@@ -12,7 +12,7 @@ import type {
   TestSetupResult,
   TestStep,
 } from '../types/index.js';
-import { globalLogger } from './logger.js';
+import { globalLogger, logWithIcon, LogLevel } from './logger.js';
 import { createTestSession, saveTestSession } from './test-session.js';
 
 export interface SessionManagerConfig {
@@ -55,10 +55,10 @@ export class SessionManager {
         this.config.resultBaseDir
       );
 
-      this.logger.debug('Test session created', {
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Test session created', {
         sessionId: this.currentTestSession.sessionId,
         sessionDir: this.currentTestSession.sessionDir,
-      });
+      }, 'SessionManager');
 
       return this.currentTestSession;
     } catch (error: any) {
@@ -90,11 +90,11 @@ export class SessionManager {
   addStep(step: TestStep): void {
     const session = this.requireCurrentSession();
 
-    this.logger.debug('Adding step to session', {
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Adding step to session', {
       stepNumber: step.stepNumber,
       description: step.description,
       status: step.status,
-    });
+    }, 'SessionManager');
 
     session.steps.push(step);
   }
@@ -142,10 +142,10 @@ export class SessionManager {
     // Store the setup result in the session
     session.setupResult = setupResult;
 
-    this.logger.debug('Session setup result stored successfully', {
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Session setup result stored successfully', {
       sessionId: session.sessionId,
       setupSuccess: setupResult.success,
-    });
+    }, 'SessionManager');
   }
 
   /**
@@ -169,11 +169,11 @@ export class SessionManager {
     // Store the data generation result in the session
     session.dataGenerationResult = dataResult;
 
-    this.logger.debug('Session data generation result stored successfully', {
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Session data generation result stored successfully', {
       sessionId: session.sessionId,
       dataGenerationSuccess: dataResult.success,
       totalTokens: dataResult.tokenUsage?.totalTokens || 0,
-    });
+    }, 'SessionManager');
   }
 
   /**
@@ -190,9 +190,9 @@ export class SessionManager {
     // Store the conclusion in the session
     session.conclusion = conclusion;
 
-    this.logger.debug('Session conclusion stored successfully', {
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Session conclusion stored successfully', {
       sessionId: session.sessionId,
-    });
+    }, 'SessionManager');
   }
 
   /**
@@ -205,7 +205,7 @@ export class SessionManager {
 
     try {
       await saveTestSession(session);
-      this.logger.debug('Test session saved successfully');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Test session saved successfully', {}, 'SessionManager');
     } catch (error: any) {
       this.logger.error('Failed to save test session', error);
       throw error;
@@ -229,9 +229,9 @@ export class SessionManager {
    */
   closeSession(): void {
     if (this.currentTestSession) {
-      this.logger.debug('Closing current session', {
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Closing current session', {
         sessionId: this.currentTestSession.sessionId,
-      });
+      }, 'SessionManager');
       this.currentTestSession = null;
     }
   }
@@ -290,7 +290,7 @@ export class SessionManager {
 
     for (const dir of directories) {
       if (!existsSync(dir)) {
-        this.logger.debug(`Creating directory: ${dir}`);
+        logWithIcon(LogLevel.DEBUG, 'debug', `Creating directory: ${dir}`, {}, 'SessionManager');
         await fs.mkdir(dir, { recursive: true });
       }
     }
@@ -301,7 +301,7 @@ export class SessionManager {
    */
   private cleanupDirectories(): void {
     // This could be expanded to implement cleanup policies
-    this.logger.debug('Directory cleanup completed');
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Directory cleanup completed', {}, 'SessionManager');
   }
 
   /**
@@ -317,16 +317,16 @@ export class SessionManager {
     const targetDir = path.join(session.sessionDir, 'recorder');
 
     if (!existsSync(sourceDir)) {
-      this.logger.debug('No recorder directory to copy');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'No recorder directory to copy', {}, 'SessionManager');
       return;
     }
 
-    this.logger.debug('Copying recorder files', { sourceDir, targetDir });
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Copying recorder files', { sourceDir, targetDir }, 'SessionManager');
 
     try {
       await fs.mkdir(targetDir, { recursive: true });
       await this.copyDirectory(sourceDir, targetDir);
-      this.logger.debug('Recorder files copied successfully');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Recorder files copied successfully', {}, 'SessionManager');
     } catch (error: any) {
       this.logger.error('Failed to copy recorder files', error);
     }

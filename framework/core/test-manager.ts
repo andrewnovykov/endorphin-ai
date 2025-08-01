@@ -8,7 +8,8 @@ import * as dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from './logger.js';
+import { info, logSuccess, logWithIcon, LogLevel, error as logError, warn } from './logger.js';
+import { ICONS } from '../config/icons.js';
 
 dotenv.config();
 
@@ -191,7 +192,7 @@ export class TestManager {
       return null;
     }
 
-    logTarget(`Running Test: ${test.id} - ${test.name}`, {
+    logWithIcon(LogLevel.INFO, 'target', `Running Test: ${test.id} - ${test.name}`, {
       testId: test.id,
       testName: test.name,
       description: test.description,
@@ -236,7 +237,7 @@ export class TestManager {
     const tests = this.findTests({ tag });
     const testIds = tests.map((test) => test.id);
 
-    logTarget(`Running ${tests.length} tests with tag: ${tag}`, { tag, testCount: tests.length, testIds }, 'TestManager');
+    logWithIcon(LogLevel.INFO, 'target', `Running ${tests.length} tests with tag: ${tag}`, { tag, testCount: tests.length, testIds }, 'TestManager');
 
     return await this.runTests(testIds);
   }
@@ -248,7 +249,7 @@ export class TestManager {
     const tests = this.findTests({ priority });
     const testIds = tests.map((test) => test.id);
 
-    logTarget(`Running ${tests.length} tests with priority: ${priority}`, { priority, testCount: tests.length, testIds }, 'TestManager');
+    logWithIcon(LogLevel.INFO, 'target', `Running ${tests.length} tests with priority: ${priority}`, { priority, testCount: tests.length, testIds }, 'TestManager');
 
     return await this.runTests(testIds);
   }
@@ -273,7 +274,7 @@ export class TestManager {
   async runAllTests(): Promise<TaskResult[]> {
     const allTestIds = Array.from(this.loadedTests.keys()).sort();
 
-    logTarget(`Running ALL ${allTestIds.length} tests`, { testCount: allTestIds.length, testIds: allTestIds }, 'TestManager');
+    logWithIcon(LogLevel.INFO, 'target', `Running ALL ${allTestIds.length} tests`, { testCount: allTestIds.length, testIds: allTestIds }, 'TestManager');
 
     return await this.runTests(allTestIds);
   }

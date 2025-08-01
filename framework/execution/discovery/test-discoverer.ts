@@ -7,7 +7,7 @@ import { readdir, stat } from 'fs/promises';
 import { join, resolve } from 'path';
 import { pathToFileURL } from 'url';
 import type { TestConfig } from '../../types/index.js';
-import { info, logSuccess, warn, error as logError } from '../../core/logger.js';
+import { info, logSuccess, warn, error as logError, debug, logWithIcon, LogLevel } from '../../core/logger.js';
 import type {
   DiscoveredTest,
   DiscoveryConfig,
@@ -58,7 +58,7 @@ export class TestDiscoverer {
     let totalFiles = 0;
 
     try {
-      console.log(`🔍 Discovering tests recursively in: ${this.testsDirectory}`);
+      logWithIcon(LogLevel.DEBUG, 'debug', `Discovering tests recursively in: ${this.testsDirectory}`, {}, 'TestDiscoverer');
       
       const allTestFiles: { file: string, directory: string }[] = [];
 
@@ -66,19 +66,23 @@ export class TestDiscoverer {
       await this.scanDirectoryRecursively(this.testsDirectory, allTestFiles, 0, 3);
 
       if (allTestFiles.length > 0) {
-        console.log(`📋 Found ${allTestFiles.length} test file(s) across all directories:`);
-        allTestFiles.forEach(({ file, directory }) => {
-          const relativePath = directory.replace(this.testsDirectory, '').replace(/^\//, '');
-          const displayPath = relativePath ? `${relativePath}/${file}` : file;
-          console.log(`   📄 ${displayPath}`);
-        });
+        logWithIcon(LogLevel.DEBUG, 'debug', `Found ${allTestFiles.length} test file(s) across all directories:`, { fileCount: allTestFiles.length }, 'TestDiscoverer');
+        
+        // Show detailed list only in debug mode
+        if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose' || process.env.ENDORPHIN_LOG_LEVEL === 'DEBUG') {
+          allTestFiles.forEach(({ file, directory }) => {
+            const relativePath = directory.replace(this.testsDirectory, '').replace(/^\//, '');
+            const displayPath = relativePath ? `${relativePath}/${file}` : file;
+            logWithIcon(LogLevel.DEBUG, 'debug', `📄 ${displayPath}`, { file, directory: relativePath || 'root' }, 'TestDiscoverer');
+          });
+        }
       }
 
       totalFiles = allTestFiles.length;
 
       if (allTestFiles.length === 0) {
-        console.log(`📝 No test files found in ${this.testsDirectory} directory`);
-        console.log('💡 Add .js, .mjs, or .ts files with exported test objects');
+        info(`📝 No test files found in ${this.testsDirectory} directory`, { testsDirectory: this.testsDirectory }, 'TestDiscoverer');
+        info('💡 Add .js, .mjs, or .ts files with exported test objects', {}, 'TestDiscoverer');
         return {
           tests: this.tests,
           totalTests: 0,
@@ -88,7 +92,7 @@ export class TestDiscoverer {
         };
       }
 
-      console.log(`📋 Found ${allTestFiles.length} test file(s) to load`);
+      logWithIcon(LogLevel.DEBUG, 'debug', `Found ${allTestFiles.length} test file(s) to load`, { fileCount: allTestFiles.length }, 'TestDiscoverer');
 
       // Load files concurrently with limited concurrency
       const results = await this.loadTestFilesConcurrentlyFromMultipleDirs(allTestFiles);
@@ -106,14 +110,14 @@ export class TestDiscoverer {
       if (failureCount > 0) {
         warn(`Successfully loaded ${successCount} test(s), ${failureCount} failed to load`, { successCount, failureCount }, 'TestDiscoverer');
         // Show which files failed to load with detailed errors
-        console.log('📋 Failed test files:');
+        logWithIcon(LogLevel.DEBUG, 'debug', 'Failed test files:', { failedCount: errors.length }, 'TestDiscoverer');
         errors.forEach(error => {
-          console.log(`   ❌ ${error.file}: ${error.error}`);
+          logWithIcon(LogLevel.DEBUG, 'debug', `❌ ${error.file}: ${error.error}`, { file: error.file, error: error.error }, 'TestDiscoverer');
         });
       } else {
         logSuccess(`Successfully loaded ${successCount} test(s)`, { successCount }, 'TestDiscoverer');
       }
-      console.log('');
+      // Empty line removed - using structured logging instead
 
       return {
         tests: this.tests,
@@ -124,7 +128,7 @@ export class TestDiscoverer {
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('❌ Error discovering tests:', message);
+      logError('❌ Error discovering tests', error instanceof Error ? error : undefined, { message }, 'TestDiscoverer');
 
       return {
         tests: this.tests,
@@ -199,7 +203,7 @@ export class TestDiscoverer {
    */
   private async loadTestFileWithResult(filename: string): Promise<TestFileResult> {
     try {
-      console.log(`   📄 ${filename}`);
+      logWithIcon(LogLevel.DEBUG, 'debug', `Loading test file: ${filename}`, { filename }, 'TestDiscoverer');
       const tests = await this.loadTestFile(filename);
       return {
         filename,
@@ -208,7 +212,7 @@ export class TestDiscoverer {
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`❌ Error loading ${filename}:`, message);
+      logError(`Error loading ${filename}`, error instanceof Error ? error : undefined, { filename, message }, 'TestDiscoverer');
       return {
         filename,
         tests: [],
@@ -223,9 +227,9 @@ export class TestDiscoverer {
    */
   private async loadTestFileWithResultFromDir(filename: string, directory: string): Promise<TestFileResult> {
     try {
-      console.log(`   📄 ${filename} (from ${directory})`);
+      logWithIcon(LogLevel.DEBUG, 'debug', `Loading test file: ${filename} from ${directory}`, { filename, directory }, 'TestDiscoverer');
       const tests = await this.loadTestFileFromDir(filename, directory);
-      console.log(`   ✅ ${filename} loaded successfully with ${tests.length} test(s)`);
+      logWithIcon(LogLevel.DEBUG, 'debug', `${filename} loaded successfully with ${tests.length} test(s)`, { filename, testCount: tests.length }, 'TestDiscoverer');
       return {
         filename,
         tests,
@@ -233,8 +237,8 @@ export class TestDiscoverer {
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`❌ Error loading ${filename}:`, message);
-      console.error(`❌ Full error:`, error);
+      logError(`Error loading ${filename}`, error instanceof Error ? error : undefined, { filename, message }, 'TestDiscoverer');
+      logWithIcon(LogLevel.DEBUG, 'debug', `Full error details for ${filename}`, { filename, error: String(error) }, 'TestDiscoverer');
       return {
         filename,
         tests: [],
@@ -309,7 +313,7 @@ export class TestDiscoverer {
           (globalThis as any).__tsx_registered = true;
         } catch {
           // If tsx is not available, fallback to JavaScript compilation
-          console.warn(`⚠️ TypeScript loader not available, attempting to load as JavaScript`);
+          warn(`TypeScript loader not available, attempting to load as JavaScript`, {}, 'TestDiscoverer');
           const jsFilePath = filePath.replace('.ts', '.js');
           if (await this.fileExists(jsFilePath)) {
             return this.loadJavaScriptFile(jsFilePath, filename.replace('.ts', '.js'), testsFound);
@@ -349,7 +353,7 @@ export class TestDiscoverer {
 
       this.tests.set(test.id, discoveredTest);
       testsFound.push(discoveredTest);
-      console.log(`   ✓ ${test.id}: ${test.name}`);
+      logWithIcon(LogLevel.DEBUG, 'debug', `✓ ${test.id}: ${test.name}`, { testId: test.id, testName: test.name, exportName: 'default' }, 'TestDiscoverer');
     }
 
     // Check named exports
@@ -364,7 +368,7 @@ export class TestDiscoverer {
 
         this.tests.set(test.id, discoveredTest);
         testsFound.push(discoveredTest);
-        console.log(`   ✓ ${test.id}: ${test.name}`);
+        logWithIcon(LogLevel.DEBUG, 'debug', `✓ ${test.id}: ${test.name}`, { testId: test.id, testName: test.name, exportName }, 'TestDiscoverer');
       }
     }
   }

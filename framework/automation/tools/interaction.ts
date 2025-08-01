@@ -7,7 +7,7 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import type { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
 import { TIMEOUTS } from '../../config/constants.js';
-import { info, logSuccess, error as logError, warn } from '../../core/logger.js';
+import { info, logSuccess, error as logError, warn, logWithIcon, LogLevel } from '../../core/logger.js';
 import { ICONS } from '../../config/icons.js';
 
 /**
@@ -39,11 +39,11 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
 
       const stepDesc = `Click ${selector} using ${strategy} strategy`;
       
-      info(`${ICONS.tools} ${stepDesc}`, { tool: 'click', params: { selector, strategy, timeout, force } }, 'Tool');
+      info(`${ICONS.tools} ${ICONS.button} ${stepDesc}`, { tool: 'click', params: { selector, strategy, timeout, force } }, 'Tool');
 
       // Debug logging for tool calls
       if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
-        info(`${ICONS.tools} Built-in tool called`, { 
+        logWithIcon(LogLevel.DEBUG, 'debug', `${ICONS.tools} ${ICONS.button} Built-in tool called`, { 
           toolName: 'click', 
           parameters: { selector, strategy, timeout, force }
         }, 'Tool');
@@ -61,7 +61,7 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
             const buttonCount = await buttonLocator.count();
             if (buttonCount > 0) {
               info(
-                `${ICONS.tools} Found ${buttonCount} button(s) with text "${selector}", using button strategy`,
+                `${ICONS.tools} ${ICONS.button} Found ${buttonCount} button(s) with text "${selector}", using button strategy`,
                 { buttonCount, selector, strategy: 'button' },
                 'Tool'
               );
@@ -80,7 +80,7 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
             const buttonCount = await buttonLocator.count();
             if (buttonCount > 0) {
               info(
-                `${ICONS.tools} Found ${buttonCount} button(s) with exact text "${selector}", using button strategy`,
+                `${ICONS.tools} ${ICONS.button} Found ${buttonCount} button(s) with exact text "${selector}", using button strategy`,
                 { buttonCount, selector, strategy: 'button' },
                 'Tool'
               );
@@ -97,7 +97,7 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
               const clickableCount = await clickableLocator.count();
               if (clickableCount > 0) {
                 info(
-                  `${ICONS.tools} Found ${clickableCount} clickable element(s) with exact text "${selector}", using first clickable element`,
+                  `${ICONS.tools} ${ICONS.button} Found ${clickableCount} clickable element(s) with exact text "${selector}", using first clickable element`,
                   { clickableCount, selector, strategy: 'clickable' },
                   'Tool'
                 );
@@ -193,7 +193,7 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
 
         // Debug logging for successful tool completion
         if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
-          info(`${ICONS.success} Built-in tool completed! Name: click, Result: ${result}`, { toolName: 'click', result }, 'Tool');
+          info(`${ICONS.tools} ${ICONS.button} ${ICONS.success} Built-in tool completed! Name: click, Result: ${result}`, { toolName: 'click', result }, 'Tool');
         }
 
         return result;
@@ -210,7 +210,7 @@ export function createClickTool(framework: EnhancedBrowserTestFramework) {
 
         // Debug logging for failed tool execution
         if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose') {
-          logError(`${ICONS.failure} Built-in tool failed! Name: click, Error: ${error.message}`, error instanceof Error ? error : undefined, { toolName: 'click', error: error.message }, 'Tool');
+          logError(`${ICONS.tools} ${ICONS.button} ${ICONS.failure} Built-in tool failed! Name: click, Error: ${error.message}`, error instanceof Error ? error : undefined, { toolName: 'click', error: error.message }, 'Tool');
         }
 
         return `❌ Error clicking ${selector}: ${error.message}`;
@@ -258,7 +258,7 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
       const pressEnter = params.pressEnter ?? false;
 
       const stepDesc = `Fill ${selector} with "${value}"`;
-      info(`${ICONS.tools} ${stepDesc}`, { tool: 'fill', params: { selector, value, strategy, clearFirst, pressEnter } }, 'Tool');
+      info(`${ICONS.tools} ${ICONS.keyboard} ${stepDesc}`, { tool: 'fill', params: { selector, value, strategy, clearFirst, pressEnter } }, 'Tool');
 
       try {
         // Try multiple strategies for common field types
@@ -281,7 +281,7 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
               locator = framework.currentPage!.locator(sel);
               if ((await locator.count()) > 0) {
                 finalSelector = sel;
-                info(`${ICONS.tools} Found email field using selector: ${sel}`, { selector: sel, fieldType: 'email' }, 'Tool');
+                info(`${ICONS.tools} ${ICONS.keyboard} Found email field using selector: ${sel}`, { selector: sel, fieldType: 'email' }, 'Tool');
                 break;
               }
             } catch {
@@ -305,7 +305,7 @@ export function createFillTool(framework: EnhancedBrowserTestFramework) {
               locator = framework.currentPage!.locator(sel);
               if ((await locator.count()) > 0) {
                 finalSelector = sel;
-                info(`${ICONS.tools} Found password field using selector: ${sel}`, { selector: sel, fieldType: 'password' }, 'Tool');
+                info(`${ICONS.tools} ${ICONS.keyboard} Found password field using selector: ${sel}`, { selector: sel, fieldType: 'password' }, 'Tool');
                 break;
               }
             } catch {

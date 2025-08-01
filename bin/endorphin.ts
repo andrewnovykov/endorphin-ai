@@ -21,7 +21,7 @@ import {
   handleTestCommand,
   handleTestRecorderCommand,
 } from './cli-handlers.js';
-import { info, logRocket, logSuccess, logTarget, logAgent, error as logError, warn } from '../framework/core/logger.js';
+import { info, logSuccess, error as logError } from '../framework/core/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

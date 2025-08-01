@@ -27,7 +27,7 @@ import type {
   TestSetupResult,
 } from '../types/index.js';
 import { setBrowserManager } from '../utils/user-utils.js';
-import { globalLogger } from './logger.js';
+import { globalLogger, logWithIcon, LogLevel } from './logger.js';
 import { ResourceManager, globalResourceManager } from './resource-manager.js';
 import { TokenTracker } from './token-tracker.js';
 import { ciPerformanceMonitor } from './ci-performance.js';
@@ -163,7 +163,7 @@ export class TestFramework {
     const config = this.configManager.getConfig();
 
     if (!config.globalSetup) {
-      this.logger.debug('No global setup configured, skipping');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'No global setup configured, skipping', {}, 'TestFramework');
       return;
     }
 
@@ -343,7 +343,7 @@ export class TestFramework {
 
       await this.browserManager.takeScreenshot({ path: screenshotPath });
 
-      this.logger.debug('Screenshot captured', { path: screenshotPath });
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Screenshot captured', { path: screenshotPath }, 'TestFramework');
 
       return screenshotPath;
     } catch (error: any) {
@@ -487,7 +487,7 @@ export class TestFramework {
     };
 
     session.steps.push(step);
-    this.logger.debug('Test step logged', step);
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Test step logged', step, 'TestFramework');
   }
 
   getSessionManager(): SessionManager {
@@ -536,7 +536,7 @@ export class TestFramework {
   // Private methods
 
   private async setupAgent(tools: LangChainTool[]): Promise<void> {
-    this.logger.debug('Setting up AI agent');
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Setting up AI agent', {}, 'TestFramework');
 
     try {
       const aiConfig = this.configManager.getAIConfig();
@@ -825,7 +825,7 @@ export class TestFramework {
           .filter((id) => id.includes('.'))
           .map((id) => id.split('.')[1])
           .filter((v, i, a) => a.indexOf(v) === i);
-        this.logger.debug(`Phase-based workflow detected`, {
+        logWithIcon(LogLevel.DEBUG, 'debug', `Phase-based workflow detected`, {
           totalTasks: taskIds.length,
           phases: phases.sort(),
           baseUsers: baseUserIds,
@@ -840,13 +840,13 @@ export class TestFramework {
             );
           }
         }
-        this.logger.debug(`Traditional workflow detected`, { users: taskIds });
+        logWithIcon(LogLevel.DEBUG, 'debug', `Traditional workflow detected`, { users: taskIds }, 'TestFramework');
       }
 
       // Execute tasks sequentially in the order they appear in the tasks object
       const userResults = [];
       for (const taskId of taskIds) {
-        this.logger.debug(`Executing task: ${taskId}`);
+        logWithIcon(LogLevel.DEBUG, 'debug', `Executing task: ${taskId}`, {}, 'TestFramework');
 
         try {
           // Switch to user context (will parse base user ID internally for phase-based workflow)

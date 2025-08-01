@@ -6,7 +6,7 @@
 import * as path from 'node:path';
 import { BrowserManager } from '../automation/browser/browser-manager.js';
 import type { TestSession, TestStep } from '../types/index.js';
-import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from '../core/logger.js';
+import { info, warn, logSuccess, error as logError } from '../core/logger.js';
 import { ICONS } from '../config/icons.js';
 
 export class TestHelpers {
@@ -32,11 +32,24 @@ export class TestHelpers {
       isImportant,
     };
 
-    // Use logger with proper formatting
+    // Use logger with proper formatting and combined tool icons
+    const toolIconMap: Record<string, string> = {
+      'click': `${ICONS.tools} ${ICONS.button}`,
+      'fill': `${ICONS.tools} ${ICONS.keyboard}`,
+      'navigate': `${ICONS.tools} ${ICONS.web}`,
+      'wait': `${ICONS.tools} ${ICONS.hourglass}`,
+      'screenshot': `${ICONS.tools} ${ICONS.camera}`,
+      'verify': `${ICONS.tools} ${ICONS.checkmark}`,
+      'found': `${ICONS.tools} ${ICONS.search}`,
+      'default': ICONS.tools
+    };
+    
+    const toolIcon = tool ? (toolIconMap[tool.toLowerCase()] || toolIconMap['default']) : ICONS.tools;
+    
     if (isImportant) {
-      logSuccess(`${ICONS.gear} ${description}`, { tool, params: JSON.stringify(params), result }, 'TestHelper');
+      logSuccess(`${toolIcon} ${description}`, { tool, params: JSON.stringify(params), result }, 'Tool');
     } else {
-      info(`${ICONS.gear} ${description}`, { tool, params: JSON.stringify(params), result }, 'TestHelper');
+      info(`${toolIcon} ${description}`, { tool, params: JSON.stringify(params), result }, 'Tool');
     }
 
     // Add to session if provided
@@ -72,7 +85,7 @@ export class TestHelpers {
   ): Promise<string | null> {
     try {
       if (!browserManager.isInitialized()) {
-        warn(`${ICONS.gear} Browser not initialized, skipping screenshot`, {}, 'TestHelper');
+        warn(`${ICONS.tools} ${ICONS.warning} Browser not initialized, skipping screenshot`, {}, 'Tool');
         return null;
       }
 
@@ -111,11 +124,11 @@ export class TestHelpers {
         ? `Screenshot: ${description}`
         : `Screenshot step ${stepNumber}`;
 
-      info(`${ICONS.gear} ${logDescription} -> ${filename}`, { filename, stepNumber }, 'TestHelper');
+      info(`${ICONS.tools} ${ICONS.camera} ${logDescription} -> ${filename}`, { filename, stepNumber }, 'Tool');
 
       return screenshotPath;
     } catch (error: any) {
-      logError(`${ICONS.gear} Failed to take screenshot`, error instanceof Error ? error : undefined, { message: String(error) }, 'TestHelper');
+      logError(`${ICONS.tools} ${ICONS.failure} Failed to take screenshot`, error instanceof Error ? error : undefined, { message: String(error) }, 'Tool');
       return null;
     }
   }

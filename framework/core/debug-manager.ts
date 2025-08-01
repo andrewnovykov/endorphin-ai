@@ -5,7 +5,7 @@
 
 import type { LangChainTool } from '../types/agent.js';
 import type { FrameworkConfig, TestSession } from '../types/index.js';
-import { globalLogger } from './logger.js';
+import { globalLogger, logWithIcon, LogLevel } from './logger.js';
 import type { TestFramework } from './test-framework.js';
 
 /**
@@ -71,7 +71,7 @@ export class DebugManager {
    */
   initialize(): void {
     if (process.env.ENDORPHIN_DEBUG !== 'true') {
-      this.logger.debug('Debug mode not enabled (ENDORPHIN_DEBUG != true)');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Debug mode not enabled (ENDORPHIN_DEBUG != true)', {}, 'DebugManager');
       return;
     }
 
@@ -113,12 +113,12 @@ export class DebugManager {
     globalThis.endorphinDebug.session = session;
 
     if (session) {
-      this.logger.debug('Debug object updated with new session', {
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Debug object updated with new session', {
         sessionId: session.sessionId,
         testName: session.testName,
-      });
+      }, 'DebugManager');
     } else {
-      this.logger.debug('Debug object session cleared');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Debug object session cleared', {}, 'DebugManager');
     }
   }
 
@@ -139,10 +139,10 @@ export class DebugManager {
 
     globalThis.endorphinDebug.tools = allTools;
 
-    this.logger.debug('Debug object updated with tools', {
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Debug object updated with tools', {
       builtInTools: toolStats.builtIn,
       totalTools: allTools.length,
-    });
+    }, 'DebugManager');
   }
 
   /**

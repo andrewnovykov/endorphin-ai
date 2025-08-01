@@ -79,6 +79,10 @@ export class Logger {
     this.log(LogLevel.CRITICAL, message, context, error, component);
   }
 
+  success(message: string, context?: Record<string, any>, component?: string): void {
+    this.log(LogLevel.INFO, message, context, undefined, component);
+  }
+
 
   private log(
     level: LogLevel,
@@ -312,25 +316,69 @@ export class Logger {
   }
 }
 
+// Helper function to parse log level from environment variables
+const parseLogLevel = (): LogLevel => {
+  // Check for explicit log level first
+  const explicitLevel = process.env.ENDORPHIN_LOG_LEVEL?.toUpperCase();
+  if (explicitLevel) {
+    switch (explicitLevel) {
+      case 'DEBUG': return LogLevel.DEBUG;
+      case 'INFO': return LogLevel.INFO;
+      case 'WARN': case 'WARNING': return LogLevel.WARN;
+      case 'ERROR': return LogLevel.ERROR;
+      case 'CRITICAL': return LogLevel.CRITICAL;
+    }
+  }
+
+  // Check for ENDORPHIN_DEBUG for backward compatibility
+  const debugEnv = process.env.ENDORPHIN_DEBUG;
+  if (debugEnv === 'true' || debugEnv === 'verbose') {
+    return LogLevel.DEBUG;
+  }
+
+  // Default based on NODE_ENV
+  return process.env.NODE_ENV === 'test' ? LogLevel.WARN : LogLevel.INFO;
+};
+
+// Helper function to determine if colors should be enabled
+const shouldEnableColors = (): boolean => {
+  if (process.env.ENDORPHIN_COLORS !== undefined) {
+    return process.env.ENDORPHIN_COLORS.toLowerCase() === 'true';
+  }
+  // Disable colors in test environment or when NO_COLOR is set
+  return process.env.NODE_ENV !== 'test' && !process.env.NO_COLOR;
+};
+
+// Helper function to determine if file logging should be enabled
+const shouldEnableFileLogging = (): boolean => {
+  return process.env.ENDORPHIN_LOG_FILE !== undefined && process.env.ENDORPHIN_LOG_FILE !== '';
+};
+
+// Helper function to create logger config
+const createLoggerConfig = (component: string): Partial<LoggerConfig> => {
+  const config: Partial<LoggerConfig> = {
+    level: parseLogLevel(),
+    enableConsole: true,
+    enableFile: shouldEnableFileLogging(),
+    enableStructured: process.env.ENDORPHIN_LOG_FORMAT === 'json',
+    enableColors: shouldEnableColors(),
+    enableIcons: shouldEnableColors(), // Icons follow color settings
+    component,
+  };
+
+  // Only set logFilePath if it's defined
+  if (process.env.ENDORPHIN_LOG_FILE) {
+    config.logFilePath = process.env.ENDORPHIN_LOG_FILE;
+  }
+
+  return config;
+};
+
 // Global logger instance
-export const globalLogger = new Logger({
-  level: process.env.NODE_ENV === 'test' ? LogLevel.WARN : LogLevel.INFO,
-  enableConsole: true,
-  enableFile: false,
-  enableColors: true,
-  enableIcons: true,
-  component: 'FRAMEWORK',
-});
+export const globalLogger = new Logger(createLoggerConfig('FRAMEWORK'));
 
 // Specialized logger for agent messages
-export const agentLogger = new Logger({
-  level: process.env.NODE_ENV === 'test' ? LogLevel.WARN : LogLevel.INFO,
-  enableConsole: true,
-  enableFile: false,
-  enableColors: true,
-  enableIcons: true,
-  component: 'AGENT',
-});
+export const agentLogger = new Logger(createLoggerConfig('AGENT'));
 
 // Helper functions for common logging patterns
 export const logWithIcon = (level: LogLevel, icon: keyof typeof ICONS, message: string, context?: Record<string, any>, component?: string) => {
@@ -386,15 +434,3 @@ export const success = (message: string, context?: Record<string, any>, componen
 // Convenience functions with icons
 export const logSuccess = (message: string, context?: Record<string, any>, component?: string) =>
   globalLogger.success(message, context, component);
-
-export const logFailure = (message: string, context?: Record<string, any>, component?: string) =>
-  logWithIcon(LogLevel.ERROR, 'failure', message, context, component);
-
-export const logTarget = (message: string, context?: Record<string, any>, component?: string) =>
-  logWithIcon(LogLevel.INFO, 'target', message, context, component);
-
-export const logRocket = (message: string, context?: Record<string, any>, component?: string) =>
-  logWithIcon(LogLevel.INFO, 'rocket', message, context, component);
-
-export const logAgent = (message: string, context?: Record<string, any>) =>
-  agentLogger.info(message, context);

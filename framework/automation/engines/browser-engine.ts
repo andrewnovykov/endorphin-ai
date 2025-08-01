@@ -32,7 +32,7 @@ import { DirectoryManager } from '../../utils/directory-manager.js';
 import { TestHelpers } from '../../utils/test-helpers.js';
 import { BrowserManager } from '../browser/browser-manager.js';
 import { createAllTools } from '../tools/index.js';
-import { info, logRocket, logSuccess, logTarget, logAgent, error as logError, warn, globalLogger } from '../../core/logger.js';
+import { info, logSuccess, error as logError, logWithIcon, LogLevel } from '../../core/logger.js';
 
 // Increase max listeners to prevent memory leak warnings during test execution
 EventEmitter.defaultMaxListeners = 30;
@@ -102,7 +102,7 @@ export class BrowserEngine {
    * Initialize the browser engine
    */
   async initialize(): Promise<void> {
-    logRocket('Initializing Browser Test Engine', {}, 'BrowserEngine');
+    logWithIcon(LogLevel.INFO, 'rocket', 'Initializing Browser Test Engine', {}, 'BrowserEngine');
 
     // Note: Directory cleanup is now handled at the test session level, not per-test
 
@@ -134,7 +134,7 @@ export class BrowserEngine {
    * Setup AI agent
    */
   private async setupAgent(): Promise<void> {
-    logAgent('Setting up AI agent');
+    logWithIcon(LogLevel.INFO, 'brain', 'Setting up AI agent', {}, 'BrowserEngine');
     const { setupAgent, setCurrentTestSession } = await import('../../ai/agent-setup.js');
     this.agent = await setupAgent(this.toolsArray);
 
@@ -233,7 +233,7 @@ export class BrowserEngine {
 
     const estimatedPromptTokens = this.tokenTracker.estimateTokens(messageContent);
 
-    logAgent(`${stepDescription} (estimated: ${estimatedPromptTokens} tokens)`, { estimatedTokens: estimatedPromptTokens });
+    logWithIcon(LogLevel.INFO, 'brain', `${stepDescription} (estimated: ${estimatedPromptTokens} tokens)`, { estimatedTokens: estimatedPromptTokens }, 'BrowserEngine');
 
     // No AbortController - let the agent run naturally without forced interruption
 
@@ -296,7 +296,7 @@ export class BrowserEngine {
     const _timestamp = new Date().toISOString();
     const name = testName || `Test-${Date.now()}`;
 
-    logTarget(`Running Task: ${name}`, { taskDescription, startTime: _timestamp }, 'BrowserEngine');
+    logWithIcon(LogLevel.INFO, 'target', `Running Task: ${name}`, { taskDescription, startTime: _timestamp }, 'BrowserEngine');
 
     // Create test session
     const session = await this.createTestSession(name, name.replace(/\s+/g, '-').toLowerCase());
@@ -378,7 +378,7 @@ export class BrowserEngine {
     const useDetailedLogs = !process.env.ENDORPHIN_CONSOLE_REPORTER;
 
     if (useDetailedLogs) {
-      logRocket(`Starting test: ${test.id} - ${test.name}`, {
+      logWithIcon(LogLevel.INFO, 'rocket', `Starting test: ${test.id} - ${test.name}`, {
         description: test.description,
         priority: test.priority,
         tags: test.tags || []
@@ -418,6 +418,10 @@ export class BrowserEngine {
           }
           generatedData = await test.data();
           this.logTestStep('Test data generated', null, null, 'Data generation completed', true);
+          // Log the generated data in debug mode
+          if (process.env.ENDORPHIN_DEBUG === 'true' || process.env.ENDORPHIN_DEBUG === 'verbose' || process.env.ENDORPHIN_LOG_LEVEL === 'DEBUG') {
+            logWithIcon(LogLevel.DEBUG, 'debug', `Generated test data: ${JSON.stringify(generatedData, null, 2)}`, { data: generatedData }, 'BrowserEngine');
+          }
         } else {
           generatedData = test.data;
         }
@@ -428,7 +432,7 @@ export class BrowserEngine {
       if (test.task) {
         if (typeof test.task === 'function') {
           if (useDetailedLogs) {
-            logTarget('Executing task function with generated data', {}, 'BrowserEngine');
+            logWithIcon(LogLevel.INFO, 'target', 'Executing task function with generated data', {}, 'BrowserEngine');
           }
           taskDescription = await test.task(generatedData, setupData);
           this.logTestStep(

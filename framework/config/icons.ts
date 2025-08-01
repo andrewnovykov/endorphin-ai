@@ -38,11 +38,14 @@ export const ICONS = {
   chart: '📊',      // Analytics/metrics
   folder: '📁',     // File/folder operations
   tag: '🏷️',       // Tags/labels
+  picture: '🖼️',    // Picture/image/screenshot operations
+  camera: '📸',     // Camera/capture operations
   
   // Tool/technical icons
   wrench: '🔧',     // Technical/repair operations
   cleanup: '🧹',    // Cleanup operations
   clock: '⏰',      // Time-related operations
+  hourglass: '⏳',  // Wait/delay operations
   testTube: '🧪',   // Testing-related
   button: '🔘',     // Button/click operations
   lock: '🔒',       // Security/locked operations

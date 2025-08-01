@@ -4,7 +4,7 @@
  */
 
 import type { FrameworkConfig } from '../framework/types/config';
-import { info, logRocket, logSuccess, logTarget, logAgent, error as logError, warn } from '../framework/core/logger.js';
+import { info, logSuccess, logWithIcon, LogLevel, error as logError } from '../framework/core/logger.js';
 
 /**
  * Handle help and version commands
@@ -44,7 +44,7 @@ export async function handleListCommand(config: FrameworkConfig): Promise<void> 
  * Handle init command
  */
 export async function handleInitCommand(): Promise<void> {
-  logTarget('Initializing Endorphin AI project', {}, 'CLI');
+  logWithIcon(LogLevel.INFO, 'target', 'Initializing Endorphin AI project', {}, 'CLI');
   try {
     const { initProject } = await import('../framework/cli/init-command.js');
     await initProject(process.cwd());
@@ -71,7 +71,7 @@ export async function handleTestRecorderCommand(config: FrameworkConfig): Promis
 /**
  * Handle JIRA sync command
  */
-export async function handleJiraSyncCommand(config: FrameworkConfig): Promise<void> {
+export async function handleJiraSyncCommand(_config: FrameworkConfig): Promise<void> {
   const { JiraSyncCommand } = await import('../framework/cli/jira-sync-command.js');
   const result = await JiraSyncCommand.execute();
   process.exit(result.success ? 0 : 1);
@@ -110,7 +110,7 @@ export async function handleTestCommand(
   }
 
   if (target === 'all') {
-    logRocket('Running all tests', {}, 'CLI');
+    logWithIcon(LogLevel.INFO, 'rocket', 'Running all tests', {}, 'CLI');
     const { runAllTests } = await import('../framework/execution/discovery/cli-functions.js');
     await runAllTests(config);
     process.exit(0);
@@ -217,7 +217,7 @@ async function handleTestByPriority(
   }
 
   const priority = args[priorityIndex + 1];
-  logTarget(`Running tests with priority: ${priority}`, { priority }, 'CLI');
+  logWithIcon(LogLevel.INFO, 'target', `Running tests with priority: ${priority}`, { priority }, 'CLI');
 
   const { runTestsByPriority } = await import('../framework/execution/discovery/cli-functions.js');
   await runTestsByPriority(priority, config);

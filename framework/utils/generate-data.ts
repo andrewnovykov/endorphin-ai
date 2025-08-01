@@ -9,6 +9,7 @@ import { TokenTracker } from '../core/token-tracker.js';
 import { globalResourceManager } from '../core/resource-manager.js';
 import { trackAICall } from '../ai/agent-setup.js';
 import { EventEmitter } from 'node:events';
+import { logWithIcon, LogLevel, warn, logSuccess } from '../core/logger.js';
 
 // Increase default max listeners to prevent memory leak warnings
 EventEmitter.defaultMaxListeners = 20;
@@ -49,7 +50,7 @@ Example response format:
   try {
     // Check if OpenAI API key is available
     if (!AGENT_CONFIG.openai.apiKey) {
-      console.warn('⚠️ OpenAI API key not found, using fallback data generation');
+      warn('OpenAI API key not found, using fallback data generation', {}, 'DataGenerator');
       return generateFallbackData(schema);
     }
 
@@ -69,7 +70,7 @@ Example response format:
       temperature: 0.3, // Low temperature for consistent data generation
     });
 
-    console.log(`🤖 Generating test data with AI (estimated: ${estimatedPromptTokens} tokens)...`);
+    logWithIcon(LogLevel.INFO, 'brain', `Generating test data with AI (estimated: ${estimatedPromptTokens} tokens)...`, { estimatedTokens: estimatedPromptTokens }, 'DataGenerator');
 
     const startTime = Date.now();
 
@@ -102,29 +103,29 @@ Example response format:
         generatedData = JSON.parse(objectMatch[0]);
         // If we got an array when we wanted a single object, take the first element
         if (Array.isArray(generatedData) && generatedData.length > 0) {
-          console.warn('⚠️ AI returned array instead of single object, using first element');
+          warn('AI returned array instead of single object, using first element', {}, 'DataGenerator');
           generatedData = generatedData[0];
         }
       } catch {
-        console.warn('⚠️ Failed to parse AI response as JSON, using fallback');
+        warn('Failed to parse AI response as JSON, using fallback', {}, 'DataGenerator');
         return generateFallbackData(schema);
       }
     } else if (arrayMatch) {
       try {
         const arrayData = JSON.parse(arrayMatch[0]);
         if (Array.isArray(arrayData) && arrayData.length > 0) {
-          console.warn('⚠️ AI returned array instead of single object, using first element');
+          warn('AI returned array instead of single object, using first element', {}, 'DataGenerator');
           generatedData = arrayData[0];
         } else {
-          console.warn('⚠️ Empty array returned, using fallback');
+          warn('Empty array returned, using fallback', {}, 'DataGenerator');
           return generateFallbackData(schema);
         }
       } catch {
-        console.warn('⚠️ Failed to parse AI response as JSON, using fallback');
+        warn('Failed to parse AI response as JSON, using fallback', {}, 'DataGenerator');
         return generateFallbackData(schema);
       }
     } else {
-      console.warn('⚠️ No valid JSON found in AI response, using fallback');
+      warn('No valid JSON found in AI response, using fallback', {}, 'DataGenerator');
       return generateFallbackData(schema);
     }
 
@@ -140,14 +141,14 @@ Example response format:
 
       return generatedData;
     } catch (error: any) {
-      console.warn(`⚠️ Data generation failed: ${error.message}, using fallback`);
+      warn(`Data generation failed: ${error.message}, using fallback`, { error: error.message }, 'DataGenerator');
       return generateFallbackData(schema);
     } finally {
       // Clean up abort controller to prevent memory leaks
       globalResourceManager.disposeAbortController(controllerId);
     }
   } catch (error: any) {
-    console.warn(`⚠️ Data generation setup failed: ${error.message}, using fallback`);
+    warn(`Data generation setup failed: ${error.message}, using fallback`, { error: error.message }, 'DataGenerator');
     return generateFallbackData(schema);
   }
 }
@@ -228,7 +229,7 @@ export async function generateDataArray(
     ? `${context}. Generate ${count} unique items.`
     : `Generate ${count} unique, diverse items.`;
 
-  console.log(`🤖 Generating ${count} data items with AI...`);
+  logWithIcon(LogLevel.INFO, 'brain', `Generating ${count} data items with AI...`, { count }, 'DataGenerator');
 
   for (let i = 0; i < count; i++) {
     const itemContext = `${arrayContext} This is item ${i + 1} of ${count}.`;
@@ -237,7 +238,7 @@ export async function generateDataArray(
   }
 
   const totalDuration = Date.now() - arrayStartTime;
-  console.log(`✅ Generated ${count} data items in ${totalDuration}ms`);
+  logSuccess(`Generated ${count} data items in ${totalDuration}ms`, { count, duration: totalDuration }, 'DataGenerator');
 
   return results;
 }

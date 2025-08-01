@@ -485,7 +485,7 @@ async function showStepRecordedNotification(framework: any, stepDescription: str
 
   } catch (error) {
     // Silently fail if notification can't be shown
-    console.debug('Could not show browser notification:', error);
+    console.debug('🐞 Could not show browser notification:', error);
   }
 }
 

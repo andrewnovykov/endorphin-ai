@@ -16,7 +16,8 @@ import { globalResourceManager } from './resource-manager.js';
 import { SessionManager } from './session-manager.js';
 import { TokenTracker } from './token-tracker.js';
 import { ToolManager } from './tool-manager.js';
-import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from './logger.js';
+import { info, logSuccess, logWithIcon, LogLevel, error as logError, warn } from './logger.js';
+import { ICONS } from '../config/icons.js';
 
 // Service names constants
 export const SERVICE_NAMES = {
@@ -62,7 +63,7 @@ export class ServiceRegistry {
     const { enableLogging = false, customConfig = {} } = options;
 
     if (enableLogging) {
-      logRocket('Registering framework services', {}, 'ServiceRegistry');
+      logWithIcon(LogLevel.INFO, 'rocket', 'Registering framework services', {}, 'ServiceRegistry');
     }
 
     // Register core configuration
@@ -200,7 +201,7 @@ export class ServiceRegistry {
       throw new Error('Services must be registered before initialization');
     }
 
-    logRocket('Initializing framework services', {}, 'ServiceRegistry');
+    logWithIcon(LogLevel.INFO, 'rocket', 'Initializing framework services', {}, 'ServiceRegistry');
 
     // Initialize core services in dependency order
     const initOrder = [

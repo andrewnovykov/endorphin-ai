@@ -6,6 +6,7 @@
 import type { TestReport, TestSession } from '../types/index.js';
 import { existsSync, promises as fs } from 'node:fs';
 import * as path from 'node:path';
+import { warn, logSuccess } from '../core/logger.js';
 
 export interface TestResultsManagerOptions {
   resultsDir?: string;
@@ -117,7 +118,7 @@ export class TestResultsManager {
     const reportPath = path.join(this.resultsDir, filename || `report-${Date.now()}.json`);
 
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
-    console.log(`📊 Report saved to: ${reportPath}`);
+    logSuccess(`Report saved to: ${reportPath}`, { reportPath }, 'TestResultsManager');
 
     return reportPath;
   }
@@ -135,7 +136,7 @@ export class TestResultsManager {
       }
     } catch (_error) {
       const message = _error instanceof Error ? _error.message : String(_error);
-      console.warn(`Warning: Could not create directories: ${message}`);
+      warn(`Could not create directories: ${message}`, { message }, 'TestResultsManager');
     }
   }
 }

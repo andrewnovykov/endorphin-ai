@@ -5,7 +5,7 @@
 
 import { BrowserEngine } from '../engines/browser-engine.js';
 import { FrameworkManager } from '../../managers/system/framework-manager.js';
-import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from '../../core/logger.js';
+import { info, logSuccess, logWithIcon, LogLevel } from '../../core/logger.js';
 import type {
   FrameworkConfig,
   TaskResult,
@@ -36,7 +36,7 @@ export class EnhancedBrowserTestFramework {
       return;
     }
 
-    logRocket('Initializing Enhanced Browser Test Framework', {}, 'EnhancedBrowserTestFramework');
+    logWithIcon(LogLevel.INFO, 'rocket', 'Initializing Enhanced Browser Test Framework', {}, 'EnhancedBrowserTestFramework');
 
     // Create and initialize browser engine
     this.browserEngine = this.frameworkManager.createBrowserEngine(this);
@@ -65,7 +65,7 @@ export class EnhancedBrowserTestFramework {
       throw new Error('Framework not initialized. Call initialize() first.');
     }
 
-    logRocket(`Running ${tasks.length} tasks sequentially`, { taskCount: tasks.length }, 'EnhancedBrowserTestFramework');
+    logWithIcon(LogLevel.INFO, 'rocket', `Running ${tasks.length} tasks sequentially`, { taskCount: tasks.length }, 'EnhancedBrowserTestFramework');
 
     const results: TaskResult[] = [];
     for (let i = 0; i < tasks.length; i++) {
@@ -114,7 +114,7 @@ export class EnhancedBrowserTestFramework {
       throw new Error('Framework not initialized. Call initialize() first.');
     }
 
-    logTarget(`Running ${tests.length} tests with enhanced result tracking`, { testCount: tests.length }, 'EnhancedBrowserTestFramework');
+    logWithIcon(LogLevel.INFO, 'target', `Running ${tests.length} tests with enhanced result tracking`, { testCount: tests.length }, 'EnhancedBrowserTestFramework');
     const results: Array<{
       testId: string;
       testName: string;

@@ -11,7 +11,7 @@ import { pathToFileURL } from 'url';
 // Simple console logging to avoid circular dependencies
 const log = {
   info: (msg: string, data?: any) => console.log(`[GlobalSetup] ${msg}`, data || ''),
-  debug: (msg: string, data?: any) => console.debug(`[GlobalSetup] ${msg}`, data || ''),
+  debug: (msg: string, data?: any) => console.debug(`🐞 [GlobalSetup] ${msg}`, data || ''),
   warn: (msg: string, data?: any) => console.warn(`[GlobalSetup] ${msg}`, data || ''),
   error: (msg: string, error?: any) => console.error(`[GlobalSetup] ${msg}`, error || ''),
 };

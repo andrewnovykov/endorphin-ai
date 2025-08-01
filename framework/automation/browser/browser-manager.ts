@@ -5,7 +5,7 @@
 
 import { Browser, BrowserContext, Page, chromium, firefox, webkit } from 'playwright';
 import type { BrowserConfig } from '../types/browser.js';
-import { globalLogger } from '../../core/logger.js';
+import { globalLogger, logWithIcon, LogLevel } from '../../core/logger.js';
 import { ciPerformanceMonitor } from '../../core/ci-performance.js';
 
 export interface BrowserManagerConfig {
@@ -34,7 +34,7 @@ export class BrowserManager {
   async initialize(): Promise<void> {
     // Skip if already initialized
     if (this.browser && this.context && this.page) {
-      this.logger.debug('Browser already initialized, reusing existing instance');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Browser already initialized, reusing existing instance', {}, 'BrowserManager');
       return;
     }
 
@@ -44,7 +44,7 @@ export class BrowserManager {
     const launchOptions = this.getLaunchOptions();
     const contextOptions = this.getContextOptions();
 
-    this.logger.debug('Launching browser', {
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Launching browser', {
       type: this.config.browser.type,
       headless: this.config.browser.headless,
       viewport: this.config.browser.viewport,
@@ -119,7 +119,7 @@ export class BrowserManager {
 
     try {
       await page.goto(url, { timeout, waitUntil });
-      this.logger.debug('Navigation completed successfully');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Navigation completed successfully', {}, 'BrowserManager');
     } catch (error: any) {
       this.logger.error('Navigation failed', error, { url, timeout, waitUntil });
       throw error;
@@ -136,7 +136,7 @@ export class BrowserManager {
   }): Promise<Buffer> {
     const page = this.getPage();
 
-    this.logger.debug('Taking screenshot', options);
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Taking screenshot', options || {}, 'BrowserManager');
 
     try {
       const screenshotOptions: any = {
@@ -158,7 +158,7 @@ export class BrowserManager {
 
       const screenshot = await page.screenshot(screenshotOptions);
 
-      this.logger.debug('Screenshot taken successfully');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Screenshot taken successfully', {}, 'BrowserManager');
       return screenshot;
     } catch (error: any) {
       this.logger.error('Screenshot failed', error, options);
@@ -173,11 +173,11 @@ export class BrowserManager {
     const page = this.getPage();
     const waitTimeout = timeout || this.config.browser.timeout;
 
-    this.logger.debug('Waiting for page load', { timeout: waitTimeout });
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Waiting for page load', { timeout: waitTimeout }, 'BrowserManager');
 
     try {
       await page.waitForLoadState('domcontentloaded', { timeout: waitTimeout });
-      this.logger.debug('Page load completed');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Page load completed', {}, 'BrowserManager');
     } catch (error: any) {
       this.logger.error('Page load timeout', error, { timeout: waitTimeout });
       throw error;
@@ -190,12 +190,12 @@ export class BrowserManager {
   async createNewPage(): Promise<Page> {
     const context = this.getContext();
 
-    this.logger.debug('Creating new page');
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Creating new page', {}, 'BrowserManager');
 
     const newPage = await context.newPage();
     this.setupPageEventHandlers(newPage);
 
-    this.logger.debug('New page created');
+    logWithIcon(LogLevel.DEBUG, 'debug', 'New page created', {}, 'BrowserManager');
     return newPage;
   }
 
@@ -204,12 +204,12 @@ export class BrowserManager {
    */
   async closePage(): Promise<void> {
     if (this.page) {
-      this.logger.debug('Closing page');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Closing page', {}, 'BrowserManager');
       // Remove event listeners before closing
       this.removePageEventHandlers(this.page);
       await this.page.close();
       this.page = null;
-      this.logger.debug('Page closed');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Page closed', {}, 'BrowserManager');
     }
   }
 
@@ -218,7 +218,7 @@ export class BrowserManager {
    */
   async closeContext(): Promise<void> {
     if (this.context) {
-      this.logger.debug('Closing browser context');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Closing browser context', {}, 'BrowserManager');
       // Clean up page event listeners if page still exists
       if (this.page) {
         this.removePageEventHandlers(this.page);
@@ -226,7 +226,7 @@ export class BrowserManager {
       await this.context.close();
       this.context = null;
       this.page = null;
-      this.logger.debug('Browser context closed');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Browser context closed', {}, 'BrowserManager');
     }
   }
 
@@ -235,7 +235,7 @@ export class BrowserManager {
    */
   async closeBrowser(): Promise<void> {
     if (this.browser) {
-      this.logger.debug('Closing browser');
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Closing browser', {}, 'BrowserManager');
       await this.browser.close();
       this.browser = null;
       this.context = null;
@@ -272,19 +272,19 @@ export class BrowserManager {
       return;
     }
 
-    this.logger.debug('Cleaning up multi-user sessions', { userCount: this.userPages.size });
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Cleaning up multi-user sessions', { userCount: this.userPages.size }, 'BrowserManager');
 
     // Close all user pages except the main page if it's being reused
     for (const [userId, page] of this.userPages) {
       try {
         // Skip closing if this is the main page
         if (page === this.page) {
-          this.logger.debug('Skipping main page close for user', { userId });
+          logWithIcon(LogLevel.DEBUG, 'debug', 'Skipping main page close for user', { userId }, 'BrowserManager');
           continue;
         }
         this.removePageEventHandlers(page);
         await page.close();
-        this.logger.debug('Closed page for user', { userId });
+        logWithIcon(LogLevel.DEBUG, 'debug', 'Closed page for user', { userId }, 'BrowserManager');
       } catch (error: any) {
         this.logger.error('Error closing page for user', error, { userId });
       }
@@ -295,11 +295,11 @@ export class BrowserManager {
       try {
         // Skip closing if this is the main context
         if (context === this.context) {
-          this.logger.debug('Skipping main context close for user', { userId });
+          logWithIcon(LogLevel.DEBUG, 'debug', 'Skipping main context close for user', { userId }, 'BrowserManager');
           continue;
         }
         await context.close();
-        this.logger.debug('Closed context for user', { userId });
+        logWithIcon(LogLevel.DEBUG, 'debug', 'Closed context for user', { userId }, 'BrowserManager');
       } catch (error: any) {
         this.logger.error('Error closing context for user', error, { userId });
       }
@@ -310,7 +310,7 @@ export class BrowserManager {
     this.userContexts.clear();
     this.currentUserId = null;
 
-    this.logger.debug('Multi-user cleanup completed');
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Multi-user cleanup completed', {}, 'BrowserManager');
   }
 
   /**
@@ -342,11 +342,11 @@ export class BrowserManager {
   async setViewportSize(width: number, height: number): Promise<void> {
     const page = this.getPage();
 
-    this.logger.debug('Setting viewport size', { width, height });
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Setting viewport size', { width, height }, 'BrowserManager');
 
     await page.setViewportSize({ width, height });
 
-    this.logger.debug('Viewport size updated');
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Viewport size updated', {}, 'BrowserManager');
   }
 
   /**
@@ -373,7 +373,7 @@ export class BrowserManager {
     if (this.context && this.page) {
       this.userContexts.set(firstUserId, this.context);
       this.userPages.set(firstUserId, this.page);
-      this.logger.debug(`Reusing existing browser context for user: ${firstUserId}`);
+      logWithIcon(LogLevel.DEBUG, 'debug', `Reusing existing browser context for user: ${firstUserId}`, {}, 'BrowserManager');
     } else {
       throw new Error('Browser must be initialized before multi-user setup');
     }
@@ -391,9 +391,9 @@ export class BrowserManager {
       // Store user context and page
       this.userContexts.set(userId, context);
       this.userPages.set(userId, page);
-      this.logger.debug(`Created new browser context for user: ${userId}`);
+      logWithIcon(LogLevel.DEBUG, 'debug', `Created new browser context for user: ${userId}`, {}, 'BrowserManager');
 
-      this.logger.debug('Created browser session for user', { userId });
+      logWithIcon(LogLevel.DEBUG, 'debug', 'Created browser session for user', { userId }, 'BrowserManager');
     }
 
     this.logger.info('Multi-user browser sessions initialized successfully');
@@ -421,11 +421,11 @@ export class BrowserManager {
     this.page = this.userPages.get(baseUserId)!;
     this.context = this.userContexts.get(baseUserId)!;
 
-    this.logger.debug('Switched to user context', { 
+    logWithIcon(LogLevel.DEBUG, 'debug', 'Switched to user context', { 
       phaseId: userId, 
       baseUserId,
       availableUsers: Array.from(this.userPages.keys())
-    });
+    }, 'BrowserManager');
 
     // Add timing delay for multi-user context switching to ensure stability
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -580,7 +580,7 @@ export class BrowserManager {
       if (level === 'error' && !isUselessError) {
         this.logger.warn(`Browser console error: ${text}`);
       } else if (level === 'warning' && !isUselessError) {
-        this.logger.debug(`Browser console warning: ${text}`);
+        logWithIcon(LogLevel.DEBUG, 'debug', `Browser console warning: ${text}`, {}, 'BrowserManager');
       }
     });
 

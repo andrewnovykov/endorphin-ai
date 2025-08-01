@@ -3,9 +3,9 @@
  * Uses examples folder as templates for consistent setup
  */
 
+import { execSync } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
-import { execSync } from 'child_process';
 
 // Get the framework root directory by going up from this file's location
 // This works both in compiled JS and during testing
@@ -201,34 +201,34 @@ async function fileExists(filePath: string): Promise<boolean> {
 }
 
 async function createBasicFiles(targetDir: string): Promise<void> {
-  console.log('🛠️ Creating basic configuration files...');
-  
+  console.log('🛠️  Creating basic configuration files...');
+
   // Initialize npm package.json first
   try {
     console.log('📦 Initializing npm package...');
-    execSync('npm init -y', { 
+    execSync('npm init -y', {
       cwd: targetDir,
-      stdio: 'pipe' // Suppress output
+      stdio: 'pipe', // Suppress output
     });
     console.log('📄 Created: package.json');
-    
+
     // Add endorphin-ai dependency
     const packageJsonPath = path.join(targetDir, 'package.json');
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
-    
+
     packageJson.type = 'module';
-    
+
     packageJson.dependencies = {
       'endorphin-ai': '^0.8.0',
-      ...packageJson.dependencies
+      ...packageJson.dependencies,
     };
-    
+
     packageJson.devDependencies = {
       '@types/node': '^20.0.0',
-      'typescript': '^5.0.0',
-      ...packageJson.devDependencies
+      typescript: '^5.0.0',
+      ...packageJson.devDependencies,
     };
-    
+
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
     console.log('📄 Updated: package.json (added dependencies)');
   } catch (error: any) {
@@ -393,4 +393,3 @@ Happy testing! 🚀`;
 
   // No custom tools needed - functionality removed
 }
-

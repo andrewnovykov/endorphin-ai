@@ -25,7 +25,7 @@ import { ChatOpenAI } from '@langchain/openai';
 import type { TestSession } from '../types/test.js';
 import { getCurrentBrowserManager } from '../utils/user-utils.js';
 import { AGENT_CONFIG } from './config/agent-config.js';
-import { info, logAgent, logSuccess, error as logError, warn } from '../core/logger.js';
+import { info, logSuccess, logWithIcon, LogLevel, error as logError, warn } from '../core/logger.js';
 import { ICONS } from '../config/icons.js';
 
 // Global variables to track session and token tracking
@@ -75,7 +75,7 @@ export function trackAICall(
   };
 
   currentSession.agentHistory.push(agentEntry);
-  logAgent(`${callType} ${agentCallCounter}: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`, {
+  logWithIcon(LogLevel.INFO, 'brain', `${callType} ${agentCallCounter}: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`, {
     callType,
     callNumber: agentCallCounter,
     totalTokens: tokenUsage.totalTokens,

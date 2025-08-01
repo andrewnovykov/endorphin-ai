@@ -4,6 +4,7 @@
  */
 
 import type { JiraConfig, JiraTicket } from '../types/config.js';
+import { info, error as logError } from '../core/logger.js';
 
 export class JiraClient {
   private config: JiraConfig;
@@ -66,7 +67,11 @@ export class JiraClient {
         hasMore = data.startAt + data.issues.length < data.total;
         startAt += maxResults;
 
-        console.log(`Fetched ${data.issues.length} tickets (${tickets.length}/${data.total} total)`);
+        info(`Fetched ${data.issues.length} tickets (${tickets.length}/${data.total} total)`, { 
+          fetched: data.issues.length, 
+          totalSoFar: tickets.length, 
+          totalAvailable: data.total 
+        }, 'JiraClient');
 
       } catch (error) {
         throw new Error(`Failed to fetch JIRA tickets: ${error instanceof Error ? error.message : String(error)}`);
@@ -91,7 +96,7 @@ export class JiraClient {
 
       return response.ok;
     } catch (error) {
-      console.error('JIRA connection test failed:', error);
+      logError('JIRA connection test failed', error instanceof Error ? error : undefined, { error: String(error) }, 'JiraClient');
       return false;
     }
   }

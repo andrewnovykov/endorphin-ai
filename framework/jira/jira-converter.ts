@@ -5,6 +5,7 @@
 
 import type { JiraTicket } from '../types/config.js';
 import type { TestCase } from '../types/test.js';
+import { info, warn } from '../core/logger.js';
 
 export interface ConversionResult {
   success: boolean;
@@ -278,7 +279,7 @@ export class JiraConverter {
   private static createDataFunction(fields: Record<string, string>, prompt: string): string {
     // Return a function string that will be written to the test file
     return `async () => {
-    console.log('Generating test data...');
+    info('Generating test data for JIRA ticket', {}, 'JiraConverter');
 
     // Use AI to generate realistic user data
     const { generateData } = await import('../../framework/utils/generate-data.js');
@@ -287,7 +288,7 @@ export class JiraConverter {
       '${prompt}'
     );
 
-    console.log('Generated test data...', userData);
+    info('Generated test data for JIRA ticket', { userData }, 'JiraConverter');
     return userData;
   }`;
   }
@@ -432,7 +433,7 @@ export class JiraConverter {
       if (data.hasOwnProperty(fieldName)) {
         return data[fieldName];
       }
-      console.warn(`Warning: Variable ${match} not found in data object`);
+      warn(`Variable ${match} not found in data object`, { variable: match }, 'JiraConverter');
       return match; // Keep the original if not found
     });
 

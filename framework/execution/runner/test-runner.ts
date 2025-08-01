@@ -7,7 +7,8 @@ import { performance } from 'perf_hooks';
 import { ConsoleReporter } from '../../reporters/console-reporter.js';
 import type { DiscoveryResult, FrameworkConfig, TaskResult } from '../../types/index.js';
 import { DirectoryManager } from '../../utils/directory-manager.js';
-import { info, logRocket, logSuccess, warn, error as logError } from '../../core/logger.js';
+import { info, logWithIcon, LogLevel, logSuccess, warn, error as logError } from '../../core/logger.js';
+import { ICONS } from '../../config/icons.js';
 import type { DiscoveredTest, TestExecutionOptions } from '../discovery/discovery-types.js';
 
 /**
@@ -123,7 +124,7 @@ export class TestRunner {
     info('Cleaning up test results directory before test session', {}, 'TestRunner');
     await DirectoryManager.cleanupDirectories(resultBaseDir);
 
-    logRocket(`Running ${tests.length} tests sequentially with fresh browser per test`, { testCount: tests.length }, 'TestRunner');
+    logWithIcon(LogLevel.INFO, 'rocket', `Running ${tests.length} tests sequentially with fresh browser per test`, { testCount: tests.length }, 'TestRunner');
 
     const results: Array<{
       test: DiscoveredTest;

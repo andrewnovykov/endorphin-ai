@@ -5,7 +5,8 @@
 
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
-import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from './logger.js';
+import { info, logSuccess, logWithIcon, LogLevel, error as logError, warn } from './logger.js';
+import { ICONS } from '../config/icons.js';
 import type { TestSession } from '../types/test.js';
 
 interface SessionSummary {

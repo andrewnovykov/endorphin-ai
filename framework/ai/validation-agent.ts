@@ -10,7 +10,7 @@ import { ChatOpenAI } from '@langchain/openai';
 import type { TokenTracker } from '../core/token-tracker.js';
 import { trackAICall } from './agent-setup.js';
 import { AGENT_CONFIG } from './config/agent-config.js';
-import { logAgent, info, error as logError } from '../core/logger.js';
+import { logWithIcon, LogLevel, info, error as logError } from '../core/logger.js';
 
 export interface ValidationResult {
   status: 'SUCCESS' | 'FAILED';
@@ -92,7 +92,7 @@ Provide your analysis in the specified JSON format.`;
       // Estimate token usage before making the call
       if (this.tokenTracker) {
         const promptTokens = this.tokenTracker.estimateTokens(systemPrompt + prompt);
-        logAgent(`Validation Agent: Estimated ${promptTokens} input tokens`, { promptTokens });
+        logWithIcon(LogLevel.INFO, 'brain', `Validation Agent: Estimated ${promptTokens} input tokens`, { promptTokens });
       }
 
       const startTime = Date.now();

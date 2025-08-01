@@ -3,6 +3,8 @@
  * Handles interactive functionality for the HTML report
  */
 
+/* global Chart */
+
 class TestReportViewer {
   constructor() {
     this.testData = [];
@@ -861,7 +863,7 @@ class TestReportViewer {
     if (this.testData.length === 0) {
       console.warn('No test data available for chart');
       const ctx = canvas.getContext('2d');
-      this.durationChart = new Chart(ctx, {
+      this.durationChart = typeof Chart !== 'undefined' ? new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['No Data'],
@@ -881,7 +883,7 @@ class TestReportViewer {
             }
           }
         }
-      });
+      }) : null;
       return;
     }
 
@@ -940,7 +942,7 @@ class TestReportViewer {
       console.warn('No test groups found after processing');
       // Create a simple test chart for debugging
       const ctx = canvas.getContext('2d');
-      this.durationChart = new Chart(ctx, {
+      this.durationChart = typeof Chart !== 'undefined' ? new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['Sample Test'],
@@ -977,7 +979,7 @@ class TestReportViewer {
             }
           }
         }
-      });
+      }) : null;
       return;
     }
 
@@ -1038,7 +1040,7 @@ class TestReportViewer {
     console.log(`Preparing chart for ${displayTests.length} tests with title: ${chartTitle}`);
 
     const ctx = canvas.getContext('2d');
-    this.durationChart = new Chart(ctx, {
+    this.durationChart = typeof Chart !== 'undefined' ? new Chart(ctx, {
       type: 'bar', // Use bar chart with indexAxis: 'y' for horizontal bars
       data: {
         labels,
@@ -1116,7 +1118,7 @@ class TestReportViewer {
           mode: 'index'
         }
       }
-    });
+    }) : null;
 
     // Update chart info
     const chartInfo = document.getElementById('chart-info');

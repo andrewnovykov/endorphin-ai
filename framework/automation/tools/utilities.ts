@@ -31,7 +31,7 @@ export function createWaitTool(framework: EnhancedBrowserTestFramework) {
         ? `Wait for ${selector} to be ${state}`
         : `Wait for ${milliseconds}ms${reason ? ` (${reason})` : ''}`;
       
-      info(`${ICONS.tools} ${stepDesc}`, { tool: 'wait', params: { milliseconds, reason, selector, state } }, 'Tool');
+      info(`${ICONS.tools} ${ICONS.hourglass} ${stepDesc}`, { tool: 'wait', params: { milliseconds, reason, selector, state } }, 'Tool');
 
       try {
         if (selector) {
@@ -108,7 +108,7 @@ export function createScreenshotTool(framework: EnhancedBrowserTestFramework) {
       const filename = name || `manual-screenshot-${Date.now()}`;
       const stepDesc = `Take screenshot: ${filename}`;
       
-      info(`${ICONS.tools} ${stepDesc}`, { tool: 'screenshot', params: { name, selector, fullPage } }, 'Tool');
+      info(`${ICONS.tools} ${ICONS.camera} ${stepDesc}`, { tool: 'screenshot', params: { name, selector, fullPage } }, 'Tool');
 
       try {
         let filePath;
@@ -124,7 +124,7 @@ export function createScreenshotTool(framework: EnhancedBrowserTestFramework) {
           filePath = `screenshot-${Date.now()}.png`;
         }
 
-        info(`${ICONS.tools} Screenshot path: ${filePath}`, { filePath }, 'Tool');
+        info(`${ICONS.tools} ${ICONS.camera} Screenshot path: ${filePath}`, { filePath }, 'Tool');
 
         if (selector) {
           await framework.currentPage!.locator(selector).screenshot({ path: filePath });
