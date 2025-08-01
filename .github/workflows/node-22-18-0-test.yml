@@ -1,0 +1,107 @@
+name: Node.js 22.18.0 Compatibility Test
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+  schedule:
+    # Run weekly to catch any regressions
+    - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
+
+env:
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+jobs:
+  node-22-18-0-test:
+    name: Node.js 22.18.0 Compatibility
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.18.0'
+          cache: 'npm'
+
+      - name: Verify Node.js version
+        run: |
+          node --version
+          echo "Expected: v22.18.0"
+          if [[ "$(node --version)" != "v22.18.0" ]]; then
+            echo "❌ Node.js version mismatch!"
+            exit 1
+          fi
+          echo "✅ Node.js 22.18.0 confirmed"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type checking
+        run: npm run type-check
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build project
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          ls -la dist/
+          node dist/bin/endorphin.js --version
+
+      - name: Install Playwright browsers
+        run: |
+          npx playwright install chromium
+          npx playwright install-deps chromium
+
+      - name: Run full test suite
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: npm test
+
+      - name: Run package tests
+        working-directory: dev-tests/package-tests
+        env:
+          CI: true
+          TEST_TIMEOUT: 300
+        run: |
+          chmod +x run-all-tests.sh
+          chmod +x scripts/**/*.sh
+          timeout 15m ./run-all-tests.sh || exit_code=$?
+          
+          if [ "${exit_code:-0}" -eq 124 ]; then
+            echo "Package tests timed out after 15 minutes"
+            exit 1
+          elif [ "${exit_code:-0}" -ne 0 ]; then
+            echo "Package tests failed with exit code: ${exit_code:-0}"
+            exit 1
+          fi
+
+      - name: Test CLI functionality
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          # Test basic CLI commands
+          node dist/bin/endorphin.js --version
+          node dist/bin/endorphin.js --help
+          node dist/bin/endorphin.js list tools
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: node-22-18-0-test-results-${{ matrix.os }}
+          path: |
+            dev-tests/development/coverage/
+            dev-tests/package-tests/results/
+            test-results/

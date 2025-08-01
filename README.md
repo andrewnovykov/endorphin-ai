@@ -134,6 +134,31 @@ npx endorphin-ai generate report && npx endorphin-ai open report
 
 https://github.com/user-attachments/assets/166b27d5-5da8-4aab-baaa-6924435f07a9
 
+### 📋 System Requirements
+
+**Node.js Compatibility:**
+- ✅ **Node.js 16.0.0+** (Minimum supported)
+- ✅ **Node.js 18.x** (LTS - Recommended)
+- ✅ **Node.js 20.x** (Current LTS)
+- ✅ **Node.js 22.x** (Latest stable)
+- ✅ **Node.js 22.18.0** (Explicitly tested on CI)
+
+**Platforms:**
+- ✅ Windows 10/11
+- ✅ macOS 10.15+
+- ✅ Linux (Ubuntu 18.04+)
+
+**Test Node.js 22.18.0 compatibility:**
+```bash
+# Local testing script
+./scripts/test-node-22.18.0.sh
+
+# Or manual test
+npm run test:node-22
+```
+
+📖 **[Full Node.js Compatibility Guide](./doc/NODEJS-COMPATIBILITY.md)**
+
 ### 🔧 Troubleshooting Installation
 
 If `npx endorphin-ai` doesn't work, try these **guaranteed solutions**:

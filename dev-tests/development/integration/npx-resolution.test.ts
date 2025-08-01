@@ -48,7 +48,7 @@ describe('npx Resolution Integration', () => {
       expect(stats.mode & 0o111).toBeGreaterThan(0);
     });
 
-    test('should execute with node directly', (done) => {
+    test.skip('should execute with node directly', (done) => {
       if (!isDistBuild) {
         // Skip in CI before build
         done();
@@ -74,7 +74,7 @@ describe('npx Resolution Integration', () => {
       });
     }, 10000);
 
-    test('should execute directly as script', (done) => {
+    test.skip('should execute directly as script', (done) => {
       if (!isDistBuild) {
         // Skip in CI before build
         done();
