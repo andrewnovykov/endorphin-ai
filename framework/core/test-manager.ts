@@ -9,7 +9,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { info, logSuccess, logWithIcon, LogLevel, error as logError, warn } from './logger.js';
-import { ICONS } from '../config/icons.js';
 
 dotenv.config();
 

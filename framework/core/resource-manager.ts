@@ -7,8 +7,7 @@ import { EventEmitter } from 'node:events';
 import { LIMITS, PERFORMANCE } from '../config/constants.js';
 import { ResourceError, ResourceExhaustedError } from '../types/errors.js';
 import { ciPerformanceMonitor } from './ci-performance.js';
-import { info, logSuccess, logWithIcon, LogLevel, error as logError, warn } from './logger.js';
-import { ICONS } from '../config/icons.js';
+import { info } from './logger.js';
 
 export interface ManagedResource {
   id: string;

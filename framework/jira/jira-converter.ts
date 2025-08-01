@@ -5,7 +5,7 @@
 
 import type { JiraTicket } from '../types/config.js';
 import type { TestCase } from '../types/test.js';
-import { info, warn } from '../core/logger.js';
+import { warn } from '../core/logger.js';
 
 export interface ConversionResult {
   success: boolean;
@@ -430,7 +430,7 @@ export class JiraConverter {
     // Replace ${data.fieldName} patterns
     const variableRegex = /\$\{data\.(\w+)\}/g;
     result = result.replace(variableRegex, (match, fieldName) => {
-      if (data.hasOwnProperty(fieldName)) {
+      if (Object.prototype.hasOwnProperty.call(data, fieldName)) {
         return data[fieldName];
       }
       warn(`Variable ${match} not found in data object`, { variable: match }, 'JiraConverter');

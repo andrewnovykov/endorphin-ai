@@ -8,7 +8,7 @@ import { HtmlGenerator, type ReportOptions } from '../reporting/generators/html-
 import { AssetManager } from '../reporting/processors/asset-manager.js';
 import { ResultsParser } from '../reporting/processors/results-parser.js';
 import type { TestSession } from '../types/index.js';
-import { info, logSuccess, warn, error as logError } from '../core/logger.js';
+import { info, logSuccess, error as logError } from '../core/logger.js';
 
 export interface HtmlReporterOptions {
   testResultsDir?: string;

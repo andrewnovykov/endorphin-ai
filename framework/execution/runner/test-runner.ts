@@ -7,8 +7,7 @@ import { performance } from 'perf_hooks';
 import { ConsoleReporter } from '../../reporters/console-reporter.js';
 import type { DiscoveryResult, FrameworkConfig, TaskResult } from '../../types/index.js';
 import { DirectoryManager } from '../../utils/directory-manager.js';
-import { info, logWithIcon, LogLevel, logSuccess, warn, error as logError } from '../../core/logger.js';
-import { ICONS } from '../../config/icons.js';
+import { info, logWithIcon, LogLevel } from '../../core/logger.js';
 import type { DiscoveredTest, TestExecutionOptions } from '../discovery/discovery-types.js';
 
 /**

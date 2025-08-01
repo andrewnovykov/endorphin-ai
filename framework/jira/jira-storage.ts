@@ -218,7 +218,7 @@ export class JiraStorage {
         ...(oldestTicket && { oldestTicket }),
         ...(newestTicket && { newestTicket })
       };
-    } catch (error) {
+    } catch {
       return {
         totalTickets: 0,
         totalSize: 0

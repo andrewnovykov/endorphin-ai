@@ -252,7 +252,6 @@ export class TestFrameworkDI {
 
       await browserManager.takeScreenshot({ path: screenshotPath });
 
-      const logger = await this.getLogger();
       logWithIcon(LogLevel.DEBUG, 'debug', 'Screenshot captured', { path: screenshotPath }, 'TestFrameworkDI');
 
       return screenshotPath;

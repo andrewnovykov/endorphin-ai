@@ -16,8 +16,7 @@ import { globalResourceManager } from './resource-manager.js';
 import { SessionManager } from './session-manager.js';
 import { TokenTracker } from './token-tracker.js';
 import { ToolManager } from './tool-manager.js';
-import { info, logSuccess, logWithIcon, LogLevel, error as logError, warn } from './logger.js';
-import { ICONS } from '../config/icons.js';
+import { info, logSuccess, logWithIcon, LogLevel, error as logError } from './logger.js';
 
 // Service names constants
 export const SERVICE_NAMES = {

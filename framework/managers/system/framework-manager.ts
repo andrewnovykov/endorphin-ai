@@ -7,8 +7,7 @@ import * as path from 'node:path';
 import { BrowserEngine, type BrowserEngineConfig } from '../../automation/engines/browser-engine.js';
 import { HtmlReporter } from '../../reporters/html-reporter.js';
 import { TestResultsManager } from '../../results/test-results-manager.js';
-import { info, logSuccess, logWithIcon, LogLevel, error as logError, warn } from '../../core/logger.js';
-import { ICONS } from '../../config/icons.js';
+import { info, logSuccess, logWithIcon, LogLevel } from '../../core/logger.js';
 import type {
   BrowserConfig,
   ExecutionConfig,

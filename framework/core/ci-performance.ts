@@ -131,7 +131,7 @@ export class CIPerformanceMonitor {
             browserMemory.domDocuments
           );
         }
-      } catch (error) {
+      } catch {
         // Silently continue if browser memory collection fails
         // Skip logging debug info as it's expected to sometimes fail
       }
@@ -242,7 +242,7 @@ export class CIPerformanceMonitor {
         domNodes: domStats.nodeCount,
         domDocuments: domStats.documentCount
       };
-    } catch (error) {
+    } catch {
       // Skip logging debug info as it's expected to sometimes fail
       return null;
     }

@@ -7,7 +7,7 @@ import { readdir, stat } from 'fs/promises';
 import { join, resolve } from 'path';
 import { pathToFileURL } from 'url';
 import type { TestConfig } from '../../types/index.js';
-import { info, logSuccess, warn, error as logError, debug, logWithIcon, LogLevel } from '../../core/logger.js';
+import { info, logSuccess, warn, error as logError, logWithIcon, LogLevel } from '../../core/logger.js';
 import type {
   DiscoveredTest,
   DiscoveryConfig,
