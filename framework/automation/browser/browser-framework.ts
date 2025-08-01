@@ -264,6 +264,97 @@ export class EnhancedBrowserTestFramework {
     }
     return null;
   }
+
+  // 🤖 Failure Data Collection for AI Recommendations
+  private failureData: Array<{
+    type: string;
+    selector?: string;
+    state?: string;
+    error: string;
+    stepDescription?: string;
+    pageSnapshot?: {
+      url: string;
+      title: string;
+      html: string;
+      visibleText: string;
+    } | undefined;
+    alternatives?: Array<{
+      selector: string;
+      element: string;
+      text: string;
+      confidence: number;
+    }>;
+    screenshot?: string;
+    timestamp: string;
+  }> = [];
+
+  /**
+   * Collect failure data for post-test AI analysis
+   */
+  collectFailureData(failureInfo: {
+    type: string;
+    selector?: string;
+    state?: string;
+    error: string;
+    stepDescription?: string;
+    pageSnapshot?: {
+      url: string;
+      title: string;
+      html: string;
+      visibleText: string;
+    } | undefined;
+    alternatives?: any[];
+    screenshot?: string;
+    timestamp: string;
+  }): void {
+    this.failureData.push(failureInfo);
+  }
+
+  /**
+   * Capture current page snapshot for failure analysis
+   */
+  async capturePageSnapshot(): Promise<{
+    url: string;
+    title: string;
+    html: string;
+    visibleText: string;
+  } | null> {
+    if (!this.currentPage) {
+      return null;
+    }
+
+    try {
+      const url = this.currentPage.url();
+      const title = await this.currentPage.title();
+      
+      // Get full HTML content
+      const html = await this.currentPage.content();
+      
+      // Get visible text content
+      const visibleText = await this.currentPage.evaluate(() => {
+        return document.body.innerText || document.body.textContent || '';
+      });
+
+      return { url, title, html, visibleText };
+    } catch (error) {
+      // Silent failure - don't disrupt test flow
+      return null;
+    }
+  }
+
+  /**
+   * Get collected failure data for AI analysis
+   */
+  getFailureData(): Array<any> {
+    return this.failureData;
+  }
+
+  /**
+   * Clear failure data (called at start of new test)
+   */
+  clearFailureData(): void {
+    this.failureData = [];
+  }
 }
 
 // Re-export for backward compatibility

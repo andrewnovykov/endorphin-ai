@@ -102,7 +102,7 @@
     "langchain": "^0.3.19",
     "openai": "^4.85.3",
     "playwright": "^1.50.1",
-    "tsx": "^4.9.3",
+    "tsx": "^4.20.3",
     "zod": "^3.25.67"
   },
   "directories": {
@@ -125,7 +125,6 @@
     "lint-staged": "^15.5.2",
     "prettier": "^3.6.0",
     "ts-jest": "^29.4.0",
-    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "typescript-transform-paths": "^3.5.5"
   },

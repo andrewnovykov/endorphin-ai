@@ -43,11 +43,16 @@ npx endorphin-ai list
 ## 📁 Project Structure
 
 ```
-├── .env                    # Environment variables
-├── endorphin.config.js     # Framework configuration
+├── .env                    # Environment variables (includes ENDORPHIN_DEBUG, JIRA settings)
+├── endorphin.config.ts     # Framework configuration (TypeScript)
+├── global-setup.ts         # Global setup functions (optional)
 ├── .gitignore             # Git ignore patterns
-├── tests/                  # Your test files
-│   └── sample-test.js      # Sample test (HEALTH-001)
+├── tests/                  # Your test files (TypeScript)
+│   ├── HEALTH-001.ts      # Health check test
+│   ├── HEALTH-002.ts      # Secondary health test  
+│   ├── SAMPLE-001.ts      # Sample test template
+│   ├── QUARANTINE-001.ts  # Example quarantined test
+│   └── MULTI-USER-001.ts  # Multi-user test example
 ├── test-results/          # Test execution results
 └── test-recorder/         # Recorded test artifacts
 ```
@@ -127,9 +132,9 @@ npx endorphin-ai run test HEALTH-001 --viewport 1920x1080
 
 ## ⚙️ Configuration
 
-Your `endorphin.config.js` file controls framework behavior:
+Your `endorphin.config.ts` file controls framework behavior:
 
-```javascript
+```typescript
 export default {
   browser: {
     headless: false, // Show browser window
@@ -155,21 +160,21 @@ export default {
 
 Create test files in the `tests/` directory:
 
-```javascript
+```typescript
 // tests/my-test.ts
 import type { TestCase } from 'endorphin-ai';
 
-export const MY_TEST = {
+export const MY_TEST: TestCase = {
   id: 'MY-001',
   name: 'My First Test',
   description: 'Test login functionality',
   priority: 'High',
   tags: ['login', 'smoke'],
-  site: 'https://example.com',
-  testData: {
+  url: 'https://example.com', // Use 'url' instead of 'site'
+  data: async () => ({
     email: 'test@example.com',
     password: 'password123',
-  },
+  }),
   task: `Navigate to https://example.com and click the login button.
          Fill in the email field with the test email.
          Fill in the password field with the test password.
@@ -207,7 +212,10 @@ node --version
 npx endorphin-ai list
 
 # Verify exports are correct
-node -e "import('./tests/sample-test.js').then(console.log)"
+node -e "import('./tests/SAMPLE-001.ts').then(console.log)"
+
+# Enable debug mode for detailed logs
+ENDORPHIN_DEBUG=verbose npx endorphin-ai list
 ```
 
 ## 🎯 Next Steps

@@ -8,7 +8,7 @@ export const SAMPLE_001: TestCase = {
   description: 'Basic health check to verify the testing framework is working',
   priority: 'High',
   tags: ['health', 'smoke'],
-  site: 'https://example.com',
+  url: 'https://example.com', // Use 'url' instead of 'site' for consistency
   data: async () => {
     return {};
   },

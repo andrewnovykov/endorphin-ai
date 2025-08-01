@@ -138,23 +138,48 @@ export async function handleTestCommand(
 export async function handleGenerateCommand(subcommand: string, args: string[]): Promise<void> {
   if (subcommand === 'report') {
     info('Generating HTML test report', {}, 'CLI');
-    const { HtmlReporter } = await import('../framework/reporters/html-reporter.js');
-    const reporter = new HtmlReporter();
-    const options: { filename?: string } = {};
+    
+    try {
+      // Always use current working directory for test results
+      const testResultsDir = process.cwd() + '/test-results';
+      
+      // Check if test-results directory exists
+      const fs = await import('fs');
+      if (!fs.existsSync(testResultsDir)) {
+        logError('No test-results directory found in current folder', undefined, { testResultsDir }, 'CLI');
+        info('Run some tests first: npx endorphin-ai run test HEALTH-001', {}, 'CLI');
+        info('Or check that you\'re in the right directory', {}, 'CLI');
+        process.exit(1);
+      }
 
-    const fileIndex = args.indexOf('--file');
-    if (fileIndex !== -1 && args[fileIndex + 1]) {
-      options.filename = args[fileIndex + 1];
+      const { HtmlReporter } = await import('../framework/reporters/html-reporter.js');
+      const reporter = new HtmlReporter(testResultsDir);
+      const options: { filename?: string } = {};
+
+      const fileIndex = args.indexOf('--file');
+      if (fileIndex !== -1 && args[fileIndex + 1]) {
+        options.filename = args[fileIndex + 1];
+      }
+
+      info(`Looking for test results in: ${testResultsDir}`, { testResultsDir }, 'CLI');
+      const reportPath = await reporter.generateReport(options);
+
+      if (args.includes('--summary')) {
+        logSuccess(`Summary report generated: ${reportPath}`, { reportPath }, 'CLI');
+      } else {
+        logSuccess(`Report generated: ${reportPath}`, { reportPath }, 'CLI');
+        info(`To open the report: npx endorphin-ai open report`, {}, 'CLI');
+        info(`Or open directly: open "${reportPath}"`, {}, 'CLI');
+      }
+      process.exit(0);
+    } catch (error: any) {
+      logError(`Failed to generate report: ${error.message}`, error, { error: error.message }, 'CLI');
+      info('Troubleshooting:', {}, 'CLI');
+      info('1. Make sure you have run some tests first', {}, 'CLI');
+      info('2. Check that test-results/ directory exists', {}, 'CLI');
+      info('3. Try: ls -la test-results/', {}, 'CLI');
+      process.exit(1);
     }
-
-    const reportPath = await reporter.generateReport(options);
-
-    if (args.includes('--summary')) {
-      logSuccess(`Summary report generated: ${reportPath}`, { reportPath }, 'CLI');
-    } else {
-      info(`Open report: ${reportPath}`, { reportPath }, 'CLI');
-    }
-    process.exit(0);
   }
 
   logError(`Unknown generate command: ${subcommand}`, undefined, { subcommand }, 'CLI');
@@ -168,11 +193,30 @@ export async function handleGenerateCommand(subcommand: string, args: string[]):
 export async function handleOpenCommand(subcommand: string, target?: string): Promise<void> {
   if (subcommand === 'report') {
     info('Opening latest test report', {}, 'CLI');
-    const { HtmlReporter } = await import('../framework/reporters/html-reporter.js');
-    const reporter = new HtmlReporter();
-    const reportPath = target ?? null;
-    await reporter.openReport(reportPath);
-    process.exit(0);
+    
+    try {
+      // Always use current working directory for test results
+      const testResultsDir = process.cwd() + '/test-results';
+      
+      // Check if test-results directory exists
+      const fs = await import('fs');
+      if (!fs.existsSync(testResultsDir)) {
+        logError('No test-results directory found in current folder', undefined, { testResultsDir }, 'CLI');
+        info('Generate a report first: npx endorphin-ai generate report', {}, 'CLI');
+        info('Or check that you\'re in the right directory', {}, 'CLI');
+        process.exit(1);
+      }
+
+      const { HtmlReporter } = await import('../framework/reporters/html-reporter.js');
+      const reporter = new HtmlReporter(testResultsDir);
+      const reportPath = target ?? null;
+      await reporter.openReport(reportPath);
+      process.exit(0);
+    } catch (error: any) {
+      logError(`Failed to open report: ${error.message}`, error, { error: error.message }, 'CLI');
+      info('Try generating a report first: npx endorphin-ai generate report', {}, 'CLI');
+      process.exit(1);
+    }
   }
 
   logError(`Unknown open command: ${subcommand}`, undefined, { subcommand }, 'CLI');

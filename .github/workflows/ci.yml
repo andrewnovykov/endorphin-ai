@@ -197,19 +197,51 @@ jobs:
         if: runner.os != 'Windows'
         timeout-minutes: 10
         run: |
-          echo "Installing Playwright for Unix..."
-          npx playwright install chromium --verbose || echo "Playwright install failed, continuing..."
-          npx playwright install-deps chromium || echo "Playwright deps install failed, continuing..."
-          echo "Playwright installation completed"
+          echo "Installing Playwright for Unix integration tests..."
+          echo "Node.js version: $(node --version)"
+          echo "Platform: ${{ matrix.os }}"
+          
+          # Force Playwright browser installation
+          npx playwright install --force chromium || {
+            echo "Force install failed, trying regular install..."
+            npx playwright install chromium --verbose
+          }
+          
+          echo "Installing system dependencies..."
+          npx playwright install-deps chromium 2>&1 || echo "System deps install completed with warnings"
+          
+          echo "✅ Playwright installation completed for Unix"
 
       - name: Install Playwright browsers (Windows)
         if: runner.os == 'Windows'
         timeout-minutes: 10
         shell: bash
         run: |
-          echo "Installing Playwright for Windows..."
-          npx playwright install chromium --verbose || echo "Playwright install failed, continuing..."
-          echo "Playwright installation completed"
+          echo "Installing Playwright for Windows integration tests..."
+          echo "Node.js version: $(node --version)"
+          echo "Platform: ${{ matrix.os }} with Node.js ${{ matrix.node-version }}"
+          
+          # Force Playwright browser installation for Windows
+          echo "Step 1: Force installing Playwright browsers..."
+          npx playwright install --force chromium || {
+            echo "❌ Force install failed, trying alternative approaches..."
+            
+            # Try global install as fallback
+            echo "Trying global Playwright install..."
+            npm install -g playwright || echo "Global install failed"
+            
+            # Try regular install
+            npx playwright install chromium --verbose || {
+              echo "❌ Regular install also failed, trying one more time..."
+              sleep 5
+              npx playwright install chromium --verbose
+            }
+          }
+          
+          echo "Step 2: Verifying Playwright installation..."
+          npx playwright install --dry-run chromium 2>/dev/null || echo "Verification had issues but continuing"
+          
+          echo "✅ Playwright installation completed for Windows"
 
       - name: Run integration tests
         timeout-minutes: 15

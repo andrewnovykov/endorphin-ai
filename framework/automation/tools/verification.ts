@@ -7,8 +7,9 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
 import { TIMEOUTS } from '../../config/constants.js';
-import { info, logSuccess, error as logError } from '../../core/logger.js';
+import { info, logSuccess, error as logError, warn } from '../../core/logger.js';
 import { ICONS } from '../../config/icons.js';
+import { ElementAnalyzer } from '../../utils/element-analyzer.js';
 
 /**
  * Creates a verify element tool for the framework
@@ -92,6 +93,34 @@ export function createVerifyElementTool(framework: EnhancedBrowserTestFramework)
         }
       } catch (error: any) {
         await framework.takeStepScreenshot(`Failed to verify ${selector}`);
+        
+        // 🔧 Silently collect failure data for post-test AI analysis
+        try {
+          const analysisResult = await ElementAnalyzer.findAlternatives(
+            framework.currentPage!, 
+            selector, 
+            selector.startsWith('"') && selector.endsWith('"') ? selector.slice(1, -1) : undefined
+          );
+          
+          // Capture page snapshot for detailed analysis
+          const pageSnapshot = await framework.capturePageSnapshot();
+          
+          // Store comprehensive failure data for AI recommendations at test end
+          framework.collectFailureData({
+            type: 'verification_failed',
+            selector: selector,
+            state: state,
+            error: error.message,
+            stepDescription: stepDesc,
+            pageSnapshot: pageSnapshot || undefined,
+            alternatives: analysisResult.alternatives,
+            screenshot: `Failed to verify ${selector}`,
+            timestamp: new Date().toISOString()
+          });
+        } catch (analysisError) {
+          // Silent failure in analysis - don't disrupt test flow
+        }
+        
         logError(`Result: Could not verify element ${selector} as ${state}: ${error.message}`, error instanceof Error ? error : undefined, { tool: 'verifyElement', error: error.message }, 'Tool');
         framework.logTestStep(
           stepDesc,

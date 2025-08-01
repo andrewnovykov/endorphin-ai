@@ -7,7 +7,7 @@ import { readdir, stat } from 'fs/promises';
 import { join, resolve } from 'path';
 import { pathToFileURL } from 'url';
 import type { TestConfig } from '../../types/index.js';
-import { info, logSuccess, warn, error as logError, logWithIcon, LogLevel } from '../../core/logger.js';
+import { info, logSuccess, warn, error as logError, logWithIcon, LogLevel, debug } from '../../core/logger.js';
 import type {
   DiscoveredTest,
   DiscoveryConfig,
@@ -311,15 +311,30 @@ export class TestDiscoverer {
           const { register } = await import('tsx/esm/api');
           register();
           (globalThis as any).__tsx_registered = true;
-        } catch {
-          // If tsx is not available, fallback to JavaScript compilation
-          warn(`TypeScript loader not available, attempting to load as JavaScript`, {}, 'TestDiscoverer');
-          const jsFilePath = filePath.replace('.ts', '.js');
-          if (await this.fileExists(jsFilePath)) {
-            return this.loadJavaScriptFile(jsFilePath, filename.replace('.ts', '.js'), testsFound);
-          } else {
+          debug(`Successfully registered tsx loader for TypeScript file loading`, {}, 'TestDiscoverer');
+        } catch (tsxError) {
+          // Log the actual tsx error for debugging
+          warn(`TypeScript loader (tsx) failed to register: ${tsxError}`, {}, 'TestDiscoverer');
+          
+          // Try alternative TypeScript loading approaches
+          try {
+            // Check if we're in a compiled environment where TypeScript files should be JavaScript
+            const jsFilePath = filePath.replace('.ts', '.js');
+            if (await this.fileExists(jsFilePath)) {
+              debug(`Found compiled JavaScript version, loading ${jsFilePath}`, {}, 'TestDiscoverer');
+              return this.loadJavaScriptFile(jsFilePath, filename.replace('.ts', '.js'), testsFound);
+            }
+            
+            // If no compiled version, suggest solutions
             throw new Error(
-              `TypeScript file cannot be loaded: ${filename}. Please install tsx or compile to JavaScript.`
+              `TypeScript file cannot be loaded: ${filename}. ` +
+              `tsx loader failed (${tsxError}). ` +
+              `Please ensure 'tsx' is installed: npm install tsx, or compile TypeScript to JavaScript first.`
+            );
+          } catch (fallbackError) {
+            throw new Error(
+              `Failed to load TypeScript file ${filename}: ${fallbackError}. ` +
+              `Original tsx error: ${tsxError}`
             );
           }
         }
@@ -327,10 +342,29 @@ export class TestDiscoverer {
 
       // Now load the TypeScript file
       const fileUrl = pathToFileURL(filePath).href;
-      const module = await import(`${fileUrl}?t=${Date.now()}`);
-      this.extractTestsFromModule(module, filename, testsFound);
+      debug(`Attempting to import TypeScript file: ${fileUrl}`, {}, 'TestDiscoverer');
+      
+      try {
+        const module = await import(`${fileUrl}?t=${Date.now()}`);
+        this.extractTestsFromModule(module, filename, testsFound);
+      } catch (importError) {
+        // Handle specific TypeScript/syntax errors
+        const errorMessage = String(importError);
+        
+        if (errorMessage.includes('Unexpected token') || errorMessage.includes('SyntaxError')) {
+          throw new Error(
+            `Syntax error in TypeScript file ${filename}: ${importError}. ` +
+            `This usually means the TypeScript loader is not working properly. ` +
+            `Please ensure 'tsx' is installed and your test file has valid TypeScript syntax. ` +
+            `Check your imports and exports - they should use ES module syntax (import/export).`
+          );
+        } else {
+          throw new Error(`Failed to import TypeScript file ${filename}: ${importError}`);
+        }
+      }
     } catch (error) {
-      throw new Error(`Failed to load TypeScript file ${filename}: ${error}`);
+      // This catch handles errors from the tsx registration part
+      throw error; // Re-throw the error as it already has good context
     }
   }
 
