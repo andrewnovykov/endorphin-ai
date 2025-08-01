@@ -7,6 +7,8 @@ import type { EnhancedBrowserTestFramework } from '../browser/browser-framework.
 import { tool } from '@langchain/core/tools';
 import * as path from 'path';
 import { z } from 'zod';
+import { info, logSuccess, error as logError } from '../../core/logger.js';
+import { ICONS } from '../../config/icons.js';
 
 /**
  * Creates a wait tool for the framework
@@ -28,12 +30,14 @@ export function createWaitTool(framework: EnhancedBrowserTestFramework) {
       const stepDesc = selector
         ? `Wait for ${selector} to be ${state}`
         : `Wait for ${milliseconds}ms${reason ? ` (${reason})` : ''}`;
-      console.log(`⏱️ ${stepDesc}`);
+      
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'wait', params: { milliseconds, reason, selector, state } }, 'Tool');
 
       try {
         if (selector) {
           await framework.currentPage!.waitForSelector(selector, { state, timeout: milliseconds });
           const result = `Element ${selector} is now ${state}`;
+          logSuccess(`Result: ${result}`, { tool: 'wait', result }, 'Tool');
           framework.logTestStep(
             stepDesc,
             'wait',
@@ -45,6 +49,7 @@ export function createWaitTool(framework: EnhancedBrowserTestFramework) {
         } else {
           await framework.currentPage!.waitForTimeout(milliseconds);
           const result = `Waited for ${milliseconds}ms${reason ? ` - ${reason}` : ''}`;
+          logSuccess(`Result: ${result}`, { tool: 'wait', result }, 'Tool');
           framework.logTestStep(
             stepDesc,
             'wait',
@@ -55,6 +60,7 @@ export function createWaitTool(framework: EnhancedBrowserTestFramework) {
           return result;
         }
       } catch (error: any) {
+        logError(`Result: Timeout waiting for ${selector || 'timeout'} to be ${state}`, error instanceof Error ? error : undefined, { tool: 'wait', error: error.message }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'wait',
@@ -101,7 +107,8 @@ export function createScreenshotTool(framework: EnhancedBrowserTestFramework) {
 
       const filename = name || `manual-screenshot-${Date.now()}`;
       const stepDesc = `Take screenshot: ${filename}`;
-      console.log(`📸 ${stepDesc}`);
+      
+      info(`${ICONS.tools} ${stepDesc}`, { tool: 'screenshot', params: { name, selector, fullPage } }, 'Tool');
 
       try {
         let filePath;
@@ -117,7 +124,7 @@ export function createScreenshotTool(framework: EnhancedBrowserTestFramework) {
           filePath = `screenshot-${Date.now()}.png`;
         }
 
-        console.log(`🔧 Screenshot path: ${filePath}`);
+        info(`${ICONS.tools} Screenshot path: ${filePath}`, { filePath }, 'Tool');
 
         if (selector) {
           await framework.currentPage!.locator(selector).screenshot({ path: filePath });
@@ -129,9 +136,11 @@ export function createScreenshotTool(framework: EnhancedBrowserTestFramework) {
           ? `Screenshot of ${selector} saved as ${filename}`
           : `${fullPage ? 'Full page' : 'Viewport'} screenshot saved as ${filename}`;
 
+        logSuccess(`Result: ${result}`, { tool: 'screenshot', result }, 'Tool');
         framework.logTestStep(stepDesc, 'screenshot', { name, selector, fullPage }, result, true);
         return `📸 ${result}`;
       } catch (error: any) {
+        logError(`Result: Error taking screenshot: ${error.message}`, error instanceof Error ? error : undefined, { tool: 'screenshot', error: error.message }, 'Tool');
         framework.logTestStep(
           stepDesc,
           'screenshot',

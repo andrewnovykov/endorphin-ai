@@ -32,6 +32,7 @@ import { DirectoryManager } from '../../utils/directory-manager.js';
 import { TestHelpers } from '../../utils/test-helpers.js';
 import { BrowserManager } from '../browser/browser-manager.js';
 import { createAllTools } from '../tools/index.js';
+import { info, logRocket, logSuccess, logTarget, logAgent, error as logError, warn, globalLogger } from '../../core/logger.js';
 
 // Increase max listeners to prevent memory leak warnings during test execution
 EventEmitter.defaultMaxListeners = 30;
@@ -101,7 +102,7 @@ export class BrowserEngine {
    * Initialize the browser engine
    */
   async initialize(): Promise<void> {
-    console.log('🚀 Initializing Browser Test Engine...');
+    logRocket('Initializing Browser Test Engine', {}, 'BrowserEngine');
 
     // Note: Directory cleanup is now handled at the test session level, not per-test
 
@@ -118,14 +119,14 @@ export class BrowserEngine {
     // Create AI agent
     await this.setupAgent();
 
-    console.log('✅ Browser Engine initialized successfully!');
+    logSuccess('Browser Engine initialized successfully!', {}, 'BrowserEngine');
   }
 
   /**
    * Setup browser automation tools
    */
   private async setupTools(): Promise<void> {
-    console.log('🛠️ Setting up browser automation tools...');
+    info('Setting up browser automation tools', {}, 'BrowserEngine');
     this.toolsArray = await createAllTools(this.frameworkInstance || this);
   }
 
@@ -133,7 +134,7 @@ export class BrowserEngine {
    * Setup AI agent
    */
   private async setupAgent(): Promise<void> {
-    console.log('🤖 Setting up AI agent...');
+    logAgent('Setting up AI agent');
     const { setupAgent, setCurrentTestSession } = await import('../../ai/agent-setup.js');
     this.agent = await setupAgent(this.toolsArray);
 
@@ -232,7 +233,7 @@ export class BrowserEngine {
 
     const estimatedPromptTokens = this.tokenTracker.estimateTokens(messageContent);
 
-    console.log(`🤖 ${stepDescription} (estimated: ${estimatedPromptTokens} tokens)`);
+    logAgent(`${stepDescription} (estimated: ${estimatedPromptTokens} tokens)`, { estimatedTokens: estimatedPromptTokens });
 
     // No AbortController - let the agent run naturally without forced interruption
 
@@ -280,9 +281,8 @@ export class BrowserEngine {
     );
 
     // Log token usage with enhanced formatting
-    console.log(
-      `💰 Token Usage: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`
-    );
+    info(`Token Usage: ${tokenUsage.totalTokens} tokens ($${tokenUsage.cost.toFixed(4)}) in ${duration}ms`, 
+      { totalTokens: tokenUsage.totalTokens, cost: tokenUsage.cost, duration }, 'BrowserEngine');
 
     // Agent history tracking is now handled by the centralized trackAICall system in agent-setup.ts
 
@@ -296,9 +296,7 @@ export class BrowserEngine {
     const _timestamp = new Date().toISOString();
     const name = testName || `Test-${Date.now()}`;
 
-    console.log(`\n🎯 Running Task: ${name}`);
-    console.log(`📝 Task: ${taskDescription}`);
-    console.log(`⏰ Started at: ${_timestamp}\n`);
+    logTarget(`Running Task: ${name}`, { taskDescription, startTime: _timestamp }, 'BrowserEngine');
 
     // Create test session
     const session = await this.createTestSession(name, name.replace(/\s+/g, '-').toLowerCase());
@@ -336,8 +334,7 @@ export class BrowserEngine {
       // Finish session
       await this.finishTestSession('SUCCESS', result);
 
-      console.log(`\n✅ Task "${name}" completed successfully!`);
-      console.log(`📊 Result: ${result}\n`);
+      logSuccess(`Task "${name}" completed successfully!`, { result }, 'BrowserEngine');
 
       return {
         testName: name,
@@ -381,10 +378,11 @@ export class BrowserEngine {
     const useDetailedLogs = !process.env.ENDORPHIN_CONSOLE_REPORTER;
 
     if (useDetailedLogs) {
-      console.log(`\n🚀 Starting test: ${test.id} - ${test.name}`);
-      console.log(`📝 Description: ${test.description}`);
-      console.log(`🎯 Priority: ${test.priority}`);
-      console.log(`🏷️ Tags: ${test.tags ? test.tags.join(', ') : 'None'}`);
+      logRocket(`Starting test: ${test.id} - ${test.name}`, {
+        description: test.description,
+        priority: test.priority,
+        tags: test.tags || []
+      }, 'BrowserEngine');
     }
 
     // Create test session with detailed tracking
@@ -405,7 +403,7 @@ export class BrowserEngine {
       let setupData: any = null;
       if (test.setup && typeof test.setup === 'function') {
         if (useDetailedLogs) {
-          console.log(`🔧 Executing test setup...`);
+          info('Executing test setup', {}, 'BrowserEngine');
         }
         setupData = await test.setup();
         this.logTestStep('Test setup completed', null, null, 'Setup data generated', true);
@@ -416,7 +414,7 @@ export class BrowserEngine {
       if (test.data) {
         if (typeof test.data === 'function') {
           if (useDetailedLogs) {
-            console.log(`📊 Generating test data...`);
+            info('Generating test data', {}, 'BrowserEngine');
           }
           generatedData = await test.data();
           this.logTestStep('Test data generated', null, null, 'Data generation completed', true);
@@ -430,7 +428,7 @@ export class BrowserEngine {
       if (test.task) {
         if (typeof test.task === 'function') {
           if (useDetailedLogs) {
-            console.log(`🎯 Executing task function with generated data...`);
+            logTarget('Executing task function with generated data', {}, 'BrowserEngine');
           }
           taskDescription = await test.task(generatedData, setupData);
           this.logTestStep(
@@ -448,7 +446,7 @@ export class BrowserEngine {
       }
 
       if (useDetailedLogs) {
-        console.log(`📝 Final task description: ${taskDescription}`);
+        info('Final task description', { taskDescription }, 'BrowserEngine');
       }
 
       // Execute the test task with timeout
@@ -495,7 +493,7 @@ export class BrowserEngine {
       const session = await this.finishTestSession(testResult.status, testResult.conclusion);
 
       if (useDetailedLogs) {
-        console.log(`✅ Test ${test.id} ${testResult.status.toLowerCase()}!`);
+        logSuccess(`Test ${test.id} ${testResult.status.toLowerCase()}!`, { testId: test.id, status: testResult.status }, 'BrowserEngine');
       }
       return { success: testResult.status === 'SUCCESS', session };
     } catch (error: any) {
@@ -539,9 +537,11 @@ export class BrowserEngine {
     // Save session data
     const summary = await saveTestSession(this.currentTestSession);
 
-    console.log(`📊 Test session completed: ${status}`);
-    console.log(`📁 Results saved to: ${this.currentTestSession.sessionDir}`);
-    console.log(this.tokenTracker.getFormattedSummary());
+    info(`Test session completed: ${status}`, {
+      status,
+      sessionDir: this.currentTestSession.sessionDir,
+      tokenSummary: this.tokenTracker.getFormattedSummary()
+    }, 'BrowserEngine');
 
     this.currentTestSession = null;
     return summary;
@@ -552,7 +552,7 @@ export class BrowserEngine {
    */
   async enableInteractiveMode(): Promise<void> {
     this.isInteractiveMode = true;
-    console.log('📼 Interactive mode enabled - results will be recorded in test-recorder folder');
+    info('Interactive mode enabled - results will be recorded in test-recorder folder', {}, 'BrowserEngine');
     await DirectoryManager.cleanupRecorderDirectory(this.recorderBaseDir);
   }
 
@@ -578,7 +578,7 @@ export class BrowserEngine {
       // Clean up page snapshots first to free memory
       if (this.snapshotManager) {
         this.snapshotManager.clearAll();
-        console.log('🧹 Page snapshots cleared');
+        info('Page snapshots cleared', {}, 'BrowserEngine');
       }
 
       // Clean up browser resources
@@ -773,7 +773,7 @@ export class BrowserEngine {
       return;
     }
 
-    console.log('🌍 Executing global setup...');
+    info('Executing global setup', {}, 'BrowserEngine');
 
     try {
       const result = await this.globalSetupManager.loadAndExecute(this.config.globalSetup);
@@ -783,9 +783,9 @@ export class BrowserEngine {
       }
 
       this.globalSetupExecuted = true;
-      console.log(`✅ Global setup completed successfully in ${result.executionTime}ms`);
+      logSuccess(`Global setup completed successfully in ${result.executionTime}ms`, { executionTime: result.executionTime }, 'BrowserEngine');
     } catch (error: any) {
-      console.error('❌ Global setup failed:', error.message);
+      logError('Global setup failed', error, { message: error.message }, 'BrowserEngine');
       throw error; // Re-throw to fail the test
     }
   }

@@ -7,6 +7,7 @@ import { readdir, stat } from 'fs/promises';
 import { join, resolve } from 'path';
 import { pathToFileURL } from 'url';
 import type { TestConfig } from '../../types/index.js';
+import { info, logSuccess, warn, error as logError } from '../../core/logger.js';
 import type {
   DiscoveredTest,
   DiscoveryConfig,
@@ -103,14 +104,14 @@ export class TestDiscoverer {
       const failureCount = allTestFiles.length - successCount;
       
       if (failureCount > 0) {
-        console.log(`⚠️ Successfully loaded ${successCount} test(s), ${failureCount} failed to load`);
+        warn(`Successfully loaded ${successCount} test(s), ${failureCount} failed to load`, { successCount, failureCount }, 'TestDiscoverer');
         // Show which files failed to load with detailed errors
         console.log('📋 Failed test files:');
         errors.forEach(error => {
           console.log(`   ❌ ${error.file}: ${error.error}`);
         });
       } else {
-        console.log(`✅ Successfully loaded ${successCount} test(s)`);
+        logSuccess(`Successfully loaded ${successCount} test(s)`, { successCount }, 'TestDiscoverer');
       }
       console.log('');
 

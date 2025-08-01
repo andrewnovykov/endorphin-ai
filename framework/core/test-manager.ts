@@ -8,6 +8,7 @@ import * as dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from './logger.js';
 
 dotenv.config();
 
@@ -68,7 +69,7 @@ export class TestManager {
       await this.loadAllTests();
       return this.loadedTests;
     } catch (error) {
-      console.error('❌ Error loading tests:', error);
+      logError('Error loading tests', error instanceof Error ? error : undefined, { message: String(error) }, 'TestManager');
       throw error;
     }
   }
@@ -85,7 +86,7 @@ export class TestManager {
         await this.loadTestFile(file);
       }
     } catch (error) {
-      console.error('❌ Error loading test files:', error);
+      logError('Error loading test files', error instanceof Error ? error : undefined, { testsDir: this.testsDir, message: String(error) }, 'TestManager');
     }
   }
 
@@ -115,12 +116,12 @@ export class TestManager {
           filename,
           filePath,
         });
-        console.log(`📝 Loaded test: ${testCase.id} - ${testCase.name}`);
+        info(`Loaded test: ${testCase.id} - ${testCase.name}`, { testId: testCase.id, testName: testCase.name, filename }, 'TestManager');
       } else {
-        console.warn(`⚠️ Invalid test file format: ${filename}`);
+        warn(`Invalid test file format: ${filename}`, { filename }, 'TestManager');
       }
     } catch (error) {
-      console.error(`❌ Error loading test file ${filename}:`, error);
+      logError(`Error loading test file ${filename}`, error instanceof Error ? error : undefined, { filename, message: String(error) }, 'TestManager');
     }
   }
 
@@ -128,23 +129,22 @@ export class TestManager {
    * List all available tests
    */
   listAllTests(): void {
-    console.log('\n📋 **AVAILABLE TEST CASES**');
-    console.log('═'.repeat(50));
+    info('Listing available test cases', { testCount: this.loadedTests.size }, 'TestManager');
 
     const sortedTests = Array.from(this.loadedTests.values()).sort((a, b) =>
       a.id.localeCompare(b.id)
     );
 
     sortedTests.forEach((test) => {
-      console.log(`\n🔹 ${test.id}: ${test.name}`);
-      console.log(`   📝 ${test.description}`);
-      console.log(`   🎯 Priority: ${test.priority}`);
-      console.log(`   🏷️  Tags: ${test.tags.join(', ')}`);
-      if (test.testData?.prerequisites) {
-        console.log(`   📋 Prerequisites: ${test.testData.prerequisites.join(', ')}`);
-      }
+      info(`Test: ${test.id} - ${test.name}`, {
+        testId: test.id,
+        name: test.name,
+        description: test.description,
+        priority: test.priority,
+        tags: test.tags,
+        prerequisites: test.testData?.prerequisites
+      }, 'TestManager');
     });
-    console.log();
   }
 
   /**
@@ -187,20 +187,18 @@ export class TestManager {
   async runTestById(testId: string): Promise<TaskResult | null> {
     const test = this.loadedTests.get(testId);
     if (!test) {
-      console.log(`❌ Test ${testId} not found`);
+      logError(`Test ${testId} not found`, new Error('Test not found'), { testId }, 'TestManager');
       return null;
     }
 
-    console.log(`\n🎯 Running Test: ${test.id} - ${test.name}`);
-    console.log(`📝 Description: ${test.description}`);
-    console.log(`🎯 Priority: ${test.priority}`);
-    console.log(`🏷️ Tags: ${test.tags.join(', ')}`);
-
-    // Check prerequisites
-    if (test.testData?.prerequisites) {
-      console.log(`📋 Prerequisites: ${test.testData.prerequisites.join(', ')}`);
-      // Note: In a full implementation, you might want to check if prerequisites passed
-    }
+    logTarget(`Running Test: ${test.id} - ${test.name}`, {
+      testId: test.id,
+      testName: test.name,
+      description: test.description,
+      priority: test.priority,
+      tags: test.tags,
+      prerequisites: test.testData?.prerequisites
+    }, 'TestManager');
 
     if (!this.framework) {
       throw new Error('Framework not initialized. Call setFramework() first.');
@@ -223,7 +221,7 @@ export class TestManager {
 
       // Add delay between tests
       if (testIds.indexOf(testId) < testIds.length - 1) {
-        console.log('⏱️ Waiting 2 seconds before next test...\n');
+        info('Waiting 2 seconds before next test', { currentTest: testIds.indexOf(testId) + 1, totalTests: testIds.length }, 'TestManager');
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }
@@ -238,8 +236,7 @@ export class TestManager {
     const tests = this.findTests({ tag });
     const testIds = tests.map((test) => test.id);
 
-    console.log(`\n🏷️ Running ${tests.length} tests with tag: ${tag}`);
-    console.log(`Tests: ${testIds.join(', ')}`);
+    logTarget(`Running ${tests.length} tests with tag: ${tag}`, { tag, testCount: tests.length, testIds }, 'TestManager');
 
     return await this.runTests(testIds);
   }
@@ -251,8 +248,7 @@ export class TestManager {
     const tests = this.findTests({ priority });
     const testIds = tests.map((test) => test.id);
 
-    console.log(`\n🎯 Running ${tests.length} tests with priority: ${priority}`);
-    console.log(`Tests: ${testIds.join(', ')}`);
+    logTarget(`Running ${tests.length} tests with priority: ${priority}`, { priority, testCount: tests.length, testIds }, 'TestManager');
 
     return await this.runTests(testIds);
   }
@@ -277,8 +273,7 @@ export class TestManager {
   async runAllTests(): Promise<TaskResult[]> {
     const allTestIds = Array.from(this.loadedTests.keys()).sort();
 
-    console.log(`\n🏃 Running ALL ${allTestIds.length} tests`);
-    console.log(`Tests: ${allTestIds.join(', ')}`);
+    logTarget(`Running ALL ${allTestIds.length} tests`, { testCount: allTestIds.length, testIds: allTestIds }, 'TestManager');
 
     return await this.runTests(allTestIds);
   }
@@ -345,7 +340,7 @@ export default {
 };`;
 
     fs.writeFileSync(filePath, testContent);
-    console.log(`✅ Created new test file: ${filename}`);
+    logSuccess(`Created new test file: ${filename}`, { testId, filename, filePath }, 'TestManager');
 
     // Reload the test
     await this.loadTestFile(filename);
@@ -375,14 +370,15 @@ export default {
   }
 
   listTests(): void {
-    console.log('\n📋 Available Test Cases:');
-    console.log('========================');
+    info('Listing available test cases', { testCount: this.getAllTests().length }, 'TestManager');
     for (const test of this.getAllTests()) {
-      console.log(`${test.id}: ${test.name}`);
-      console.log(`   📝 ${test.description}`);
-      console.log(`   🎯 Priority: ${test.priority}`);
-      console.log(`   🏷️  Tags: ${test.tags.join(', ')}`);
-      console.log('');
+      info(`${test.id}: ${test.name}`, {
+        testId: test.id,
+        name: test.name,
+        description: test.description,
+        priority: test.priority,
+        tags: test.tags
+      }, 'TestManager');
     }
   }
 

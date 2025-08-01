@@ -5,6 +5,7 @@
 
 import { existsSync, promises as fs } from 'node:fs';
 import * as path from 'node:path';
+import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from '../core/logger.js';
 
 export class DirectoryManager {
   /**
@@ -13,11 +14,11 @@ export class DirectoryManager {
   static async cleanupDirectories(resultBaseDir: string): Promise<void> {
     // Skip cleanup in test environment
     if (process.env.NODE_ENV === 'test') {
-      console.log('🧹 Skipping cleanup in test environment');
+      info('Skipping cleanup in test environment', { nodeEnv: process.env.NODE_ENV }, 'DirectoryManager');
       return;
     }
 
-    console.log('🧹 Cleaning up previous test results...');
+    info('Cleaning up previous test results', { resultBaseDir }, 'DirectoryManager');
 
     if (existsSync(resultBaseDir)) {
       const files = await fs.readdir(resultBaseDir);
@@ -30,7 +31,7 @@ export class DirectoryManager {
           await fs.unlink(filePath);
         }
       }
-      console.log('  ✅ Cleaned test-result directory');
+      logSuccess('Cleaned test-result directory', { resultBaseDir }, 'DirectoryManager');
     }
   }
 
@@ -49,7 +50,7 @@ export class DirectoryManager {
           await fs.unlink(filePath);
         }
       }
-      console.log('  ✅ Cleaned test-recorder directory (interactive mode)');
+      logSuccess('Cleaned test-recorder directory (interactive mode)', { recorderBaseDir }, 'DirectoryManager');
     }
   }
 
@@ -69,7 +70,7 @@ export class DirectoryManager {
         }
       }
       if (description) {
-        console.log(`  ✅ Cleaned ${description}`);
+        logSuccess(`Cleaned ${description}`, { dirPath }, 'DirectoryManager');
       }
     }
   }

@@ -57,10 +57,11 @@ export const HEALTH_001: TestCase = {
       STEP 2: Click on "LogIn" button
       STEP 3: Wait 2 seconds for page load
       STEP 4: Enter "${data?.user?.email}" in the email field
-      STEP 5: Enter "${data?.user?.password}" in the password field
-      STEP 6: Click "Sign In" button
-      STEP 7: Wait 3 seconds for page load
-      STEP 8: Verify login was successful by checking username ${data?.user?.expectedUsername || 'Andrew'} is visible
+      STEP 5: Wait 1 seconds 
+      STEP 6: Enter "${data?.user?.password}" in the password field
+      STEP 7: Click "Sign In" button
+      STEP 8: Wait 3 seconds for page load
+      STEP 9: Verify login was successful by checking username ${data?.user?.expectedUsername || 'Andrew'} is visible
     `;
   },
 };

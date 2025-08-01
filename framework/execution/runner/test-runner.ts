@@ -7,6 +7,7 @@ import { performance } from 'perf_hooks';
 import { ConsoleReporter } from '../../reporters/console-reporter.js';
 import type { DiscoveryResult, FrameworkConfig, TaskResult } from '../../types/index.js';
 import { DirectoryManager } from '../../utils/directory-manager.js';
+import { info, logRocket, logSuccess, warn, error as logError } from '../../core/logger.js';
 import type { DiscoveredTest, TestExecutionOptions } from '../discovery/discovery-types.js';
 
 /**
@@ -74,7 +75,7 @@ export class TestRunner {
 
     // Clean up test results directory before single test run
     const resultBaseDir = this.config?.resultBaseDir || 'test-results';
-    console.log('🧹 Cleaning up test results directory before single test...');
+    info('Cleaning up test results directory before single test', {}, 'TestRunner');
     await DirectoryManager.cleanupDirectories(resultBaseDir);
 
     // Check if this is a multi-user test
@@ -119,10 +120,10 @@ export class TestRunner {
 
     // Clean up test results directory once before the entire test session
     const resultBaseDir = this.config?.resultBaseDir || 'test-results';
-    console.log('🧹 Cleaning up test results directory before test session...');
+    info('Cleaning up test results directory before test session', {}, 'TestRunner');
     await DirectoryManager.cleanupDirectories(resultBaseDir);
 
-    console.log(`🚀 Running ${tests.length} tests sequentially with fresh browser per test...`);
+    logRocket(`Running ${tests.length} tests sequentially with fresh browser per test`, { testCount: tests.length }, 'TestRunner');
 
     const results: Array<{
       test: DiscoveredTest;
@@ -139,7 +140,7 @@ export class TestRunner {
       }
 
       // Create a fresh framework instance for each test
-      console.log(`🌟 Creating fresh browser instance for test: ${test.id}`);
+      info(`Creating fresh browser instance for test: ${test.id}`, { testId: test.id }, 'TestRunner');
 
       const startTime = performance.now();
       this.reporter.startTest(test.id, test.name);

@@ -4,6 +4,7 @@
  */
 
 import type { FrameworkConfig } from '../framework/types/config';
+import { info, logRocket, logSuccess, logTarget, logAgent, error as logError, warn } from '../framework/core/logger.js';
 
 /**
  * Handle help and version commands
@@ -24,7 +25,7 @@ export function handleHelpAndVersion(
   }
 
   if (args.includes('--version') || args.includes('-v')) {
-    console.log(`Endorphin AI v${packageInfo.version}`);
+    info(`Endorphin AI v${packageInfo.version}`, {}, 'CLI');
     process.exit(0);
   }
 }
@@ -33,7 +34,7 @@ export function handleHelpAndVersion(
  * Handle list command
  */
 export async function handleListCommand(config: FrameworkConfig): Promise<void> {
-  console.log('📋 Available Tests:');
+  info('Available Tests:', {}, 'CLI');
   const { listAllTests } = await import('../framework/execution/discovery/cli-functions.js');
   await listAllTests(config);
   process.exit(0);
@@ -43,14 +44,14 @@ export async function handleListCommand(config: FrameworkConfig): Promise<void> 
  * Handle init command
  */
 export async function handleInitCommand(): Promise<void> {
-  console.log('🎯 Initializing Endorphin AI project...');
+  logTarget('Initializing Endorphin AI project', {}, 'CLI');
   try {
     const { initProject } = await import('../framework/cli/init-command.js');
     await initProject(process.cwd());
     process.exit(0);
   } catch (error: any) {
-    console.error('❌ Failed to initialize project:', error.message);
-    console.log('💡 Try running: npm install endorphin-ai --save-dev');
+    logError('Failed to initialize project', error, { message: error.message }, 'CLI');
+    info('Try running: npm install endorphin-ai --save-dev', {}, 'CLI');
     process.exit(1);
   }
 }
@@ -59,7 +60,7 @@ export async function handleInitCommand(): Promise<void> {
  * Handle test recorder command
  */
 export async function handleTestRecorderCommand(config: FrameworkConfig): Promise<void> {
-  console.log('🎬 Starting Interactive Test Recorder...');
+  info('Starting Interactive Test Recorder', {}, 'CLI');
   const { runInteractiveRecorder } = await import(
     '../framework/test-recorder/interactive-recorder.js'
   );
@@ -87,18 +88,17 @@ export async function handleTestCommand(
 ): Promise<void> {
   // Handle JIRA sync if requested
   if (args.includes('--jira-sync')) {
-    console.log('🔄 JIRA sync requested, syncing tests first...');
+    info('JIRA sync requested, syncing tests first', {}, 'CLI');
     const { JiraSyncCommand } = await import('../framework/cli/jira-sync-command.js');
     const syncResult = await JiraSyncCommand.execute();
     
     if (!syncResult.success) {
-      console.error('❌ JIRA sync failed, aborting test run');
-      console.error('Errors:', syncResult.errors);
+      logError('JIRA sync failed, aborting test run', undefined, { errors: syncResult.errors }, 'CLI');
       process.exit(1);
     }
     
-    console.log(`✅ JIRA sync completed: ${syncResult.testsGenerated} tests generated`);
-    console.log('📝 Proceeding with test execution...\n');
+    logSuccess(`JIRA sync completed: ${syncResult.testsGenerated} tests generated`, { testsGenerated: syncResult.testsGenerated }, 'CLI');
+    info('Proceeding with test execution', {}, 'CLI');
   }
 
   if (args.includes('--tag')) {
@@ -110,14 +110,14 @@ export async function handleTestCommand(
   }
 
   if (target === 'all') {
-    console.log('🚀 Running all tests...');
+    logRocket('Running all tests', {}, 'CLI');
     const { runAllTests } = await import('../framework/execution/discovery/cli-functions.js');
     await runAllTests(config);
     process.exit(0);
   }
 
   if (target) {
-    console.log(`🧪 Running test: ${target}`);
+    info(`Running test: ${target}`, { testId: target }, 'CLI');
     const { runSingleTestById } = await import('../framework/execution/discovery/cli-functions.js');
     const result = await runSingleTestById(target, config);
     
@@ -128,7 +128,7 @@ export async function handleTestCommand(
     process.exit(0);
   }
 
-  console.error('❌ Error: Please specify a test ID or "all" (e.g., endorphin run test QE-001)');
+  logError('Error: Please specify a test ID or "all" (e.g., endorphin run test QE-001)', undefined, {}, 'CLI');
   process.exit(1);
 }
 
@@ -137,7 +137,7 @@ export async function handleTestCommand(
  */
 export async function handleGenerateCommand(subcommand: string, args: string[]): Promise<void> {
   if (subcommand === 'report') {
-    console.log('📊 Generating HTML test report...');
+    info('Generating HTML test report', {}, 'CLI');
     const { HtmlReporter } = await import('../framework/reporters/html-reporter.js');
     const reporter = new HtmlReporter();
     const options: { filename?: string } = {};
@@ -150,15 +150,15 @@ export async function handleGenerateCommand(subcommand: string, args: string[]):
     const reportPath = await reporter.generateReport(options);
 
     if (args.includes('--summary')) {
-      console.log(`✅ Summary report generated: ${reportPath}`);
+      logSuccess(`Summary report generated: ${reportPath}`, { reportPath }, 'CLI');
     } else {
-      console.log(`🌐 Open report: ${reportPath}`);
+      info(`Open report: ${reportPath}`, { reportPath }, 'CLI');
     }
     process.exit(0);
   }
 
-  console.error(`❌ Unknown generate command: ${subcommand}`);
-  console.log('Use "endorphin help" for usage information');
+  logError(`Unknown generate command: ${subcommand}`, undefined, { subcommand }, 'CLI');
+  info('Use "endorphin help" for usage information', {}, 'CLI');
   process.exit(1);
 }
 
@@ -167,7 +167,7 @@ export async function handleGenerateCommand(subcommand: string, args: string[]):
  */
 export async function handleOpenCommand(subcommand: string, target?: string): Promise<void> {
   if (subcommand === 'report') {
-    console.log('🌐 Opening latest test report...');
+    info('Opening latest test report', {}, 'CLI');
     const { HtmlReporter } = await import('../framework/reporters/html-reporter.js');
     const reporter = new HtmlReporter();
     const reportPath = target ?? null;
@@ -175,8 +175,8 @@ export async function handleOpenCommand(subcommand: string, target?: string): Pr
     process.exit(0);
   }
 
-  console.error(`❌ Unknown open command: ${subcommand}`);
-  console.log('Use "endorphin help" for usage information');
+  logError(`Unknown open command: ${subcommand}`, undefined, { subcommand }, 'CLI');
+  info('Use "endorphin help" for usage information', {}, 'CLI');
   process.exit(1);
 }
 
@@ -190,12 +190,12 @@ async function handleTestByTag(
 ): Promise<void> {
   const tagIndex = args.indexOf('--tag');
   if (tagIndex === -1 || !args[tagIndex + 1]) {
-    console.error('❌ Error: --tag requires a tag value');
+    logError('Error: --tag requires a tag value', undefined, {}, 'CLI');
     process.exit(1);
   }
 
   const tag = args[tagIndex + 1];
-  console.log(`🏷️ Running tests with tag: ${tag}`);
+  info(`Running tests with tag: ${tag}`, { tag }, 'CLI');
 
   const { runTestsByTag } = await import('../framework/execution/discovery/cli-functions.js');
   await runTestsByTag(tag, config);
@@ -212,12 +212,12 @@ async function handleTestByPriority(
 ): Promise<void> {
   const priorityIndex = args.indexOf('--priority');
   if (priorityIndex === -1 || !args[priorityIndex + 1]) {
-    console.error('❌ Error: --priority requires a priority value');
+    logError('Error: --priority requires a priority value', undefined, {}, 'CLI');
     process.exit(1);
   }
 
   const priority = args[priorityIndex + 1];
-  console.log(`🎯 Running tests with priority: ${priority}`);
+  logTarget(`Running tests with priority: ${priority}`, { priority }, 'CLI');
 
   const { runTestsByPriority } = await import('../framework/execution/discovery/cli-functions.js');
   await runTestsByPriority(priority, config);

@@ -129,7 +129,7 @@ export class JiraConverter {
     if (!dataMatch) return null;
 
     const prompt = dataMatch[1];
-    let fieldsContent = dataMatch[2].trim();
+    const fieldsContent = dataMatch[2].trim();
     const fields: Record<string, string> = {};
 
     // Split on actual newlines (not escaped ones)
@@ -148,7 +148,7 @@ export class JiraConverter {
       
       // Find all known field names in the text
       for (const fieldName of knownFields) {
-        const fieldIndex = concatenatedLine.toLowerCase().indexOf(fieldName + ':');
+        const fieldIndex = concatenatedLine.toLowerCase().indexOf(`${fieldName  }:`);
         if (fieldIndex !== -1) {
           fieldBoundaries.push({
             name: fieldName,
@@ -283,7 +283,7 @@ export class JiraConverter {
     // Use AI to generate realistic user data
     const { generateData } = await import('../../framework/utils/generate-data.js');
     const userData = await generateData(
-      ${JSON.stringify(fields, null, 6).split('\n').map((line, i) => i === 0 ? line : '      ' + line).join('\n')},
+      ${JSON.stringify(fields, null, 6).split('\n').map((line, i) => i === 0 ? line : `      ${  line}`).join('\n')},
       '${prompt}'
     );
 

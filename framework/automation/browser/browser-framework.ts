@@ -5,6 +5,7 @@
 
 import { BrowserEngine } from '../engines/browser-engine.js';
 import { FrameworkManager } from '../../managers/system/framework-manager.js';
+import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from '../../core/logger.js';
 import type {
   FrameworkConfig,
   TaskResult,
@@ -31,17 +32,17 @@ export class EnhancedBrowserTestFramework {
   async initialize(): Promise<void> {
     // Only initialize if not already initialized
     if (this.browserEngine) {
-      console.log('⚡ Framework already initialized, reusing existing instance');
+      info('Framework already initialized, reusing existing instance', {}, 'EnhancedBrowserTestFramework');
       return;
     }
 
-    console.log('🚀 Initializing Enhanced Browser Test Framework...');
+    logRocket('Initializing Enhanced Browser Test Framework', {}, 'EnhancedBrowserTestFramework');
 
     // Create and initialize browser engine
     this.browserEngine = this.frameworkManager.createBrowserEngine(this);
     await this.browserEngine.initialize();
 
-    console.log('✅ Framework initialized successfully!');
+    logSuccess('Framework initialized successfully', {}, 'EnhancedBrowserTestFramework');
   }
 
   /**
@@ -64,7 +65,7 @@ export class EnhancedBrowserTestFramework {
       throw new Error('Framework not initialized. Call initialize() first.');
     }
 
-    console.log(`\n🚀 Running ${tasks.length} tasks sequentially...\n`);
+    logRocket(`Running ${tasks.length} tasks sequentially`, { taskCount: tasks.length }, 'EnhancedBrowserTestFramework');
 
     const results: TaskResult[] = [];
     for (let i = 0; i < tasks.length; i++) {
@@ -76,7 +77,7 @@ export class EnhancedBrowserTestFramework {
 
       // Add delay between tasks
       if (i < tasks.length - 1) {
-        console.log('⏱️ Waiting before next task...\n');
+        info('Waiting before next task', { currentTask: i + 1, totalTasks: tasks.length }, 'EnhancedBrowserTestFramework');
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
@@ -113,7 +114,7 @@ export class EnhancedBrowserTestFramework {
       throw new Error('Framework not initialized. Call initialize() first.');
     }
 
-    console.log(`\n🎯 Running ${tests.length} tests with enhanced result tracking...`);
+    logTarget(`Running ${tests.length} tests with enhanced result tracking`, { testCount: tests.length }, 'EnhancedBrowserTestFramework');
     const results: Array<{
       testId: string;
       testName: string;

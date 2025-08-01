@@ -7,6 +7,7 @@ import { EventEmitter } from 'node:events';
 import { LIMITS, PERFORMANCE } from '../config/constants.js';
 import { ResourceError, ResourceExhaustedError } from '../types/errors.js';
 import { ciPerformanceMonitor } from './ci-performance.js';
+import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from './logger.js';
 
 export interface ManagedResource {
   id: string;
@@ -265,7 +266,7 @@ export class ResourceManager extends EventEmitter {
     // Force garbage collection if available
     if (global.gc) {
       global.gc();
-      console.log('🗑️ Forced garbage collection in CI');
+      info('Forced garbage collection in CI', {}, 'ResourceManager');
       ciPerformanceMonitor.recordGC();
     }
 
@@ -288,7 +289,7 @@ export class ResourceManager extends EventEmitter {
     }
 
     if (toDispose.length > 0) {
-      console.log(`🧹 Aggressively cleaned up ${toDispose.length} resources in CI`);
+      info(`Aggressively cleaned up ${toDispose.length} resources in CI`, { resourceCount: toDispose.length }, 'ResourceManager');
     }
   }
 
@@ -302,7 +303,7 @@ export class ResourceManager extends EventEmitter {
     }, intervalMs);
 
     if (process.env.CI) {
-      console.log(`🔧 CI mode: Resource cleanup interval set to ${intervalMs / 1000}s`);
+      info(`CI mode: Resource cleanup interval set to ${intervalMs / 1000}s`, { intervalMs }, 'ResourceManager');
     }
   }
 }

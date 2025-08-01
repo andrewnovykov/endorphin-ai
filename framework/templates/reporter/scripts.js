@@ -982,9 +982,9 @@ class TestReportViewer {
     }
 
     // Prepare chart data - sort based on user preference
-    let sortedTests = Object.entries(testGroups)
+    const sortedTests = Object.entries(testGroups)
       .map(([name, group]) => ({
-        name: name,
+        name,
         avgDuration: group.totalDuration / group.count,
         count: group.count,
         maxDuration: Math.max(...group.rawDurations),
@@ -1020,7 +1020,7 @@ class TestReportViewer {
       // Truncate long test names for better display
       const maxLength = 25;
       return test.name.length > maxLength ? 
-        test.name.substring(0, maxLength) + '...' : 
+        `${test.name.substring(0, maxLength)  }...` : 
         test.name;
     });
     
@@ -1041,7 +1041,7 @@ class TestReportViewer {
     this.durationChart = new Chart(ctx, {
       type: 'bar', // Use bar chart with indexAxis: 'y' for horizontal bars
       data: {
-        labels: labels,
+        labels,
         datasets: [{
           label: 'Average Duration (seconds)',
           data: avgDurations,
@@ -1072,11 +1072,11 @@ class TestReportViewer {
           },
           tooltip: {
             callbacks: {
-              title: function(context) {
+              title(context) {
                 const index = context[0].dataIndex;
                 return displayTests[index].name; // Show full name in tooltip
               },
-              label: function(context) {
+              label(context) {
                 const index = context.dataIndex;
                 const test = displayTests[index];
                 return [

@@ -21,6 +21,7 @@ import {
   handleTestCommand,
   handleTestRecorderCommand,
 } from './cli-handlers.js';
+import { info, logRocket, logSuccess, logTarget, logAgent, error as logError, warn } from '../framework/core/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -198,23 +199,23 @@ async function handleCleanupCommand(subcommand: string, target?: string): Promis
   const reporter = new HtmlReporter();
 
   if (subcommand === 'results') {
-    console.log('🧹 Cleaning up old test results...');
+    info('Cleaning up old test results', {}, 'CLI');
     const keepCount = parseInt(target ?? '10', 10);
     const cleanup = await reporter.cleanupResults(keepCount);
-    console.log(`✅ Cleanup completed: ${cleanup.deletedReports} reports removed`);
+    logSuccess(`Cleanup completed: ${cleanup.deletedReports} reports removed`, { deletedReports: cleanup.deletedReports }, 'CLI');
     process.exit(0);
   }
 
   if (subcommand === 'reports') {
-    console.log('🧹 Cleaning up old report files...');
+    info('Cleaning up old report files', {}, 'CLI');
     const maxAge = parseInt(target ?? '30', 10);
     const cleanup = await reporter.cleanupOldReports(maxAge);
-    console.log(`✅ Cleanup completed: ${cleanup.deleted} report files removed`);
+    logSuccess(`Cleanup completed: ${cleanup.deleted} report files removed`, { deleted: cleanup.deleted }, 'CLI');
     process.exit(0);
   }
 
-  console.error(`❌ Unknown cleanup command: ${subcommand}`);
-  console.log('Available: cleanup results [count], cleanup reports [days]');
+  logError(`Unknown cleanup command: ${subcommand}`, undefined, { subcommand }, 'CLI');
+  info('Available: cleanup results [count], cleanup reports [days]', {}, 'CLI');
   process.exit(1);
 }
 
@@ -277,13 +278,13 @@ export async function main(): Promise<void> {
           // Other run commands need full AI validation
           const runConfig = await getConfig({ cwd: process.cwd(), cliFlags });
           if (args.includes('--debug')) {
-            console.log('🔧 Loaded configuration:', JSON.stringify(runConfig, null, 2));
+            info('Loaded configuration', { config: runConfig }, 'CLI');
           }
           if (subcommand === 'test') {
             await handleTestCommand(args, target, runConfig);
           } else {
-            console.error(`❌ Unknown run command: ${subcommand}`);
-            console.log('Use "endorphin-ai help" for usage information');
+            logError(`Unknown run command: ${subcommand}`, undefined, { subcommand }, 'CLI');
+            info('Use "endorphin-ai help" for usage information', {}, 'CLI');
             process.exit(1);
           }
         }
@@ -299,18 +300,16 @@ export async function main(): Promise<void> {
         await handleCleanupCommand(subcommand, target);
         break;
       default:
-        console.error(`❌ Unknown command: ${command}`);
-        console.log('Use "endorphin help" for usage information');
+        logError(`Unknown command: ${command}`, undefined, { command }, 'CLI');
+        info('Use "endorphin help" for usage information', {}, 'CLI');
         process.exit(1);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error('❌ Error:', message);
+    logError(`Error: ${message}`, error instanceof Error ? error : undefined, { message }, 'CLI');
 
     if (message.includes('OPENAI_API_KEY')) {
-      console.log(
-        '\n💡 Tip: Make sure to set your OPENAI_API_KEY in your .env file or environment variables'
-      );
+      info('Tip: Make sure to set your OPENAI_API_KEY in your .env file or environment variables', {}, 'CLI');
     }
 
     process.exit(1);

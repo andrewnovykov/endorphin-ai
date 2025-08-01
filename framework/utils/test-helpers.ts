@@ -6,6 +6,8 @@
 import * as path from 'node:path';
 import { BrowserManager } from '../automation/browser/browser-manager.js';
 import type { TestSession, TestStep } from '../types/index.js';
+import { info, logSuccess, logRocket, logTarget, logAgent, error as logError, warn } from '../core/logger.js';
+import { ICONS } from '../config/icons.js';
 
 export class TestHelpers {
   /**
@@ -30,20 +32,11 @@ export class TestHelpers {
       isImportant,
     };
 
-    // Console output with formatting
-    const prefix = isImportant ? '🔥' : '📝';
-    console.log(`${prefix} ${description}`);
-
-    if (tool) {
-      console.log(`   🔧 Tool: ${tool}`);
-    }
-
-    if (params && Object.keys(params).length > 0) {
-      console.log(`   📊 Params: ${JSON.stringify(params, null, 2)}`);
-    }
-
-    if (result) {
-      console.log(`   ✅ Result: ${result}`);
+    // Use logger with proper formatting
+    if (isImportant) {
+      logSuccess(`${ICONS.gear} ${description}`, { tool, params: JSON.stringify(params), result }, 'TestHelper');
+    } else {
+      info(`${ICONS.gear} ${description}`, { tool, params: JSON.stringify(params), result }, 'TestHelper');
     }
 
     // Add to session if provided
@@ -79,7 +72,7 @@ export class TestHelpers {
   ): Promise<string | null> {
     try {
       if (!browserManager.isInitialized()) {
-        console.log('⚠️ Browser not initialized, skipping screenshot');
+        warn(`${ICONS.gear} Browser not initialized, skipping screenshot`, {}, 'TestHelper');
         return null;
       }
 
@@ -118,11 +111,11 @@ export class TestHelpers {
         ? `Screenshot: ${description}`
         : `Screenshot step ${stepNumber}`;
 
-      console.log(`📸 ${logDescription} -> ${filename}`);
+      info(`${ICONS.gear} ${logDescription} -> ${filename}`, { filename, stepNumber }, 'TestHelper');
 
       return screenshotPath;
     } catch (error: any) {
-      console.error('❌ Failed to take screenshot:', error.message);
+      logError(`${ICONS.gear} Failed to take screenshot`, error instanceof Error ? error : undefined, { message: String(error) }, 'TestHelper');
       return null;
     }
   }
@@ -257,7 +250,13 @@ Session ID: ${session.sessionId}
    * Log test summary
    */
   static logTestSummary(session: TestSession): void {
-    console.log(`\n${TestHelpers.generateTestSummary(session)}\n`);
+    info(`${ICONS.gear} ${TestHelpers.generateTestSummary(session)}`, { 
+      sessionId: session.sessionId,
+      testId: session.testId,
+      status: session.status,
+      duration: session.duration,
+      steps: session.steps.length
+    }, 'TestHelper');
   }
 
   /**

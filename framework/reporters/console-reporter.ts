@@ -4,31 +4,8 @@
  */
 
 import { performance } from 'perf_hooks';
-
-interface Colors {
-  reset: string;
-  bright: string;
-  dim: string;
-  red: string;
-  green: string;
-  yellow: string;
-  blue: string;
-  magenta: string;
-  cyan: string;
-  white: string;
-  gray: string;
-  bgRed: string;
-  bgGreen: string;
-  bgYellow: string;
-}
-
-interface Icons {
-  success: string;
-  failure: string;
-  skipped: string;
-  running: string;
-  warning: string;
-}
+import { COLORS } from '../config/colors.js';
+import { ICONS } from '../config/icons.js';
 
 interface TestReportResult {
   testId: string;
@@ -51,36 +28,9 @@ export class ConsoleReporter {
   private startTime: number | null = null;
   private results: TestReportResult[] = [];
   private currentTestId: string | null = null;
-  private colors: Colors;
-  private icons: Icons;
 
   constructor() {
-    // Color codes for terminal output
-    this.colors = {
-      reset: '\x1b[0m',
-      bright: '\x1b[1m',
-      dim: '\x1b[2m',
-      red: '\x1b[31m',
-      green: '\x1b[32m',
-      yellow: '\x1b[33m',
-      blue: '\x1b[34m',
-      magenta: '\x1b[35m',
-      cyan: '\x1b[36m',
-      white: '\x1b[37m',
-      gray: '\x1b[90m',
-      bgRed: '\x1b[41m',
-      bgGreen: '\x1b[42m',
-      bgYellow: '\x1b[43m',
-    };
-
-    // Icons for different states
-    this.icons = {
-      success: '✓',
-      failure: '✗',
-      skipped: '○',
-      running: '●',
-      warning: '⚠',
-    };
+    // Colors and icons are now imported from centralized config
   }
 
   /**
@@ -91,7 +41,7 @@ export class ConsoleReporter {
     this.results = [];
 
     console.log(
-      `${this.colors.cyan}${this.colors.bright}🧪 Running Endorphin AI Tests...${this.colors.reset}\n`
+      `${COLORS.brightCyan}${ICONS.testTube} Running Endorphin AI Tests...${COLORS.reset}\n`
     );
   }
 
@@ -108,7 +58,7 @@ export class ConsoleReporter {
     ╔═══════════════════════════════════════════════════════════════╗
     ║${magenta}                          ENDORPHIN                            ${brightPurple}║
     ║${darkPurple}                      C₃₁H₃₉N₇O₉S                              ${brightPurple}║
-    ╚═══════════════════════════════════════════════════════════════╝${this.colors.reset}`);
+    ╚═══════════════════════════════════════════════════════════════╝${COLORS.reset}`);
 
     console.log(`${purple}
          ${brightPurple}HO${purple}─┐     ┌─${brightPurple}NH₂${purple}                    ┌─${brightPurple}COOH${purple}
@@ -133,12 +83,12 @@ export class ConsoleReporter {
          │
         ${brightPurple}CH₂${purple}
          │
-        ${brightPurple}CH₃${this.colors.reset}`);
+        ${brightPurple}CH₃${COLORS.reset}`);
 
     console.log(`${darkPurple}
     ${magenta}♦${darkPurple} Endorphin: Natural opioid peptide neurotransmitter
     ${magenta}♦${darkPurple} Known for: Pain relief, pleasure, and reward pathways  
-    ${magenta}♦${darkPurple} Testing with: AI-powered natural language automation${this.colors.reset}\n`);
+    ${magenta}♦${darkPurple} Testing with: AI-powered natural language automation${COLORS.reset}\n`);
   }
 
   /**
@@ -147,7 +97,7 @@ export class ConsoleReporter {
   startTest(testId: string, testName: string): void {
     this.currentTestId = testId;
     process.stdout.write(
-      `${this.colors.gray}${this.icons.running} ${testId}: ${testName}${this.colors.reset}`
+      `${COLORS.gray}${ICONS.dot} ${testId}: ${testName}${COLORS.reset}`
     );
   }
 
@@ -176,18 +126,18 @@ export class ConsoleReporter {
     // Format and display the result
     if (status === 'SUCCESS') {
       console.log(
-        `${this.colors.green}     ${this.icons.success} ${testId}: ${testName}${this.colors.reset} ${this.colors.gray}(${duration}ms)${this.colors.reset}`
+        `${COLORS.green}     ${ICONS.checkmark} ${testId}: ${testName}${COLORS.reset} ${COLORS.gray}(${duration}ms)${COLORS.reset}`
       );
     } else if (status === 'FAILED') {
       console.log(
-        `${this.colors.red}     ${this.icons.failure} ${testId}: ${testName}${this.colors.reset} ${this.colors.gray}(${duration}ms)${this.colors.reset}`
+        `${COLORS.red}     ${ICONS.cross} ${testId}: ${testName}${COLORS.reset} ${COLORS.gray}(${duration}ms)${COLORS.reset}`
       );
       if (error) {
-        console.log(`${this.colors.red}       ${error}${this.colors.reset}`);
+        console.log(`${COLORS.red}       ${error}${COLORS.reset}`);
       }
     } else if (status === 'SKIPPED') {
       console.log(
-        `${this.colors.yellow}     ${this.icons.skipped} ${testId}: ${testName}${this.colors.reset} ${this.colors.gray}(skipped)${this.colors.reset}`
+        `${COLORS.yellow}     ${ICONS.circle} ${testId}: ${testName}${COLORS.reset} ${COLORS.gray}(skipped)${COLORS.reset}`
       );
     }
   }
@@ -201,9 +151,9 @@ export class ConsoleReporter {
       process.stdout.write('\r\x1b[K');
     }
     console.log(
-      `${this.colors.red}     ${this.icons.failure} ${testId}: Failed${this.colors.reset}`
+      `${COLORS.red}     ${ICONS.cross} ${testId}: Failed${COLORS.reset}`
     );
-    console.log(`${this.colors.red}       ${error}${this.colors.reset}`);
+    console.log(`${COLORS.red}       ${error}${COLORS.reset}`);
   }
 
   /**
@@ -252,46 +202,46 @@ export class ConsoleReporter {
     // Test Files summary
     if (totalTests > 0) {
       console.log(
-        `${this.colors.bright} Test Files  ${this.colors.green}${totalTests} passed${this.colors.reset}${this.colors.bright} (${totalTests})${this.colors.reset}`
+        `${COLORS.bright} Test Files  ${COLORS.green}${totalTests} passed${COLORS.reset}${COLORS.bright} (${totalTests})${COLORS.reset}`
       );
     }
 
     // Tests summary with conditional coloring
-    let testsSummary = `${this.colors.bright}      Tests  `;
+    let testsSummary = `${COLORS.bright}      Tests  `;
 
     if (passedTests > 0) {
-      testsSummary += `${this.colors.green}${passedTests} passed${this.colors.reset}`;
+      testsSummary += `${COLORS.green}${passedTests} passed${COLORS.reset}`;
     }
 
     if (failedTests > 0) {
-      if (passedTests > 0) testsSummary += `${this.colors.bright}, `;
-      testsSummary += `${this.colors.red}${failedTests} failed${this.colors.reset}`;
+      if (passedTests > 0) testsSummary += `${COLORS.bright}, `;
+      testsSummary += `${COLORS.red}${failedTests} failed${COLORS.reset}`;
     }
 
     if (skippedTests > 0) {
-      if (passedTests > 0 || failedTests > 0) testsSummary += `${this.colors.bright}, `;
-      testsSummary += `${this.colors.yellow}${skippedTests} skipped${this.colors.reset}`;
+      if (passedTests > 0 || failedTests > 0) testsSummary += `${COLORS.bright}, `;
+      testsSummary += `${COLORS.yellow}${skippedTests} skipped${COLORS.reset}`;
     }
 
-    testsSummary += `${this.colors.bright} (${totalTests})${this.colors.reset}`;
+    testsSummary += `${COLORS.bright} (${totalTests})${COLORS.reset}`;
     console.log(testsSummary);
 
     // Timing information
     const now = new Date();
     const timeString = now.toTimeString().split(' ')[0]; // HH:MM:SS format
-    console.log(`${this.colors.gray}   Start at  ${timeString}${this.colors.reset}`);
+    console.log(`${COLORS.gray}   Start at  ${timeString}${COLORS.reset}`);
     console.log(
-      `${this.colors.gray}   Duration  ${this.formatDuration(duration)}${this.colors.reset}`
+      `${COLORS.gray}   Duration  ${this.formatDuration(duration)}${COLORS.reset}`
     );
 
     // Overall result indicator
     if (hasFailures) {
       console.log(
-        `\n${this.colors.bgRed}${this.colors.white}${this.colors.bright} FAILED ${this.colors.reset} ${this.colors.red}${failedTests} test${failedTests === 1 ? '' : 's'} failed${this.colors.reset}`
+        `\n${COLORS.bgRed}${COLORS.white}${COLORS.bright} FAILED ${COLORS.reset} ${COLORS.red}${failedTests} test${failedTests === 1 ? '' : 's'} failed${COLORS.reset}`
       );
     } else if (totalTests > 0) {
       console.log(
-        `\n${this.colors.bgGreen}${this.colors.white}${this.colors.bright} PASSED ${this.colors.reset} ${this.colors.green}All tests passed!${this.colors.reset}`
+        `\n${COLORS.bgGreen}${COLORS.white}${COLORS.bright} PASSED ${COLORS.reset} ${COLORS.green}All tests passed!${COLORS.reset}`
       );
     }
   }
@@ -303,14 +253,14 @@ export class ConsoleReporter {
     const failedTests = this.results.filter((r) => r.status === 'FAILED');
 
     if (failedTests.length > 0) {
-      console.log(`\n${this.colors.red}${this.colors.bright}Failed Tests:${this.colors.reset}\n`);
+      console.log(`\n${COLORS.red}${COLORS.bright}Failed Tests:${COLORS.reset}\n`);
 
       failedTests.forEach((test, index) => {
         console.log(
-          `${this.colors.red}${this.colors.bright}${index + 1}. ${test.testId}: ${test.testName}${this.colors.reset}`
+          `${COLORS.red}${COLORS.bright}${index + 1}. ${test.testId}: ${test.testName}${COLORS.reset}`
         );
         if (test.error) {
-          console.log(`${this.colors.red}   ${test.error}${this.colors.reset}`);
+          console.log(`${COLORS.red}   ${test.error}${COLORS.reset}`);
         }
         console.log(''); // Empty line between failures
       });
@@ -338,19 +288,19 @@ export class ConsoleReporter {
   reportProgress(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info'): void {
     switch (type) {
       case 'info':
-        console.log(`${this.colors.blue}ℹ ${message}${this.colors.reset}`);
+        console.log(`${COLORS.blue}ℹ ${message}${COLORS.reset}`);
         break;
       case 'warning':
-        console.log(`${this.colors.yellow}${this.icons.warning} ${message}${this.colors.reset}`);
+        console.log(`${COLORS.yellow}${ICONS.warningSimple} ${message}${COLORS.reset}`);
         break;
       case 'error':
-        console.log(`${this.colors.red}${this.icons.failure} ${message}${this.colors.reset}`);
+        console.log(`${COLORS.red}${ICONS.cross} ${message}${COLORS.reset}`);
         break;
       case 'success':
-        console.log(`${this.colors.green}${this.icons.success} ${message}${this.colors.reset}`);
+        console.log(`${COLORS.green}${ICONS.checkmark} ${message}${COLORS.reset}`);
         break;
       default:
-        console.log(`${this.colors.gray}${message}${this.colors.reset}`);
+        console.log(`${COLORS.gray}${message}${COLORS.reset}`);
     }
   }
 
@@ -378,9 +328,9 @@ export class ConsoleReporter {
    * Disable colors for CI/non-terminal environments
    */
   disableColors(): void {
-    Object.keys(this.colors).forEach((key) => {
-      (this.colors as any)[key] = '';
-    });
+    // Colors are now centralized - this method is deprecated
+    // Individual color properties can't be modified from centralized config
+    console.warn('disableColors() is deprecated. Colors are now managed centrally.');
   }
 }
 
