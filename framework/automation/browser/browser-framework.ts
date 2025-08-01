@@ -336,7 +336,7 @@ export class EnhancedBrowserTestFramework {
       });
 
       return { url, title, html, visibleText };
-    } catch (error) {
+    } catch {
       // Silent failure - don't disrupt test flow
       return null;
     }

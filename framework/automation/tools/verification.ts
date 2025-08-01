@@ -7,7 +7,7 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { EnhancedBrowserTestFramework } from '../browser/browser-framework.js';
 import { TIMEOUTS } from '../../config/constants.js';
-import { info, logSuccess, error as logError, warn } from '../../core/logger.js';
+import { info, logSuccess, error as logError } from '../../core/logger.js';
 import { ICONS } from '../../config/icons.js';
 import { ElementAnalyzer } from '../../utils/element-analyzer.js';
 
@@ -108,8 +108,8 @@ export function createVerifyElementTool(framework: EnhancedBrowserTestFramework)
           // Store comprehensive failure data for AI recommendations at test end
           framework.collectFailureData({
             type: 'verification_failed',
-            selector: selector,
-            state: state,
+            selector,
+            state,
             error: error.message,
             stepDescription: stepDesc,
             pageSnapshot: pageSnapshot || undefined,
@@ -117,7 +117,7 @@ export function createVerifyElementTool(framework: EnhancedBrowserTestFramework)
             screenshot: `Failed to verify ${selector}`,
             timestamp: new Date().toISOString()
           });
-        } catch (analysisError) {
+        } catch {
           // Silent failure in analysis - don't disrupt test flow
         }
         

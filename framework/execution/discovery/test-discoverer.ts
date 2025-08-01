@@ -303,9 +303,8 @@ export class TestDiscoverer {
     filename: string,
     testsFound: DiscoveredTest[]
   ): Promise<void> {
-    try {
-      // Try to register tsx loader if not already registered
-      if (typeof (globalThis as any).__tsx_registered === 'undefined') {
+    // Try to register tsx loader if not already registered
+    if (typeof (globalThis as any).__tsx_registered === 'undefined') {
         try {
           // Try to dynamically import tsx
           const { register } = await import('tsx/esm/api');
@@ -338,33 +337,29 @@ export class TestDiscoverer {
             );
           }
         }
-      }
+    }
 
-      // Now load the TypeScript file
-      const fileUrl = pathToFileURL(filePath).href;
-      debug(`Attempting to import TypeScript file: ${fileUrl}`, {}, 'TestDiscoverer');
+    // Now load the TypeScript file
+    const fileUrl = pathToFileURL(filePath).href;
+    debug(`Attempting to import TypeScript file: ${fileUrl}`, {}, 'TestDiscoverer');
+    
+    try {
+      const module = await import(`${fileUrl}?t=${Date.now()}`);
+      this.extractTestsFromModule(module, filename, testsFound);
+    } catch (importError) {
+      // Handle specific TypeScript/syntax errors
+      const errorMessage = String(importError);
       
-      try {
-        const module = await import(`${fileUrl}?t=${Date.now()}`);
-        this.extractTestsFromModule(module, filename, testsFound);
-      } catch (importError) {
-        // Handle specific TypeScript/syntax errors
-        const errorMessage = String(importError);
-        
-        if (errorMessage.includes('Unexpected token') || errorMessage.includes('SyntaxError')) {
-          throw new Error(
-            `Syntax error in TypeScript file ${filename}: ${importError}. ` +
-            `This usually means the TypeScript loader is not working properly. ` +
-            `Please ensure 'tsx' is installed and your test file has valid TypeScript syntax. ` +
-            `Check your imports and exports - they should use ES module syntax (import/export).`
-          );
-        } else {
-          throw new Error(`Failed to import TypeScript file ${filename}: ${importError}`);
-        }
+      if (errorMessage.includes('Unexpected token') || errorMessage.includes('SyntaxError')) {
+        throw new Error(
+          `Syntax error in TypeScript file ${filename}: ${importError}. ` +
+          `This usually means the TypeScript loader is not working properly. ` +
+          `Please ensure 'tsx' is installed and your test file has valid TypeScript syntax. ` +
+          `Check your imports and exports - they should use ES module syntax (import/export).`
+        );
+      } else {
+        throw new Error(`Failed to import TypeScript file ${filename}: ${importError}`);
       }
-    } catch (error) {
-      // This catch handles errors from the tsx registration part
-      throw error; // Re-throw the error as it already has good context
     }
   }
 

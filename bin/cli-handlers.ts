@@ -141,7 +141,7 @@ export async function handleGenerateCommand(subcommand: string, args: string[]):
     
     try {
       // Always use current working directory for test results
-      const testResultsDir = process.cwd() + '/test-results';
+      const testResultsDir = `${process.cwd()}/test-results`;
       
       // Check if test-results directory exists
       const fs = await import('fs');
@@ -196,7 +196,7 @@ export async function handleOpenCommand(subcommand: string, target?: string): Pr
     
     try {
       // Always use current working directory for test results
-      const testResultsDir = process.cwd() + '/test-results';
+      const testResultsDir = `${process.cwd()}/test-results`;
       
       // Check if test-results directory exists
       const fs = await import('fs');

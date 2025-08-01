@@ -5,12 +5,12 @@
  * for improving test reliability and accuracy
  */
 
-import { BaseMessage, HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { ChatOpenAI } from '@langchain/openai';
 import type { TokenTracker } from '../core/token-tracker.js';
 import { trackAICall } from './agent-setup.js';
 import { AGENT_CONFIG } from './config/agent-config.js';
-import { logWithIcon, LogLevel, info, error as logError } from '../core/logger.js';
+import { logWithIcon, LogLevel, error as logError } from '../core/logger.js';
 
 export interface FailureData {
   type: string;
@@ -301,7 +301,7 @@ Based on the failures above, provide actionable recommendations to improve test 
       }
       
       return relevantLines.join('\n');
-    } catch (error) {
+    } catch {
       return 'HTML parsing failed';
     }
   }

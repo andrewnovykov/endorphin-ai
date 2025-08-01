@@ -151,7 +151,7 @@ async function copyExampleFiles(targetDir: string): Promise<void> {
       }
     }
     console.log(`📋 Found ${testFiles.length} test files to copy`);
-  } catch (error) {
+  } catch {
     console.warn('⚠️  Could not read tests directory, using fallback test files');
     // Fallback to specific files if directory reading fails
     files.push(
