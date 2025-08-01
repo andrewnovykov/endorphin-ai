@@ -66,6 +66,14 @@ jobs:
           echo "Building project..."
           npm run build || echo "Build failed, continuing..."
 
+      - name: Install Playwright browsers (optional)
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          echo "Installing Playwright browsers (optional for Node.js 22 compatibility)..."
+          npx playwright install chromium --verbose || echo "Playwright install failed, continuing without browser support..."
+          echo "Playwright installation completed (optional)"
+
       - name: Test basic functionality (no browser)
         shell: bash
         env:

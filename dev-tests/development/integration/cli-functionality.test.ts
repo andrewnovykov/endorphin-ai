@@ -41,7 +41,7 @@ describe('CLI Functionality Integration Tests', () => {
         const initOutput = execSync(`npx tsx ${path.join(originalCwd, 'bin/endorphin.ts')} init`, {
           cwd: projectDir,
           encoding: 'utf8',
-          timeout: 30000
+          timeout: process.platform === 'win32' ? 60000 : 30000 // Longer timeout for Windows
         });
 
         expect(initOutput).toBeDefined();
@@ -82,7 +82,7 @@ describe('CLI Functionality Integration Tests', () => {
         const helpOutput = execSync('npx tsx bin/endorphin.ts --help', {
           cwd: originalCwd,
           encoding: 'utf8',
-          timeout: 15000
+          timeout: process.platform === 'win32' ? 30000 : 15000 // Longer timeout for Windows
         });
 
         expect(helpOutput).toBeDefined();
@@ -108,7 +108,7 @@ describe('CLI Functionality Integration Tests', () => {
           output = execSync(`npx tsx ${path.join(originalCwd, 'bin/endorphin.ts')} run test NONEXISTENT-001`, {
             cwd: originalCwd,
             encoding: 'utf8',
-            timeout: 15000,
+            timeout: process.platform === 'win32' ? 45000 : 15000, // Longer timeout for Windows
             stdio: 'pipe',
             env: {
               ...process.env,
@@ -127,7 +127,7 @@ describe('CLI Functionality Integration Tests', () => {
       } catch (error) {
         throw new Error(`CLI run command validation failed: ${error instanceof Error ? error.message : String(error)}`);
       }
-    }, 30000);
+    }, process.platform === 'win32' ? 60000 : 30000); // Longer timeout for Windows
   });
 
   describe('CLI Generate Report Command', () => {

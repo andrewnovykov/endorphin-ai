@@ -1,15 +1,14 @@
 name: Node.js 22.18.0 Compatibility Test
 
 on:
-  # Temporarily disabled - using simplified workflow instead
-  # pull_request:
-  #   branches: [main, develop]
-  # push:
-  #   branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
   schedule:
     # Run weekly to catch any regressions
     - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
-  workflow_dispatch:  # Manual trigger only
+  workflow_dispatch:  # Manual trigger
 
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
