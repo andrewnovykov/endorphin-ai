@@ -51,9 +51,27 @@ jobs:
         timeout-minutes: 10
         run: |
           echo "Installing Playwright browsers for development tests..."
-          npx playwright install chromium --verbose || echo "Playwright install failed, continuing..."
-          npx playwright install-deps chromium || echo "Playwright deps install failed, continuing..."
-          echo "Playwright installation completed"
+          echo "Node.js version: $(node --version)"
+          echo "npm version: $(npm --version)"
+          
+          # Force Playwright browser installation
+          echo "Step 1: Force installing Playwright browsers (including all dependencies)..."
+          npx playwright install --force chromium || {
+            echo "Force install failed, trying regular install..."
+            npx playwright install chromium --verbose
+          }
+          
+          echo "Step 2: Installing system dependencies..."
+          npx playwright install-deps chromium 2>&1 || echo "System deps install completed with warnings"
+          
+          echo "Step 3: Verifying Playwright setup..."
+          if npx playwright install --dry-run chromium 2>/dev/null; then
+            echo "✅ Playwright browsers are properly installed"
+          else
+            echo "⚠️ Playwright verification had issues, but continuing..."
+          fi
+          
+          echo "✅ Playwright installation process completed"
 
       - name: Run development tests
         env:

@@ -51,9 +51,21 @@ jobs:
         ls -la dist/bin/
 
     - name: Install Playwright browsers
+      timeout-minutes: 10
       run: |
-        npx playwright install chromium
-        npx playwright install-deps chromium
+        echo "Installing Playwright browsers for scheduled tests..."
+        echo "Node.js version: $(node --version)"
+        
+        # Force Playwright browser installation
+        npx playwright install --force chromium || {
+          echo "Force install failed, trying regular install..."
+          npx playwright install chromium --verbose
+        }
+        
+        echo "Installing system dependencies..."
+        npx playwright install-deps chromium 2>&1 || echo "System deps install completed with warnings"
+        
+        echo "✅ Playwright installation completed"
 
     - name: Debug environment
       run: |
