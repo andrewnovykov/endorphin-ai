@@ -156,6 +156,14 @@ export default {
 // - Add specific tool files: './tools/my-tool.ts'
 // - Tools should export createXxxTool functions
 //
+// MCP Servers:
+// - Extend framework with Model Context Protocol servers
+// - See doc/user-guide/MCP-Server-Guide.md for detailed documentation
+// - Use stdio transport for local processes (filesystem, database, etc.)
+// - Use sse transport for remote HTTP servers
+// - Popular servers: filesystem, github, postgres, slack, google-drive
+// - Example: see examples/mcp-examples.ts for usage patterns
+//
 // Global Setup:
 // - Optional setup script that runs before all tests
 // - Use for environment setup, authentication, data seeding
