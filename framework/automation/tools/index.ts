@@ -23,6 +23,7 @@ import {
 } from './verification.js';
 import { info } from '../../core/logger.js';
 import { ICONS } from '../../config/icons.js';
+import { getMCPConnector } from '../../core/mcp-connector.js';
 
 /**
  * Create all browser automation tools for the framework
@@ -61,5 +62,22 @@ export function createAllTools(framework: any): any[] {
 
   info(`${ICONS.tools} Total built-in tools available: ${builtInTools.length}`, { toolCount: builtInTools.length }, 'Tool');
 
-  return builtInTools;
+  // Get MCP tools from connected servers
+  const mcpConnector = getMCPConnector();
+  const mcpTools = mcpConnector.getAllTools();
+
+  if (mcpTools.length > 0) {
+    info(`${ICONS.tools} Adding ${mcpTools.length} MCP tool(s) from connected servers`, { mcpToolCount: mcpTools.length }, 'MCP');
+  }
+
+  // Combine built-in and MCP tools
+  const allTools = [...builtInTools, ...mcpTools];
+
+  info(`${ICONS.tools} Total tools available: ${allTools.length} (${builtInTools.length} built-in + ${mcpTools.length} MCP)`, {
+    total: allTools.length,
+    builtIn: builtInTools.length,
+    mcp: mcpTools.length
+  }, 'Tool');
+
+  return allTools;
 }

@@ -23,6 +23,7 @@ export { BrowserManager } from './automation/browser/browser-manager.js';
 export { ConfigManager } from './core/config-manager.js';
 export { SessionManager } from './core/session-manager.js';
 export { ToolManager } from './core/tool-manager.js';
+export { MCPConnector, getMCPConnector, resetMCPConnector } from './core/mcp-connector.js';
 
 // Dependency injection system
 export {

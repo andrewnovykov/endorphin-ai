@@ -39,6 +39,7 @@ import { DebugManager, createDebugManager } from './debug-manager.js';
 import { GlobalSetupManager } from './global-setup-manager.js';
 import { SessionManager } from './session-manager.js';
 import { ToolManager } from './tool-manager.js';
+import { getMCPConnector } from './mcp-connector.js';
 
 /**
  * Test Framework - Core Framework Class
@@ -131,6 +132,9 @@ export class TestFramework {
       // Execute global setup first if configured
       await this.executeGlobalSetup();
 
+      // Connect to MCP servers if configured
+      await this.connectMCPServers();
+
       // Initialize session manager (directories, cleanup)
       await this.sessionManager.initialize();
 
@@ -182,6 +186,34 @@ export class TestFramework {
     } catch (error: any) {
       this.logger.error('Global setup execution failed', error);
       throw new Error(`Global setup failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Connect to MCP servers if configured
+   */
+  private async connectMCPServers(): Promise<void> {
+    const config = this.configManager.getConfig();
+
+    if (!config.mcpServers || config.mcpServers.length === 0) {
+      logWithIcon(LogLevel.DEBUG, 'debug', 'No MCP servers configured, skipping', {}, 'TestFramework');
+      return;
+    }
+
+    this.logger.info(`Connecting to ${config.mcpServers.length} MCP server(s)`);
+
+    try {
+      const mcpConnector = getMCPConnector();
+      await mcpConnector.connectToServers(config.mcpServers);
+
+      const connectionInfo = mcpConnector.getConnectionInfo();
+      const connectedCount = connectionInfo.filter(c => c.connected).length;
+      
+      this.logger.info(`MCP servers connected: ${connectedCount}/${config.mcpServers.length}`);
+    } catch (error: any) {
+      this.logger.error('MCP server connection failed', error);
+      // Don't throw - allow the framework to continue without MCP servers
+      this.logger.warn('Continuing without MCP servers');
     }
   }
 
@@ -378,6 +410,10 @@ export class TestFramework {
     this.logger.info('Starting framework cleanup');
 
     try {
+      // Disconnect MCP servers
+      const mcpConnector = getMCPConnector();
+      await mcpConnector.disconnectAll();
+
       // Close session
       this.sessionManager.closeSession();
 

@@ -60,6 +60,46 @@ export default {
     './tools', // Load all tools from the tools directory
   ],
 
+  // MCP (Model Context Protocol) Server Configuration (optional)
+  // Connect to external MCP servers to extend tool capabilities
+  // mcpServers: [
+  //   // Example: Local MCP server using stdio transport
+  //   {
+  //     name: 'filesystem',
+  //     transport: 'stdio',
+  //     stdio: {
+  //       command: 'npx',
+  //       args: ['-y', '@modelcontextprotocol/server-filesystem', '/path/to/allowed/directory'],
+  //     },
+  //     enabled: true,
+  //   },
+  //   // Example: Remote MCP server using SSE transport
+  //   {
+  //     name: 'api-service',
+  //     transport: 'sse',
+  //     sse: {
+  //       url: 'https://mcp-server.example.com',
+  //       headers: {
+  //         'Authorization': 'Bearer your-api-token',
+  //       },
+  //     },
+  //     enabled: true,
+  //   },
+  //   // Example: Python MCP server
+  //   {
+  //     name: 'data-analysis',
+  //     transport: 'stdio',
+  //     stdio: {
+  //       command: 'python',
+  //       args: ['-m', 'mcp_server_data'],
+  //       env: {
+  //         'PYTHONPATH': './python-tools',
+  //       },
+  //     },
+  //     enabled: false, // Disabled by default
+  //   },
+  // ],
+
   // Global setup configuration (optional)
   // globalSetup: './global-setup.ts', // Path to global setup file
 

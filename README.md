@@ -574,6 +574,93 @@ npx endorphin-ai run test all --model gpt-4
 npx endorphin-ai run test all --env staging
 ```
 
+### 🔌 MCP Server Integration
+
+Endorphin AI supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/), allowing you to extend the framework with external tools and services. MCP servers can provide additional capabilities like file system access, database queries, API integrations, and more.
+
+#### Configuring MCP Servers
+
+Add MCP server configurations to your `endorphin.config.ts`:
+
+```typescript
+// endorphin.config.ts
+export default {
+  // ... other config ...
+  
+  mcpServers: [
+    // Local filesystem access
+    {
+      name: 'filesystem',
+      transport: 'stdio',
+      stdio: {
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-filesystem', './test-data'],
+      },
+      enabled: true,
+    },
+    
+    // Remote API service
+    {
+      name: 'api-service',
+      transport: 'sse',
+      sse: {
+        url: 'https://mcp-server.example.com',
+        headers: {
+          'Authorization': 'Bearer your-api-token',
+        },
+      },
+      enabled: true,
+    },
+    
+    // Python-based MCP server
+    {
+      name: 'data-processor',
+      transport: 'stdio',
+      stdio: {
+        command: 'python',
+        args: ['-m', 'my_mcp_server'],
+        env: {
+          'PYTHONPATH': './python-tools',
+        },
+      },
+      enabled: false, // Can be toggled per environment
+    },
+  ],
+};
+```
+
+#### Available MCP Servers
+
+Popular MCP servers you can use:
+
+- **@modelcontextprotocol/server-filesystem** - File system operations
+- **@modelcontextprotocol/server-github** - GitHub API integration
+- **@modelcontextprotocol/server-google-drive** - Google Drive access
+- **@modelcontextprotocol/server-postgres** - PostgreSQL database queries
+- **@modelcontextprotocol/server-slack** - Slack messaging
+- Create your own custom MCP servers!
+
+#### How It Works
+
+1. **Automatic Connection**: MCP servers are connected during framework initialization
+2. **Tool Discovery**: The framework discovers all tools provided by connected servers
+3. **AI Integration**: MCP tools are automatically available to the AI agent alongside built-in tools
+4. **Seamless Usage**: The AI can use MCP tools just like built-in browser automation tools
+
+```typescript
+// Example test using MCP filesystem tools
+export const DATA_TEST: TestCase = {
+  id: 'DATA-001',
+  name: 'Process Test Data',
+  description: 'Load test data from filesystem and verify results',
+  task: `
+    1. Read the test data from ./test-data/users.json using the filesystem tool
+    2. Navigate to the user management page
+    3. Verify the users listed match the data from the file
+  `,
+};
+```
+
 ## 📝 Test Categories
 
 You can organize your tests using tags and priorities:

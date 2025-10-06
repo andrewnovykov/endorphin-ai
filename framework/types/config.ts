@@ -19,6 +19,7 @@ export interface FrameworkConfig {
   environment: 'development' | 'staging' | 'production';
   baseUrl?: string;
   globalSetup?: string; // Path to global setup file
+  mcpServers?: MCPServerConfig[]; // MCP server configurations
   [key: string]: any; // Allow dynamic access
 }
 
@@ -81,4 +82,40 @@ export interface GlobalSetupResult {
   error?: Error;
   executionTime: number;
   setupFile?: string;
+}
+
+/**
+ * MCP Server Configuration
+ * Defines how to connect to an MCP (Model Context Protocol) server
+ */
+export interface MCPServerConfig {
+  /** Unique name for this MCP server */
+  name: string;
+  
+  /** Type of transport to use for connecting to the MCP server */
+  transport: 'stdio' | 'sse';
+  
+  /** Configuration for stdio transport (for local processes) */
+  stdio?: {
+    /** Command to execute (e.g., 'node', 'python', 'npx') */
+    command: string;
+    /** Arguments to pass to the command */
+    args?: string[];
+    /** Environment variables for the process */
+    env?: Record<string, string>;
+  };
+  
+  /** Configuration for SSE transport (for remote servers) */
+  sse?: {
+    /** URL of the MCP server */
+    url: string;
+    /** Optional headers for authentication */
+    headers?: Record<string, string>;
+  };
+  
+  /** Optional: Enable/disable this server */
+  enabled?: boolean;
+  
+  /** Optional: Timeout for server operations in milliseconds */
+  timeout?: number;
 }
