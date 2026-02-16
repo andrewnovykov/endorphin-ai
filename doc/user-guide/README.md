@@ -168,7 +168,7 @@ npx endorphin-ai init-claude-skill
 npx endorphin-ai run test --jira-sync TICKET-001
 ```
 
-## 🆕 What's New in v1.4.0
+## 🆕 What's New in v1.1.0
 
 ### Claude Code Integration
 
@@ -319,7 +319,7 @@ JIRA_LABEL=ai-test-case
 
 ## 📋 Version Compatibility
 
-- **Current Version**: v1.4.0
+- **Current Version**: v1.1.0
 - **Node.js**: v18.0.0+ required
 - **TypeScript**: v5.8+ recommended
 - **Browsers**: Chrome, Firefox, Safari (via Playwright)
