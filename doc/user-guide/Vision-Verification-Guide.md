@@ -1,4 +1,4 @@
-_Last Updated: February 14, 2026 - v1.0.2_
+_Last Updated: February 14, 2026 - v1.1.0_
 # Vision Verification Guide
 
 AI-powered screenshot verification that confirms test results visually.
