@@ -1,10 +1,10 @@
 # User Guide - Endorphin AI
 
-_Last Updated: July 4, 2025 - v0.9.0_
+_Last Updated: February 14, 2026 - v1.4.0_
 
 Welcome to **Endorphin AI** - the TypeScript-first browser automation testing framework that uses AI agents to execute natural language test instructions. This guide collection will help you get started, write effective tests, and make the most of the framework.
 
-> **For Contributors**: See [doc/framework-development/](../framework-development/) for framework development documentation.
+> **For Contributors**: See [framework-development/](../framework-development/) for framework development documentation.
 
 ## 🚀 Getting Started
 
@@ -25,6 +25,9 @@ npm install endorphin-ai
 
 # Initialize project
 npx endorphin-ai init
+
+# Initialize Claude Code integration (optional)
+npx endorphin-ai init-claude-skill
 
 # Run tests
 npx endorphin-ai run test all
@@ -48,11 +51,16 @@ npx endorphin-ai generate report
 - **[Test-Structure-Guide.md](./Test-Structure-Guide.md)** - v0.9 test structure with setup/data functions
 - **[Test-Writing-Tips.md](./Test-Writing-Tips.md)** - **Enterprise & small app examples**
 - **[Test-Recorder.md](./Test-Recorder.md)** - Interactive test creation
+- **[Claude-Code-Integration.md](./Claude-Code-Integration.md)** - AI-assisted test creation with Claude Code
 - **[Prompt-Guide.md](./Prompt-Guide.md)** - Advanced AI prompting techniques
 
 ### 📊 Reports & Analysis
 
 - **[HTML-Reporter-Guide.md](./HTML-Reporter-Guide.md)** - Interactive reports with cost tracking
+
+### 🔍 Vision & Verification
+
+- **[Vision-Verification-Guide.md](./Vision-Verification-Guide.md)** - AI-powered screenshot verification setup and usage
 
 ### 🛠️ Development Tools
 
@@ -82,9 +90,10 @@ npx endorphin-ai generate report
 1. [Test-Structure-Guide.md](./Test-Structure-Guide.md) - Learn smart test structure
 2. [Prompt-Guide.md](./Prompt-Guide.md) - Advanced AI prompting
 3. [Test-Recorder.md](./Test-Recorder.md) - Interactive test creation
-4. [Global-Setup-Guide.md](./Global-Setup-Guide.md) - Advanced configuration
+4. [Claude-Code-Integration.md](./Claude-Code-Integration.md) - AI-assisted test creation
+5. [Global-Setup-Guide.md](./Global-Setup-Guide.md) - Advanced configuration
 
-**Estimated time**: 2 hours
+**Estimated time**: 2-3 hours
 
 ### Advanced Path
 
@@ -126,6 +135,18 @@ npx endorphin-ai run test-recorder
 # Test file automatically generated
 ```
 
+### Using Claude Code Integration
+
+```bash
+# Initialize Claude Code integration
+npx endorphin-ai init-claude-skill
+
+# In Claude Code:
+/write-test Create a login test
+/fix-test HEALTH-001
+/record-test
+```
+
 ### Setting Up CI/CD
 
 ```bash
@@ -147,55 +168,71 @@ npx endorphin-ai run test-recorder
 npx endorphin-ai run test --jira-sync TICKET-001
 ```
 
-## 🆕 What's New in v0.9.0
+## 🆕 What's New in v1.4.0
 
-### Smart Test Structure
+### Claude Code Integration
 
-New async functions for dynamic tests:
+AI-assisted test creation and repair:
+- **`/write-test` skill** - Create tests by describing what to test
+- **`/fix-test` skill** - Analyze and fix failing tests automatically
+- **`/record-test` skill** - Launch interactive recorder from Claude Code
+- **CLI API** - Programmable test recorder for automation
+- **One-command setup** - `npx endorphin-ai init-claude-skill`
 
-```typescript
-export const SMART_TEST: TestCase = {
-  id: 'TEST-001',
-  name: 'Smart Test',
-  description: 'Test with setup and data',
-  priority: 'High',
-  tags: ['smart'],
-  
-  setup: async () => ({
-    baseUrl: process.env.TEST_URL || 'https://example.com',
-    timestamp: new Date().toISOString()
-  }),
-  
-  data: async () => ({
-    email: `test_${Date.now()}@example.com`,
-    password: 'TestPass123!'
-  }),
-  
-  task: async (data, setupData) => `
-    Navigate to ${setupData.baseUrl}/login
-    Fill email with ${data.email}
-    Fill password with ${data.password}
-    Click Submit
-    Verify welcome message
-  `
-};
+See **[Claude-Code-Integration.md](./Claude-Code-Integration.md)** for full details.
+
+### Recorder CLI API
+
+Five new commands for programmatic test creation:
+```bash
+npx endorphin-ai recorder create    # Create session
+npx endorphin-ai recorder add-step  # Add step
+npx endorphin-ai recorder generate  # Generate test
+npx endorphin-ai recorder list      # List sessions
+npx endorphin-ai recorder status    # Get status
 ```
 
-### Enhanced HTML Reports
+---
 
-- **💰 Cost tracking** per test and step
-- **🧠 AI decision history** showing agent reasoning
-- **📊 Token usage analysis** with pricing breakdown
-- **🔍 Interactive filtering** and search
+## 🔙 What Was New in v1.0.2
 
-### Built-in Tools System
+### 28 Browser Automation Tools
 
-12 comprehensive browser automation tools:
-- **Navigation**: URL handling and routing
-- **Content Analysis**: Page content extraction and optimization
-- **Interaction**: Click, fill, clear operations
-- **Verification**: Element validation and information
-- **Utilities**: Wait, screenshot, and helpers
+Expanded from 12 to 28 tools covering:
+- **Navigation**: navigate, navigateBack
+- **Content Analysis**: getPageContent, getPageMetadata
+- **Interaction**: click, fill, clear, hover, pressKey, selectOption, drag
+- **Scroll**: scrollDown, scrollUp, scrollToElement
+- **Verification**: verifyElement, verifyText, getElementInfo, verifyListVisible
+- **Tabs**: newTab, switchTab, closeTab
+- **Utilities**: wait, screenshot, resize
+- **Advanced**: fileUpload, evaluate, interceptNetwork
+
+### Multi-Provider AI Support
+
+Choose between AI providers in your config:
+```typescript
+ai: {
+  openai: { modelName: 'gpt-4o' },        // OpenAI
+  // OR
+  openai: { modelName: 'gemini-2.0-flash' }, // Google Gemini (auto-detected)
+}
+```
+
+### Vision Verification
+
+AI-powered screenshot verification for all verify tools:
+- Auto-highlight bounding boxes on verified elements
+- Multi-provider support (GPT-4o, Gemini)
+- Two modes: `supplement` (augments DOM) or `primary` (overrides DOM)
+- See **[Vision-Verification-Guide.md](./Vision-Verification-Guide.md)**
+
+### Validation Agent with Vision
+
+The validation agent now uses both text analysis AND screenshot confirmation:
+- Takes final-state screenshots for visual confirmation
+- Adjusts confidence scores based on vision agreement/disagreement
+- Configurable via `ai.vision` in endorphin.config.ts
 
 ## 📖 Quick Reference
 
@@ -204,6 +241,7 @@ export const SMART_TEST: TestCase = {
 ```bash
 # Project Management
 npx endorphin-ai init              # Initialize new project
+npx endorphin-ai init-claude-skill # Initialize Claude Code integration
 npx endorphin-ai list             # List available tests
 
 # Test Execution
@@ -212,8 +250,15 @@ npx endorphin-ai run test all      # Run all tests
 npx endorphin-ai run test --tag smoke  # Run tests by tag
 npx endorphin-ai run test --jira-sync TICKET-ID  # Sync and run JIRA test
 
-# Test Creation
+# Test Creation (Interactive)
 npx endorphin-ai run test-recorder # Interactive test recording
+
+# Test Creation (CLI API)
+npx endorphin-ai recorder create   # Create recording session
+npx endorphin-ai recorder add-step # Add step to session
+npx endorphin-ai recorder generate # Generate test file
+npx endorphin-ai recorder list     # List all sessions
+npx endorphin-ai recorder status   # Get session status
 
 # Reporting
 npx endorphin-ai generate report   # Generate HTML report
@@ -230,8 +275,9 @@ npx endorphin-ai list tools       # Show available tools
 ### Environment Variables
 
 ```bash
-# Required
+# Required (one of these depending on provider)
 OPENAI_API_KEY=your_api_key_here
+GOOGLE_API_KEY=your_gemini_key_here
 
 # Optional
 HEADLESS=true                   # Run in headless mode
@@ -273,10 +319,12 @@ JIRA_LABEL=ai-test-case
 
 ## 📋 Version Compatibility
 
-- **Current Version**: v0.9.0
+- **Current Version**: v1.4.0
 - **Node.js**: v18.0.0+ required
-- **TypeScript**: v5.8+ recommended  
+- **TypeScript**: v5.8+ recommended
 - **Browsers**: Chrome, Firefox, Safari (via Playwright)
+- **AI Providers**: OpenAI (GPT-4o), Google Gemini (gemini-2.0-flash)
+- **Claude Code**: Optional integration for AI-assisted test creation
 
 ---
 

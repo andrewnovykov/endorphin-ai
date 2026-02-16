@@ -218,3 +218,63 @@ ls tests/
 ---
 
 Test Recorder makes creating tests as easy as telling someone what to click!
+
+---
+
+## 🤖 Non-Interactive Mode (CLI API)
+
+The test recorder also provides a programmable CLI API for automated test creation. This is used by Claude Code skills and can be invoked directly.
+
+### Available Commands
+
+```bash
+# Create recording session
+npx endorphin-ai recorder create --id TEST-ID --name "Test Name" --url https://example.com
+
+# Add steps to session
+npx endorphin-ai recorder add-step --session SESSION-ID --step "Click login button"
+
+# Generate test file
+npx endorphin-ai recorder generate --session SESSION-ID --output-dir tests/
+
+# List all sessions
+npx endorphin-ai recorder list
+
+# Get session status
+npx endorphin-ai recorder status --session SESSION-ID
+```
+
+### Full Example
+
+```bash
+# Create session and capture session ID
+SESSION=$(npx endorphin-ai recorder create \
+  --id LOGIN-001 \
+  --name "Login Test" \
+  --url https://app.example.com/login | jq -r '.sessionId')
+
+# Add steps
+npx endorphin-ai recorder add-step --session $SESSION --step "Fill email with test@example.com"
+npx endorphin-ai recorder add-step --session $SESSION --step "Fill password with secret123"
+npx endorphin-ai recorder add-step --session $SESSION --step "Click Sign In button"
+npx endorphin-ai recorder add-step --session $SESSION --step "Verify 'Welcome' is visible"
+
+# Generate test file
+npx endorphin-ai recorder generate --session $SESSION --output-dir tests/
+```
+
+### When to Use CLI API
+
+- **Automation** - Create tests from scripts or CI/CD pipelines
+- **Claude Code Integration** - Use `/write-test` skill for AI-guided test creation
+- **Batch Test Creation** - Generate multiple tests programmatically
+- **Custom Workflows** - Build custom test creation tools
+
+### When to Use Interactive Mode
+
+- **Manual Testing** - Direct control over each step
+- **Visual Feedback** - See browser actions in real-time
+- **Learning** - Understand how the recorder works
+- **Complex Scenarios** - Situations requiring human judgment
+
+For full CLI API documentation, see [Claude-Code-Integration.md](./Claude-Code-Integration.md).

@@ -23,7 +23,7 @@ The framework provides these main tool categories:
 | Tool Category        | Purpose                 | Key Tools                                |
 | -------------------- | ----------------------- | ---------------------------------------- |
 | **Navigation**       | Page navigation         | `navigate`                               |
-| **Content Analysis** | Page content inspection | `getPageContent`, `getSimplePageContent` |
+| **Content Analysis** | Page content inspection | `getPageContent` (raw HTML only; accessibility tree is auto-injected) |
 | **Interaction**      | User interactions       | `click`, `fill`, `clearField`            |
 | **Verification**     | Element validation      | `verifyElement`, `getElementInfo`        |
 | **Utilities**        | Support actions         | `wait`, `screenshot`                     |
