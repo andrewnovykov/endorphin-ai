@@ -1,6 +1,6 @@
 # User Guide - Endorphin AI
 
-_Last Updated: February 14, 2026 - v1.4.0_
+_Last Updated: February 14, 2026 - v1.1.0_
 
 Welcome to **Endorphin AI** - the TypeScript-first browser automation testing framework that uses AI agents to execute natural language test instructions. This guide collection will help you get started, write effective tests, and make the most of the framework.
 
