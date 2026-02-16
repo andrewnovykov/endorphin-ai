@@ -19,9 +19,9 @@ automatically.
 </div>
 
 A powerful, modular browser automation framework using AI-powered testing with
-LangChain, OpenAI GPT-4o, and Playwright. Provides intelligent browser
-automation with automatic element detection, visual validation, and
-comprehensive test management.
+LangChain, multi-provider AI (OpenAI GPT-4o, Google Gemini), and Playwright.
+Provides intelligent browser automation with automatic element detection,
+AI-powered visual validation, and comprehensive test management.
 
 ## 🎬 Watch Demo
 
@@ -105,14 +105,17 @@ npx endorphin-ai init
 - ✅ Project structure
 - ✅ Environment setup
 
-### 🔑 Add Your OpenAI API Key
+### 🔑 Add Your AI Provider API Key
 
 ```bash
-# Edit the .env file that was created
+# OpenAI (default)
 echo "OPENAI_API_KEY=your-openai-api-key-here" > .env
+
+# Or Google Gemini
+echo "GOOGLE_API_KEY=your-gemini-api-key-here" > .env
 ```
 
-_Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)_
+_Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys) or [Google AI Studio](https://aistudio.google.com/apikey)_
 
 ### ▶️ Run Your First Test
 
@@ -219,10 +222,12 @@ If you prefer manual setup:
    npm install endorphin-ai
    ```
 
-4. Set up your `.env` file with your OpenAI API key:
+4. Set up your `.env` file with your AI provider API key:
 
    ```env
    OPENAI_API_KEY=your_api_key_here
+   # Or for Google Gemini:
+   # GOOGLE_API_KEY=your_gemini_api_key_here
    ```
 
 5. Create tests directory:
@@ -280,14 +285,29 @@ If you prefer manual setup:
 - **Write tests in plain English** - No complex selectors needed
 - **Intelligent element detection** - AI finds buttons, forms, and content
   automatically
+- **Auto-inject page context** - Accessibility tree auto-injected before every
+  AI decision for full page awareness
 - **Self-healing tests** - Adapts to UI changes without breaking
-- **Smart error recovery** - Automatically retries failed actions with different
-  strategies
+- **Smart error recovery** - 3-tier retry strategy for reliable form input
+- **Multi-provider AI** - OpenAI GPT-4o and Google Gemini support with
+  auto-detection
+
+### 👁️ Vision Verification
+
+- **AI-powered screenshot verification** - Verify elements visually, not just
+  in the DOM
+- **Auto-highlight bounding box** - Red border drawn on verified elements
+  before capture
+- **Dual verification modes** - `supplement` (vision augments DOM) or `primary`
+  (vision overrides DOM)
+- **Validation Agent vision** - Screenshot confirmation of test results with
+  confidence scoring
 
 ### 📊 Beautiful Reports
 
 - **Interactive HTML reports** with screenshots and step-by-step execution
-- **Cost & token tracking** - Monitor AI usage and optimize expenses
+- **Cost & token tracking** - Monitor AI usage and optimize expenses (including
+  vision API calls)
 - **AI decision history** - See exactly how AI analyzes and executes tests
 - **Real-time filtering and search** to quickly find issues
 - **Visual debugging** with click-to-zoom screenshots
@@ -302,14 +322,29 @@ https://github.com/user-attachments/assets/83a900c6-9279-496d-bc12-f16fb98cf6dc
 - **Zero configuration** - Works out of the box
 - **TypeScript support** with full type definitions
 - **Smart test structure** - Dynamic setup, data generation, and task functions
-- **Built-in tools system** - 12 comprehensive automation tools included
+- **26 built-in browser tools** - Navigate, click, fill, verify, hover, drag,
+  scroll, file upload, tabs, network inspection, and more
+- **Sequential tool execution** - Reliable sequential execution preventing
+  race conditions
 - **VS Code debugging** - Professional debugging with debug object access
 - **Multiple browsers** - Chrome, Firefox, Safari support
-- **Sequential execution** for reliable test runs
+
+### 🤖 Claude Code Integration
+
+- **AI-assisted test creation** - `/write-test` slash command for autonomous
+  test writing
+- **AI-assisted test repair** - `/fix-test` reads failures and rewrites broken
+  steps
+- **Recorder CLI** - Programmatic `recorder create`, `add-step`, `generate`
+  commands
+- **Autonomous mode** - Claude reads the page accessibility tree and
+  auto-generates test steps
+- **One-command setup** - `npx endorphin-ai init-claude-skill` scaffolds
+  everything
 
 ### 🎮 Interactive Tools
 
-- **Test Recorder** - Create tests by clicking through your app
+- **Test Recorder** - Create tests by clicking through your app or via CLI
 - **Live debugging** - See exactly what the AI is doing
 - **Custom test creation** with guided prompts
 - **Session replay** to understand test failures
@@ -318,7 +353,7 @@ https://github.com/user-attachments/assets/83a900c6-9279-496d-bc12-f16fb98cf6dc
 
 ## 🔄 Staying Updated
 
-### Current Version: v0.9.0
+### Current Version: v1.1.0
 
 ```bash
 # Check your current version
@@ -331,18 +366,38 @@ npm update endorphin-ai
 npx endorphin-ai --help
 ```
 
-### What's New in v0.9.0
+### What's New in v1.1.0
 
-- ✅ **Smart Test Structure** - New async `setup()`, `data()`, and `task()`
-  functions for dynamic test preparation
-- ✅ **Enhanced HTML Reports** - Interactive reports with cost tracking and AI
-  decision history
-- ✅ **Cost & Token Tracking** - Monitor AI usage costs per test and per step
-- ✅ **AI Decision History** - See exactly how AI analyzes and executes tests
-- ✅ **Built-in Tools System** - 12 comprehensive browser automation tools (no
-  custom tools needed)
-- ✅ **Professional Debugging** - VS Code integration with debug object access
-- ✅ **CI/CD Ready** - Ready-to-use GitHub Actions workflows included
+#### Intelligence
+- ✅ **Auto-inject page context** - Accessibility tree auto-injected before
+  every AI decision with `[CHANGED]`/`[NEW]` markers
+- ✅ **Sequential tool execution** - Reliable sequential execution preventing
+  race conditions
+- ✅ **Fill tool reliability** - 3-tier retry strategy (focus+fill,
+  pressSequentially, JS native value setter)
+- ✅ **Gemini crash recovery** - Graceful handling of empty candidates from
+  Gemini API
+- ✅ **26 built-in tools** - Expanded from 14 to 26 browser automation tools
+
+#### Vision
+- ✅ **Vision verification** - AI-powered screenshot verification for all
+  verify tools
+- ✅ **Auto-highlight bounding box** - Red border on verified elements before
+  screenshot capture
+- ✅ **Validation Agent vision** - Test result validation with screenshot
+  confirmation
+
+#### Claude Code Integration
+- ✅ **Recorder CLI** - Programmatic test recording via `recorder create`,
+  `add-step`, `generate` commands
+- ✅ **Claude Code skills** - `/write-test`, `/fix-test`, `/record-test` slash
+  commands
+- ✅ **Autonomous mode** - Claude reads the page and auto-generates test steps
+
+#### Bug Fixes
+- ✅ Bounding box screenshots render correctly with viewport-only capture
+- ✅ Vision API calls appear in cost report with correct model name
+- ✅ Navigation tools capture screenshots on error
 
 ## 🚀 Project Initialization
 
@@ -454,6 +509,36 @@ npm run test:record
 npx endorphin-ai run test-recorder
 ```
 
+#### 🤖 Claude Code Integration
+
+```bash
+# Initialize Claude Code skills (one-time setup)
+npx endorphin-ai init-claude-skill
+
+# Then use slash commands in Claude Code:
+# /write-test   - AI writes a test from scratch
+# /fix-test     - AI diagnoses and fixes a failing test
+# /record-test  - AI records a test interactively
+```
+
+#### 🎮 Recorder CLI (Programmatic)
+
+```bash
+# Create a recording session
+npx endorphin-ai recorder create --id TEST-001 --name "Login Test" --url https://example.com
+
+# Add steps to the session
+npx endorphin-ai recorder add-step --session <id> --step "Click the Login button"
+npx endorphin-ai recorder add-step --session <id> --step "Fill email with test@example.com"
+
+# Generate a test file from the recording
+npx endorphin-ai recorder generate --session <id> --output-dir tests/
+
+# List all sessions / check status
+npx endorphin-ai recorder list
+npx endorphin-ai recorder status --session <id>
+```
+
 ## 📊 HTML Reports & Analytics
 
 Endorphin AI generates beautiful, interactive HTML reports that provide
@@ -514,16 +599,20 @@ For detailed usage instructions, advanced features, and best practices, see the
 Endorphin AI is built with a modular, extensible architecture designed for
 reliability and maintainability.
 
-📖
-**[View detailed Framework Architecture documentation](./doc/framework-development/Framework-Architecture.md)**
-
 ### Key Components
 
-- **Core Framework**: Main test execution engine and session management
-- **Browser Tools**: Intelligent automation tools powered by AI
-- **Configuration System**: Flexible, hierarchical configuration management
+- **Core Framework**: Test execution engine with dependency injection and
+  session management
+- **AI Agent**: LangGraph StateGraph with multi-provider support (OpenAI,
+  Gemini) and auto-injected page context
+- **Browser Tools**: 26 intelligent automation tools powered by AI
+- **Vision System**: AI-powered screenshot verification with bounding box
+  highlights
+- **Configuration System**: Flexible, hierarchical configuration
+  (CLI > config file > env vars > defaults)
 - **Test Discovery**: Automatic test file detection and loading
-- **Interactive Tools**: Real-time test creation and debugging
+- **Reporters**: Interactive HTML, console, and performance reporters with cost
+  tracking
 
 ## ⚙️ Configuration
 
@@ -537,6 +626,9 @@ it by creating an `endorphin.config.ts` file in your project root:
 import type { FrameworkConfig } from 'endorphin-ai';
 
 const config: FrameworkConfig = {
+  // AI model (auto-detects provider from name)
+  model: 'gpt-4o',           // or 'gemini-1.5-pro'
+
   // Global test settings
   defaultTimeout: 30000,
   headless: false,
@@ -570,7 +662,7 @@ npx endorphin-ai run test all --browser firefox
 npx endorphin-ai run test QE-001 --no-headless
 npx endorphin-ai run test all --viewport 1920x1080
 npx endorphin-ai run test all
-npx endorphin-ai run test all --model gpt-4
+npx endorphin-ai run test all --model gpt-4o-mini
 npx endorphin-ai run test all --env staging
 ```
 
@@ -621,12 +713,12 @@ export const LOGOUT_TEST: TestCase = {
 };
 ```
 
-## 🔧 Smart Test Structure (v0.9.0)
+## 🔧 Smart Test Structure
 
-Endorphin AI v0.9.0 introduces a powerful new test structure with async
-functions for dynamic test preparation.
+Endorphin AI supports a powerful test structure with async functions for
+dynamic test preparation.
 
-### 🚀 New Test Format
+### 🚀 Test Format
 
 ```typescript
 import type { TestCase } from 'endorphin-ai';
@@ -780,23 +872,27 @@ Create tests on-the-fly with guided prompts:
 
 ### Traditional E2E Testing vs Endorphin AI
 
-| Traditional Testing       | Endorphin AI                         |
-| ------------------------- | ------------------------------------ |
-| ❌ Brittle CSS selectors  | ✅ AI finds elements intelligently   |
-| ❌ Breaks with UI changes | ✅ Self-healing tests                |
-| ❌ Complex setup          | ✅ Zero configuration                |
-| ❌ Hard to maintain       | ✅ Plain English test descriptions   |
-| ❌ Basic reporting        | ✅ Interactive HTML reports          |
-| ❌ Manual debugging       | ✅ Visual debugging with screenshots |
+| Traditional Testing            | Endorphin AI                               |
+| ------------------------------ | ------------------------------------------ |
+| ❌ Brittle CSS selectors       | ✅ AI finds elements intelligently          |
+| ❌ Breaks with UI changes      | ✅ Self-healing tests with page context     |
+| ❌ Complex setup               | ✅ Zero configuration                      |
+| ❌ Hard to maintain            | ✅ Plain English test descriptions          |
+| ❌ Basic reporting             | ✅ Interactive HTML reports with cost tracking |
+| ❌ Manual debugging            | ✅ Visual debugging with AI vision verification |
+| ❌ Single AI provider lock-in  | ✅ Multi-provider (OpenAI + Gemini)         |
+| ❌ Manual test writing         | ✅ Claude Code autonomous test generation  |
 
 ### 🚀 Production Ready
 
-✅ **Enterprise Scale**: Used in production environments  
-✅ **Cross-Platform**: Windows, macOS, Linux support  
-✅ **CI/CD Integration**: GitHub Actions, Jenkins, CircleCI  
-✅ **Security First**: Automated vulnerability scanning  
-✅ **Type Safe**: Full TypeScript support  
-✅ **Extensible**: Modular architecture for custom needs
+✅ **Enterprise Scale**: Used in production environments
+✅ **Cross-Platform**: Windows, macOS, Linux support
+✅ **CI/CD Integration**: GitHub Actions, Jenkins, CircleCI
+✅ **Multi-Provider AI**: OpenAI GPT-4o and Google Gemini
+✅ **26 Built-in Tools**: Comprehensive browser automation toolkit
+✅ **Vision Verification**: AI-powered screenshot validation
+✅ **Type Safe**: Full TypeScript support
+✅ **Extensible**: Modular architecture with dependency injection
 
 ## 🔄 Staying Updated
 
@@ -828,16 +924,23 @@ npx endorphin-ai --version
 
 ### Version History & Features
 
-- **v0.9.0** _(Latest)_: Smart test structure, enhanced HTML reports with cost
-  tracking, AI decision history, built-in tools system
-- **v0.8.0**: Custom tools support with CLI management and templates
-- **v0.6.1**: Fixed npx resolution issues, enhanced user experience
-- **v0.6.0**: Enhanced CLI, security-first publishing, cross-platform CI/CD
-- **v0.5.0**: Advanced HTML reporting with interactive features
-- **v0.4.0**: TypeScript-first experience with full type definitions
-- **v0.3.0**: Added `endorphin-ai init` command for instant project setup
-- **v0.2.x**: Core framework with AI-powered testing
-- **v0.1.x**: Initial release with basic functionality
+- **v1.1.0** _(Latest)_: Auto-inject page context, vision verification,
+  26 browser tools, sequential execution, fill reliability, Claude Code
+  integration, recorder CLI, autonomous mode, Gemini crash recovery
+- **v1.0.2**: 12 new browser tools (hover, drag, scroll, tabs, file upload,
+  etc.), multi-provider AI (OpenAI + Gemini)
+- **v1.0.1**: AI agent fleet, CI/CD stabilization, validation agent
+  improvements
+- **v1.0.0**: Natural language testing via GPT-4o, 14 built-in tools,
+  interactive recorder, HTML reports, JIRA integration, multi-user testing
+- **v0.9.0**: Smart test structure, enhanced HTML reports with cost tracking
+- **v0.8.0**: Custom tools support with CLI management
+- **v0.6.x**: Enhanced CLI, cross-platform CI/CD
+- **v0.5.0**: Advanced HTML reporting
+- **v0.4.0**: TypeScript-first experience
+- **v0.3.0**: `endorphin-ai init` command
+- **v0.2.x**: Core framework
+- **v0.1.x**: Initial release
 
 ### Compatibility & Migration
 
@@ -858,29 +961,45 @@ Update with confidence - your existing tests won't break!
 
 - **[Quick Start Guide](./doc/user-guide/Quick-Start.md)** - Get up and running
   quickly
+- **[Project Setup Guide](./doc/user-guide/Project-Setup-Guide.md)** - Complete
+  project setup
+- **[Test Structure Guide](./doc/user-guide/Test-Structure-Guide.md)** - Learn
+  test structure with setup/data functions
 - **[Test Writing Tips](./doc/user-guide/Test-Writing-Tips.md)** - Enterprise &
   small app examples
+- **[Prompt Guide](./doc/user-guide/Prompt-Guide.md)** - Advanced AI prompting
+  techniques
 - **[HTML Reporter Guide](./doc/user-guide/HTML-Reporter-Guide.md)** -
   Interactive reporting with cost tracking
+- **[Test Recorder Guide](./doc/user-guide/Test-Recorder.md)** - Recording test
+  workflows interactively
+- **[Claude Code Integration](./doc/user-guide/Claude-Code-Integration.md)** -
+  AI-assisted test creation and repair
+- **[Vision Verification Guide](./doc/user-guide/Vision-Verification-Guide.md)** -
+  AI-powered screenshot verification
+- **[Environment Variables Guide](./doc/user-guide/Environment-Variables-Guide.md)** -
+  Configure your environment
+- **[Multi-User Testing Guide](./doc/user-guide/Multi-User-Testing-Guide.md)** -
+  Test with multiple browser sessions
 - **[VS Code Debugging Guide](./doc/user-guide/VSCode-Debugging-Guide.md)** -
   Professional debugging setup
 - **[CI/CD Setup Guide](./doc/user-guide/CI-CD-Setup-Guide.md)** - GitHub
   Actions integration
-- **[Framework Architecture](./doc/framework-development/Framework-Architecture.md)** -
-  Technical deep dive
+- **[JIRA Integration Guide](./doc/user-guide/JIRA-Integration-Guide.md)** -
+  Sync tests with JIRA
 
 ### 🐛 Issues & Feature Requests
 
 Found a bug or have a feature idea?
-[Open an issue](https://github.com/andrewnovykov/endorphin-ai/issues) on GitHub.
+[Open an issue](https://github.com/endorphin-ai/endorphin-ai/issues) on GitHub.
 
 ### 💬 Getting Help
 
 - Check the **[documentation](./doc/)** first
 - Search
-  **[existing issues](https://github.com/andrewnovykov/endorphin-ai/issues)**
+  **[existing issues](https://github.com/endorphin-ai/endorphin-ai/issues)**
 - Create a
-  **[new issue](https://github.com/andrewnovykov/endorphin-ai/issues/new)** with
+  **[new issue](https://github.com/endorphin-ai/endorphin-ai/issues/new)** with
   details
 
 ---

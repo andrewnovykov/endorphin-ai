@@ -14,9 +14,9 @@ Claude Code Integration turns the Endorphin AI test recorder into a programmable
 
 No need to manually write test files or debug failures - Claude Code does it for you.
 
-### v1.5.0: Autonomous Mode
+### Autonomous Mode
 
-In v1.5.0, Claude Code can **see the page** through the accessibility tree returned in every CLI response. This enables:
+Claude Code can **see the page** through the accessibility tree returned in every CLI response. This enables:
 
 - **Zero-step authoring**: Say "write a login test at https://app.com with user@test.com / pass123" and Claude generates all steps automatically
 - **Self-correcting**: When a step fails, Claude reads `errorDetails.availableElements` and retries with the correct element name
@@ -495,4 +495,4 @@ Both methods produce identical test files and use the same underlying recorder.
 
 **Ready to start?** Run `npx endorphin-ai init-claude-skill` and try `/write-test`! 🚀
 
-_Claude Code integration available since v1.4.0. Autonomous mode (page state, error details, self-correcting skills) available since v1.5.0._
+_Claude Code integration available since v1.1.0._
