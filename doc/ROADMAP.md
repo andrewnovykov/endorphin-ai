@@ -126,10 +126,10 @@
 - ✅ Compact accessibility tree serialization (< 2000 chars, interactive elements only for large pages)
 
 ### Documentation ✅
-- ✅ User guide: `user-guide/Vision-Verification-Guide.md`
-- ✅ User guide: `user-guide/Claude-Code-Integration.md`
+- ✅ User guide: `docs/project-manual/user-guide/Vision-Verification-Guide.md`
+- ✅ User guide: `docs/project-manual/user-guide/Claude-Code-Integration.md`
 - ✅ 8 PRDs created for all implemented features
-- ✅ Design doc: `design/claude-code-integration-architecture.md`
+- ✅ Design doc: `docs/design/claude-code-integration-architecture.md`
 
 ---
 

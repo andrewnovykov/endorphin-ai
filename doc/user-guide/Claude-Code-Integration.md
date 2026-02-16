@@ -1,6 +1,6 @@
 # Claude Code Integration Guide
 
-_Last Updated: February 14, 2026 - v1.1.0_
+_Last Updated: February 14, 2026 - v1.5.0_
 
 Use **Claude Code** to write and fix Endorphin AI tests with AI assistance. This guide shows you how to set up the integration and use the three pre-built skills.
 
